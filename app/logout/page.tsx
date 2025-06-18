@@ -2,19 +2,15 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 
-export default function page() {
+export default function LogoutPage() {
+  const { logout } = useAuth();
+  const router = useRouter();
+  useEffect(() => {
+    logout();
+    router.push("/signin");
+  }, []);
 
-    const { logout } = useAuth();
-    const router = useRouter();
-
-    useEffect(() => {
-        logout();
-        router.push("/login");
-    }, []);
-
-  return (
-    <div>Log out...</div>
-  )
+  return <div>Logging out...</div>;
 }
