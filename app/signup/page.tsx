@@ -7,66 +7,63 @@ import { useAuth } from "../context/AuthContext";
 export default function SignupPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const { signup } = useAuth();
   const router = useRouter();
 
   const handleSignup = async () => {
-    if (username && password) {
-      const ok = await signup(username, password);
-      if (ok) {
-        router.push("/signin");
-      }
+    if (!username || !password) return;
+    const ok = await signup(username, password);
+    if (ok) {
+      router.push("/signin");
+    } else {
+      setError("Account creation failed.");
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-100 to-blue-200 py-12 px-4">
-      <div className="w-full max-w-sm rounded-xl bg-white p-8 shadow-lg">
-        <h2 className="mb-8 text-center text-3xl font-bold text-gray-800">
-          Sign Up
-        </h2>
+    <div className="d-flex align-items-center justify-content-center min-vh-100 bg-light">
+      <div className="card shadow" style={{ maxWidth: "28rem", width: "100%" }}>
+        <div className="card-body">
+          <h2 className="card-title h3 text-center mb-4">Sign Up</h2>
 
-        <div className="space-y-5">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Username
-            </label>
+          {error && (
+            <div className="alert alert-danger text-center py-2" role="alert">
+              {error}
+            </div>
+          )}
+
+          <div className="mb-3">
+            <label className="form-label">Username</label>
             <input
               type="text"
-              className="w-full rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="form-control"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Enter username"
             />
           </div>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Password
-            </label>
+          <div className="mb-3">
+            <label className="form-label">Password</label>
             <input
               type="password"
-              className="w-full rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="form-control"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter password"
             />
           </div>
 
-          <button
-            className="w-full rounded-md bg-green-600 py-2 text-white transition-colors hover:bg-green-700"
-            onClick={handleSignup}
-          >
+          <button className="btn btn-primary w-100" onClick={handleSignup}>
             Create Account
           </button>
-        </div>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Already have an account?{' '}
-          <a href="/signin" className="font-medium text-green-600 hover:underline">
-            Sign in
-          </a>
-        </p>
+          <p className="text-center mt-3 mb-0">
+            Already have an account?{' '}
+            <a href="/signin">Sign in</a>
+          </p>
+        </div>
       </div>
     </div>
   );
