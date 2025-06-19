@@ -23,20 +23,26 @@ export default function HomePage() {
   if (!user) return <div className="text-center mt-5">Loading...</div>;
 
   return (
-    <div className="container d-flex flex-column align-items-center justify-content-center vh-100">
-      <div className="card text-center p-4 shadow-sm" style={{ maxWidth: "400px", width: "100%" }}>
-        <h2 className="card-title mb-3">Welcome, {user.username} 👋</h2>
-        <p className="card-text">You are now logged in to the system.</p>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="w-full max-w-md bg-white p-6 rounded-lg shadow text-center">
+        <h2 className="text-2xl font-semibold mb-2">Welcome, {user.username} 👋</h2>
+        <p className="text-gray-600 mb-4">You are now logged in to the system.</p>
         {users.length > 0 && (
-          <ul className="list-group mb-3">
+          <ul className="mb-4 space-y-1 text-left">
             {users.map((name) => (
-              <li key={name} className="list-group-item">
+              <li
+                key={name}
+                className="border border-gray-200 rounded px-3 py-1 text-sm"
+              >
                 {name}
               </li>
             ))}
           </ul>
         )}
-        <a href="/logout" className="btn btn-danger mt-3">
+        <a
+          href="/logout"
+          className="inline-block bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors"
+        >
           Log Out
         </a>
       </div>
