@@ -20,42 +20,50 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md bg-white p-6 rounded-lg shadow">
-        <h2 className="text-2xl font-semibold text-center mb-6">Sign Up</h2>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-100 to-blue-200 py-12 px-4">
+      <div className="w-full max-w-sm rounded-xl bg-white p-8 shadow-lg">
+        <h2 className="mb-8 text-center text-3xl font-bold text-gray-800">
+          Sign Up
+        </h2>
 
-        <div className="mb-4">
-          <label className="block mb-1 font-medium">Username</label>
-          <input
-            type="text"
-            className="w-full border border-gray-300 rounded px-3 py-2"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Enter username"
-          />
+        <div className="space-y-5">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Username
+            </label>
+            <input
+              type="text"
+              className="w-full rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter username"
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Password
+            </label>
+            <input
+              type="password"
+              className="w-full rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter password"
+            />
+          </div>
+
+          <button
+            className="w-full rounded-md bg-green-600 py-2 text-white transition-colors hover:bg-green-700"
+            onClick={handleSignup}
+          >
+            Create Account
+          </button>
         </div>
 
-        <div className="mb-4">
-          <label className="block mb-1 font-medium">Password</label>
-          <input
-            type="password"
-            className="w-full border border-gray-300 rounded px-3 py-2"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter password"
-          />
-        </div>
-
-        <button
-          className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition-colors"
-          onClick={handleSignup}
-        >
-          Create Account
-        </button>
-
-        <p className="text-sm text-center mt-4">
+        <p className="mt-6 text-center text-sm text-gray-600">
           Already have an account?{' '}
-          <a href="/signin" className="text-blue-600 hover:underline">
+          <a href="/signin" className="font-medium text-green-600 hover:underline">
             Sign in
           </a>
         </p>
