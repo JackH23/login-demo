@@ -7,7 +7,7 @@ import { AuthProvider } from "./context/AuthContext";
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>
+      <body className="min-h-screen bg-gray-50">
         {/* Provide authentication context to the entire app */}
         <AuthProvider>{children}</AuthProvider>
       </body>

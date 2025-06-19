@@ -20,41 +20,45 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="container d-flex align-items-center justify-content-center vh-100">
-      <div className="card shadow p-4" style={{ maxWidth: "400px", width: "100%" }}>
-        <h2 className="text-center mb-4">Sign Up</h2>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="w-full max-w-md bg-white p-6 rounded-lg shadow">
+        <h2 className="text-2xl font-semibold text-center mb-6">Sign Up</h2>
 
-        <div className="mb-3">
-          <label className="form-label">Username</label>
+        <div className="mb-4">
+          <label className="block mb-1 font-medium">Username</label>
           <input
             type="text"
-            className="form-control"
+            className="w-full border border-gray-300 rounded px-3 py-2"
             value={username}
-            onChange={e => setUsername(e.target.value)}
+            onChange={(e) => setUsername(e.target.value)}
             placeholder="Enter username"
           />
         </div>
 
-        <div className="mb-3">
-          <label className="form-label">Password</label>
+        <div className="mb-4">
+          <label className="block mb-1 font-medium">Password</label>
           <input
             type="password"
-            className="form-control"
+            className="w-full border border-gray-300 rounded px-3 py-2"
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter password"
           />
         </div>
 
-        <button className="btn btn-success w-100" onClick={handleSignup}>
+        <button
+          className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition-colors"
+          onClick={handleSignup}
+        >
           Create Account
         </button>
 
-        <div className="text-center mt-3">
-          <small>
-            Already have an account? <a href="/signin">Sign in</a>
-          </small>
-        </div>
+        <p className="text-sm text-center mt-4">
+          Already have an account?{' '}
+          <a href="/signin" className="text-blue-600 hover:underline">
+            Sign in
+          </a>
+        </p>
       </div>
     </div>
   );
