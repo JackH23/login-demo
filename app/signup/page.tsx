@@ -10,10 +10,12 @@ export default function SignupPage() {
   const { signup } = useAuth();
   const router = useRouter();
 
-  const handleSignup = () => {
+  const handleSignup = async () => {
     if (username && password) {
-      signup(username, password);
-      router.push("/signin");
+      const ok = await signup(username, password);
+      if (ok) {
+        router.push("/signin");
+      }
     }
   };
 

@@ -11,8 +11,9 @@ export default function SigninPage() {
   const { signin } = useAuth();
   const router = useRouter();
 
-  const handleSignin = () => {
-    if (signin(username, password)) {
+  const handleSignin = async () => {
+    const ok = await signin(username, password);
+    if (ok) {
       router.push("/home");
     } else {
       setError("Invalid username or password.");
