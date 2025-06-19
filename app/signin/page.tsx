@@ -21,51 +21,48 @@ export default function SigninPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
-      <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg">
-        <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">Sign In</h2>
+    <div className="d-flex align-items-center justify-content-center min-vh-100 bg-light">
+      <div className="card shadow" style={{ maxWidth: "28rem", width: "100%" }}>
+        <div className="card-body">
+          <h2 className="card-title h3 text-center mb-4">Sign In</h2>
 
-        {error && (
-          <p className="mb-4 text-center text-sm text-red-600">{error}</p>
-        )}
+          {error && (
+            <div className="alert alert-danger text-center py-2" role="alert">
+              {error}
+            </div>
+          )}
 
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+          <div className="mb-3">
+            <label className="form-label">Username</label>
             <input
               type="text"
-              className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="form-control"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Enter username"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+          <div className="mb-3">
+            <label className="form-label">Password</label>
             <input
               type="password"
-              className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="form-control"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter password"
             />
           </div>
 
-          <button
-            className="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 transition-colors"
-            onClick={handleSignin}
-          >
+          <button className="btn btn-primary w-100" onClick={handleSignin}>
             Log In
           </button>
-        </div>
 
-        <p className="text-sm text-center mt-6">
-          No account?{' '}
-          <a href="/signup" className="text-indigo-600 hover:underline">
-            Sign up
-          </a>
-        </p>
+          <p className="text-center mt-3 mb-0">
+            No account?{' '}
+            <a href="/signup">Sign up</a>
+          </p>
+        </div>
       </div>
     </div>
   );
