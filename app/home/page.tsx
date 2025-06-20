@@ -68,6 +68,37 @@ export default function HomePage() {
     }
   };
 
+  const handleImageChange = async (u: User) => {
+    const newImage = await new Promise<string | null>((resolve) => {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/*";
+      input.onchange = () => {
+        const file = input.files?.[0];
+        if (!file) return resolve(null);
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(file);
+      };
+      input.click();
+    });
+    if (!newImage) return;
+    const res = await fetch(`/api/users/${u.username}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image: newImage }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setUsers((prev) =>
+        prev.map((item) =>
+          item.username === u.username ? data.user : item
+        )
+      );
+    }
+  };
+
   useEffect(() => {
     if (loading) return;
 
@@ -119,7 +150,13 @@ export default function HomePage() {
                             src={u.image}
                             alt={`${u.username} profile`}
                             className="rounded-circle me-3"
-                            style={{ width: "50px", height: "50px", objectFit: "cover" }}
+                            style={{
+                              width: "50px",
+                              height: "50px",
+                              objectFit: "cover",
+                              cursor: "pointer",
+                            }}
+                            onClick={() => handleImageChange(u)}
                           />
                         )}
                         <div>
