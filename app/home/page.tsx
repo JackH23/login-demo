@@ -27,6 +27,10 @@ export default function HomePage() {
     }
   };
 
+  /**
+   * Update a user's profile when the Edit button is clicked.
+   * Prompts for new values and persists them via the API.
+   */
   const handleEdit = async (u: User) => {
     const username = prompt("Username", u.username);
     if (username === null) return;
@@ -35,6 +39,8 @@ export default function HomePage() {
     const ageInput = prompt("Age", u.age?.toString() || "");
     if (ageInput === null) return;
     const age = Number(ageInput);
+
+    // Optionally update the profile image
     const changeImage = confirm("Change image?");
     let image = u.image;
     if (changeImage) {
@@ -53,11 +59,15 @@ export default function HomePage() {
         input.click();
       });
     }
+
+    // Persist the updates to the server
     const res = await fetch(`/api/users/${u.username}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, position, age, image }),
     });
+
+    // Reflect changes in local state when the request succeeds
     if (res.ok) {
       const data = await res.json();
       setUsers((prev) =>
