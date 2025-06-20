@@ -5,11 +5,12 @@ import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 
 export default function HomePage() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const [users, setUsers] = useState<string[]>([]);
 
   useEffect(() => {
+    if (loading) return;
     if (!user) {
       router.push("/signin");
     } else {
@@ -18,9 +19,9 @@ export default function HomePage() {
         .then((data) => setUsers(data.users ?? []))
         .catch(() => setUsers([]));
     }
-  }, [user]);
+  }, [user, loading]);
 
-  if (!user) return <div className="text-center mt-5">Loading...</div>;
+  if (loading || !user) return <div className="text-center mt-5">Loading...</div>;
 
   return (
     <div className="container d-flex align-items-center justify-content-center min-vh-100 bg-light">
