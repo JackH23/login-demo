@@ -12,6 +12,8 @@ interface User {
 interface AuthContextValue {
   // Currently logged in user or null if not authenticated
   user: User | null;
+  // Indicates whether the provider is restoring a persisted session
+  loading: boolean;
   // Creates a new account; resolves to true on success
   signup: (username: string, password: string) => Promise<boolean>;
   // Logs an existing user in; resolves to true on success
@@ -26,6 +28,8 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Track the currently logged in user in state
   const [user, setUser] = useState<User | null>(null);
+  // Indicates whether the provider has finished restoring a session
+  const [loading, setLoading] = useState(true);
 
   // On first render, restore user from local storage to persist sessions
   useEffect(() => {
@@ -33,6 +37,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
+    // Loading complete after attempting to read from storage
+    setLoading(false);
   }, []);
 
   const signup = async (username: string, password: string) => {
@@ -70,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Provide authentication utilities and state to child components
   return (
-    <AuthContext.Provider value={{ user, signup, signin, logout }}>
+    <AuthContext.Provider value={{ user, loading, signup, signin, logout }}>
       {children}
     </AuthContext.Provider>
   );
