@@ -2,12 +2,7 @@
 import mongoose from 'mongoose';
 
 // Connection string to the MongoDB instance
-const MONGODB_URI = process.env.MONGODB_URI as string;
-
-// Ensure the connection string is defined at build time
-if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable');
-}
+const MONGODB_URI = process.env.MONGODB_URI as string | undefined;
 
 // Shape of the cached connection object stored on the Node.js global
 interface MongooseCache {
@@ -19,7 +14,6 @@ interface MongooseCache {
 
 declare global {
   // Augment the global object to store the connection across reloads
-  // eslint-disable-next-line no-var
   var mongoose: MongooseCache | undefined;
 }
 
@@ -31,6 +25,10 @@ global.mongoose = cached;
 async function dbConnect() {
   // Reuse previous connection if it exists
   if (cached.conn) return cached.conn;
+
+  if (!MONGODB_URI) {
+    throw new Error('Please define the MONGODB_URI environment variable');
+  }
 
   // If a connection promise hasn't been created yet, start one
   if (!cached.promise) {

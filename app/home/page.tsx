@@ -19,7 +19,7 @@ export default function HomePage() {
         .then((data) => setUsers(data.users ?? []))
         .catch(() => setUsers([]));
     }
-  }, [user, loading]);
+  }, [user, loading, router]);
 
   if (loading || !user)
     return <div className="text-center mt-5">Loading...</div>;

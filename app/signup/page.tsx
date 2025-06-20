@@ -20,10 +20,32 @@ export default function SignupPage() {
       return;
     }
 
-    // Simulate saving additional data
-    console.log("Signup Data:", { username, password, position, age, image });
+    // Prepare optional base64 encoded image string
+    let imageData: string | null = null;
+    if (image) {
+      imageData = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error("Failed to read image"));
+        reader.readAsDataURL(image);
+      });
+    }
 
-    const ok = await signup(username, password);
+    console.log("Signup Data:", {
+      username,
+      password,
+      position,
+      age,
+      image: imageData,
+    });
+
+    const ok = await signup(
+      username,
+      password,
+      position,
+      Number(age),
+      imageData,
+    );
     if (ok) {
       router.push("/signin");
     } else {
@@ -72,18 +94,7 @@ export default function SignupPage() {
               className="form-control"
               value={position}
               onChange={(e) => setPosition(e.target.value)}
-              placeholder="Enter Department"
-            />
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label">Position</label>
-            <input
-              type="text"
-              className="form-control"
-              value={position}
-              onChange={(e) => setPosition(e.target.value)}
-              placeholder="Enter Positon"
+              placeholder="Enter position"
             />
           </div>
 
