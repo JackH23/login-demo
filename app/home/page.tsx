@@ -23,25 +23,37 @@ export default function HomePage() {
   if (!user) return <div className="text-center mt-5">Loading...</div>;
 
   return (
-    <div className="d-flex align-items-center justify-content-center min-vh-100 bg-light">
-      <div className="card shadow w-100" style={{ maxWidth: "28rem" }}>
-        <div className="card-body text-center">
-          <h2 className="card-title h4 mb-2">Welcome, {user.username} 👋</h2>
-          <p className="text-muted mb-4">
+    <div className="container d-flex align-items-center justify-content-center min-vh-100 bg-light">
+      <div className="card shadow-lg w-100" style={{ maxWidth: "30rem" }}>
+        <div className="card-body">
+          <h2 className="card-title text-center mb-3">
+            Welcome, <span className="text-primary">{user.username}</span> 👋
+          </h2>
+          <p className="text-muted text-center mb-4">
             You are now logged in to the system.
           </p>
+
           {users.length > 0 && (
-            <ul className="list-group mb-4 text-start">
-              {users.map((name) => (
-                <li key={name} className="list-group-item py-1">
-                  {name}
-                </li>
-              ))}
-            </ul>
+            <>
+              <h5 className="text-start">Registered Users:</h5>
+              <ul className="list-group mb-4">
+                {users.map((name) => (
+                  <li
+                    key={name}
+                    className="list-group-item list-group-item-light"
+                  >
+                    {name}
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
-          <a href="/logout" className="btn btn-danger">
-            Log Out
-          </a>
+
+          <div className="d-grid">
+            <a href="/logout" className="btn btn-danger">
+              Log Out
+            </a>
+          </div>
         </div>
       </div>
     </div>
