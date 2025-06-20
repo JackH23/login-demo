@@ -17,6 +17,37 @@ export default function HomePage() {
 
   const [users, setUsers] = useState<User[]>([]);
 
+  const handleDelete = async (username: string) => {
+    if (!confirm("Delete this user?")) return;
+    const res = await fetch(`/api/users/${username}`, {
+      method: "DELETE",
+    });
+    if (res.ok) {
+      setUsers((prev) => prev.filter((u) => u.username !== username));
+    }
+  };
+
+  const handleEdit = async (u: User) => {
+    const position = prompt("Position", u.position || "");
+    if (position === null) return;
+    const ageInput = prompt("Age", u.age?.toString() || "");
+    if (ageInput === null) return;
+    const age = Number(ageInput);
+    const res = await fetch(`/api/users/${u.username}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ position, age }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setUsers((prev) =>
+        prev.map((item) =>
+          item.username === u.username ? data.user : item
+        )
+      );
+    }
+  };
+
   useEffect(() => {
     if (loading) return;
 
@@ -83,10 +114,16 @@ export default function HomePage() {
                       </div>
 
                       <div className="btn-group">
-                        <button className="btn btn-sm btn-outline-primary">
+                        <button
+                          className="btn btn-sm btn-outline-primary"
+                          onClick={() => handleEdit(u)}
+                        >
                           Edit
                         </button>
-                        <button className="btn btn-sm btn-outline-danger">
+                        <button
+                          className="btn btn-sm btn-outline-danger"
+                          onClick={() => handleDelete(u.username)}
+                        >
                           Delete
                         </button>
                       </div>
