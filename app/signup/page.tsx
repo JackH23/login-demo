@@ -14,16 +14,41 @@ export default function SignupPage() {
   const { signup } = useAuth();
   const router = useRouter();
 
+  const fileToDataUrl = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === "string") resolve(reader.result);
+        else reject(new Error("Failed to read file"));
+      };
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleSignup = async () => {
     if (!username || !password) {
       setError("Username and password are required.");
       return;
     }
 
-    // Simulate saving additional data
-    console.log("Signup Data:", { username, password, position, age, image });
+    // Convert image file to base64 if provided
+    let imageData: string | null = null;
+    if (image) {
+      try {
+        imageData = await fileToDataUrl(image);
+      } catch (err) {
+        console.error(err);
+      }
+    }
 
-    const ok = await signup(username, password);
+    const ok = await signup(
+      username,
+      password,
+      position,
+      Number(age),
+      imageData
+    );
     if (ok) {
       router.push("/signin");
     } else {
