@@ -58,6 +58,33 @@ export default function HomePage() {
     }
   };
 
+  const handleEdit = async (u: User) => {
+    const username = prompt("Enter new username", u.username);
+    if (username === null || username.trim() === "") return;
+    const position = prompt("Enter position", u.position ?? "");
+    if (position === null) return;
+    const ageStr = prompt("Enter age", u.age?.toString() ?? "");
+    if (ageStr === null) return;
+    const age = Number(ageStr);
+    if (Number.isNaN(age)) return;
+
+    const res = await fetch(`/api/users/${u.username}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, position, age }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setUsers((prev) =>
+        prev.map((item) => (item.username === u.username ? data.user : item))
+      );
+
+      if (user.username === u.username && username !== u.username) {
+        localStorage.setItem("user", JSON.stringify({ username }));
+      }
+    }
+  };
+
   useEffect(() => {
     if (loading) return;
 
@@ -132,6 +159,7 @@ export default function HomePage() {
                       <div className="btn-group">
                         <button
                           className="btn btn-sm btn-outline-primary"
+                          onClick={() => handleEdit(u)}
                         >
                           Edit
                         </button>
