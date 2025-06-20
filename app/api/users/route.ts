@@ -4,7 +4,6 @@ import User from '@/models/User';
 
 export async function GET() {
   await dbConnect();
-  const users = await User.find({}, 'username');
-  const usernames = users.map((u) => u.username);
-  return NextResponse.json({ users: usernames });
+  const users = await User.find({}, 'username position age image -_id').lean();
+  return NextResponse.json({ users });
 }

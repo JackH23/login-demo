@@ -4,10 +4,17 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 
+interface DBUser {
+  username: string;
+  age?: number;
+  position?: string;
+  image?: string | null;
+}
+
 export default function HomePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [users, setUsers] = useState<string[]>([]);
+  const [users, setUsers] = useState<DBUser[]>([]);
 
   useEffect(() => {
     if (loading) return;
@@ -19,7 +26,7 @@ export default function HomePage() {
         .then((data) => setUsers(data.users ?? []))
         .catch(() => setUsers([]));
     }
-  }, [user, loading]);
+  }, [user, loading, router]);
 
   if (loading || !user)
     return <div className="text-center mt-5">Loading...</div>;
@@ -45,12 +52,25 @@ export default function HomePage() {
             <>
               <h5 className="text-start">Registered Users:</h5>
               <ul className="list-group mb-3">
-                {users.map((name) => (
+                {users.map((u) => (
                   <li
-                    key={name}
-                    className="list-group-item list-group-item-light"
+                    key={u.username}
+                    className="list-group-item list-group-item-light d-flex align-items-center"
                   >
-                    {name}
+                    {u.image && (
+                      <img
+                        src={u.image}
+                        alt={u.username}
+                        className="rounded-circle me-3"
+                        style={{ width: "40px", height: "40px" }}
+                      />
+                    )}
+                    <div>
+                      <div className="fw-bold">{u.username}</div>
+                      <div className="text-muted small">
+                        Age: {u.age ?? "N/A"} &middot; Position: {u.position || "N/A"}
+                      </div>
+                    </div>
                   </li>
                 ))}
               </ul>
