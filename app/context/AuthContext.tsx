@@ -15,7 +15,13 @@ interface AuthContextValue {
   // Indicates whether the provider is restoring a persisted session
   loading: boolean;
   // Creates a new account; resolves to true on success
-  signup: (username: string, password: string) => Promise<boolean>;
+  signup: (
+    username: string,
+    password: string,
+    position: string,
+    age: number,
+    image: string | null
+  ) => Promise<boolean>;
   // Logs an existing user in; resolves to true on success
   signin: (username: string, password: string) => Promise<boolean>;
   // Clears user information from state and storage
@@ -41,12 +47,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   }, []);
 
-  const signup = async (username: string, password: string) => {
-    // Call the API route to create a new user
+  const signup = async (
+    username: string,
+    password: string,
+    position: string,
+    age: number,
+    image: string | null
+  ) => {
+    // Call the API route to create a new user with extra information
     const res = await fetch("/api/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, position, age, image }),
     });
     return res.ok;
   };

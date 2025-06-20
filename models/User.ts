@@ -7,6 +7,12 @@ const UserSchema = new Schema({
   username: { type: String, required: true, unique: true },
   // Hashed password value
   password: { type: String, required: true },
+  // Position or title of the user
+  position: { type: String },
+  // Numeric age of the user
+  age: { type: Number },
+  // Base64 encoded image string
+  image: { type: String },
 });
 
 // Reuse the model if it has already been compiled
