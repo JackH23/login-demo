@@ -7,7 +7,7 @@ export default function Page() {
 
   useEffect(() => {
     router.push("/signin");
-  }, []);
+  }, [router]);
 
   return <div>Redirecting...</div>;
 }
