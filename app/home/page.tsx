@@ -27,57 +27,6 @@ export default function HomePage() {
     }
   };
 
-  /**
-   * Update a user's profile when the Edit button is clicked.
-   * Prompts for new values and persists them via the API.
-   */
-  const handleEdit = async (u: User) => {
-    const username = prompt("Username", u.username);
-    if (username === null) return;
-    const position = prompt("Position", u.position || "");
-    if (position === null) return;
-    const ageInput = prompt("Age", u.age?.toString() || "");
-    if (ageInput === null) return;
-    const age = Number(ageInput);
-
-    // Optionally update the profile image
-    const changeImage = confirm("Change image?");
-    let image = u.image;
-    if (changeImage) {
-      image = await new Promise<string | null>((resolve) => {
-        const input = document.createElement("input");
-        input.type = "file";
-        input.accept = "image/*";
-        input.onchange = () => {
-          const file = input.files?.[0];
-          if (!file) return resolve(null);
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = () => resolve(null);
-          reader.readAsDataURL(file);
-        };
-        input.click();
-      });
-    }
-
-    // Persist the updates to the server
-    const res = await fetch(`/api/users/${u.username}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, position, age, image }),
-    });
-
-    // Reflect changes in local state when the request succeeds
-    if (res.ok) {
-      const data = await res.json();
-      setUsers((prev) =>
-        prev.map((item) =>
-          item.username === u.username ? data.user : item
-        )
-      );
-    }
-  };
-
   const handleImageChange = async (u: User) => {
     const newImage = await new Promise<string | null>((resolve) => {
       const input = document.createElement("input");
@@ -183,7 +132,6 @@ export default function HomePage() {
                       <div className="btn-group">
                         <button
                           className="btn btn-sm btn-outline-primary"
-                          onClick={() => handleEdit(u)}
                         >
                           Edit
                         </button>
