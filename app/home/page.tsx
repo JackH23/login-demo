@@ -60,7 +60,25 @@ export default function HomePage() {
                     key={u.username}
                     className="list-group-item list-group-item-light"
                   >
-                    {u.username}
+                    <div className="d-flex align-items-center">
+                      {u.image && (
+                        <img
+                          src={u.image}
+                          alt={`${u.username} profile`}
+                          className="rounded-circle me-3"
+                          style={{ width: "50px", height: "50px", objectFit: "cover" }}
+                        />
+                      )}
+                      <div>
+                        <div className="fw-bold">{u.username}</div>
+                        {u.position && (
+                          <div className="text-muted">Position: {u.position}</div>
+                        )}
+                        {typeof u.age === "number" && (
+                          <div className="text-muted">Age: {u.age}</div>
+                        )}
+                      </div>
+                    </div>
                   </li>
                 ))}
               </ul>
