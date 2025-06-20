@@ -21,15 +21,22 @@ export default function HomePage() {
     }
   }, [user, loading]);
 
-  if (loading || !user) return <div className="text-center mt-5">Loading...</div>;
+  if (loading || !user)
+    return <div className="text-center mt-5">Loading...</div>;
 
   return (
-    <div className="container d-flex align-items-center justify-content-center min-vh-100 bg-light">
-      <div className="card shadow-lg w-100" style={{ maxWidth: "30rem" }}>
+    <div className="container-fluid min-vh-100 bg-light p-4">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2 className="mb-0">
+          Welcome, <span className="text-primary">{user.username}</span> 👋
+        </h2>
+        <a href="/logout" className="btn btn-outline-danger">
+          Log Out
+        </a>
+      </div>
+
+      <div className="card shadow-sm w-100 mx-auto" style={{ maxWidth: "100%" }}>
         <div className="card-body">
-          <h2 className="card-title text-center mb-3">
-            Welcome, <span className="text-primary">{user.username}</span> 👋
-          </h2>
           <p className="text-muted text-center mb-4">
             You are now logged in to the system.
           </p>
@@ -37,7 +44,7 @@ export default function HomePage() {
           {users.length > 0 && (
             <>
               <h5 className="text-start">Registered Users:</h5>
-              <ul className="list-group mb-4">
+              <ul className="list-group mb-3">
                 {users.map((name) => (
                   <li
                     key={name}
@@ -49,12 +56,6 @@ export default function HomePage() {
               </ul>
             </>
           )}
-
-          <div className="d-grid">
-            <a href="/logout" className="btn btn-danger">
-              Log Out
-            </a>
-          </div>
         </div>
       </div>
     </div>

@@ -7,12 +7,22 @@ import { useAuth } from "../context/AuthContext";
 export default function SignupPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [position, setPosition] = useState("");
+  const [age, setAge] = useState("");
+  const [image, setImage] = useState<File | null>(null);
   const [error, setError] = useState("");
   const { signup } = useAuth();
   const router = useRouter();
 
   const handleSignup = async () => {
-    if (!username || !password) return;
+    if (!username || !password) {
+      setError("Username and password are required.");
+      return;
+    }
+
+    // Simulate saving additional data
+    console.log("Signup Data:", { username, password, position, age, image });
+
     const ok = await signup(username, password);
     if (ok) {
       router.push("/signin");
@@ -55,13 +65,44 @@ export default function SignupPage() {
             />
           </div>
 
+          <div className="mb-3">
+            <label className="form-label">Position</label>
+            <input
+              type="text"
+              className="form-control"
+              value={position}
+              onChange={(e) => setPosition(e.target.value)}
+              placeholder="Enter position"
+            />
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Age</label>
+            <input
+              type="number"
+              className="form-control"
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+              placeholder="Enter age"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="form-label">Upload Image</label>
+            <input
+              type="file"
+              className="form-control"
+              accept="image/*"
+              onChange={(e) => setImage(e.target.files?.[0] || null)}
+            />
+          </div>
+
           <button className="btn btn-primary w-100" onClick={handleSignup}>
             Create Account
           </button>
 
           <p className="text-center mt-3 mb-0">
-            Already have an account?{' '}
-            <a href="/signin">Sign in</a>
+            Already have an account? <a href="/signin">Sign in</a>
           </p>
         </div>
       </div>
