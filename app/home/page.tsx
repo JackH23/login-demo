@@ -28,15 +28,35 @@ export default function HomePage() {
   };
 
   const handleEdit = async (u: User) => {
+    const username = prompt("Username", u.username);
+    if (username === null) return;
     const position = prompt("Position", u.position || "");
     if (position === null) return;
     const ageInput = prompt("Age", u.age?.toString() || "");
     if (ageInput === null) return;
     const age = Number(ageInput);
+    const changeImage = confirm("Change image?");
+    let image = u.image;
+    if (changeImage) {
+      image = await new Promise<string | null>((resolve) => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "image/*";
+        input.onchange = () => {
+          const file = input.files?.[0];
+          if (!file) return resolve(null);
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(file);
+        };
+        input.click();
+      });
+    }
     const res = await fetch(`/api/users/${u.username}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ position, age }),
+      body: JSON.stringify({ username, position, age, image }),
     });
     if (res.ok) {
       const data = await res.json();

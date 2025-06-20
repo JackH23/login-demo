@@ -21,16 +21,28 @@ export async function PUT(
   req: Request,
   { params }: { params: { username: string } }
 ) {
-  const { position, age } = await req.json();
+  // Extract potential updates from the request body
+  const { username, position, age, image } = await req.json();
+
   await dbConnect();
+
+  // Only include fields that were provided in the update payload
+  const update: Record<string, unknown> = {};
+  if (username !== undefined) update.username = username;
+  if (position !== undefined) update.position = position;
+  if (age !== undefined) update.age = age;
+  if (image !== undefined) update.image = image;
+
   const user = await User.findOneAndUpdate(
     { username: params.username },
-    { position, age },
+    update,
     { new: true, fields: 'username position age image -_id' }
   ).lean();
+
   if (!user) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
+
   return NextResponse.json({ user });
 }
 
