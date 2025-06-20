@@ -14,10 +14,12 @@ export default function HomePage() {
     age: number;
     image: string;
   }
+
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
     if (loading) return;
+
     if (!user) {
       router.push("/signin");
     } else {
@@ -33,6 +35,7 @@ export default function HomePage() {
 
   return (
     <div className="container-fluid min-vh-100 bg-light p-4">
+      {/* Top bar */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="mb-0">
           Welcome, <span className="text-primary">{user.username}</span> 👋
@@ -42,47 +45,58 @@ export default function HomePage() {
         </a>
       </div>
 
-      <div
-        className="card shadow-sm w-100 mx-auto"
-        style={{ maxWidth: "100%" }}
-      >
+      {/* Main content card */}
+      <div className="card shadow-sm w-100 mx-auto" style={{ maxWidth: "100%" }}>
         <div className="card-body">
           <p className="text-muted text-center mb-4">
             You are now logged in to the system.
           </p>
 
-          {users.length > 0 && (
+          {users.length > 0 ? (
             <>
-              <h5 className="text-start">Registered Users:</h5>
-              <ul className="list-group mb-3">
+              <h5 className="mb-3">Registered Users:</h5>
+              <ul className="list-group">
                 {users.map((u) => (
                   <li
                     key={u.username}
                     className="list-group-item list-group-item-light"
                   >
-                    <div className="d-flex align-items-center">
-                      {u.image && (
-                        <img
-                          src={u.image}
-                          alt={`${u.username} profile`}
-                          className="rounded-circle me-3"
-                          style={{ width: "50px", height: "50px", objectFit: "cover" }}
-                        />
-                      )}
-                      <div>
-                        <div className="fw-bold">{u.username}</div>
-                        {u.position && (
-                          <div className="text-muted">Position: {u.position}</div>
+                    <div className="d-flex justify-content-between align-items-center">
+                      <div className="d-flex align-items-center">
+                        {u.image && (
+                          <img
+                            src={u.image}
+                            alt={`${u.username} profile`}
+                            className="rounded-circle me-3"
+                            style={{ width: "50px", height: "50px", objectFit: "cover" }}
+                          />
                         )}
-                        {typeof u.age === "number" && (
-                          <div className="text-muted">Age: {u.age}</div>
-                        )}
+                        <div>
+                          <div className="fw-bold">{u.username}</div>
+                          {u.position && (
+                            <div className="text-muted">Position: {u.position}</div>
+                          )}
+                          {typeof u.age === "number" && (
+                            <div className="text-muted">Age: {u.age}</div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="btn-group">
+                        <button className="btn btn-sm btn-outline-primary">
+                          Edit
+                        </button>
+                        <button className="btn btn-sm btn-outline-danger">
+                          Delete
+                        </button>
                       </div>
                     </div>
                   </li>
                 ))}
               </ul>
             </>
+          ) : (
+            <p className="text-muted text-center">No users found.</p>
           )}
         </div>
       </div>
