@@ -7,7 +7,14 @@ import { useRouter } from "next/navigation";
 export default function HomePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [users, setUsers] = useState<string[]>([]);
+
+  interface User {
+    username: string;
+    position: string;
+    age: number;
+    image: string;
+  }
+  const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
     if (loading) return;
@@ -35,7 +42,10 @@ export default function HomePage() {
         </a>
       </div>
 
-      <div className="card shadow-sm w-100 mx-auto" style={{ maxWidth: "800px" }}>
+      <div
+        className="card shadow-sm w-100 mx-auto"
+        style={{ maxWidth: "100%" }}
+      >
         <div className="card-body">
           <p className="text-muted text-center mb-4">
             You are now logged in to the system.
@@ -45,12 +55,12 @@ export default function HomePage() {
             <>
               <h5 className="text-start">Registered Users:</h5>
               <ul className="list-group mb-3">
-                {users.map((name) => (
+                {users.map((u) => (
                   <li
-                    key={name}
+                    key={u.username}
                     className="list-group-item list-group-item-light"
                   >
-                    {name}
+                    {u.username}
                   </li>
                 ))}
               </ul>
