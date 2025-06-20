@@ -14,41 +14,16 @@ export default function SignupPage() {
   const { signup } = useAuth();
   const router = useRouter();
 
-  const fileToDataUrl = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === "string") resolve(reader.result);
-        else reject(new Error("Failed to read file"));
-      };
-      reader.onerror = () => reject(new Error("Failed to read file"));
-      reader.readAsDataURL(file);
-    });
-  };
-
   const handleSignup = async () => {
     if (!username || !password) {
       setError("Username and password are required.");
       return;
     }
 
-    // Convert image file to base64 if provided
-    let imageData: string | null = null;
-    if (image) {
-      try {
-        imageData = await fileToDataUrl(image);
-      } catch (err) {
-        console.error(err);
-      }
-    }
+    // Simulate saving additional data
+    console.log("Signup Data:", { username, password, position, age, image });
 
-    const ok = await signup(
-      username,
-      password,
-      position,
-      Number(age),
-      imageData
-    );
+    const ok = await signup(username, password);
     if (ok) {
       router.push("/signin");
     } else {
@@ -97,7 +72,18 @@ export default function SignupPage() {
               className="form-control"
               value={position}
               onChange={(e) => setPosition(e.target.value)}
-              placeholder="Enter position"
+              placeholder="Enter Department"
+            />
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Position</label>
+            <input
+              type="text"
+              className="form-control"
+              value={position}
+              onChange={(e) => setPosition(e.target.value)}
+              placeholder="Enter Positon"
             />
           </div>
 

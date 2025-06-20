@@ -4,17 +4,10 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 
-interface DBUser {
-  username: string;
-  age?: number;
-  position?: string;
-  image?: string | null;
-}
-
 export default function HomePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [users, setUsers] = useState<DBUser[]>([]);
+  const [users, setUsers] = useState<string[]>([]);
 
   useEffect(() => {
     if (loading) return;
@@ -26,7 +19,7 @@ export default function HomePage() {
         .then((data) => setUsers(data.users ?? []))
         .catch(() => setUsers([]));
     }
-  }, [user, loading, router]);
+  }, [user, loading]);
 
   if (loading || !user)
     return <div className="text-center mt-5">Loading...</div>;
@@ -42,7 +35,7 @@ export default function HomePage() {
         </a>
       </div>
 
-      <div className="card shadow-sm w-100 mx-auto" style={{ maxWidth: "100%" }}>
+      <div className="card shadow-sm w-100 mx-auto" style={{ maxWidth: "800px" }}>
         <div className="card-body">
           <p className="text-muted text-center mb-4">
             You are now logged in to the system.
@@ -52,25 +45,12 @@ export default function HomePage() {
             <>
               <h5 className="text-start">Registered Users:</h5>
               <ul className="list-group mb-3">
-                {users.map((u) => (
+                {users.map((name) => (
                   <li
-                    key={u.username}
-                    className="list-group-item list-group-item-light d-flex align-items-center"
+                    key={name}
+                    className="list-group-item list-group-item-light"
                   >
-                    {u.image && (
-                      <img
-                        src={u.image}
-                        alt={u.username}
-                        className="rounded-circle me-3"
-                        style={{ width: "40px", height: "40px" }}
-                      />
-                    )}
-                    <div>
-                      <div className="fw-bold">{u.username}</div>
-                      <div className="text-muted small">
-                        Age: {u.age ?? "N/A"} &middot; Position: {u.position || "N/A"}
-                      </div>
-                    </div>
+                    {name}
                   </li>
                 ))}
               </ul>
