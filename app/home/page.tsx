@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
+import "bootstrap-icons/font/bootstrap-icons.css";
 
 export default function HomePage() {
   const { user, loading } = useAuth();
@@ -16,6 +17,28 @@ export default function HomePage() {
   }
 
   const [users, setUsers] = useState<User[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    if (loading) return;
+
+    if (!user) {
+      router.push("/signin");
+    } else {
+      fetch("/api/users")
+        .then((res) => res.json())
+        .then((data) => setUsers(data.users ?? []))
+        .catch(() => setUsers([]));
+    }
+  }, [user, loading, router]);
+
+  if (loading || !user)
+    return <div className="text-center mt-5">Loading...</div>;
+
+  const currentUserData = users.find((u) => u.username === user.username);
+  if (!currentUserData) {
+    return <div className="text-center mt-5">Loading user data...</div>;
+  }
 
   const handleDelete = async (username: string) => {
     if (!confirm("Delete this user?")) return;
@@ -51,9 +74,7 @@ export default function HomePage() {
     if (res.ok) {
       const data = await res.json();
       setUsers((prev) =>
-        prev.map((item) =>
-          item.username === u.username ? data.user : item
-        )
+        prev.map((item) => (item.username === u.username ? data.user : item))
       );
     }
   };
@@ -85,46 +106,58 @@ export default function HomePage() {
     }
   };
 
-  useEffect(() => {
-    if (loading) return;
-
-    if (!user) {
-      router.push("/signin");
-    } else {
-      fetch("/api/users")
-        .then((res) => res.json())
-        .then((data) => setUsers(data.users ?? []))
-        .catch(() => setUsers([]));
-    }
-  }, [user, loading, router]);
-
-  if (loading || !user)
-    return <div className="text-center mt-5">Loading...</div>;
+  // Filtered users based on search input
+  const filteredUsers = users.filter((u) =>
+    u.username.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="container-fluid min-vh-100 bg-light p-4">
       {/* Top bar */}
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">
-          Welcome, <span className="text-primary">{user.username}</span> 👋
-        </h2>
-        <a href="/logout" className="btn btn-outline-danger">
-          Log Out
-        </a>
+        <h2 className="mb-0">Welcome 👋</h2>
+        <div className="d-flex align-items-center gap-3">
+          {currentUserData.image && (
+            <img
+              src={currentUserData.image}
+              alt="Your Profile"
+              className="rounded-circle"
+              style={{ width: "40px", height: "40px", objectFit: "cover" }}
+            />
+          )}
+          <span className="fw-semibold">{currentUserData.username}</span>
+          <a href="/logout" className="btn btn-sm btn-outline-danger">
+            Log Out
+          </a>
+        </div>
+      </div>
+
+      {/* Search input */}
+      <div className="input-group mb-4" style={{ maxWidth: "400px" }}>
+        <input
+          type="text"
+          className="form-control"
+          placeholder="Search users by username..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
       </div>
 
       {/* Main content card */}
-      <div className="card shadow-sm w-100 mx-auto" style={{ maxWidth: "100%" }}>
+      <div
+        className="card shadow-sm w-100 mx-auto"
+        style={{ maxWidth: "100%" }}
+      >
         <div className="card-body">
           <p className="text-muted text-center mb-4">
             You are now logged in to the system.
           </p>
 
-          {users.length > 0 ? (
+          {filteredUsers.length > 0 ? (
             <>
               <h5 className="mb-3">Registered Users:</h5>
               <ul className="list-group">
-                {users.map((u) => (
+                {filteredUsers.map((u) => (
                   <li
                     key={u.username}
                     className="list-group-item list-group-item-light"
@@ -148,7 +181,9 @@ export default function HomePage() {
                         <div>
                           <div className="fw-bold">{u.username}</div>
                           {u.position && (
-                            <div className="text-muted">Position: {u.position}</div>
+                            <div className="text-muted">
+                              Position: {u.position}
+                            </div>
                           )}
                           {typeof u.age === "number" && (
                             <div className="text-muted">Age: {u.age}</div>
@@ -157,6 +192,12 @@ export default function HomePage() {
                       </div>
 
                       <div className="btn-group">
+                        <button
+                          className="btn btn-sm btn-outline-secondary"
+                          onClick={() => alert(`Message to ${u.username}`)}
+                        >
+                          <i className="bi bi-chat-dots me-1"></i> Message
+                        </button>
                         <button
                           className="btn btn-sm btn-outline-primary"
                           onClick={() => handleEdit(u)}
