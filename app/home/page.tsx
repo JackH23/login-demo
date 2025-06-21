@@ -194,7 +194,7 @@ export default function HomePage() {
                       <div className="btn-group">
                         <button
                           className="btn btn-sm btn-outline-secondary"
-                          onClick={() => alert(`Message to ${u.username}`)}
+                          onClick={() => router.push(`/chat?user=${u.username}`)}
                         >
                           <i className="bi bi-chat-dots me-1"></i> Message
                         </button>
