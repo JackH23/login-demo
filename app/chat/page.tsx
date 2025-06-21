@@ -1,46 +1,76 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
 interface Message {
   type: "text" | "image" | "file";
   content: string;
   fileName?: string;
+  from: string;
+  to: string;
 }
 
 export default function ChatPage() {
   const searchParams = useSearchParams();
-  const user = searchParams.get("user") ?? "";
+  const chatUser = searchParams.get("user") ?? "";
+  const { user } = useAuth();
 
-  const [messages, setMessages] = useState<Message[]>([
-    { type: "text", content: "Hello!" },
-    { type: "text", content: "Hi, how are you?" },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
 
-  const handleSend = () => {
-    if (input.trim()) {
-      setMessages([...messages, { type: "text", content: input }]);
-      setInput("");
+  useEffect(() => {
+    if (!user || !chatUser) return;
+    fetch(`/api/messages?user1=${user.username}&user2=${chatUser}`)
+      .then((res) => res.json())
+      .then((data) => setMessages(data.messages ?? []))
+      .catch(() => setMessages([]));
+  }, [user, chatUser]);
+
+  const handleSend = async () => {
+    if (!user || !chatUser || !input.trim()) return;
+    const payload = {
+      from: user.username,
+      to: chatUser,
+      type: "text" as const,
+      content: input,
+    };
+    setInput("");
+    const res = await fetch("/api/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setMessages((prev) => [...prev, data.message]);
     }
   };
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !user || !chatUser) return;
 
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       const isImage = file.type.startsWith("image/");
-      setMessages((prev) => [
-        ...prev,
-        {
-          type: isImage ? "image" : "file",
-          content: reader.result as string,
-          fileName: file.name,
-        },
-      ]);
+      const payload = {
+        from: user.username,
+        to: chatUser,
+        type: isImage ? ("image" as const) : ("file" as const),
+        content: reader.result as string,
+        fileName: file.name,
+      };
+      const res = await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMessages((prev) => [...prev, data.message]);
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -50,7 +80,7 @@ export default function ChatPage() {
       {/* Header */}
       <div className="bg-primary text-white px-4 py-3 d-flex justify-content-between align-items-center">
         <div className="d-flex align-items-center gap-3">
-          <h5 className="mb-0">Chat {user && `with ${user}`}</h5>
+          <h5 className="mb-0">Chat {chatUser && `with ${chatUser}`}</h5>
           <span className="badge bg-light text-dark">Online</span>
         </div>
         <a href="/home" className="btn btn-sm btn-light text-dark">
@@ -64,9 +94,9 @@ export default function ChatPage() {
           <div
             key={index}
             className={`mb-3 p-2 rounded shadow-sm ${
-              index % 2 === 0
-                ? "bg-white text-start"
-                : "bg-info text-white text-end"
+              msg.from === user?.username
+                ? "bg-info text-white text-end"
+                : "bg-white text-start"
             }`}
           >
             {msg.type === "text" && <div>{msg.content}</div>}
