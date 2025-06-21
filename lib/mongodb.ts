@@ -23,24 +23,20 @@ global.mongoose = cached;
 
 // Establish a singleton mongoose connection using the cached object
 async function dbConnect() {
-  // Reuse previous connection if it exists
   if (cached.conn) return cached.conn;
 
   if (!MONGODB_URI) {
     throw new Error('Please define the MONGODB_URI environment variable');
   }
 
-  // If a connection promise hasn't been created yet, start one
   if (!cached.promise) {
     cached.promise = mongoose
       .connect(MONGODB_URI, {
-        // Disable mongoose command buffering for immediate errors
         bufferCommands: false,
       })
       .then((mongoose) => mongoose);
   }
 
-  // Await the in-flight promise and store the resolved connection
   cached.conn = await cached.promise;
   return cached.conn;
 }

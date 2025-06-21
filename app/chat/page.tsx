@@ -89,36 +89,78 @@ export default function ChatPage() {
       </div>
 
       {/* Message Area */}
+      {/* Message Area */}
       <div className="flex-grow-1 overflow-auto bg-light p-3">
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`mb-3 p-2 rounded shadow-sm ${
-              msg.from === user?.username
-                ? "bg-info text-white text-end"
-                : "bg-white text-start"
-            }`}
-          >
-            {msg.type === "text" && <div>{msg.content}</div>}
-            {msg.type === "image" && (
-              <img
-                src={msg.content}
-                alt="sent-img"
-                className="img-fluid rounded"
-                style={{ maxWidth: "200px" }}
-              />
-            )}
-            {msg.type === "file" && (
-              <a
-                href={msg.content}
-                download={msg.fileName}
-                className="text-decoration-none text-dark"
+        {messages.map((msg, index) => {
+          const isSender = msg.from === user?.username;
+          return (
+            <div
+              key={index}
+              className={`d-flex mb-2 ${
+                isSender ? "justify-content-end" : "justify-content-start"
+              }`}
+            >
+              <div
+                className={`p-2 rounded shadow-sm ${
+                  isSender
+                    ? "bg-info text-white text-end"
+                    : "bg-white text-dark text-start"
+                }`}
+                style={{ maxWidth: "75%" }}
               >
-                📎 {msg.fileName}
-              </a>
-            )}
-          </div>
-        ))}
+                {msg.type === "text" && <div>{msg.content}</div>}
+                {msg.type === "image" && (
+                  <img
+                    src={msg.content}
+                    alt="sent-img"
+                    className="img-fluid rounded"
+                    style={{ maxWidth: "200px" }}
+                  />
+                )}
+                {msg.type === "file" && (
+                  <div
+                    className="d-flex align-items-center gap-2 p-2 rounded"
+                    style={{
+                      backgroundColor: isSender ? "#0d6efd" : "#f8f9fa",
+                      color: isSender ? "#fff" : "#000",
+                    }}
+                  >
+                    {/* Icon */}
+                    <div
+                      className="bg-white d-flex align-items-center justify-content-center rounded-circle"
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        fontSize: "1.25rem",
+                        color: isSender ? "#0d6efd" : "#0d6efd",
+                      }}
+                    >
+                      📄
+                    </div>
+
+                    {/* File name and link */}
+                    <div className="flex-grow-1">
+                      <a
+                        href={msg.content}
+                        download={msg.fileName}
+                        className="text-decoration-none fw-semibold"
+                        style={{
+                          color: isSender ? "#fff" : "#000",
+                          wordBreak: "break-all",
+                        }}
+                      >
+                        {msg.fileName}
+                      </a>
+                      <div className="small text-muted">
+                        {msg.fileName?.split(".").pop()?.toUpperCase()} File
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Input + File Upload */}
