@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useRef } from "react";
 
 interface Message {
   type: "text" | "image" | "file";
@@ -19,14 +20,28 @@ export default function ChatPage() {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const bottomRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!user || !chatUser) return;
-    fetch(`/api/messages?user1=${user.username}&user2=${chatUser}`)
-      .then((res) => res.json())
-      .then((data) => setMessages(data.messages ?? []))
-      .catch(() => setMessages([]));
+
+    const fetchMessages = () => {
+      fetch(`/api/messages?user1=${user.username}&user2=${chatUser}`)
+        .then((res) => res.json())
+        .then((data) => setMessages(data.messages ?? []))
+        .catch(() => setMessages([]));
+    };
+
+    fetchMessages(); // initial load
+
+    const interval = setInterval(fetchMessages, 3000); // poll every 3 sec
+
+    return () => clearInterval(interval); // cleanup
   }, [user, chatUser]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleSend = async () => {
     if (!user || !chatUser || !input.trim()) return;
@@ -89,7 +104,6 @@ export default function ChatPage() {
       </div>
 
       {/* Message Area */}
-      {/* Message Area */}
       <div className="flex-grow-1 overflow-auto bg-light p-3">
         {messages.map((msg, index) => {
           const isSender = msg.from === user?.username;
@@ -125,20 +139,17 @@ export default function ChatPage() {
                       color: isSender ? "#fff" : "#000",
                     }}
                   >
-                    {/* Icon */}
                     <div
                       className="bg-white d-flex align-items-center justify-content-center rounded-circle"
                       style={{
                         width: "40px",
                         height: "40px",
                         fontSize: "1.25rem",
-                        color: isSender ? "#0d6efd" : "#0d6efd",
+                        color: "#0d6efd",
                       }}
                     >
                       📄
                     </div>
-
-                    {/* File name and link */}
                     <div className="flex-grow-1">
                       <a
                         href={msg.content}
@@ -146,7 +157,7 @@ export default function ChatPage() {
                         className="text-decoration-none fw-semibold"
                         style={{
                           color: isSender ? "#fff" : "#000",
-                          wordBreak: "break-all",
+                          wordBreak: "break-word",
                         }}
                       >
                         {msg.fileName}
@@ -161,6 +172,7 @@ export default function ChatPage() {
             </div>
           );
         })}
+        <div ref={bottomRef}></div> {/* 👈 scroll target */}
       </div>
 
       {/* Input + File Upload */}
