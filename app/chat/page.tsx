@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useRef } from "react";
+import { io, Socket } from "socket.io-client";
 
 interface Message {
   type: "text" | "image" | "file";
@@ -22,21 +23,25 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
+  const socket: Socket = io("http://localhost:3000"); // ← Replace with your backend URL
+
   useEffect(() => {
     if (!user || !chatUser) return;
 
-    const fetchMessages = () => {
-      fetch(`/api/messages?user1=${user.username}&user2=${chatUser}`)
-        .then((res) => res.json())
-        .then((data) => setMessages(data.messages ?? []))
-        .catch(() => setMessages([]));
+    socket.emit("join", { user: user.username, chatWith: chatUser });
+
+    socket.on("receive-message", (message: Message) => {
+      setMessages((prev) => [...prev, message]);
+    });
+
+    // Optional: Load chat history once
+    fetch(`/api/messages?user1=${user.username}&user2=${chatUser}`)
+      .then((res) => res.json())
+      .then((data) => setMessages(data.messages ?? []));
+
+    return () => {
+      socket.disconnect();
     };
-
-    fetchMessages(); // initial load
-
-    const interval = setInterval(fetchMessages, 3000); // poll every 3 sec
-
-    return () => clearInterval(interval); // cleanup
   }, [user, chatUser]);
 
   useEffect(() => {
@@ -45,22 +50,24 @@ export default function ChatPage() {
 
   const handleSend = async () => {
     if (!user || !chatUser || !input.trim()) return;
-    const payload = {
+
+    const payload: Message = {
       from: user.username,
       to: chatUser,
-      type: "text" as const,
+      type: "text",
       content: input,
     };
+
     setInput("");
-    const res = await fetch("/api/messages", {
+    setMessages((prev) => [...prev, payload]); // Optimistic UI
+
+    await fetch("/api/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    if (res.ok) {
-      const data = await res.json();
-      setMessages((prev) => [...prev, data.message]);
-    }
+
+    socket.emit("send-message", payload);
   };
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
