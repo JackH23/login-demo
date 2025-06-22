@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { io, Socket } from "socket.io-client";
 
 interface Message {
+  _id: string;
   type: "text" | "image" | "file";
   content: string;
   fileName?: string;
@@ -90,24 +91,27 @@ export default function ChatPage() {
   const handleSend = async () => {
     if (!user || !chatUser || !input.trim()) return;
 
-    const payload: Message = {
+    const payload = {
       from: user.username,
       to: chatUser,
-      type: "text",
+      type: "text" as const,
       content: input,
     };
 
     setInput("");
-    setMessages((prev) => [...prev, payload]); // Optimistic UI
-    setTimeout(scrollToBottom, 50); // Scroll after DOM updates
 
-    await fetch("/api/messages", {
+    const res = await fetch("/api/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
 
-    socketRef.current?.emit("send-message", payload);
+    if (res.ok) {
+      const data = await res.json();
+      setMessages((prev) => [...prev, data.message]);
+      socketRef.current?.emit("send-message", data.message);
+      scrollToBottom();
+    }
   };
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -134,10 +138,18 @@ export default function ChatPage() {
       if (res.ok) {
         const data = await res.json();
         setMessages((prev) => [...prev, data.message]);
+        socketRef.current?.emit("send-message", data.message);
         scrollToBottom();
       }
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleDelete = async (id: string) => {
+    const res = await fetch(`/api/messages/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      setMessages((prev) => prev.filter((m) => m._id !== id));
+    }
   };
 
   return (
@@ -217,6 +229,14 @@ export default function ChatPage() {
                       </div>
                     </div>
                   </div>
+                )}
+                {isSender && (
+                  <button
+                    className="btn btn-sm btn-link text-danger p-0 ms-2"
+                    onClick={() => handleDelete(msg._id)}
+                  >
+                    Delete
+                  </button>
                 )}
               </div>
             </div>
