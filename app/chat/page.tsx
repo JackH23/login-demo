@@ -1,9 +1,8 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useRef } from "react";
 import { io, Socket } from "socket.io-client";
 
 interface Message {
@@ -22,17 +21,29 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const socketRef = useRef<Socket | null>(null);
 
-  const socket: Socket = io("http://localhost:3000"); // ← Replace with your backend URL
+  // Initialize socket connection once
+  useEffect(() => {
+    socketRef.current = io("http://localhost:3000");
+    return () => {
+      socketRef.current?.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     if (!user || !chatUser) return;
 
+    const socket = socketRef.current;
+    if (!socket) return;
+
     socket.emit("join", { user: user.username, chatWith: chatUser });
 
-    socket.on("receive-message", (message: Message) => {
+    const handleReceive = (message: Message) => {
       setMessages((prev) => [...prev, message]);
-    });
+    };
+
+    socket.on("receive-message", handleReceive);
 
     // Optional: Load chat history once
     fetch(`/api/messages?user1=${user.username}&user2=${chatUser}`)
@@ -40,7 +51,7 @@ export default function ChatPage() {
       .then((data) => setMessages(data.messages ?? []));
 
     return () => {
-      socket.disconnect();
+      socket.off("receive-message", handleReceive);
     };
   }, [user, chatUser]);
 
@@ -67,7 +78,7 @@ export default function ChatPage() {
       body: JSON.stringify(payload),
     });
 
-    socket.emit("send-message", payload);
+    socketRef.current?.emit("send-message", payload);
   };
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
