@@ -21,6 +21,10 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollToBottom = () => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
   const socketRef = useRef<Socket | null>(null);
 
   // Initialize socket connection once
@@ -41,6 +45,7 @@ export default function ChatPage() {
 
     const handleReceive = (message: Message) => {
       setMessages((prev) => [...prev, message]);
+      scrollToBottom();
     };
 
     socket.on("receive-message", handleReceive);
@@ -48,7 +53,10 @@ export default function ChatPage() {
     // Optional: Load chat history once
     fetch(`/api/messages?user1=${user.username}&user2=${chatUser}`)
       .then((res) => res.json())
-      .then((data) => setMessages(data.messages ?? []));
+      .then((data) => {
+        setMessages(data.messages ?? []);
+        scrollToBottom();
+      });
 
     return () => {
       socket.off("receive-message", handleReceive);
@@ -56,7 +64,7 @@ export default function ChatPage() {
   }, [user, chatUser]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    scrollToBottom();
   }, [messages]);
 
   const handleSend = async () => {
@@ -71,6 +79,7 @@ export default function ChatPage() {
 
     setInput("");
     setMessages((prev) => [...prev, payload]); // Optimistic UI
+    scrollToBottom();
 
     await fetch("/api/messages", {
       method: "POST",
@@ -103,6 +112,7 @@ export default function ChatPage() {
       if (res.ok) {
         const data = await res.json();
         setMessages((prev) => [...prev, data.message]);
+        scrollToBottom();
       }
     };
     reader.readAsDataURL(file);
