@@ -35,6 +35,23 @@ export default function ChatPage() {
     };
   }, []);
 
+  // Listen for incoming messages from the server
+  useEffect(() => {
+    const socket = socketRef.current;
+    if (!socket) return;
+
+    const handleReceive = (message: Message) => {
+      if (message.from === chatUser && message.to === user?.username) {
+        setMessages((prev) => [...prev, message]);
+      }
+    };
+
+    socket.on("receive-message", handleReceive);
+    return () => {
+      socket.off("receive-message", handleReceive);
+    };
+  }, [chatUser, user]);
+
   useEffect(() => {
     if (!user || !chatUser) return;
 
@@ -54,9 +71,18 @@ export default function ChatPage() {
     return () => clearInterval(interval); // Cleanup
   }, [user, chatUser]);
 
+  // Scroll when a new message arrives from the chat partner
+  const prevLengthRef = useRef(0);
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    // only scroll if the conversation grew and the last message is from the other user
+    if (messages.length > prevLengthRef.current) {
+      const last = messages[messages.length - 1];
+      if (last && last.from === chatUser) {
+        scrollToBottom();
+      }
+    }
+    prevLengthRef.current = messages.length;
+  }, [messages, chatUser]);
 
   const handleSend = async () => {
     if (!user || !chatUser || !input.trim()) return;
