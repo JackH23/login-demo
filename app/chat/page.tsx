@@ -152,6 +152,22 @@ export default function ChatPage() {
     }
   };
 
+  const handleEdit = async (msg: Message) => {
+    const newContent = prompt("Edit message", msg.content);
+    if (newContent === null || newContent.trim() === "") return;
+    const res = await fetch(`/api/messages/${msg._id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: newContent }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setMessages((prev) =>
+        prev.map((m) => (m._id === msg._id ? data.message : m))
+      );
+    }
+  };
+
   return (
     <div className="container-fluid d-flex flex-column vh-100 p-0">
       {/* Header */}
@@ -231,12 +247,20 @@ export default function ChatPage() {
                   </div>
                 )}
                 {isSender && (
-                  <button
-                    className="btn btn-sm btn-link text-danger p-0 ms-2"
-                    onClick={() => handleDelete(msg._id)}
-                  >
-                    Delete
-                  </button>
+                  <>
+                    <button
+                      className="btn btn-sm btn-link text-primary p-0 me-2"
+                      onClick={() => handleEdit(msg)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="btn btn-sm btn-link text-danger p-0"
+                      onClick={() => handleDelete(msg._id)}
+                    >
+                      Delete
+                    </button>
+                  </>
                 )}
               </div>
             </div>
