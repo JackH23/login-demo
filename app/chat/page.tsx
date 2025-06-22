@@ -21,11 +21,11 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const socketRef = useRef<Socket | null>(null);
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-  const socketRef = useRef<Socket | null>(null);
 
   // Initialize socket connection once
   useEffect(() => {
@@ -38,29 +38,20 @@ export default function ChatPage() {
   useEffect(() => {
     if (!user || !chatUser) return;
 
-    const socket = socketRef.current;
-    if (!socket) return;
-
-    socket.emit("join", { user: user.username, chatWith: chatUser });
-
-    const handleReceive = (message: Message) => {
-      setMessages((prev) => [...prev, message]);
-      scrollToBottom();
-    };
-
-    socket.on("receive-message", handleReceive);
-
-    // Optional: Load chat history once
-    fetch(`/api/messages?user1=${user.username}&user2=${chatUser}`)
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchMessages = async () => {
+      try {
+        const res = await fetch(`/api/messages?user1=${user.username}&user2=${chatUser}`);
+        const data = await res.json();
         setMessages(data.messages ?? []);
-        scrollToBottom();
-      });
-
-    return () => {
-      socket.off("receive-message", handleReceive);
+      } catch {
+        setMessages([]);
+      }
     };
+
+    fetchMessages(); // Initial load
+
+    const interval = setInterval(fetchMessages, 3000); // Poll for new messages
+    return () => clearInterval(interval); // Cleanup
   }, [user, chatUser]);
 
   useEffect(() => {
@@ -90,25 +81,27 @@ export default function ChatPage() {
     socketRef.current?.emit("send-message", payload);
   };
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user || !chatUser) return;
 
     const reader = new FileReader();
     reader.onload = async () => {
       const isImage = file.type.startsWith("image/");
-      const payload = {
+      const payload: Message = {
         from: user.username,
         to: chatUser,
-        type: isImage ? ("image" as const) : ("file" as const),
+        type: isImage ? "image" : "file",
         content: reader.result as string,
         fileName: file.name,
       };
+
       const res = await fetch("/api/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
       if (res.ok) {
         const data = await res.json();
         setMessages((prev) => [...prev, data.message]);
@@ -126,9 +119,7 @@ export default function ChatPage() {
           <h5 className="mb-0">Chat {chatUser && `with ${chatUser}`}</h5>
           <span className="badge bg-light text-dark">Online</span>
         </div>
-        <a href="/home" className="btn btn-sm btn-light text-dark">
-          🏠 Home
-        </a>
+        <a href="/home" className="btn btn-sm btn-light text-dark">🏠 Home</a>
       </div>
 
       {/* Message Area */}
@@ -138,16 +129,10 @@ export default function ChatPage() {
           return (
             <div
               key={index}
-              className={`d-flex mb-2 ${
-                isSender ? "justify-content-end" : "justify-content-start"
-              }`}
+              className={`d-flex mb-2 ${isSender ? "justify-content-end" : "justify-content-start"}`}
             >
               <div
-                className={`p-2 rounded shadow-sm ${
-                  isSender
-                    ? "bg-info text-white text-end"
-                    : "bg-white text-dark text-start"
-                }`}
+                className={`p-2 rounded shadow-sm ${isSender ? "bg-info text-white text-end" : "bg-white text-dark text-start"}`}
                 style={{ maxWidth: "75%" }}
               >
                 {msg.type === "text" && <div>{msg.content}</div>}
@@ -160,22 +145,8 @@ export default function ChatPage() {
                   />
                 )}
                 {msg.type === "file" && (
-                  <div
-                    className="d-flex align-items-center gap-2 p-2 rounded"
-                    style={{
-                      backgroundColor: isSender ? "#0d6efd" : "#f8f9fa",
-                      color: isSender ? "#fff" : "#000",
-                    }}
-                  >
-                    <div
-                      className="bg-white d-flex align-items-center justify-content-center rounded-circle"
-                      style={{
-                        width: "40px",
-                        height: "40px",
-                        fontSize: "1.25rem",
-                        color: "#0d6efd",
-                      }}
-                    >
+                  <div className="d-flex align-items-center gap-2 p-2 rounded" style={{ backgroundColor: isSender ? "#0d6efd" : "#f8f9fa", color: isSender ? "#fff" : "#000" }}>
+                    <div className="bg-white d-flex align-items-center justify-content-center rounded-circle" style={{ width: "40px", height: "40px", fontSize: "1.25rem", color: "#0d6efd" }}>
                       📄
                     </div>
                     <div className="flex-grow-1">
@@ -183,10 +154,7 @@ export default function ChatPage() {
                         href={msg.content}
                         download={msg.fileName}
                         className="text-decoration-none fw-semibold"
-                        style={{
-                          color: isSender ? "#fff" : "#000",
-                          wordBreak: "break-word",
-                        }}
+                        style={{ color: isSender ? "#fff" : "#000", wordBreak: "break-word" }}
                       >
                         {msg.fileName}
                       </a>
