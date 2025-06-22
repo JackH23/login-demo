@@ -24,6 +24,7 @@ export default function ChatPage() {
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const prevLengthRef = useRef(0); // Initialize ref here
+  const [selectedMsgId, setSelectedMsgId] = useState<string | null>(null);
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -87,6 +88,12 @@ export default function ChatPage() {
     }
     prevLengthRef.current = messages.length; // Update ref after checking
   }, [messages, chatUser]);
+
+  useEffect(() => {
+    const clearSelection = () => setSelectedMsgId(null);
+    window.addEventListener("click", clearSelection);
+    return () => window.removeEventListener("click", clearSelection);
+  }, []);
 
   const handleSend = async () => {
     if (!user || !chatUser || !input.trim()) return;
@@ -187,7 +194,12 @@ export default function ChatPage() {
           const isSender = msg.from === user?.username;
           return (
             <div
-              key={index}
+              key={msg._id}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                if (isSender) setSelectedMsgId(msg._id);
+                else setSelectedMsgId(null);
+              }}
               className={`d-flex mb-2 ${
                 isSender ? "justify-content-end" : "justify-content-start"
               }`}
@@ -198,8 +210,9 @@ export default function ChatPage() {
                     ? "bg-info text-white text-end"
                     : "bg-white text-dark text-start"
                 }`}
-                style={{ maxWidth: "75%" }}
+                style={{ maxWidth: "75%", position: "relative" }}
               >
+                {/* Message content */}
                 {msg.type === "text" && <div>{msg.content}</div>}
                 {msg.type === "image" && (
                   <img
@@ -246,21 +259,31 @@ export default function ChatPage() {
                     </div>
                   </div>
                 )}
-                {isSender && (
-                  <>
+
+                {/* Show Edit/Delete only on right-click */}
+                {isSender && selectedMsgId === msg._id && (
+                  <div className="mt-2 d-flex gap-3">
+                    {msg.type === "text" && (
+                      <button
+                        className="btn btn-sm btn-light text-primary"
+                        onClick={() => {
+                          handleEdit(msg);
+                          setSelectedMsgId(null);
+                        }}
+                      >
+                        ✏️ Edit
+                      </button>
+                    )}
                     <button
-                      className="btn btn-sm btn-link text-primary p-0 me-2"
-                      onClick={() => handleEdit(msg)}
+                      className="btn btn-sm btn-light text-danger"
+                      onClick={() => {
+                        handleDelete(msg._id);
+                        setSelectedMsgId(null);
+                      }}
                     >
-                      Edit
+                      🗑️ Delete
                     </button>
-                    <button
-                      className="btn btn-sm btn-link text-danger p-0"
-                      onClick={() => handleDelete(msg._id)}
-                    >
-                      Delete
-                    </button>
-                  </>
+                  </div>
                 )}
               </div>
             </div>
