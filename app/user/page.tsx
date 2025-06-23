@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import TopBar from "../components/TopBar";
 
 export default function UserPage() {
   const { user, loading } = useAuth();
@@ -113,60 +114,11 @@ export default function UserPage() {
     <div className="container-fluid min-vh-100 bg-light p-4">
 
       {/* Sticky Top Bar and Menu */}
-      <div
-        className="position-sticky top-0 z-3 bg-white"
-        style={{ borderBottom: "1px solid #dee2e6" }}
-      >
-        {/* Top Bar */}
-        <div className="d-flex justify-content-between align-items-center px-4 pt-3 pb-2">
-          <h2 className="mb-0">Home</h2>
-          <div className="d-flex align-items-center gap-3">
-            {currentUserData.image && (
-              <img
-                src={currentUserData.image}
-                alt="Your Profile"
-                className="rounded-circle"
-                style={{ width: "40px", height: "40px", objectFit: "cover" }}
-              />
-            )}
-            <span className="fw-semibold">{currentUserData.username}</span>
-            <a href="/logout" className="btn btn-sm btn-outline-danger">
-              Log Out
-            </a>
-          </div>
-        </div>
-
-        {/* Menu bar */}
-        <div className="mb-4">
-          <ul className="nav nav-pills gap-2">
-            <li className="nav-item">
-              <a className="nav-link" href="/home">
-                Home
-              </a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link" href="/posts">
-                All Post
-              </a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link active" href="/user">
-                User
-              </a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link" href="/analysis">
-                Analysis
-              </a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link" href="/setting">
-                Setting
-              </a>
-            </li>
-          </ul>
-        </div>
-      </div>
+      <TopBar
+        title="Home"
+        active="user"
+        currentUser={{ username: currentUserData.username, image: currentUserData.image }}
+      />
 
       {/* Search input */}
       {/* Sticky Search Bar */}
