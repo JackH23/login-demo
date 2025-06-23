@@ -128,19 +128,19 @@ export default function HomePage() {
       <div className="mb-4">
         <ul className="nav nav-pills gap-2">
           <li className="nav-item">
-            <a className="nav-link active" href="#">Home</a>
+            <a className="nav-link active" href="/home">Home</a>
           </li>
           <li className="nav-item">
-            <a className="nav-link" href="#">All Post</a>
+            <a className="nav-link" href="/posts">All Post</a>
           </li>
           <li className="nav-item">
-            <a className="nav-link" href="#">User</a>
+            <a className="nav-link" href="/user">User</a>
           </li>
           <li className="nav-item">
-            <a className="nav-link" href="#">Analysis</a>
+            <a className="nav-link" href="/analysis">Analysis</a>
           </li>
           <li className="nav-item">
-            <a className="nav-link" href="#">Setting</a>
+            <a className="nav-link" href="/setting">Setting</a>
           </li>
         </ul>
       </div>
