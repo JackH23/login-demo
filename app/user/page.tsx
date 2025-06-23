@@ -111,6 +111,8 @@ export default function UserPage() {
 
   return (
     <div className="container-fluid min-vh-100 bg-light p-4">
+
+      {/* Sticky Top Bar and Menu */}
       <div
         className="position-sticky top-0 z-3 bg-white"
         style={{ borderBottom: "1px solid #dee2e6" }}
