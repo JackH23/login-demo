@@ -11,14 +11,21 @@ interface User {
   image: string;
 }
 
+interface BlogPost {
+  title: string;
+  content: string;
+  image: string | null;
+}
+
 export default function HomePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
   const [users, setUsers] = useState<User[]>([]);
+  const [blog, setBlog] = useState<BlogPost | null>(null);
   const [isFetching, setIsFetching] = useState(true);
 
-  // Redirect to sign-in if not authenticated
+  // Redirect if not signed in
   useEffect(() => {
     if (!loading && !user) {
       router.push("/signin");
@@ -35,6 +42,19 @@ export default function HomePage() {
       .catch(() => setUsers([]))
       .finally(() => setIsFetching(false));
   }, [user]);
+
+  // Simulate fetch blog from localStorage
+  useEffect(() => {
+    const blogString = localStorage.getItem("latest_blog");
+    if (blogString) {
+      try {
+        const post: BlogPost = JSON.parse(blogString);
+        setBlog(post);
+      } catch {
+        setBlog(null);
+      }
+    }
+  }, []);
 
   if (loading || !user || isFetching)
     return <div className="text-center mt-5">Loading...</div>;
@@ -112,9 +132,38 @@ export default function HomePage() {
         style={{ maxWidth: "100%" }}
       >
         <div className="card-body">
-          <p className="text-muted text-center">
-            Blog content will appear here...
-          </p>
+          {blog ? (
+            <>
+              {blog.image && (
+                <img
+                  src={blog.image}
+                  alt="Post Thumbnail"
+                  className="img-fluid rounded mb-3"
+                  style={{
+                    maxHeight: "300px",
+                    objectFit: "cover",
+                    width: "100%",
+                  }}
+                />
+              )}
+              <h4 className="fw-bold mb-2">{blog.title}</h4>
+              <p className="text-muted">
+                {blog.content.length > 250
+                  ? blog.content.slice(0, 250) + "..."
+                  : blog.content}
+              </p>
+              <div className="text-end">
+                <button
+                  className="btn btn-outline-primary btn-sm"
+                  onClick={() => alert("Expand to full blog (add logic here)")}
+                >
+                  Read More
+                </button>
+              </div>
+            </>
+          ) : (
+            <p className="text-muted text-center">No blog posts yet.</p>
+          )}
         </div>
       </div>
     </div>
