@@ -32,8 +32,7 @@ export default function HomePage() {
     }
   }, [user, loading, router]);
 
-  if (loading || !user)
-    return <div className="text-center mt-5">Loading...</div>;
+  if (loading || !user) return <div className="text-center mt-5">Loading...</div>;
 
   const currentUserData = users.find((u) => u.username === user.username);
   if (!currentUserData) {
@@ -42,9 +41,7 @@ export default function HomePage() {
 
   const handleDelete = async (username: string) => {
     if (!confirm("Delete this user?")) return;
-    const res = await fetch(`/api/users/${username}`, {
-      method: "DELETE",
-    });
+    const res = await fetch(`/api/users/${username}`, { method: "DELETE" });
     if (res.ok) {
       setUsers((prev) => prev.filter((u) => u.username !== username));
     }
@@ -73,9 +70,7 @@ export default function HomePage() {
     });
     if (res.ok) {
       const data = await res.json();
-      setUsers((prev) =>
-        prev.map((item) => (item.username === u.username ? data.user : item))
-      );
+      setUsers((prev) => prev.map((item) => (item.username === u.username ? data.user : item)));
     }
   };
 
@@ -96,9 +91,7 @@ export default function HomePage() {
     });
     if (res.ok) {
       const data = await res.json();
-      setUsers((prev) =>
-        prev.map((item) => (item.username === u.username ? data.user : item))
-      );
+      setUsers((prev) => prev.map((item) => (item.username === u.username ? data.user : item)));
 
       if (user.username === u.username && username !== u.username) {
         localStorage.setItem("user", JSON.stringify({ username }));
@@ -106,11 +99,9 @@ export default function HomePage() {
     }
   };
 
-  // Filtered users based on search input
   const filteredUsers = users
-  .filter((u) => u.username !== user.username)
-  .filter((u) => u.username.toLowerCase().includes(searchTerm.toLowerCase()));
-
+    .filter((u) => u.username !== user.username)
+    .filter((u) => u.username.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
     <div className="container-fluid min-vh-100 bg-light p-4">
@@ -133,6 +124,27 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* Menu bar */}
+      <div className="mb-4">
+        <ul className="nav nav-pills gap-2">
+          <li className="nav-item">
+            <a className="nav-link active" href="#">Home</a>
+          </li>
+          <li className="nav-item">
+            <a className="nav-link" href="#">All Post</a>
+          </li>
+          <li className="nav-item">
+            <a className="nav-link" href="#">User</a>
+          </li>
+          <li className="nav-item">
+            <a className="nav-link" href="#">Analysis</a>
+          </li>
+          <li className="nav-item">
+            <a className="nav-link" href="#">Setting</a>
+          </li>
+        </ul>
+      </div>
+
       {/* Search input */}
       <div className="input-group mb-4" style={{ maxWidth: "400px" }}>
         <input
@@ -145,10 +157,7 @@ export default function HomePage() {
       </div>
 
       {/* Main content card */}
-      <div
-        className="card shadow-sm w-100 mx-auto"
-        style={{ maxWidth: "100%" }}
-      >
+      <div className="card shadow-sm w-100 mx-auto" style={{ maxWidth: "100%" }}>
         <div className="card-body">
           <p className="text-muted text-center mb-4">
             You are now logged in to the system.
@@ -159,10 +168,7 @@ export default function HomePage() {
               <h5 className="mb-3">Registered Users:</h5>
               <ul className="list-group">
                 {filteredUsers.map((u) => (
-                  <li
-                    key={u.username}
-                    className="list-group-item list-group-item-light"
-                  >
+                  <li key={u.username} className="list-group-item list-group-item-light">
                     <div className="d-flex justify-content-between align-items-center">
                       <div className="d-flex align-items-center">
                         {u.image && (
@@ -181,11 +187,7 @@ export default function HomePage() {
                         )}
                         <div>
                           <div className="fw-bold">{u.username}</div>
-                          {u.position && (
-                            <div className="text-muted">
-                              Position: {u.position}
-                            </div>
-                          )}
+                          {u.position && <div className="text-muted">Position: {u.position}</div>}
                           {typeof u.age === "number" && (
                             <div className="text-muted">Age: {u.age}</div>
                           )}
