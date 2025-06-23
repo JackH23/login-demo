@@ -31,9 +31,11 @@ export default function CreateBlogPage() {
       image,
     };
 
-    console.log("Submitting blog post:", postData);
-    alert("Blog post submitted! (replace with real logic)");
-    // TODO: Send postData to your backend API
+    // Persist the latest blog in localStorage so the home page can display it
+    localStorage.setItem("latest_blog", JSON.stringify(postData));
+
+    // Redirect back to the home page where the post will be visible
+    router.push("/home");
   };
 
   return (
