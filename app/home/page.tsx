@@ -107,9 +107,10 @@ export default function HomePage() {
   };
 
   // Filtered users based on search input
-  const filteredUsers = users.filter((u) =>
-    u.username.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = users
+  .filter((u) => u.username !== user.username)
+  .filter((u) => u.username.toLowerCase().includes(searchTerm.toLowerCase()));
+
 
   return (
     <div className="container-fluid min-vh-100 bg-light p-4">
