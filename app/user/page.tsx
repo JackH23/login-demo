@@ -33,7 +33,8 @@ export default function UserPage() {
       .catch(() => setUsers([]));
   }, [user]);
 
-  if (loading || !user) return <div className="text-center mt-5">Loading...</div>;
+  if (loading || !user)
+    return <div className="text-center mt-5">Loading...</div>;
 
   const currentUserData = users.find((u) => u.username === user.username);
   if (!currentUserData) {
@@ -110,48 +111,72 @@ export default function UserPage() {
 
   return (
     <div className="container-fluid min-vh-100 bg-light p-4">
-      {/* Top bar */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">User Management</h2>
-        <div className="d-flex align-items-center gap-3">
-          {currentUserData.image && (
-            <img
-              src={currentUserData.image}
-              alt="Your Profile"
-              className="rounded-circle"
-              style={{ width: "40px", height: "40px", objectFit: "cover" }}
-            />
-          )}
-          <span className="fw-semibold">{currentUserData.username}</span>
-          <a href="/logout" className="btn btn-sm btn-outline-danger">
-            Log Out
-          </a>
+      <div
+        className="position-sticky top-0 z-3 bg-white"
+        style={{ borderBottom: "1px solid #dee2e6" }}
+      >
+        {/* Top Bar */}
+        <div className="d-flex justify-content-between align-items-center px-4 pt-3 pb-2">
+          <h2 className="mb-0">Home</h2>
+          <div className="d-flex align-items-center gap-3">
+            {currentUserData.image && (
+              <img
+                src={currentUserData.image}
+                alt="Your Profile"
+                className="rounded-circle"
+                style={{ width: "40px", height: "40px", objectFit: "cover" }}
+              />
+            )}
+            <span className="fw-semibold">{currentUserData.username}</span>
+            <a href="/logout" className="btn btn-sm btn-outline-danger">
+              Log Out
+            </a>
+          </div>
+        </div>
+
+        {/* Menu bar */}
+        <div className="mb-4">
+          <ul className="nav nav-pills gap-2">
+            <li className="nav-item">
+              <a className="nav-link" href="/home">
+                Home
+              </a>
+            </li>
+            <li className="nav-item">
+              <a className="nav-link" href="/posts">
+                All Post
+              </a>
+            </li>
+            <li className="nav-item">
+              <a className="nav-link active" href="/user">
+                User
+              </a>
+            </li>
+            <li className="nav-item">
+              <a className="nav-link" href="/analysis">
+                Analysis
+              </a>
+            </li>
+            <li className="nav-item">
+              <a className="nav-link" href="/setting">
+                Setting
+              </a>
+            </li>
+          </ul>
         </div>
       </div>
 
-      {/* Menu bar */}
-      <div className="mb-4">
-        <ul className="nav nav-pills gap-2">
-          <li className="nav-item">
-            <a className="nav-link" href="/home">Home</a>
-          </li>
-          <li className="nav-item">
-            <a className="nav-link" href="/posts">All Post</a>
-          </li>
-          <li className="nav-item">
-            <a className="nav-link active" href="/user">User</a>
-          </li>
-          <li className="nav-item">
-            <a className="nav-link" href="/analysis">Analysis</a>
-          </li>
-          <li className="nav-item">
-            <a className="nav-link" href="/setting">Setting</a>
-          </li>
-        </ul>
-      </div>
-
       {/* Search input */}
-      <div className="input-group mb-4" style={{ maxWidth: "400px" }}>
+      {/* Sticky Search Bar */}
+      <div
+        className="input-group position-sticky z-2"
+        style={{
+          top: "75px", // adjust based on your sticky header height
+          maxWidth: "400px",
+          marginBottom: "1rem",
+          paddingTop: "0.5rem",
+        }}
+      >
         <input
           type="text"
           className="form-control"
@@ -162,7 +187,10 @@ export default function UserPage() {
       </div>
 
       {/* Main content card */}
-      <div className="card shadow-sm w-100 mx-auto" style={{ maxWidth: "100%" }}>
+      <div
+        className="card shadow-sm w-100 mx-auto"
+        style={{ maxWidth: "100%" }}
+      >
         <div className="card-body">
           <p className="text-muted text-center mb-4">
             Registered users (excluding yourself):
@@ -172,7 +200,10 @@ export default function UserPage() {
             <>
               <ul className="list-group">
                 {filteredUsers.map((u) => (
-                  <li key={u.username} className="list-group-item list-group-item-light">
+                  <li
+                    key={u.username}
+                    className="list-group-item list-group-item-light"
+                  >
                     <div className="d-flex justify-content-between align-items-center">
                       <div className="d-flex align-items-center">
                         {u.image && (
@@ -191,7 +222,11 @@ export default function UserPage() {
                         )}
                         <div>
                           <div className="fw-bold">{u.username}</div>
-                          {u.position && <div className="text-muted">Position: {u.position}</div>}
+                          {u.position && (
+                            <div className="text-muted">
+                              Position: {u.position}
+                            </div>
+                          )}
                           {typeof u.age === "number" && (
                             <div className="text-muted">Age: {u.age}</div>
                           )}
@@ -200,7 +235,9 @@ export default function UserPage() {
                       <div className="btn-group">
                         <button
                           className="btn btn-sm btn-outline-secondary"
-                          onClick={() => router.push(`/chat?user=${u.username}`)}
+                          onClick={() =>
+                            router.push(`/chat?user=${u.username}`)
+                          }
                         >
                           <i className="bi bi-chat-dots me-1"></i> Message
                         </button>
