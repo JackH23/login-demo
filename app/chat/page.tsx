@@ -183,7 +183,7 @@ export default function ChatPage() {
           <h5 className="mb-0">Chat {chatUser && `with ${chatUser}`}</h5>
           <span className="badge bg-light text-dark">Online</span>
         </div>
-        <a href="/home" className="btn btn-sm btn-light text-dark">
+        <a href="/user" className="btn btn-sm btn-light text-dark">
           🏠 Home
         </a>
       </div>

@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -22,17 +20,18 @@ export default function UserPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    if (loading) return;
-
-    if (!user) {
+    if (!loading && !user) {
       router.push("/signin");
-    } else {
-      fetch("/api/users")
-        .then((res) => res.json())
-        .then((data) => setUsers(data.users ?? []))
-        .catch(() => setUsers([]));
     }
-  }, [user, loading, router]);
+  }, [loading, user, router]);
+
+  useEffect(() => {
+    if (!user) return;
+    fetch("/api/users")
+      .then((res) => res.json())
+      .then((data) => setUsers(data.users ?? []))
+      .catch(() => setUsers([]));
+  }, [user]);
 
   if (loading || !user) return <div className="text-center mt-5">Loading...</div>;
 
@@ -72,13 +71,15 @@ export default function UserPage() {
     });
     if (res.ok) {
       const data = await res.json();
-      setUsers((prev) => prev.map((item) => (item.username === u.username ? data.user : item)));
+      setUsers((prev) =>
+        prev.map((item) => (item.username === u.username ? data.user : item))
+      );
     }
   };
 
   const handleEdit = async (u: User) => {
     const username = prompt("Enter new username", u.username);
-    if (username === null || username.trim() === "") return;
+    if (!username || username.trim() === "") return;
     const position = prompt("Enter position", u.position ?? "");
     if (position === null) return;
     const ageStr = prompt("Enter age", u.age?.toString() ?? "");
@@ -93,7 +94,9 @@ export default function UserPage() {
     });
     if (res.ok) {
       const data = await res.json();
-      setUsers((prev) => prev.map((item) => (item.username === u.username ? data.user : item)));
+      setUsers((prev) =>
+        prev.map((item) => (item.username === u.username ? data.user : item))
+      );
 
       if (user.username === u.username && username !== u.username) {
         localStorage.setItem("user", JSON.stringify({ username }));
@@ -109,7 +112,7 @@ export default function UserPage() {
     <div className="container-fluid min-vh-100 bg-light p-4">
       {/* Top bar */}
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">Welcome 👋</h2>
+        <h2 className="mb-0">User Management</h2>
         <div className="d-flex align-items-center gap-3">
           {currentUserData.image && (
             <img
@@ -130,13 +133,13 @@ export default function UserPage() {
       <div className="mb-4">
         <ul className="nav nav-pills gap-2">
           <li className="nav-item">
-            <a className="nav-link active" href="/home">Home</a>
+            <a className="nav-link" href="/home">Home</a>
           </li>
           <li className="nav-item">
             <a className="nav-link" href="/posts">All Post</a>
           </li>
           <li className="nav-item">
-            <a className="nav-link" href="/user">User</a>
+            <a className="nav-link active" href="/user">User</a>
           </li>
           <li className="nav-item">
             <a className="nav-link" href="/analysis">Analysis</a>
@@ -162,12 +165,11 @@ export default function UserPage() {
       <div className="card shadow-sm w-100 mx-auto" style={{ maxWidth: "100%" }}>
         <div className="card-body">
           <p className="text-muted text-center mb-4">
-            You are now logged in to the system.
+            Registered users (excluding yourself):
           </p>
 
           {filteredUsers.length > 0 ? (
             <>
-              <h5 className="mb-3">Registered Users:</h5>
               <ul className="list-group">
                 {filteredUsers.map((u) => (
                   <li key={u.username} className="list-group-item list-group-item-light">
@@ -195,7 +197,6 @@ export default function UserPage() {
                           )}
                         </div>
                       </div>
-
                       <div className="btn-group">
                         <button
                           className="btn btn-sm btn-outline-secondary"
