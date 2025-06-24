@@ -190,7 +190,7 @@ export default function ChatPage() {
 
       {/* Message Area */}
       <div className="flex-grow-1 overflow-auto bg-light p-3">
-        {messages.map((msg, index) => {
+        {messages.map((msg) => {
           const isSender = msg.from === user?.username;
           return (
             <div
