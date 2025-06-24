@@ -219,7 +219,8 @@ export default function BlogCard({
                         </div>
                       )}
                     </li>
-                  ))}
+                    );
+                  })}
                 </ul>
               </div>
 
@@ -317,7 +318,8 @@ export default function BlogCard({
                         </div>
                       )}
                     </li>
-                  ))}
+                    );
+                  })}
                 </ul>
               </div>
 
