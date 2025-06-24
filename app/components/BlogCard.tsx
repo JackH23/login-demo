@@ -13,6 +13,15 @@ interface BlogPost {
   dislikes: number;
 }
 
+const post = await Post.create({
+  title,
+  content,
+  image,
+  author,
+  likes: 0,
+  dislikes: 0,
+});
+
 interface AuthorData {
   username: string;
   image?: string;
@@ -43,8 +52,9 @@ export default function BlogCard({
   blog: BlogPost;
   author?: AuthorData;
 }) {
-  const [likes, setLikes] = useState(blog.likes ?? 0);
-  const [dislikes, setDislikes] = useState(blog.dislikes ?? 0);
+  const [likes, setLikes] = useState<number>(blog.likes ?? 0);
+  const [dislikes, setDislikes] = useState<number>(blog.dislikes ?? 0);
+
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [showAllComments] = useState(false);
@@ -67,33 +77,39 @@ export default function BlogCard({
     ])
       .then(([commentsData, usersData]) => {
         const images: Record<string, string> = {};
-        (usersData.users ?? []).forEach((u: { username: string; image?: string }) => {
-          if (u.image) images[u.username] = u.image as string;
-        });
+        (usersData.users ?? []).forEach(
+          (u: { username: string; image?: string }) => {
+            if (u.image) images[u.username] = u.image as string;
+          }
+        );
         setUserImages(images);
 
-        const list = (commentsData.comments ?? []).map((c: {
-          _id: string;
-          text: string;
-          author: string;
-          likes: number;
-          dislikes: number;
-          replies?: { text: string; author: string }[];
-        }) => ({
-          _id: c._id as string,
-          text: c.text as string,
-          author: c.author as string,
-          authorImage: images[c.author],
-          likes: c.likes ?? 0,
-          dislikes: c.dislikes ?? 0,
-          replies: (c.replies ?? []).map((r: { text: string; author: string }) => ({
-            text: r.text as string,
-            author: r.author as string,
-            authorImage: images[r.author],
-          })),
-          showReplyInput: false,
-          newReply: "",
-        }));
+        const list = (commentsData.comments ?? []).map(
+          (c: {
+            _id: string;
+            text: string;
+            author: string;
+            likes: number;
+            dislikes: number;
+            replies?: { text: string; author: string }[];
+          }) => ({
+            _id: c._id as string,
+            text: c.text as string,
+            author: c.author as string,
+            authorImage: images[c.author],
+            likes: c.likes ?? 0,
+            dislikes: c.dislikes ?? 0,
+            replies: (c.replies ?? []).map(
+              (r: { text: string; author: string }) => ({
+                text: r.text as string,
+                author: r.author as string,
+                authorImage: images[r.author],
+              })
+            ),
+            showReplyInput: false,
+            newReply: "",
+          })
+        );
         setComments(list);
       })
       .catch(() => {
@@ -260,23 +276,24 @@ export default function BlogCard({
 
   const handleLikePost = async () => {
     setLikes((prev) => prev + 1);
-    if (blog._id) {
-      try {
-        const res = await fetch(`/api/posts/${blog._id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "like" }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setLikes(data.post.likes);
-          setDislikes(data.post.dislikes);
-        } else {
-          setLikes((prev) => prev - 1);
-        }
-      } catch {
-        setLikes((prev) => prev - 1);
-      }
+
+    if (!blog._id) return;
+
+    try {
+      const res = await fetch(`/api/posts/${blog._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "like" }),
+      });
+
+      if (!res.ok) throw new Error("Failed");
+
+      const { post } = await res.json();
+      setLikes(post.likes);
+      setDislikes(post.dislikes);
+    } catch (error) {
+      setLikes((prev) => prev - 1); // Revert on error
+      console.error("Failed to like post", error);
     }
   };
 
@@ -336,10 +353,7 @@ export default function BlogCard({
         <p className="card-text">{blog.content}</p>
 
         <div className="d-flex gap-3 align-items-center mt-3">
-          <button
-            className="btn btn-outline-success"
-            onClick={handleLikePost}
-          >
+          <button className="btn btn-outline-success" onClick={handleLikePost}>
             👍 {likes}
           </button>
 
