@@ -47,7 +47,7 @@ export default function BlogCard({
   const [dislikes, setDislikes] = useState(blog.dislikes);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
-  const [showAllComments, setShowAllComments] = useState(false);
+  const [showAllComments] = useState(false);
   const [showCommentsModal, setShowCommentsModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [userImages, setUserImages] = useState<Record<string, string>>({});
@@ -67,19 +67,26 @@ export default function BlogCard({
     ])
       .then(([commentsData, usersData]) => {
         const images: Record<string, string> = {};
-        (usersData.users ?? []).forEach((u: any) => {
+        (usersData.users ?? []).forEach((u: { username: string; image?: string }) => {
           if (u.image) images[u.username] = u.image as string;
         });
         setUserImages(images);
 
-        const list = (commentsData.comments ?? []).map((c: any) => ({
+        const list = (commentsData.comments ?? []).map((c: {
+          _id: string;
+          text: string;
+          author: string;
+          likes: number;
+          dislikes: number;
+          replies?: { text: string; author: string }[];
+        }) => ({
           _id: c._id as string,
           text: c.text as string,
           author: c.author as string,
           authorImage: images[c.author],
           likes: c.likes as number,
           dislikes: c.dislikes as number,
-          replies: (c.replies ?? []).map((r: any) => ({
+          replies: (c.replies ?? []).map((r: { text: string; author: string }) => ({
             text: r.text as string,
             author: r.author as string,
             authorImage: images[r.author],
@@ -251,6 +258,28 @@ export default function BlogCard({
     );
   };
 
+  const handleLikePost = async () => {
+    setLikes((prev) => prev + 1);
+    if (blog._id) {
+      await fetch(`/api/posts/${blog._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "like" }),
+      });
+    }
+  };
+
+  const handleDislikePost = async () => {
+    setDislikes((prev) => prev + 1);
+    if (blog._id) {
+      await fetch(`/api/posts/${blog._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "dislike" }),
+      });
+    }
+  };
+
   return (
     <div
       className="card shadow-sm w-100 mx-auto mb-4"
@@ -286,12 +315,15 @@ export default function BlogCard({
 
         <div className="d-flex gap-3 align-items-center mt-3">
           <button
-  
+            className="btn btn-outline-success"
+            onClick={handleLikePost}
           >
             👍 {likes}
           </button>
 
           <button
+            className="btn btn-outline-danger"
+            onClick={handleDislikePost}
           >
             👎 {dislikes}
           </button>
