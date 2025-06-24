@@ -18,6 +18,8 @@ interface BlogPost {
   content: string;
   image?: string | null;
   author: string;
+  likes: number;
+  dislikes: number;
 }
 
 export default function PostsPage() {

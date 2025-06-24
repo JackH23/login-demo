@@ -9,6 +9,8 @@ interface BlogPost {
   content: string;
   image: string | null;
   author: string;
+  likes: number;
+  dislikes: number;
 }
 
 interface AuthorData {
@@ -41,8 +43,8 @@ export default function BlogCard({
   blog: BlogPost;
   author?: AuthorData;
 }) {
-  const [likes, setLikes] = useState(0);
-  const [dislikes, setDislikes] = useState(0);
+  const [likes, setLikes] = useState(blog.likes);
+  const [dislikes, setDislikes] = useState(blog.dislikes);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [showAllComments, setShowAllComments] = useState(false);
@@ -50,6 +52,11 @@ export default function BlogCard({
   const [showImageModal, setShowImageModal] = useState(false);
   const [userImages, setUserImages] = useState<Record<string, string>>({});
   const { user } = useAuth();
+
+  useEffect(() => {
+    setLikes(blog.likes);
+    setDislikes(blog.dislikes);
+  }, [blog.likes, blog.dislikes]);
 
   useEffect(() => {
     if (!blog._id) return;
@@ -143,16 +150,32 @@ export default function BlogCard({
     ]);
   };
 
-  const handleLikeComment = (index: number) => {
+  const handleLikeComment = async (index: number) => {
+    const comment = comments[index];
     setComments((prev) =>
       prev.map((c, i) => (i === index ? { ...c, likes: c.likes + 1 } : c))
     );
+    if (comment._id) {
+      await fetch(`/api/comments/${comment._id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'like' }),
+      });
+    }
   };
 
-  const handleDislikeComment = (index: number) => {
+  const handleDislikeComment = async (index: number) => {
+    const comment = comments[index];
     setComments((prev) =>
       prev.map((c, i) => (i === index ? { ...c, dislikes: c.dislikes + 1 } : c))
     );
+    if (comment._id) {
+      await fetch(`/api/comments/${comment._id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'dislike' }),
+      });
+    }
   };
 
   const toggleReplyInput = (index: number) => {
@@ -261,13 +284,31 @@ export default function BlogCard({
         <div className="d-flex gap-3 align-items-center mt-3">
           <button
             className="btn btn-outline-success"
-            onClick={() => setLikes(likes + 1)}
+            onClick={async () => {
+              setLikes(likes + 1);
+              if (blog._id) {
+                await fetch(`/api/posts/${blog._id}`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ action: 'like' }),
+                });
+              }
+            }}
           >
             👍 {likes}
           </button>
           <button
             className="btn btn-outline-danger"
-            onClick={() => setDislikes(dislikes + 1)}
+            onClick={async () => {
+              setDislikes(dislikes + 1);
+              if (blog._id) {
+                await fetch(`/api/posts/${blog._id}`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ action: 'dislike' }),
+                });
+              }
+            }}
           >
             👎 {dislikes}
           </button>
