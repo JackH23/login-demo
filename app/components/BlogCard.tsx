@@ -261,22 +261,44 @@ export default function BlogCard({
   const handleLikePost = async () => {
     setLikes((prev) => prev + 1);
     if (blog._id) {
-      await fetch(`/api/posts/${blog._id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "like" }),
-      });
+      try {
+        const res = await fetch(`/api/posts/${blog._id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "like" }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setLikes(data.post.likes);
+          setDislikes(data.post.dislikes);
+        } else {
+          setLikes((prev) => prev - 1);
+        }
+      } catch {
+        setLikes((prev) => prev - 1);
+      }
     }
   };
 
   const handleDislikePost = async () => {
     setDislikes((prev) => prev + 1);
     if (blog._id) {
-      await fetch(`/api/posts/${blog._id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "dislike" }),
-      });
+      try {
+        const res = await fetch(`/api/posts/${blog._id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "dislike" }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setLikes(data.post.likes);
+          setDislikes(data.post.dislikes);
+        } else {
+          setDislikes((prev) => prev - 1);
+        }
+      } catch {
+        setDislikes((prev) => prev - 1);
+      }
     }
   };
 
