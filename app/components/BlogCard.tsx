@@ -1,10 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useState } from "react";
 
 interface BlogPost {
-  _id?: string;
   title: string;
   content: string;
   image: string | null;
@@ -16,18 +14,11 @@ interface AuthorData {
   image?: string;
 }
 
-interface Reply {
-  author: string;
-  text: string;
-}
-
 interface Comment {
-  _id: string;
-  author: string;
   text: string;
   likes: number;
   dislikes: number;
-  replies: Reply[];
+  replies: string[];
   showReplyInput: boolean;
   newReply: string;
 }
@@ -35,13 +26,10 @@ interface Comment {
 export default function BlogCard({
   blog,
   author,
-  users,
 }: {
   blog: BlogPost;
   author?: AuthorData;
-  users?: AuthorData[];
 }) {
-  const { user } = useAuth();
   const [likes, setLikes] = useState(0);
   const [dislikes, setDislikes] = useState(0);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -50,40 +38,20 @@ export default function BlogCard({
   const [showCommentsModal, setShowCommentsModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
 
-  useEffect(() => {
-    if (!blog._id) return;
-    fetch(`/api/comments?postId=${blog._id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        const mapped = (data.comments || []).map((c: any) => ({
-          ...c,
-          showReplyInput: false,
-          newReply: '',
-        }));
-        setComments(mapped);
-      })
-      .catch(() => setComments([]));
-  }, [blog._id]);
-
-  const handleCommentSubmit = async () => {
-    if (!user || !newComment.trim() || !blog._id) return;
-
-    const res = await fetch('/api/comments', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        postId: blog._id,
-        author: user.username,
-        text: newComment.trim(),
-      }),
-    });
-    if (res.ok) {
-      const data = await res.json();
+  const handleCommentSubmit = () => {
+    if (newComment.trim() !== "") {
       setComments((prev) => [
         ...prev,
-        { ...data.comment, showReplyInput: false, newReply: '' },
+        {
+          text: newComment.trim(),
+          likes: 0,
+          dislikes: 0,
+          replies: [],
+          showReplyInput: false,
+          newReply: "",
+        },
       ]);
-      setNewComment('');
+      setNewComment("");
     }
   };
 
@@ -113,25 +81,19 @@ export default function BlogCard({
     );
   };
 
-  const handleReplySubmit = async (index: number) => {
-    const c = comments[index];
-    if (!c || !c.newReply.trim() || !user) return;
-
-    const res = await fetch(`/api/comments/${c._id}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ author: user.username, text: c.newReply.trim() }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      setComments((prev) =>
-        prev.map((cm, i) =>
-          i === index
-            ? { ...data.comment, showReplyInput: false, newReply: '' }
-            : cm
-        )
-      );
-    }
+  const handleReplySubmit = (index: number) => {
+    setComments((prev) =>
+      prev.map((c, i) =>
+        i === index && c.newReply.trim()
+          ? {
+              ...c,
+              replies: [...c.replies, c.newReply.trim()],
+              newReply: "",
+              showReplyInput: false,
+            }
+          : c
+      )
+    );
   };
 
   return (
@@ -213,22 +175,9 @@ export default function BlogCard({
                 className="mb-3"
               >
                 <ul className="list-group">
-                  {(showAllComments ? comments : comments.slice(-3)).map((comment, idx) => {
-                    const commentAuthor = users?.find((u) => u.username === comment.author);
-                    return (
+                  {(showAllComments ? comments : comments.slice(-3)).map((comment, idx) => (
                     <li key={idx} className="list-group-item mb-3 rounded shadow-sm bg-white">
                       <div className="d-flex justify-content-between align-items-center">
-                        <div className="d-flex align-items-center gap-2">
-                          {commentAuthor?.image && (
-                            <img
-                              src={commentAuthor.image}
-                              alt={commentAuthor.username}
-                              className="rounded-circle"
-                              style={{ width: '30px', height: '30px', objectFit: 'cover' }}
-                            />
-                          )}
-                          <strong>{comment.author}</strong>
-                        </div>
                         <span>{comment.text}</span>
                         <div className="btn-group btn-group-sm">
                           <button className="btn btn-outline-success" onClick={() => handleLikeComment(idx)}>
@@ -246,24 +195,11 @@ export default function BlogCard({
                       {/* Replies */}
                       {comment.replies.length > 0 && (
                         <ul className="mt-2 ps-3 list-unstyled">
-                          {comment.replies.map((reply, rIdx) => {
-                            const rAuthor = users?.find((u) => u.username === reply.author);
-                            return (
-                              <li key={rIdx} className="text-muted small mb-2 d-flex align-items-center gap-2">
-                                {rAuthor?.image && (
-                                  <img
-                                    src={rAuthor.image}
-                                    alt={reply.author}
-                                    className="rounded-circle"
-                                    style={{ width: '24px', height: '24px', objectFit: 'cover' }}
-                                  />
-                                )}
-                                <span>
-                                  ↪ <strong>{reply.author}</strong>: {reply.text}
-                                </span>
-                              </li>
-                            );
-                          })}
+                          {comment.replies.map((reply, rIdx) => (
+                            <li key={rIdx} className="text-muted small mb-2">
+                              ↪ {reply}
+                            </li>
+                          ))}
                         </ul>
                       )}
 
@@ -337,22 +273,9 @@ export default function BlogCard({
               {/* Scrollable Comments */}
               <div className="modal-body" style={{ overflowY: "auto", flexGrow: 1, paddingRight: "10px" }}>
                 <ul className="list-group">
-                  {comments.map((comment, idx) => {
-                    const cAuthor = users?.find((u) => u.username === comment.author);
-                    return (
+                  {comments.map((comment, idx) => (
                     <li key={idx} className="list-group-item mb-3 rounded shadow-sm bg-white">
                       <div className="d-flex justify-content-between align-items-center">
-                        <div className="d-flex align-items-center gap-2">
-                          {cAuthor?.image && (
-                            <img
-                              src={cAuthor.image}
-                              alt={cAuthor.username}
-                              className="rounded-circle"
-                              style={{ width: '30px', height: '30px', objectFit: 'cover' }}
-                            />
-                          )}
-                          <strong>{comment.author}</strong>
-                        </div>
                         <span>{comment.text}</span>
                         <div className="btn-group btn-group-sm">
                           <button className="btn btn-outline-success" onClick={() => handleLikeComment(idx)}>
@@ -370,24 +293,11 @@ export default function BlogCard({
                       {/* Replies */}
                       {comment.replies.length > 0 && (
                         <ul className="mt-2 ps-3 list-unstyled">
-                          {comment.replies.map((reply, rIdx) => {
-                            const rAuthor = users?.find((u) => u.username === reply.author);
-                            return (
-                              <li key={rIdx} className="text-muted small mb-2 d-flex align-items-center gap-2">
-                                {rAuthor?.image && (
-                                  <img
-                                    src={rAuthor.image}
-                                    alt={reply.author}
-                                    className="rounded-circle"
-                                    style={{ width: '24px', height: '24px', objectFit: 'cover' }}
-                                  />
-                                )}
-                                <span>
-                                  ↪ <strong>{reply.author}</strong>: {reply.text}
-                                </span>
-                              </li>
-                            );
-                          })}
+                          {comment.replies.map((reply, rIdx) => (
+                            <li key={rIdx} className="text-muted small mb-2">
+                              ↪ {reply}
+                            </li>
+                          ))}
                         </ul>
                       )}
 
