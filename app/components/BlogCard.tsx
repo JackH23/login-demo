@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
 
 interface BlogPost {
+  _id?: string;
   title: string;
   content: string;
   image: string | null;
@@ -37,22 +39,74 @@ export default function BlogCard({
   const [showAllComments, setShowAllComments] = useState(false);
   const [showCommentsModal, setShowCommentsModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
+  const { user } = useAuth();
 
-  const handleCommentSubmit = () => {
-    if (newComment.trim() !== "") {
-      setComments((prev) => [
-        ...prev,
-        {
-          text: newComment.trim(),
-          likes: 0,
-          dislikes: 0,
-          replies: [],
+  useEffect(() => {
+    if (!blog._id) return;
+
+    fetch(`/api/comments?postId=${blog._id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        const list = (data.comments ?? []).map((c: any) => ({
+          text: c.text as string,
+          likes: c.likes as number,
+          dislikes: c.dislikes as number,
+          replies: (c.replies ?? []).map((r: any) => r.text as string),
           showReplyInput: false,
           newReply: "",
-        },
-      ]);
-      setNewComment("");
+        }));
+        setComments(list);
+      })
+      .catch(() => setComments([]));
+  }, [blog._id]);
+
+  const handleCommentSubmit = async () => {
+    const text = newComment.trim();
+    if (!text) return;
+
+    // Always update UI immediately
+    setNewComment("");
+
+    if (blog._id && user) {
+      const res = await fetch("/api/comments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          postId: blog._id,
+          author: user.username,
+          text,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setComments((prev) => [
+          ...prev,
+          {
+            text: data.comment.text,
+            likes: data.comment.likes,
+            dislikes: data.comment.dislikes,
+            replies: [],
+            showReplyInput: false,
+            newReply: "",
+          },
+        ]);
+        return;
+      }
     }
+
+    // Fallback: just add locally if request failed or missing info
+    setComments((prev) => [
+      ...prev,
+      {
+        text,
+        likes: 0,
+        dislikes: 0,
+        replies: [],
+        showReplyInput: false,
+        newReply: "",
+      },
+    ]);
   };
 
   const handleLikeComment = (index: number) => {
