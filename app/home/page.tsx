@@ -16,6 +16,7 @@ interface BlogPost {
   title: string;
   content: string;
   image: string | null;
+  author: string;
 }
 
 interface Comment {
@@ -60,15 +61,10 @@ export default function HomePage() {
   }, [user]);
 
   useEffect(() => {
-    const blogString = localStorage.getItem("latest_blog");
-    if (blogString) {
-      try {
-        const post: BlogPost = JSON.parse(blogString);
-        setBlog(post);
-      } catch {
-        setBlog(null);
-      }
-    }
+    fetch("/api/posts")
+      .then((res) => res.json())
+      .then((data) => setBlog(data.posts?.[0] ?? null))
+      .catch(() => setBlog(null));
   }, []);
 
   if (loading || !user || isFetching) {

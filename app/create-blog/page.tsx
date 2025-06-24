@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../context/AuthContext";
 
 export default function CreateBlogPage() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [image, setImage] = useState<string | null>(null);
   const router = useRouter();
+  const { user } = useAuth();
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -22,20 +24,24 @@ export default function CreateBlogPage() {
     setImage(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
 
-    const postData = {
-      title,
-      content,
-      image,
-    };
+    const res = await fetch("/api/posts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title,
+        content,
+        image,
+        author: user.username,
+      }),
+    });
 
-    // Persist the latest blog in localStorage so the home page can display it
-    localStorage.setItem("latest_blog", JSON.stringify(postData));
-
-    // Redirect back to the home page where the post will be visible
-    router.push("/home");
+    if (res.ok) {
+      router.push("/home");
+    }
   };
 
   return (

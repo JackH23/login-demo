@@ -12,12 +12,21 @@ interface User {
   image: string;
 }
 
+interface BlogPost {
+  _id: string;
+  title: string;
+  content: string;
+  image?: string | null;
+  author: string;
+}
+
 export default function PostsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
   const [users, setUsers] = useState<User[]>([]);
   const [isFetching, setIsFetching] = useState(true);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -28,10 +37,18 @@ export default function PostsPage() {
   useEffect(() => {
     if (!user) return;
 
-    fetch("/api/users")
-      .then((res) => res.json())
-      .then((data) => setUsers(data.users ?? []))
-      .catch(() => setUsers([]))
+    Promise.all([
+      fetch("/api/users").then((res) => res.json()),
+      fetch("/api/posts").then((res) => res.json()),
+    ])
+      .then(([usersData, postsData]) => {
+        setUsers(usersData.users ?? []);
+        setPosts(postsData.posts ?? []);
+      })
+      .catch(() => {
+        setUsers([]);
+        setPosts([]);
+      })
       .finally(() => setIsFetching(false));
   }, [user]);
 
@@ -54,13 +71,31 @@ export default function PostsPage() {
       />
 
       {/* Content */}
-      <div className="card shadow-sm w-100 mx-auto" style={{ 
-        maxWidth: "100%",
-        top: "10px", // adjust based on your sticky header height
-      }}>
-        <div className="card-body">
-          <h5 className="text-center text-muted">Post page coming soon.</h5>
-        </div>
+      <div
+        className="card shadow-sm w-100 mx-auto"
+        style={{ maxWidth: "100%", top: "10px" }}
+      >
+        {posts.length === 0 ? (
+          <div className="card-body">
+            <h5 className="text-center text-muted">No posts found.</h5>
+          </div>
+        ) : (
+          posts.map((post) => (
+            <div key={post._id} className="card-body border-bottom">
+              <h5>{post.title}</h5>
+              <p className="text-muted">by {post.author}</p>
+              {post.image && (
+                <img
+                  src={post.image}
+                  alt={post.title}
+                  className="img-fluid mb-2"
+                  style={{ maxHeight: "300px" }}
+                />
+              )}
+              <p>{post.content}</p>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
