@@ -43,8 +43,8 @@ export default function BlogCard({
   blog: BlogPost;
   author?: AuthorData;
 }) {
-  const [likes, setLikes] = useState(blog.likes);
-  const [dislikes, setDislikes] = useState(blog.dislikes);
+  const [likes, setLikes] = useState(blog.likes ?? 0);
+  const [dislikes, setDislikes] = useState(blog.dislikes ?? 0);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [showAllComments] = useState(false);
@@ -54,8 +54,8 @@ export default function BlogCard({
   const { user } = useAuth();
 
   useEffect(() => {
-    setLikes(blog.likes);
-    setDislikes(blog.dislikes);
+    setLikes(blog.likes ?? 0);
+    setDislikes(blog.dislikes ?? 0);
   }, [blog.likes, blog.dislikes]);
 
   useEffect(() => {
@@ -84,8 +84,8 @@ export default function BlogCard({
           text: c.text as string,
           author: c.author as string,
           authorImage: images[c.author],
-          likes: c.likes as number,
-          dislikes: c.dislikes as number,
+          likes: c.likes ?? 0,
+          dislikes: c.dislikes ?? 0,
           replies: (c.replies ?? []).map((r: { text: string; author: string }) => ({
             text: r.text as string,
             author: r.author as string,
