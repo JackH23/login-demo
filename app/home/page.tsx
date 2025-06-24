@@ -101,6 +101,7 @@ export default function HomePage() {
                 key={post._id ?? post.title}
                 blog={post}
                 author={author}
+                users={users}
               />
             );
           })
