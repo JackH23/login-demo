@@ -94,9 +94,16 @@ export default function HomePage() {
             </div>
           </div>
         ) : (
-          posts.map((post) => (
-            <BlogCard key={post._id ?? post.title} blog={post} />
-          ))
+          posts.map((post) => {
+            const author = users.find((u) => u.username === post.author);
+            return (
+              <BlogCard
+                key={post._id ?? post.title}
+                blog={post}
+                author={author}
+              />
+            );
+          })
         )}
       </div>
     </div>
