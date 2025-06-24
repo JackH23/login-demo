@@ -16,13 +16,20 @@ interface AuthorData {
   image?: string;
 }
 
+interface Reply {
+  text: string;
+  author: string;
+  authorImage?: string;
+}
+
 interface Comment {
+  _id?: string;
   text: string;
   author: string;
   authorImage?: string;
   likes: number;
   dislikes: number;
-  replies: string[];
+  replies: Reply[];
   showReplyInput: boolean;
   newReply: string;
 }
@@ -59,12 +66,17 @@ export default function BlogCard({
         setUserImages(images);
 
         const list = (commentsData.comments ?? []).map((c: any) => ({
+          _id: c._id as string,
           text: c.text as string,
           author: c.author as string,
           authorImage: images[c.author],
           likes: c.likes as number,
           dislikes: c.dislikes as number,
-          replies: (c.replies ?? []).map((r: any) => r.text as string),
+          replies: (c.replies ?? []).map((r: any) => ({
+            text: r.text as string,
+            author: r.author as string,
+            authorImage: images[r.author],
+          })),
           showReplyInput: false,
           newReply: "",
         }));
@@ -99,6 +111,7 @@ export default function BlogCard({
         setComments((prev) => [
           ...prev,
           {
+            _id: data.comment._id as string,
             text: data.comment.text,
             author: data.comment.author,
             authorImage: userImages[data.comment.author],
@@ -117,6 +130,7 @@ export default function BlogCard({
     setComments((prev) => [
       ...prev,
       {
+        _id: undefined,
         text,
         author: user?.username ?? "",
         authorImage: user ? userImages[user.username] : undefined,
@@ -155,13 +169,57 @@ export default function BlogCard({
     );
   };
 
-  const handleReplySubmit = (index: number) => {
+  const handleReplySubmit = async (index: number) => {
+    const comment = comments[index];
+    const text = comment.newReply.trim();
+    if (!text) return;
+
+    if (comment._id && user) {
+      const res = await fetch(`/api/comments/${comment._id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ author: user.username, text }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const last = data.comment.replies[data.comment.replies.length - 1];
+        setComments((prev) =>
+          prev.map((c, i) =>
+            i === index
+              ? {
+                  ...c,
+                  replies: [
+                    ...c.replies,
+                    {
+                      text: last.text as string,
+                      author: last.author as string,
+                      authorImage: userImages[last.author as string],
+                    },
+                  ],
+                  newReply: "",
+                  showReplyInput: false,
+                }
+              : c
+          )
+        );
+        return;
+      }
+    }
+
+    // fallback: update UI only
     setComments((prev) =>
       prev.map((c, i) =>
-        i === index && c.newReply.trim()
+        i === index
           ? {
               ...c,
-              replies: [...c.replies, c.newReply.trim()],
+              replies: [
+                ...c.replies,
+                {
+                  text,
+                  author: user?.username ?? "",
+                  authorImage: user ? userImages[user.username] : undefined,
+                },
+              ],
               newReply: "",
               showReplyInput: false,
             }
@@ -283,8 +341,16 @@ export default function BlogCard({
                       {comment.replies.length > 0 && (
                         <ul className="mt-2 ps-3 list-unstyled">
                           {comment.replies.map((reply, rIdx) => (
-                            <li key={rIdx} className="text-muted small mb-2">
-                              ↪ {reply}
+                            <li key={rIdx} className="d-flex align-items-center gap-2 text-muted small mb-2">
+                              {reply.authorImage && (
+                                <img
+                                  src={reply.authorImage}
+                                  alt={reply.author}
+                                  className="rounded-circle"
+                                  style={{ width: "24px", height: "24px", objectFit: "cover" }}
+                                />
+                              )}
+                              ↪ <span className="fw-semibold">{reply.author}</span>: {reply.text}
                             </li>
                           ))}
                         </ul>
@@ -394,8 +460,16 @@ export default function BlogCard({
                       {comment.replies.length > 0 && (
                         <ul className="mt-2 ps-3 list-unstyled">
                           {comment.replies.map((reply, rIdx) => (
-                            <li key={rIdx} className="text-muted small mb-2">
-                              ↪ {reply}
+                            <li key={rIdx} className="d-flex align-items-center gap-2 text-muted small mb-2">
+                              {reply.authorImage && (
+                                <img
+                                  src={reply.authorImage}
+                                  alt={reply.author}
+                                  className="rounded-circle"
+                                  style={{ width: "24px", height: "24px", objectFit: "cover" }}
+                                />
+                              )}
+                              ↪ <span className="fw-semibold">{reply.author}</span>: {reply.text}
                             </li>
                           ))}
                         </ul>
