@@ -9,6 +9,11 @@ interface BlogPost {
   author: string;
 }
 
+interface AuthorData {
+  username: string;
+  image?: string;
+}
+
 interface Comment {
   text: string;
   likes: number;
@@ -18,7 +23,13 @@ interface Comment {
   newReply: string;
 }
 
-export default function BlogCard({ blog }: { blog: BlogPost }) {
+export default function BlogCard({
+  blog,
+  author,
+}: {
+  blog: BlogPost;
+  author?: AuthorData;
+}) {
   const [likes, setLikes] = useState(0);
   const [dislikes, setDislikes] = useState(0);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -87,8 +98,19 @@ export default function BlogCard({ blog }: { blog: BlogPost }) {
 
   return (
     <div className="card shadow-sm w-100 mx-auto mb-4" style={{ maxWidth: "100%" }}>
-      <div className="card-header bg-primary text-white">
-        <h4 className="mb-0">{blog.title}</h4>
+      <div className="card-header bg-primary text-white d-flex align-items-center gap-3">
+        {author?.image && (
+          <img
+            src={author.image}
+            alt={author.username}
+            className="rounded-circle"
+            style={{ width: "40px", height: "40px", objectFit: "cover" }}
+          />
+        )}
+        <div>
+          <h4 className="mb-0">{blog.title}</h4>
+          <small>{author?.username}</small>
+        </div>
       </div>
 
       {blog.image && (
