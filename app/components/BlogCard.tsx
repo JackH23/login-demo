@@ -18,6 +18,8 @@ interface AuthorData {
 
 interface Comment {
   text: string;
+  author: string;
+  authorImage?: string;
   likes: number;
   dislikes: number;
   replies: string[];
@@ -39,16 +41,27 @@ export default function BlogCard({
   const [showAllComments, setShowAllComments] = useState(false);
   const [showCommentsModal, setShowCommentsModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [userImages, setUserImages] = useState<Record<string, string>>({});
   const { user } = useAuth();
 
   useEffect(() => {
     if (!blog._id) return;
 
-    fetch(`/api/comments?postId=${blog._id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        const list = (data.comments ?? []).map((c: any) => ({
+    Promise.all([
+      fetch(`/api/comments?postId=${blog._id}`).then((res) => res.json()),
+      fetch('/api/users').then((res) => res.json()),
+    ])
+      .then(([commentsData, usersData]) => {
+        const images: Record<string, string> = {};
+        (usersData.users ?? []).forEach((u: any) => {
+          if (u.image) images[u.username] = u.image as string;
+        });
+        setUserImages(images);
+
+        const list = (commentsData.comments ?? []).map((c: any) => ({
           text: c.text as string,
+          author: c.author as string,
+          authorImage: images[c.author],
           likes: c.likes as number,
           dislikes: c.dislikes as number,
           replies: (c.replies ?? []).map((r: any) => r.text as string),
@@ -57,7 +70,10 @@ export default function BlogCard({
         }));
         setComments(list);
       })
-      .catch(() => setComments([]));
+      .catch(() => {
+        setComments([]);
+        setUserImages({});
+      });
   }, [blog._id]);
 
   const handleCommentSubmit = async () => {
@@ -84,6 +100,8 @@ export default function BlogCard({
           ...prev,
           {
             text: data.comment.text,
+            author: data.comment.author,
+            authorImage: userImages[data.comment.author],
             likes: data.comment.likes,
             dislikes: data.comment.dislikes,
             replies: [],
@@ -100,6 +118,8 @@ export default function BlogCard({
       ...prev,
       {
         text,
+        author: user?.username ?? "",
+        authorImage: user ? userImages[user.username] : undefined,
         likes: 0,
         dislikes: 0,
         replies: [],
@@ -232,7 +252,20 @@ export default function BlogCard({
                   {(showAllComments ? comments : comments.slice(-3)).map((comment, idx) => (
                     <li key={idx} className="list-group-item mb-3 rounded shadow-sm bg-white">
                       <div className="d-flex justify-content-between align-items-center">
-                        <span>{comment.text}</span>
+                        <div className="d-flex align-items-center gap-2">
+                          {comment.authorImage && (
+                            <img
+                              src={comment.authorImage}
+                              alt={comment.author}
+                              className="rounded-circle"
+                              style={{ width: "30px", height: "30px", objectFit: "cover" }}
+                            />
+                          )}
+                          <div>
+                            <div className="fw-semibold small">{comment.author}</div>
+                            <div>{comment.text}</div>
+                          </div>
+                        </div>
                         <div className="btn-group btn-group-sm">
                           <button className="btn btn-outline-success" onClick={() => handleLikeComment(idx)}>
                             👍 {comment.likes}
@@ -330,7 +363,20 @@ export default function BlogCard({
                   {comments.map((comment, idx) => (
                     <li key={idx} className="list-group-item mb-3 rounded shadow-sm bg-white">
                       <div className="d-flex justify-content-between align-items-center">
-                        <span>{comment.text}</span>
+                        <div className="d-flex align-items-center gap-2">
+                          {comment.authorImage && (
+                            <img
+                              src={comment.authorImage}
+                              alt={comment.author}
+                              className="rounded-circle"
+                              style={{ width: "30px", height: "30px", objectFit: "cover" }}
+                            />
+                          )}
+                          <div>
+                            <div className="fw-semibold small">{comment.author}</div>
+                            <div>{comment.text}</div>
+                          </div>
+                        </div>
                         <div className="btn-group btn-group-sm">
                           <button className="btn btn-outline-success" onClick={() => handleLikeComment(idx)}>
                             👍 {comment.likes}
