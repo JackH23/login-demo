@@ -285,13 +285,29 @@ export default function BlogCard({
           <button
             className="btn btn-outline-success"
             onClick={async () => {
+              const originalLikes = likes;
               setLikes(likes + 1);
               if (blog._id) {
-                await fetch(`/api/posts/${blog._id}`, {
-                  method: 'PATCH',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ action: 'like' }),
-                });
+                try {
+                  const res = await fetch(`/api/posts/${blog._id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'like' }),
+                  });
+                  if (res.ok) {
+                    const data = await res.json();
+                    if (data.post) {
+                      setLikes(data.post.likes);
+                      setDislikes(data.post.dislikes);
+                    }
+                  } else {
+                    setLikes(originalLikes);
+                    alert('Failed to like the post');
+                  }
+                } catch {
+                  setLikes(originalLikes);
+                  alert('Failed to like the post');
+                }
               }
             }}
           >
@@ -300,13 +316,29 @@ export default function BlogCard({
           <button
             className="btn btn-outline-danger"
             onClick={async () => {
+              const originalDislikes = dislikes;
               setDislikes(dislikes + 1);
               if (blog._id) {
-                await fetch(`/api/posts/${blog._id}`, {
-                  method: 'PATCH',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ action: 'dislike' }),
-                });
+                try {
+                  const res = await fetch(`/api/posts/${blog._id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'dislike' }),
+                  });
+                  if (res.ok) {
+                    const data = await res.json();
+                    if (data.post) {
+                      setLikes(data.post.likes);
+                      setDislikes(data.post.dislikes);
+                    }
+                  } else {
+                    setDislikes(originalDislikes);
+                    alert('Failed to dislike the post');
+                  }
+                } catch {
+                  setDislikes(originalDislikes);
+                  alert('Failed to dislike the post');
+                }
               }
             }}
           >
