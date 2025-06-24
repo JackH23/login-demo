@@ -16,5 +16,12 @@ export async function PATCH(
   if (!post) {
     return NextResponse.json({ error: 'Post not found' }, { status: 404 });
   }
-  return NextResponse.json({ post });
+  // Only return the updated like/dislike counts along with the post ID
+  return NextResponse.json({
+    post: {
+      _id: post._id,
+      likes: post.likes,
+      dislikes: post.dislikes,
+    },
+  });
 }
