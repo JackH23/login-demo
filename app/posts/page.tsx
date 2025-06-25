@@ -66,39 +66,49 @@ export default function PostsPage() {
   }
 
   return (
-    <div className="container-fluid min-vh-100 bg-light p-4">
-      {/* Sticky Top Bar and Menu */}
+    <div className="container-fluid bg-light min-vh-100 py-4">
       <TopBar
         title="Posts"
         active="posts"
         currentUser={{ username: currentUserData.username, image: currentUserData.image }}
       />
 
-      {/* Content */}
-      <div
-        className="card shadow-sm w-100 mx-auto"
-        style={{ maxWidth: "100%", top: "10px" }}
-      >
+      <div className="container mt-4">
         {posts.length === 0 ? (
-          <div className="card-body">
-            <h5 className="text-center text-muted">No posts found.</h5>
+          <div className="card text-center">
+            <div className="card-body">
+              <p className="text-muted mb-0">No posts found.</p>
+            </div>
           </div>
         ) : (
-          posts.map((post) => (
-            <div key={post._id} className="card-body border-bottom">
-              <h5>{post.title}</h5>
-              <p className="text-muted">by {post.author}</p>
-              {post.image && (
-                <img
-                  src={post.image}
-                  alt={post.title}
-                  className="img-fluid mb-2"
-                  style={{ maxHeight: "300px" }}
-                />
-              )}
-              <p>{post.content}</p>
-            </div>
-          ))
+          <div className="row g-4">
+            {posts.map((post) => (
+              <div key={post._id} className="col-12">
+                <div className="card shadow-sm">
+                  <div className="card-body">
+                    <h5 className="card-title">{post.title}</h5>
+                    <h6 className="card-subtitle mb-2 text-muted">by {post.author}</h6>
+
+                    {post.image && (
+                      <img
+                        src={post.image}
+                        alt={post.title}
+                        className="img-fluid rounded mb-3"
+                        style={{ maxHeight: "300px", objectFit: "cover" }}
+                      />
+                    )}
+
+                    <p className="card-text">{post.content}</p>
+
+                    <div className="d-flex gap-3 align-items-center mt-3">
+                      <span className="badge bg-success">👍 {post.likes}</span>
+                      <span className="badge bg-danger">👎 {post.dislikes}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
