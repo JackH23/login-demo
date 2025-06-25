@@ -1,4 +1,7 @@
+"use client";
+
 import React from "react";
+import { useTheme } from "../context/ThemeContext";
 
 interface UserData {
   username: string;
@@ -12,9 +15,13 @@ interface TopBarProps {
 }
 
 export default function TopBar({ title, active, currentUser }: TopBarProps) {
+  const { theme } = useTheme();
+  const barClass =
+    theme === "night" ? "bg-dark text-white" : "bg-white";
+
   return (
     <div
-      className="position-sticky top-0 z-3 bg-white"
+      className={`position-sticky top-0 z-3 ${barClass}`}
       style={{ borderBottom: "1px solid #dee2e6" }}
     >
       <div className="d-flex justify-content-between align-items-center px-4 pt-3 pb-2">
@@ -38,32 +45,62 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
       <div className="px-4 pb-3">
         <ul className="nav nav-pills gap-2">
           <li className="nav-item">
-            <a className={`nav-link ${active === "home" ? "active" : ""}`} href="/home">
+            <a
+              className={`nav-link ${active === "home" ? "active" : ""} ${
+                theme === "night" ? "text-white" : ""
+              }`}
+              href="/home"
+            >
               Home
             </a>
           </li>
           <li className="nav-item">
-            <a className={`nav-link ${active === "posts" ? "active" : ""}`} href="/posts">
+            <a
+              className={`nav-link ${active === "posts" ? "active" : ""} ${
+                theme === "night" ? "text-white" : ""
+              }`}
+              href="/posts"
+            >
               All Posts
             </a>
           </li>
           <li className="nav-item">
-            <a className={`nav-link ${active === "user" ? "active" : ""}`} href="/user">
+            <a
+              className={`nav-link ${active === "user" ? "active" : ""} ${
+                theme === "night" ? "text-white" : ""
+              }`}
+              href="/user"
+            >
               User
             </a>
           </li>
           <li className="nav-item">
-            <a className={`nav-link ${active === "analysis" ? "active" : ""}`} href="/analysis">
+            <a
+              className={`nav-link ${active === "analysis" ? "active" : ""} ${
+                theme === "night" ? "text-white" : ""
+              }`}
+              href="/analysis"
+            >
               Analysis
             </a>
           </li>
           <li className="nav-item">
-            <a className={`nav-link ${active === "friend" ? "active" : ""}`} href="/friend">
+            <a
+              className={`nav-link ${active === "friend" ? "active" : ""} ${
+                theme === "night" ? "text-white" : ""
+              }`}
+              href="/friend"
+            >
               Friends
             </a>
           </li>
           <li className="nav-item">
-            <a className={`nav-link ${active === "setting" ? "active" : ""}`} href="/setting">
+            <a
+              className={`nav-link ${active === "setting" ? "active" : ""} ${
+                theme === "night" ? "text-white" : ""
+              }`}
+              href="/setting"
+            >
               Settings
             </a>
           </li>
