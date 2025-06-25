@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 
 interface User {
@@ -22,7 +23,7 @@ export default function SettingPage() {
   const [newUsername, setNewUsername] = useState("");
   const [newAge, setNewAge] = useState<number>(0);
   const [profileImage, setProfileImage] = useState<string>("");
-  const [theme, setTheme] = useState<"brightness" | "night">("brightness");
+  const { theme, setTheme } = useTheme();
 
   // Convert selected image file to base64 string
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,27 +53,8 @@ export default function SettingPage() {
       .finally(() => setIsFetching(false));
   }, [user]);
 
-  // Load and apply theme from localStorage
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme === "night") {
-      setTheme("night");
-      document.body.classList.add("bg-dark", "text-white");
-    } else {
-      setTheme("brightness");
-      document.body.classList.remove("bg-dark", "text-white");
-    }
-  }, []);
-
-  // Apply theme changes
   const handleThemeChange = (value: "brightness" | "night") => {
     setTheme(value);
-    localStorage.setItem("theme", value);
-    if (value === "night") {
-      document.body.classList.add("bg-dark", "text-white");
-    } else {
-      document.body.classList.remove("bg-dark", "text-white");
-    }
   };
 
   const currentUserData = users.find((u) => u.username === user?.username);
