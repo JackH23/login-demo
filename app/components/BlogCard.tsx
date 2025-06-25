@@ -11,6 +11,8 @@ interface BlogPost {
   author: string;
   likes: number;
   dislikes: number;
+  likedBy?: string[];
+  dislikedBy?: string[];
 }
 
 interface AuthorData {
@@ -31,6 +33,8 @@ interface Comment {
   authorImage?: string;
   likes: number;
   dislikes: number;
+  likedBy?: string[];
+  dislikedBy?: string[];
   replies: Reply[];
   showReplyInput: boolean;
   newReply: string;
@@ -47,6 +51,8 @@ export default function BlogCard({
 }) {
   const [likes, setLikes] = useState<number>(blog.likes ?? 0);
   const [dislikes, setDislikes] = useState<number>(blog.dislikes ?? 0);
+  const [hasLikedPost, setHasLikedPost] = useState<boolean>(false);
+  const [hasDislikedPost, setHasDislikedPost] = useState<boolean>(false);
 
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
@@ -62,6 +68,16 @@ export default function BlogCard({
     setLikes(blog.likes ?? 0);
     setDislikes(blog.dislikes ?? 0);
   }, [blog.likes, blog.dislikes]);
+
+  useEffect(() => {
+    if (!user) {
+      setHasLikedPost(false);
+      setHasDislikedPost(false);
+      return;
+    }
+    setHasLikedPost((blog.likedBy ?? []).includes(user.username));
+    setHasDislikedPost((blog.dislikedBy ?? []).includes(user.username));
+  }, [blog.likedBy, blog.dislikedBy, user]);
 
   useEffect(() => {
     if (!blog._id) return;
@@ -94,6 +110,8 @@ export default function BlogCard({
             authorImage: images[c.author],
             likes: c.likes ?? 0,
             dislikes: c.dislikes ?? 0,
+            likedBy: c.likedBy ?? [],
+            dislikedBy: c.dislikedBy ?? [],
             replies: (c.replies ?? []).map(
               (r: { text: string; author: string }) => ({
                 text: r.text as string,
@@ -142,6 +160,8 @@ export default function BlogCard({
             authorImage: userImages[data.comment.author],
             likes: data.comment.likes,
             dislikes: data.comment.dislikes,
+            likedBy: [],
+            dislikedBy: [],
             replies: [],
             showReplyInput: false,
             newReply: "",
@@ -161,6 +181,8 @@ export default function BlogCard({
         authorImage: user ? userImages[user.username] : undefined,
         likes: 0,
         dislikes: 0,
+        likedBy: [],
+        dislikedBy: [],
         replies: [],
         showReplyInput: false,
         newReply: "",
@@ -170,29 +192,95 @@ export default function BlogCard({
 
   const handleLikeComment = async (index: number) => {
     const comment = comments[index];
+    if (!user || comment.likedBy?.includes(user.username)) return;
     setComments((prev) =>
-      prev.map((c, i) => (i === index ? { ...c, likes: c.likes + 1 } : c))
+      prev.map((c, i) =>
+        i === index
+          ? {
+              ...c,
+              likes: c.likes + 1,
+              likedBy: [...(c.likedBy ?? []), user.username],
+            }
+          : c
+      )
     );
     if (comment._id) {
-      await fetch(`/api/comments/${comment._id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "like" }),
-      });
+      try {
+        const res = await fetch(`/api/comments/${comment._id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "like", username: user.username }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setComments((prev) =>
+            prev.map((c, i) =>
+              i === index
+                ? { ...c, likes: data.comment.likes, dislikes: data.comment.dislikes }
+                : c
+            )
+          );
+        }
+      } catch {
+        setComments((prev) =>
+          prev.map((c, i) =>
+            i === index
+              ? {
+                  ...c,
+                  likes: c.likes - 1,
+                  likedBy: c.likedBy?.filter((u) => u !== user.username),
+                }
+              : c
+          )
+        );
+      }
     }
   };
 
   const handleDislikeComment = async (index: number) => {
     const comment = comments[index];
+    if (!user || comment.dislikedBy?.includes(user.username)) return;
     setComments((prev) =>
-      prev.map((c, i) => (i === index ? { ...c, dislikes: c.dislikes + 1 } : c))
+      prev.map((c, i) =>
+        i === index
+          ? {
+              ...c,
+              dislikes: c.dislikes + 1,
+              dislikedBy: [...(c.dislikedBy ?? []), user.username],
+            }
+          : c
+      )
     );
     if (comment._id) {
-      await fetch(`/api/comments/${comment._id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "dislike" }),
-      });
+      try {
+        const res = await fetch(`/api/comments/${comment._id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "dislike", username: user.username }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setComments((prev) =>
+            prev.map((c, i) =>
+              i === index
+                ? { ...c, likes: data.comment.likes, dislikes: data.comment.dislikes }
+                : c
+            )
+          );
+        }
+      } catch {
+        setComments((prev) =>
+          prev.map((c, i) =>
+            i === index
+              ? {
+                  ...c,
+                  dislikes: c.dislikes - 1,
+                  dislikedBy: c.dislikedBy?.filter((u) => u !== user.username),
+                }
+              : c
+          )
+        );
+      }
     }
   };
 
@@ -270,15 +358,15 @@ export default function BlogCard({
   };
 
   const handleLikePost = async () => {
+    if (!user || hasLikedPost || !blog._id) return;
     setLikes((prev) => prev + 1);
-
-    if (!blog._id) return;
+    setHasLikedPost(true);
 
     try {
       const res = await fetch(`/api/posts/${blog._id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "like" }),
+        body: JSON.stringify({ action: "like", username: user.username }),
       });
 
       if (!res.ok) throw new Error("Failed");
@@ -288,18 +376,21 @@ export default function BlogCard({
       setDislikes(post.dislikes);
     } catch (error) {
       setLikes((prev) => prev - 1); // Revert on error
+      setHasLikedPost(false);
       console.error("Failed to like post", error);
     }
   };
 
   const handleDislikePost = async () => {
+    if (!user || hasDislikedPost || !blog._id) return;
     setDislikes((prev) => prev + 1);
+    setHasDislikedPost(true);
     if (blog._id) {
       try {
         const res = await fetch(`/api/posts/${blog._id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "dislike" }),
+          body: JSON.stringify({ action: "dislike", username: user.username }),
         });
         if (res.ok) {
           const data = await res.json();
@@ -307,9 +398,11 @@ export default function BlogCard({
           setDislikes(data.post.dislikes);
         } else {
           setDislikes((prev) => prev - 1);
+          setHasDislikedPost(false);
         }
       } catch {
         setDislikes((prev) => prev - 1);
+        setHasDislikedPost(false);
       }
     }
   };
@@ -369,13 +462,18 @@ export default function BlogCard({
         <p className="card-text">{blog.content}</p>
 
         <div className="d-flex gap-3 align-items-center mt-3">
-          <button className="btn btn-outline-success" onClick={handleLikePost}>
+          <button
+            className="btn btn-outline-success"
+            onClick={handleLikePost}
+            disabled={hasLikedPost || !user}
+          >
             👍 {likes}
           </button>
 
           <button
             className="btn btn-outline-danger"
             onClick={handleDislikePost}
+            disabled={hasDislikedPost || !user}
           >
             👎 {dislikes}
           </button>
@@ -458,12 +556,14 @@ export default function BlogCard({
                             <button
                               className="btn btn-outline-success"
                               onClick={() => handleLikeComment(idx)}
+                              disabled={user ? comment.likedBy?.includes(user.username) : true}
                             >
                               👍 {comment.likes}
                             </button>
                             <button
                               className="btn btn-outline-danger"
                               onClick={() => handleDislikeComment(idx)}
+                              disabled={user ? comment.dislikedBy?.includes(user.username) : true}
                             >
                               👎 {comment.dislikes}
                             </button>
@@ -687,12 +787,14 @@ export default function BlogCard({
                           <button
                             className="btn btn-outline-success"
                             onClick={() => handleLikeComment(idx)}
+                            disabled={user ? comment.likedBy?.includes(user.username) : true}
                           >
                             👍 {comment.likes}
                           </button>
                           <button
                             className="btn btn-outline-danger"
                             onClick={() => handleDislikeComment(idx)}
+                            disabled={user ? comment.dislikedBy?.includes(user.username) : true}
                           >
                             👎 {comment.dislikes}
                           </button>
