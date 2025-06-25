@@ -13,15 +13,6 @@ interface BlogPost {
   dislikes: number;
 }
 
-const post = await Post.create({
-  title,
-  content,
-  image,
-  author,
-  likes: 0,
-  dislikes: 0,
-});
-
 interface AuthorData {
   username: string;
   image?: string;
