@@ -15,6 +15,8 @@ const CommentSchema = new Schema(
     text: { type: String, required: true },
     likes: { type: Number, default: 0 },
     dislikes: { type: Number, default: 0 },
+    likedBy: { type: [String], default: [] },
+    dislikedBy: { type: [String], default: [] },
     replies: { type: [ReplySchema], default: [] },
   },
   { timestamps: true }
