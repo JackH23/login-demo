@@ -32,6 +32,13 @@ export default function PostsPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [isFetching, setIsFetching] = useState(true);
   const [posts, setPosts] = useState<BlogPost[]>([]);
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this post?")) return;
+    const res = await fetch(`/api/posts/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      setPosts((prev) => prev.filter((p) => p._id !== id));
+    }
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -89,6 +96,7 @@ export default function PostsPage() {
                 key={post._id ?? post.title}
                 blog={post}
                 author={author}
+                onDelete={handleDelete}
               />
             );
           })
