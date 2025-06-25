@@ -14,7 +14,7 @@ interface User {
 }
 
 export default function SettingPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
   const router = useRouter();
 
   const [users, setUsers] = useState<User[]>([]);
@@ -107,6 +107,25 @@ export default function SettingPage() {
       }
     } catch {
       alert("Failed to update profile");
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    if (!confirm("Are you sure you want to delete your account?")) return;
+
+    try {
+      const res = await fetch(`/api/users/${user.username}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        logout();
+        router.push("/signup");
+      } else {
+        alert("Failed to delete account.");
+      }
+    } catch {
+      alert("Failed to delete account.");
     }
   };
 
@@ -223,7 +242,7 @@ export default function SettingPage() {
             </p>
             <button
               className="btn btn-outline-danger w-100"
-              onClick={() => alert("Delete feature not implemented")}
+              onClick={handleDeleteAccount}
             >
               Delete My Account
             </button>
