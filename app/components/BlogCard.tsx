@@ -43,9 +43,11 @@ interface Comment {
 export default function BlogCard({
   blog,
   author,
+  onDelete,
 }: {
   blog: BlogPost;
   author?: AuthorData;
+  onDelete?: (id: string) => void;
 }) {
   const { user } = useAuth();
   const [likes, setLikes] = useState<number>(blog.likes ?? 0);
@@ -62,6 +64,7 @@ export default function BlogCard({
   const [showAllComments] = useState(false);
   const [showCommentsModal, setShowCommentsModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [userImages, setUserImages] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -405,6 +408,17 @@ export default function BlogCard({
     }
   };
 
+  const handleDeletePost = async () => {
+    if (!blog._id || !user) return;
+    if (!confirm("Delete this post?")) return;
+    setIsDeleting(true);
+    const res = await fetch(`/api/posts/${blog._id}`, { method: "DELETE" });
+    if (res.ok) {
+      onDelete?.(blog._id);
+    }
+    setIsDeleting(false);
+  };
+
   return (
     <div
       className="card shadow-sm w-100 mx-auto mb-4"
@@ -475,6 +489,15 @@ export default function BlogCard({
           >
             🔗 Share
           </button>
+          {user?.username === blog.author && (
+            <button
+              className="btn btn-outline-danger"
+              onClick={handleDeletePost}
+              disabled={isDeleting}
+            >
+              🗑 Delete
+            </button>
+          )}
         </div>
 
         {/* Comments Section */}

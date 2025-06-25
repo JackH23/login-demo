@@ -46,3 +46,15 @@ export async function PATCH(
     },
   });
 }
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  await dbConnect();
+  const post = await Post.findByIdAndDelete(params.id);
+  if (!post) {
+    return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+  }
+  return NextResponse.json({ success: true });
+}
