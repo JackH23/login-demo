@@ -112,12 +112,14 @@ export default function UserPage() {
 
   return (
     <div className="container-fluid min-vh-100 bg-light p-4">
-
       {/* Sticky Top Bar and Menu */}
       <TopBar
         title="Home"
         active="user"
-        currentUser={{ username: currentUserData.username, image: currentUserData.image }}
+        currentUser={{
+          username: currentUserData.username,
+          image: currentUserData.image,
+        }}
       />
 
       {/* Search input */}
@@ -187,6 +189,14 @@ export default function UserPage() {
                         </div>
                       </div>
                       <div className="btn-group">
+                        <button
+                          className="btn btn-sm btn-outline-success"
+                          onClick={() =>
+                            alert(`Friend request sent to ${u.username}`)
+                          }
+                        >
+                          <i className="bi bi-person-plus me-1"></i> Add Friend
+                        </button>
                         <button
                           className="btn btn-sm btn-outline-secondary"
                           onClick={() =>
