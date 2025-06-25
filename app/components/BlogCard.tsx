@@ -11,6 +11,8 @@ interface BlogPost {
   author: string;
   likes: number;
   dislikes: number;
+  likedBy?: string[];
+  dislikedBy?: string[];
 }
 
 interface AuthorData {
@@ -43,8 +45,15 @@ export default function BlogCard({
   blog: BlogPost;
   author?: AuthorData;
 }) {
+  const { user } = useAuth();
   const [likes, setLikes] = useState<number>(blog.likes ?? 0);
   const [dislikes, setDislikes] = useState<number>(blog.dislikes ?? 0);
+  const [userLiked, setUserLiked] = useState<boolean>(
+    blog.likedBy?.includes(user?.username ?? "") ?? false
+  );
+  const [userDisliked, setUserDisliked] = useState<boolean>(
+    blog.dislikedBy?.includes(user?.username ?? "") ?? false
+  );
 
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
@@ -52,12 +61,13 @@ export default function BlogCard({
   const [showCommentsModal, setShowCommentsModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [userImages, setUserImages] = useState<Record<string, string>>({});
-  const { user } = useAuth();
 
   useEffect(() => {
     setLikes(blog.likes ?? 0);
     setDislikes(blog.dislikes ?? 0);
-  }, [blog.likes, blog.dislikes]);
+    setUserLiked(blog.likedBy?.includes(user?.username ?? "") ?? false);
+    setUserDisliked(blog.dislikedBy?.includes(user?.username ?? "") ?? false);
+  }, [blog.likes, blog.dislikes, blog.likedBy, blog.dislikedBy, user?.username]);
 
   useEffect(() => {
     if (!blog._id) return;
@@ -266,15 +276,15 @@ export default function BlogCard({
   };
 
   const handleLikePost = async () => {
+    if (!blog._id || !user || userLiked) return;
     setLikes((prev) => prev + 1);
-
-    if (!blog._id) return;
+    setUserLiked(true);
 
     try {
       const res = await fetch(`/api/posts/${blog._id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "like" }),
+        body: JSON.stringify({ action: "like", username: user.username }),
       });
 
       if (!res.ok) throw new Error("Failed");
@@ -284,29 +294,32 @@ export default function BlogCard({
       setDislikes(post.dislikes);
     } catch (error) {
       setLikes((prev) => prev - 1); // Revert on error
+      setUserLiked(false);
       console.error("Failed to like post", error);
     }
   };
 
   const handleDislikePost = async () => {
+    if (!blog._id || !user || userDisliked) return;
     setDislikes((prev) => prev + 1);
-    if (blog._id) {
-      try {
-        const res = await fetch(`/api/posts/${blog._id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "dislike" }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setLikes(data.post.likes);
-          setDislikes(data.post.dislikes);
-        } else {
-          setDislikes((prev) => prev - 1);
-        }
-      } catch {
+    setUserDisliked(true);
+    try {
+      const res = await fetch(`/api/posts/${blog._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "dislike", username: user.username }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setLikes(data.post.likes);
+        setDislikes(data.post.dislikes);
+      } else {
         setDislikes((prev) => prev - 1);
+        setUserDisliked(false);
       }
+    } catch {
+      setDislikes((prev) => prev - 1);
+      setUserDisliked(false);
     }
   };
 
@@ -344,13 +357,18 @@ export default function BlogCard({
         <p className="card-text">{blog.content}</p>
 
         <div className="d-flex gap-3 align-items-center mt-3">
-          <button className="btn btn-outline-success" onClick={handleLikePost}>
+          <button
+            className="btn btn-outline-success"
+            onClick={handleLikePost}
+            disabled={userLiked}
+          >
             👍 {likes}
           </button>
 
           <button
             className="btn btn-outline-danger"
             onClick={handleDislikePost}
+            disabled={userDisliked}
           >
             👎 {dislikes}
           </button>
