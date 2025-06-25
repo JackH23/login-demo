@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 
 export default function UserPage() {
   const { user, loading } = useAuth();
+  const { theme } = useTheme();
   const router = useRouter();
 
   interface User {
@@ -131,7 +133,11 @@ export default function UserPage() {
     .filter((u) => u.username.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
-    <div className="container-fluid min-vh-100 bg-light p-4">
+    <div
+      className={`container-fluid min-vh-100 p-4 ${
+        theme === "night" ? "bg-dark text-white" : "bg-light"
+      }`}
+    >
       {/* Sticky Top Bar and Menu */}
       <TopBar
         title="Home"

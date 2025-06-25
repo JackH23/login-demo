@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 import BlogCard from "../components/BlogCard";
 
@@ -28,6 +29,7 @@ interface BlogPost {
 
 export default function HomePage() {
   const { user, loading } = useAuth();
+  const { theme } = useTheme();
   const router = useRouter();
 
   const [users, setUsers] = useState<User[]>([]);
@@ -75,7 +77,11 @@ export default function HomePage() {
 
 
   return (
-    <div className="container-fluid min-vh-100 bg-light p-4">
+    <div
+      className={`container-fluid min-vh-100 p-4 ${
+        theme === "night" ? "bg-dark text-white" : "bg-light"
+      }`}
+    >
       {/* Sticky Top Bar and Menu */}
       <TopBar
         title="Home"
@@ -85,7 +91,9 @@ export default function HomePage() {
 
       {/* Create Blog Button */}
       <div
-        className="text-end bg-white py-3 px-4 position-sticky top-0 z-2"
+        className={`text-end py-3 px-4 position-sticky top-0 z-2 ${
+          theme === "night" ? "bg-dark text-white" : "bg-white"
+        }`}
         style={{ borderBottom: "1px solid #dee2e6" }}
       >
         <button

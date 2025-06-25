@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 
 interface User {
@@ -15,6 +16,7 @@ interface User {
 
 export default function FriendPage() {
   const { user, loading } = useAuth();
+  const { theme } = useTheme();
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [friends, setFriends] = useState<string[]>([]);
@@ -62,7 +64,11 @@ export default function FriendPage() {
   const friendUsers = users.filter((u) => friends.includes(u.username));
 
   return (
-    <div className="container-fluid min-vh-100 bg-light p-4">
+    <div
+      className={`container-fluid min-vh-100 p-4 ${
+        theme === "night" ? "bg-dark text-white" : "bg-light"
+      }`}
+    >
       {/* Sticky Top Bar and Menu */}
       <TopBar
         title="Friend"

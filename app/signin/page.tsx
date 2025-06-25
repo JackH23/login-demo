@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 
 export default function SigninPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const { signin } = useAuth();
+  const { theme } = useTheme();
   const router = useRouter();
 
   const handleSignin = async () => {
@@ -21,7 +23,11 @@ export default function SigninPage() {
   };
 
   return (
-    <div className="d-flex align-items-center justify-content-center min-vh-100 bg-light">
+    <div
+      className={`d-flex align-items-center justify-content-center min-vh-100 ${
+        theme === "night" ? "bg-dark text-white" : "bg-light"
+      }`}
+    >
       <div className="card shadow" style={{ maxWidth: "28rem", width: "100%" }}>
         <div className="card-body">
           <h2 className="card-title h3 text-center mb-4">Sign In</h2>

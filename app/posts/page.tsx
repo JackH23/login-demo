@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 import BlogCard from "../components/BlogCard";
 
@@ -27,6 +28,7 @@ interface BlogPost {
 
 export default function PostsPage() {
   const { user, loading } = useAuth();
+  const { theme } = useTheme();
   const router = useRouter();
 
   const [users, setUsers] = useState<User[]>([]);
@@ -76,7 +78,11 @@ export default function PostsPage() {
   }
 
   return (
-    <div className="container-fluid bg-light min-vh-100 py-4">
+    <div
+      className={`container-fluid min-vh-100 py-4 ${
+        theme === "night" ? "bg-dark text-white" : "bg-light"
+      }`}
+    >
       <TopBar
         title="Posts"
         active="posts"
@@ -88,7 +94,9 @@ export default function PostsPage() {
 
       {/* Create Blog Button */}
       <div
-        className="text-end bg-white py-3 px-4 position-sticky top-0 z-2"
+        className={`text-end py-3 px-4 position-sticky top-0 z-2 ${
+          theme === "night" ? "bg-dark text-white" : "bg-white"
+        }`}
         style={{ borderBottom: "1px solid #dee2e6" }}
       >
         <button
