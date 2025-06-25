@@ -66,13 +66,20 @@ export default function BlogCard({
   const [showImageModal, setShowImageModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [userImages, setUserImages] = useState<Record<string, string>>({});
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     setLikes(blog.likes ?? 0);
     setDislikes(blog.dislikes ?? 0);
     setUserLiked(blog.likedBy?.includes(user?.username ?? "") ?? false);
     setUserDisliked(blog.dislikedBy?.includes(user?.username ?? "") ?? false);
-  }, [blog.likes, blog.dislikes, blog.likedBy, blog.dislikedBy, user?.username]);
+  }, [
+    blog.likes,
+    blog.dislikes,
+    blog.likedBy,
+    blog.dislikedBy,
+    user?.username,
+  ]);
 
   useEffect(() => {
     if (!blog._id) return;
@@ -410,13 +417,21 @@ export default function BlogCard({
 
   const handleDeletePost = async () => {
     if (!blog._id || !user) return;
-    if (!confirm("Delete this post?")) return;
+
     setIsDeleting(true);
-    const res = await fetch(`/api/posts/${blog._id}`, { method: "DELETE" });
-    if (res.ok) {
+
+    try {
+      const res = await fetch(`/api/posts/${blog._id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Delete failed");
+
       onDelete?.(blog._id);
+    } catch (err) {
+      alert("Failed to delete the post. Please try again.");
+      console.error("Delete error:", err);
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
     }
-    setIsDeleting(false);
   };
 
   return (
@@ -492,7 +507,7 @@ export default function BlogCard({
           {user?.username === blog.author && (
             <button
               className="btn btn-outline-danger"
-              onClick={handleDeletePost}
+              onClick={() => setShowDeleteModal(true)}
               disabled={isDeleting}
             >
               🗑 Delete
@@ -652,6 +667,64 @@ export default function BlogCard({
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div
+          className="modal fade show d-block"
+          tabIndex={-1}
+          role="dialog"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+          onClick={() => !isDeleting && setShowDeleteModal(false)}
+        >
+          <div
+            className="modal-dialog modal-dialog-centered"
+            role="document"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Confirm Delete</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={isDeleting}
+                />
+              </div>
+              <div className="modal-body">
+                Are you sure you want to delete this post?
+              </div>
+              <div className="modal-footer">
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={isDeleting}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn btn-danger"
+                  onClick={handleDeletePost}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? (
+                    <>
+                      <span
+                        className="spinner-border spinner-border-sm me-2"
+                        role="status"
+                      ></span>
+                      Deleting...
+                    </>
+                  ) : (
+                    "Delete"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* showCommentsModal */}
       {showCommentsModal && (
