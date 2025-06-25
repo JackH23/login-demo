@@ -73,39 +73,9 @@ export default function SettingPage() {
     return <div className="text-center mt-5">Loading...</div>;
   }
 
-  const handleSave = async () => {
-    if (!user) return;
-
-    const res = await fetch(`/api/users/${user.username}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username,
-        age,
-        image,
-      }),
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      setUsers((prev) =>
-        prev.map((u) =>
-          u.username === currentUserData.username ? data.user : u
-        )
-      );
-
-      if (username !== currentUserData.username) {
-        localStorage.setItem("user", JSON.stringify({ username }));
-      }
-
-      setNewUsername("");
-      setNewAge(0);
-      setProfileImage("");
-
-      alert("Profile saved");
-    } else {
-      alert("Failed to save profile");
-    }
+  const handleSave = () => {
+    alert("Profile saved (functionality not yet implemented).");
+    // TODO: Replace with real PATCH API call to /api/users
   };
 
   return (
