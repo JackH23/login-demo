@@ -13,8 +13,13 @@ export async function POST(req: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const author = searchParams.get('author');
+
   await dbConnect();
-  const posts = await Post.find().sort({ createdAt: -1 }).lean();
+
+  const query = author ? { author } : {};
+  const posts = await Post.find(query).sort({ createdAt: -1 }).lean();
   return NextResponse.json({ posts });
 }
