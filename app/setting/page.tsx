@@ -21,8 +21,19 @@ export default function SettingPage() {
 
   const [newUsername, setNewUsername] = useState("");
   const [newAge, setNewAge] = useState<number>(0);
-  const [profileImage, setProfileImage] = useState("");
+  const [profileImage, setProfileImage] = useState<string>("");
   const [theme, setTheme] = useState<"brightness" | "night">("brightness");
+
+  // Convert selected image file to base64 string
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setProfileImage(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveImage = () => setProfileImage("");
 
   // Redirect if not logged in
   useEffect(() => {
@@ -73,9 +84,48 @@ export default function SettingPage() {
     return <div className="text-center mt-5">Loading...</div>;
   }
 
-  const handleSave = () => {
-    alert("Profile saved (functionality not yet implemented).");
-    // TODO: Replace with real PATCH API call to /api/users
+  const handleSave = async () => {
+    if (!user) return;
+
+    const updates: Record<string, unknown> = {};
+    if (newUsername && newUsername !== currentUserData.username)
+      updates.username = newUsername;
+    if (newAge && newAge !== currentUserData.age) updates.age = newAge;
+    if (profileImage && profileImage !== currentUserData.image)
+      updates.image = profileImage;
+
+    if (Object.keys(updates).length === 0) {
+      alert("No changes to save.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/users/${user.username}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUsers((prev) =>
+          prev.map((u) => (u.username === user.username ? data.user : u))
+        );
+        if (updates.username) {
+          localStorage.setItem(
+            "user",
+            JSON.stringify({ username: updates.username })
+          );
+        }
+        setNewUsername("");
+        setNewAge(0);
+        setProfileImage("");
+        alert("Profile updated.");
+      } else {
+        alert("Failed to update profile");
+      }
+    } catch {
+      alert("Failed to update profile");
+    }
   };
 
   return (
@@ -147,13 +197,31 @@ export default function SettingPage() {
             </div>
 
             <div className="mb-3">
-              <label className="form-label">Profile Image URL</label>
+              <label className="form-label">Profile Image</label>
               <input
-                type="text"
+                type="file"
                 className="form-control"
-                value={image}
-                onChange={(e) => setProfileImage(e.target.value)}
+                accept="image/*"
+                onChange={handleImageUpload}
               />
+              {profileImage && (
+                <div className="text-center mt-2">
+                  <img
+                    src={profileImage}
+                    alt="Preview"
+                    className="rounded-circle mb-2"
+                    style={{ width: "100px", height: "100px", objectFit: "cover" }}
+                  />
+                  <br />
+                  <button
+                    type="button"
+                    className="btn btn-outline-danger btn-sm"
+                    onClick={handleRemoveImage}
+                  >
+                    Remove Image
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="d-grid">
