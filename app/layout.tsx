@@ -7,8 +7,8 @@ import { ThemeProvider } from "./context/ThemeContext";
 // Root layout shared by all routes
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-gray-50">
+    <html lang="en" data-bs-theme="light">
+      <body className="min-h-screen">
         {/* Provide authentication and theme context to the entire app */}
         <AuthProvider>
           <ThemeProvider>{children}</ThemeProvider>

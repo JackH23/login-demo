@@ -25,7 +25,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // apply theme classes and persist changes
   useEffect(() => {
     localStorage.setItem("theme", theme);
-    if (theme === "night") {
+    const isDark = theme === "night";
+    document.documentElement.setAttribute(
+      "data-bs-theme",
+      isDark ? "dark" : "light"
+    );
+    if (isDark) {
       document.body.classList.add("bg-dark", "text-white");
       document.body.classList.remove("bg-gray-50");
     } else {
