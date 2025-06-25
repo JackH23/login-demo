@@ -53,6 +53,7 @@ export default function BlogCard({
   const [showImageModal, setShowImageModal] = useState(false);
   const [userImages, setUserImages] = useState<Record<string, string>>({});
   const { user } = useAuth();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     setLikes(blog.likes ?? 0);
@@ -310,6 +311,27 @@ export default function BlogCard({
     }
   };
 
+  const handleDeletePost = async () => {
+    if (!blog._id || !user) return;
+
+    setIsDeleting(true);
+
+    try {
+      const res = await fetch(`/api/posts/${blog._id}`, { method: "DELETE" });
+      if (res.ok) {
+        onDelete?.(blog._id);
+      } else {
+        alert("Failed to delete the post. Please try again.");
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+      alert("Failed to delete the post. Please try again.");
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
+
   return (
     <div
       className="card shadow-sm w-100 mx-auto mb-4"
@@ -527,6 +549,64 @@ export default function BlogCard({
           </div>
         </div>
       </div>
+
+      {/* showDeleteModal */}
+      {showDeleteModal && (
+        <div
+          className="modal fade show d-block"
+          tabIndex={-1}
+          role="dialog"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+          onClick={() => !isDeleting && setShowDeleteModal(false)}
+        >
+          <div
+            className="modal-dialog modal-dialog-centered"
+            role="document"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Confirm Delete</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={isDeleting}
+                />
+              </div>
+              <div className="modal-body">
+                Are you sure you want to delete this post?
+              </div>
+              <div className="modal-footer">
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={isDeleting}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn btn-danger"
+                  onClick={handleDeletePost}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? (
+                    <>
+                      <span
+                        className="spinner-border spinner-border-sm me-2"
+                        role="status"
+                      ></span>
+                      Deleting...
+                    </>
+                  ) : (
+                    "Delete"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* showCommentsModal */}
       {showCommentsModal && (
