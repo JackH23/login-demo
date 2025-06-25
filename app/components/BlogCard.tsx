@@ -11,9 +11,16 @@ interface BlogPost {
   author: string;
   likes: number;
   dislikes: number;
-  likedBy?: string[];
-  dislikedBy?: string[];
 }
+
+const post = await Post.create({
+  title,
+  content,
+  image,
+  author,
+  likes: 0,
+  dislikes: 0,
+});
 
 interface AuthorData {
   username: string;
@@ -33,8 +40,6 @@ interface Comment {
   authorImage?: string;
   likes: number;
   dislikes: number;
-  userLiked: boolean;
-  userDisliked: boolean;
   replies: Reply[];
   showReplyInput: boolean;
   newReply: string;
@@ -43,43 +48,25 @@ interface Comment {
 export default function BlogCard({
   blog,
   author,
-  onDelete,
 }: {
   blog: BlogPost;
   author?: AuthorData;
-  onDelete?: (id: string) => void;
 }) {
-  const { user } = useAuth();
   const [likes, setLikes] = useState<number>(blog.likes ?? 0);
   const [dislikes, setDislikes] = useState<number>(blog.dislikes ?? 0);
-  const [userLiked, setUserLiked] = useState<boolean>(
-    blog.likedBy?.includes(user?.username ?? "") ?? false
-  );
-  const [userDisliked, setUserDisliked] = useState<boolean>(
-    blog.dislikedBy?.includes(user?.username ?? "") ?? false
-  );
 
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [showAllComments] = useState(false);
   const [showCommentsModal, setShowCommentsModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [userImages, setUserImages] = useState<Record<string, string>>({});
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     setLikes(blog.likes ?? 0);
     setDislikes(blog.dislikes ?? 0);
-    setUserLiked(blog.likedBy?.includes(user?.username ?? "") ?? false);
-    setUserDisliked(blog.dislikedBy?.includes(user?.username ?? "") ?? false);
-  }, [
-    blog.likes,
-    blog.dislikes,
-    blog.likedBy,
-    blog.dislikedBy,
-    user?.username,
-  ]);
+  }, [blog.likes, blog.dislikes]);
 
   useEffect(() => {
     if (!blog._id) return;
@@ -104,8 +91,6 @@ export default function BlogCard({
             author: string;
             likes: number;
             dislikes: number;
-            likedBy?: string[];
-            dislikedBy?: string[];
             replies?: { text: string; author: string }[];
           }) => ({
             _id: c._id as string,
@@ -114,8 +99,6 @@ export default function BlogCard({
             authorImage: images[c.author],
             likes: c.likes ?? 0,
             dislikes: c.dislikes ?? 0,
-            userLiked: c.likedBy?.includes(user?.username ?? "") ?? false,
-            userDisliked: c.dislikedBy?.includes(user?.username ?? "") ?? false,
             replies: (c.replies ?? []).map(
               (r: { text: string; author: string }) => ({
                 text: r.text as string,
@@ -133,7 +116,7 @@ export default function BlogCard({
         setComments([]);
         setUserImages({});
       });
-  }, [blog._id, user?.username]);
+  }, [blog._id]);
 
   const handleCommentSubmit = async () => {
     const text = newComment.trim();
@@ -164,8 +147,6 @@ export default function BlogCard({
             authorImage: userImages[data.comment.author],
             likes: data.comment.likes,
             dislikes: data.comment.dislikes,
-            userLiked: false,
-            userDisliked: false,
             replies: [],
             showReplyInput: false,
             newReply: "",
@@ -185,8 +166,6 @@ export default function BlogCard({
         authorImage: user ? userImages[user.username] : undefined,
         likes: 0,
         dislikes: 0,
-        userLiked: false,
-        userDisliked: false,
         replies: [],
         showReplyInput: false,
         newReply: "",
@@ -196,101 +175,29 @@ export default function BlogCard({
 
   const handleLikeComment = async (index: number) => {
     const comment = comments[index];
-    if (!user || comment.userLiked) return;
-
     setComments((prev) =>
-      prev.map((c, i) =>
-        i === index ? { ...c, likes: c.likes + 1, userLiked: true } : c
-      )
+      prev.map((c, i) => (i === index ? { ...c, likes: c.likes + 1 } : c))
     );
-
     if (comment._id) {
-      try {
-        const res = await fetch(`/api/comments/${comment._id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "like", username: user.username }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setComments((prev) =>
-            prev.map((c, i) =>
-              i === index
-                ? {
-                    ...c,
-                    likes: data.comment.likes,
-                    dislikes: data.comment.dislikes,
-                    userLiked: true,
-                  }
-                : c
-            )
-          );
-        } else {
-          setComments((prev) =>
-            prev.map((c, i) =>
-              i === index ? { ...c, likes: c.likes - 1, userLiked: false } : c
-            )
-          );
-        }
-      } catch {
-        setComments((prev) =>
-          prev.map((c, i) =>
-            i === index ? { ...c, likes: c.likes - 1, userLiked: false } : c
-          )
-        );
-      }
+      await fetch(`/api/comments/${comment._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "like" }),
+      });
     }
   };
 
   const handleDislikeComment = async (index: number) => {
     const comment = comments[index];
-    if (!user || comment.userDisliked) return;
-
     setComments((prev) =>
-      prev.map((c, i) =>
-        i === index ? { ...c, dislikes: c.dislikes + 1, userDisliked: true } : c
-      )
+      prev.map((c, i) => (i === index ? { ...c, dislikes: c.dislikes + 1 } : c))
     );
-
     if (comment._id) {
-      try {
-        const res = await fetch(`/api/comments/${comment._id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "dislike", username: user.username }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setComments((prev) =>
-            prev.map((c, i) =>
-              i === index
-                ? {
-                    ...c,
-                    likes: data.comment.likes,
-                    dislikes: data.comment.dislikes,
-                    userDisliked: true,
-                  }
-                : c
-            )
-          );
-        } else {
-          setComments((prev) =>
-            prev.map((c, i) =>
-              i === index
-                ? { ...c, dislikes: c.dislikes - 1, userDisliked: false }
-                : c
-            )
-          );
-        }
-      } catch {
-        setComments((prev) =>
-          prev.map((c, i) =>
-            i === index
-              ? { ...c, dislikes: c.dislikes - 1, userDisliked: false }
-              : c
-          )
-        );
-      }
+      await fetch(`/api/comments/${comment._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "dislike" }),
+      });
     }
   };
 
@@ -368,15 +275,15 @@ export default function BlogCard({
   };
 
   const handleLikePost = async () => {
-    if (!blog._id || !user || userLiked) return;
     setLikes((prev) => prev + 1);
-    setUserLiked(true);
+
+    if (!blog._id) return;
 
     try {
       const res = await fetch(`/api/posts/${blog._id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "like", username: user.username }),
+        body: JSON.stringify({ action: "like" }),
       });
 
       if (!res.ok) throw new Error("Failed");
@@ -386,51 +293,29 @@ export default function BlogCard({
       setDislikes(post.dislikes);
     } catch (error) {
       setLikes((prev) => prev - 1); // Revert on error
-      setUserLiked(false);
       console.error("Failed to like post", error);
     }
   };
 
   const handleDislikePost = async () => {
-    if (!blog._id || !user || userDisliked) return;
     setDislikes((prev) => prev + 1);
-    setUserDisliked(true);
-    try {
-      const res = await fetch(`/api/posts/${blog._id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "dislike", username: user.username }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setLikes(data.post.likes);
-        setDislikes(data.post.dislikes);
-      } else {
+    if (blog._id) {
+      try {
+        const res = await fetch(`/api/posts/${blog._id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "dislike" }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setLikes(data.post.likes);
+          setDislikes(data.post.dislikes);
+        } else {
+          setDislikes((prev) => prev - 1);
+        }
+      } catch {
         setDislikes((prev) => prev - 1);
-        setUserDisliked(false);
       }
-    } catch {
-      setDislikes((prev) => prev - 1);
-      setUserDisliked(false);
-    }
-  };
-
-  const handleDeletePost = async () => {
-    if (!blog._id || !user) return;
-
-    setIsDeleting(true);
-
-    try {
-      const res = await fetch(`/api/posts/${blog._id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Delete failed");
-
-      onDelete?.(blog._id);
-    } catch (err) {
-      alert("Failed to delete the post. Please try again.");
-      console.error("Delete error:", err);
-    } finally {
-      setIsDeleting(false);
-      setShowDeleteModal(false);
     }
   };
 
@@ -468,18 +353,13 @@ export default function BlogCard({
         <p className="card-text">{blog.content}</p>
 
         <div className="d-flex gap-3 align-items-center mt-3">
-          <button
-            className="btn btn-outline-success"
-            onClick={handleLikePost}
-            disabled={userLiked}
-          >
+          <button className="btn btn-outline-success" onClick={handleLikePost}>
             👍 {likes}
           </button>
 
           <button
             className="btn btn-outline-danger"
             onClick={handleDislikePost}
-            disabled={userDisliked}
           >
             👎 {dislikes}
           </button>
@@ -504,15 +384,6 @@ export default function BlogCard({
           >
             🔗 Share
           </button>
-          {user?.username === blog.author && (
-            <button
-              className="btn btn-outline-danger"
-              onClick={() => setShowDeleteModal(true)}
-              disabled={isDeleting}
-            >
-              🗑 Delete
-            </button>
-          )}
         </div>
 
         {/* Comments Section */}
@@ -563,14 +434,12 @@ export default function BlogCard({
                             <button
                               className="btn btn-outline-success"
                               onClick={() => handleLikeComment(idx)}
-                              disabled={comment.userLiked}
                             >
                               👍 {comment.likes}
                             </button>
                             <button
                               className="btn btn-outline-danger"
                               onClick={() => handleDislikeComment(idx)}
-                              disabled={comment.userDisliked}
                             >
                               👎 {comment.dislikes}
                             </button>
@@ -668,64 +537,6 @@ export default function BlogCard({
         </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
-        <div
-          className="modal fade show d-block"
-          tabIndex={-1}
-          role="dialog"
-          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-          onClick={() => !isDeleting && setShowDeleteModal(false)}
-        >
-          <div
-            className="modal-dialog modal-dialog-centered"
-            role="document"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Confirm Delete</h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setShowDeleteModal(false)}
-                  disabled={isDeleting}
-                />
-              </div>
-              <div className="modal-body">
-                Are you sure you want to delete this post?
-              </div>
-              <div className="modal-footer">
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => setShowDeleteModal(false)}
-                  disabled={isDeleting}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="btn btn-danger"
-                  onClick={handleDeletePost}
-                  disabled={isDeleting}
-                >
-                  {isDeleting ? (
-                    <>
-                      <span
-                        className="spinner-border spinner-border-sm me-2"
-                        role="status"
-                      ></span>
-                      Deleting...
-                    </>
-                  ) : (
-                    "Delete"
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* showCommentsModal */}
       {showCommentsModal && (
         <div
@@ -794,14 +605,12 @@ export default function BlogCard({
                           <button
                             className="btn btn-outline-success"
                             onClick={() => handleLikeComment(idx)}
-                            disabled={comment.userLiked}
                           >
                             👍 {comment.likes}
                           </button>
                           <button
                             className="btn btn-outline-danger"
                             onClick={() => handleDislikeComment(idx)}
-                            disabled={comment.userDisliked}
                           >
                             👎 {comment.dislikes}
                           </button>
