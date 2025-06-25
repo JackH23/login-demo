@@ -39,9 +39,11 @@ interface Comment {
 export default function BlogCard({
   blog,
   author,
+  onDelete,
 }: {
   blog: BlogPost;
   author?: AuthorData;
+  onDelete?: (id: string) => void;
 }) {
   const [likes, setLikes] = useState<number>(blog.likes ?? 0);
   const [dislikes, setDislikes] = useState<number>(blog.dislikes ?? 0);
@@ -54,6 +56,7 @@ export default function BlogCard({
   const [userImages, setUserImages] = useState<Record<string, string>>({});
   const { user } = useAuth();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     setLikes(blog.likes ?? 0);
@@ -397,6 +400,14 @@ export default function BlogCard({
           >
             🔗 Share
           </button>
+          {user && user.username === blog.author && (
+            <button
+              className="btn btn-danger"
+              onClick={() => setShowDeleteModal(true)}
+            >
+              🗑️ Delete
+            </button>
+          )}
         </div>
 
         {/* Comments Section */}
