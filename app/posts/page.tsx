@@ -51,7 +51,9 @@ export default function PostsPage() {
 
     Promise.all([
       fetch("/api/users").then((res) => res.json()),
-      fetch(`/api/posts?author=${encodeURIComponent(user.username)}`).then((res) => res.json()),
+      fetch(`/api/posts?author=${encodeURIComponent(user.username)}`).then(
+        (res) => res.json()
+      ),
     ])
       .then(([usersData, postsData]) => {
         setUsers(usersData.users ?? []);
@@ -78,8 +80,24 @@ export default function PostsPage() {
       <TopBar
         title="Posts"
         active="posts"
-        currentUser={{ username: currentUserData.username, image: currentUserData.image }}
+        currentUser={{
+          username: currentUserData.username,
+          image: currentUserData.image,
+        }}
       />
+
+      {/* Create Blog Button */}
+      <div
+        className="text-end bg-white py-3 px-4 position-sticky top-0 z-2"
+        style={{ borderBottom: "1px solid #dee2e6" }}
+      >
+        <button
+          className="btn btn-success"
+          onClick={() => router.push("/create-blog")}
+        >
+          + Create Blog
+        </button>
+      </div>
 
       <div className="container mt-4">
         {posts.length === 0 ? (

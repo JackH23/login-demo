@@ -221,7 +221,11 @@ export default function BlogCard({
           setComments((prev) =>
             prev.map((c, i) =>
               i === index
-                ? { ...c, likes: data.comment.likes, dislikes: data.comment.dislikes }
+                ? {
+                    ...c,
+                    likes: data.comment.likes,
+                    dislikes: data.comment.dislikes,
+                  }
                 : c
             )
           );
@@ -273,7 +277,11 @@ export default function BlogCard({
           setComments((prev) =>
             prev.map((c, i) =>
               i === index
-                ? { ...c, likes: data.comment.likes, dislikes: data.comment.dislikes }
+                ? {
+                    ...c,
+                    likes: data.comment.likes,
+                    dislikes: data.comment.dislikes,
+                  }
                 : c
             )
           );
@@ -710,13 +718,16 @@ export default function BlogCard({
               </div>
               <div className="modal-footer">
                 <button
+                  type="button"
                   className="btn btn-secondary"
                   onClick={() => setShowDeleteModal(false)}
                   disabled={isDeleting}
                 >
                   Cancel
                 </button>
+
                 <button
+                  type="button"
                   className="btn btn-danger"
                   onClick={handleDeletePost}
                   disabled={isDeleting}
