@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 
 export default function SignupPage() {
   const [username, setUsername] = useState("");
@@ -12,6 +13,7 @@ export default function SignupPage() {
   const [image, setImage] = useState<File | null>(null);
   const [error, setError] = useState("");
   const { signup } = useAuth();
+  const { theme } = useTheme();
   const router = useRouter();
 
   const handleSignup = async () => {
@@ -54,7 +56,11 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="d-flex align-items-center justify-content-center min-vh-100 bg-light">
+    <div
+      className={`d-flex align-items-center justify-content-center min-vh-100 ${
+        theme === "night" ? "bg-dark text-white" : "bg-light"
+      }`}
+    >
       <div className="card shadow" style={{ maxWidth: "28rem", width: "100%" }}>
         <div className="card-body">
           <h2 className="card-title h3 text-center mb-4">Sign Up</h2>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 
 interface User {
@@ -14,6 +15,7 @@ interface User {
 
 export default function AnalysisPage() {
   const { user, loading } = useAuth();
+  const { theme } = useTheme();
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [isFetching, setIsFetching] = useState(true);
@@ -44,7 +46,11 @@ export default function AnalysisPage() {
   }
 
   return (
-    <div className="container-fluid min-vh-100 bg-light p-4">
+    <div
+      className={`container-fluid min-vh-100 p-4 ${
+        theme === "night" ? "bg-dark text-white" : "bg-light"
+      }`}
+    >
       {/* Sticky Top Bar and Menu */}
       <TopBar
         title="Analysis"
