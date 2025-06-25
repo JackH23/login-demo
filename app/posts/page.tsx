@@ -20,6 +20,8 @@ interface BlogPost {
   author: string;
   likes: number;
   dislikes: number;
+  likedBy?: string[];
+  dislikedBy?: string[];
 }
 
 export default function PostsPage() {
