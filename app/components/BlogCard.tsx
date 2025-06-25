@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 
 interface BlogPost {
   _id?: string;
@@ -61,6 +62,7 @@ export default function BlogCard({
   const [showImageModal, setShowImageModal] = useState(false);
   const [userImages, setUserImages] = useState<Record<string, string>>({});
   const { user } = useAuth();
+  const { theme } = useTheme();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -547,7 +549,9 @@ export default function BlogCard({
                     (comment, idx) => (
                       <li
                         key={idx}
-                        className="list-group-item mb-3 rounded shadow-sm bg-white"
+                        className={`list-group-item mb-3 rounded shadow-sm ${
+                          theme === "night" ? "bg-dark text-white" : "bg-white"
+                        }`}
                       >
                         <div className="d-flex justify-content-between align-items-center">
                           <div className="d-flex align-items-center gap-2">
@@ -610,7 +614,9 @@ export default function BlogCard({
                             {comment.replies.map((reply, rIdx) => (
                               <li
                                 key={rIdx}
-                                className="d-flex align-items-center gap-2 text-muted small mb-2"
+                                className={`d-flex align-items-center gap-2 ${
+                                  theme === "night" ? "text-light" : "text-muted"
+                                } small mb-2`}
                               >
                                 {reply.authorImage && (
                                   <img
@@ -766,7 +772,9 @@ export default function BlogCard({
             onClick={(e) => e.stopPropagation()}
           >
             <div
-              className="modal-content"
+              className={`modal-content ${
+                theme === "night" ? "bg-dark text-white" : ""
+              }`}
               style={{
                 height: "90vh",
                 display: "flex",
@@ -791,7 +799,9 @@ export default function BlogCard({
                   {comments.map((comment, idx) => (
                     <li
                       key={idx}
-                      className="list-group-item mb-3 rounded shadow-sm bg-white"
+                      className={`list-group-item mb-3 rounded shadow-sm ${
+                        theme === "night" ? "bg-dark text-white" : "bg-white"
+                      }`}
                     >
                       <div className="d-flex justify-content-between align-items-center">
                         <div className="d-flex align-items-center gap-2">
@@ -854,7 +864,9 @@ export default function BlogCard({
                           {comment.replies.map((reply, rIdx) => (
                             <li
                               key={rIdx}
-                              className="d-flex align-items-center gap-2 text-muted small mb-2"
+                              className={`d-flex align-items-center gap-2 ${
+                                theme === "night" ? "text-light" : "text-muted"
+                              } small mb-2`}
                             >
                               {reply.authorImage && (
                                 <img
