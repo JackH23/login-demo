@@ -36,7 +36,7 @@ export async function PATCH(
   const alreadyLiked = existing.likedBy?.includes(username);
   const alreadyDisliked = existing.dislikedBy?.includes(username);
 
-  if ((action === 'like' && alreadyLiked) || (action === 'dislike' && alreadyDisliked)) {
+  if (alreadyLiked || alreadyDisliked) {
     return NextResponse.json({
       comment: {
         _id: existing._id,

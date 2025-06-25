@@ -192,7 +192,12 @@ export default function BlogCard({
 
   const handleLikeComment = async (index: number) => {
     const comment = comments[index];
-    if (!user || comment.likedBy?.includes(user.username)) return;
+    if (
+      !user ||
+      comment.likedBy?.includes(user.username) ||
+      comment.dislikedBy?.includes(user.username)
+    )
+      return;
     setComments((prev) =>
       prev.map((c, i) =>
         i === index
@@ -239,7 +244,12 @@ export default function BlogCard({
 
   const handleDislikeComment = async (index: number) => {
     const comment = comments[index];
-    if (!user || comment.dislikedBy?.includes(user.username)) return;
+    if (
+      !user ||
+      comment.dislikedBy?.includes(user.username) ||
+      comment.likedBy?.includes(user.username)
+    )
+      return;
     setComments((prev) =>
       prev.map((c, i) =>
         i === index
@@ -556,14 +566,24 @@ export default function BlogCard({
                             <button
                               className="btn btn-outline-success"
                               onClick={() => handleLikeComment(idx)}
-                              disabled={user ? comment.likedBy?.includes(user.username) : true}
+                              disabled={
+                                user
+                                  ? comment.likedBy?.includes(user.username) ||
+                                    comment.dislikedBy?.includes(user.username)
+                                  : true
+                              }
                             >
                               👍 {comment.likes}
                             </button>
                             <button
                               className="btn btn-outline-danger"
                               onClick={() => handleDislikeComment(idx)}
-                              disabled={user ? comment.dislikedBy?.includes(user.username) : true}
+                              disabled={
+                                user
+                                  ? comment.likedBy?.includes(user.username) ||
+                                    comment.dislikedBy?.includes(user.username)
+                                  : true
+                              }
                             >
                               👎 {comment.dislikes}
                             </button>
@@ -787,14 +807,24 @@ export default function BlogCard({
                           <button
                             className="btn btn-outline-success"
                             onClick={() => handleLikeComment(idx)}
-                            disabled={user ? comment.likedBy?.includes(user.username) : true}
+                            disabled={
+                              user
+                                ? comment.likedBy?.includes(user.username) ||
+                                  comment.dislikedBy?.includes(user.username)
+                                : true
+                            }
                           >
                             👍 {comment.likes}
                           </button>
                           <button
                             className="btn btn-outline-danger"
                             onClick={() => handleDislikeComment(idx)}
-                            disabled={user ? comment.dislikedBy?.includes(user.username) : true}
+                            disabled={
+                              user
+                                ? comment.likedBy?.includes(user.username) ||
+                                  comment.dislikedBy?.includes(user.username)
+                                : true
+                            }
                           >
                             👎 {comment.dislikes}
                           </button>
