@@ -13,6 +13,8 @@ const UserSchema = new Schema({
   age: { type: Number },
   // Base64 encoded image string
   image: { type: String },
+  // List of usernames that this user has added as friends
+  friends: { type: [String], default: [] },
 });
 
 // Reuse the model if it has already been compiled

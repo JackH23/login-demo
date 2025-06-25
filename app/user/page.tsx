@@ -15,6 +15,7 @@ export default function UserPage() {
     position: string;
     age: number;
     image: string;
+    friends?: string[];
   }
 
   const [users, setUsers] = useState<User[]>([]);
@@ -106,6 +107,25 @@ export default function UserPage() {
     }
   };
 
+  const handleAddFriend = async (friend: string) => {
+    if (!user) return;
+    const res = await fetch('/api/friends', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user: user.username, friend }),
+    });
+    if (res.ok) {
+      alert(`Friend request sent to ${friend}`);
+      setUsers((prev) =>
+        prev.map((item) =>
+          item.username === user.username
+            ? { ...item, friends: [...(item.friends ?? []), friend] }
+            : item
+        )
+      );
+    }
+  };
+
   const filteredUsers = users
     .filter((u) => u.username !== user.username)
     .filter((u) => u.username.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -191,11 +211,13 @@ export default function UserPage() {
                       <div className="btn-group">
                         <button
                           className="btn btn-sm btn-outline-success"
-                          onClick={() =>
-                            alert(`Friend request sent to ${u.username}`)
-                          }
+                          disabled={currentUserData.friends?.includes(u.username)}
+                          onClick={() => handleAddFriend(u.username)}
                         >
-                          <i className="bi bi-person-plus me-1"></i> Add Friend
+                          <i className="bi bi-person-plus me-1"></i>{" "}
+                          {currentUserData.friends?.includes(u.username)
+                            ? "Friend"
+                            : "Add Friend"}
                         </button>
                         <button
                           className="btn btn-sm btn-outline-secondary"
