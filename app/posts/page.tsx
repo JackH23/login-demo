@@ -43,7 +43,7 @@ export default function PostsPage() {
 
     Promise.all([
       fetch("/api/users").then((res) => res.json()),
-      fetch("/api/posts").then((res) => res.json()),
+      fetch(`/api/posts?author=${encodeURIComponent(user.username)}`).then((res) => res.json()),
     ])
       .then(([usersData, postsData]) => {
         setUsers(usersData.users ?? []);
