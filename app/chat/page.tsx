@@ -178,6 +178,24 @@ export default function ChatPage() {
     }
   };
 
+  function formatDateLabel(dateStr: string) {
+    const date = new Date(dateStr);
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) return "Today";
+    if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
+
+    return date.toLocaleDateString(undefined, {
+      weekday: "long",
+      month: "short",
+      day: "numeric",
+    });
+  }
+
+  let lastDateLabel = "";
+
   return (
     <div
       className={`container-fluid d-flex flex-column vh-100 p-0 ${
@@ -205,115 +223,135 @@ export default function ChatPage() {
           theme === "night" ? "bg-dark text-white" : "bg-light"
         }`}
       >
-        {messages.map((msg) => {
+        {messages.map((msg, idx) => {
+          const msgDate = new Date(msg.createdAt).toDateString();
           const isSender = msg.from === user?.username;
+
+          const showDateLabel = msgDate !== lastDateLabel;
+          if (showDateLabel) lastDateLabel = msgDate;
+
           return (
-            <div
-              key={msg._id}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                if (isSender) setSelectedMsgId(msg._id);
-                else setSelectedMsgId(null);
-              }}
-              className={`d-flex mb-2 ${
-                isSender ? "justify-content-end" : "justify-content-start"
-              }`}
-            >
+            <div key={msg._id + idx}>
+              {showDateLabel && (
+                <div className="text-center text-muted small my-3">
+                  <span className="badge bg-secondary">
+                    {formatDateLabel(msg.createdAt)}
+                  </span>
+                </div>
+              )}
+
               <div
-                className={`p-2 rounded shadow-sm ${
-                  isSender
-                    ? "bg-info text-white text-end"
-                    : theme === "night"
-                    ? "bg-secondary text-white text-start"
-                    : "bg-white text-dark text-start"
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  if (isSender) setSelectedMsgId(msg._id);
+                  else setSelectedMsgId(null);
+                }}
+                className={`d-flex mb-2 ${
+                  isSender ? "justify-content-end" : "justify-content-start"
                 }`}
-                style={{ maxWidth: "75%", position: "relative" }}
               >
-                {/* Message content */}
-                {msg.type === "text" && <div>{msg.content}</div>}
-                {msg.type === "image" && (
-                  <img
-                    src={msg.content}
-                    alt="sent-img"
-                    className="img-fluid rounded"
-                    style={{ maxWidth: "200px" }}
-                  />
-                )}
-                {msg.type === "file" && (
-                  <div
-                    className="d-flex align-items-center gap-2 p-2 rounded"
-                    style={{
-                      backgroundColor: isSender
-                        ? "#0d6efd"
-                        : theme === "night"
-                        ? "#343a40"
-                        : "#f8f9fa",
-                      color: isSender ? "#fff" : theme === "night" ? "#fff" : "#000",
-                    }}
-                  >
+                <div
+                  className={`p-2 rounded shadow-sm ${
+                    isSender
+                      ? "bg-info text-white text-end"
+                      : theme === "night"
+                      ? "bg-secondary text-white text-start"
+                      : "bg-white text-dark text-start"
+                  }`}
+                  style={{ maxWidth: "75%", position: "relative" }}
+                >
+                  {/* Message content */}
+                  {msg.type === "text" && <div>{msg.content}</div>}
+                  {msg.type === "image" && (
+                    <img
+                      src={msg.content}
+                      alt="sent-img"
+                      className="img-fluid rounded"
+                      style={{ maxWidth: "200px" }}
+                    />
+                  )}
+                  {msg.type === "file" && (
                     <div
-                      className="bg-white d-flex align-items-center justify-content-center rounded-circle"
+                      className="d-flex align-items-center gap-2 p-2 rounded"
                       style={{
-                        width: "40px",
-                        height: "40px",
-                        fontSize: "1.25rem",
-                        color: "#0d6efd",
+                        backgroundColor: isSender
+                          ? "#0d6efd"
+                          : theme === "night"
+                          ? "#343a40"
+                          : "#f8f9fa",
+                        color: isSender
+                          ? "#fff"
+                          : theme === "night"
+                          ? "#fff"
+                          : "#000",
                       }}
                     >
-                      📄
-                    </div>
-                    <div className="flex-grow-1">
-                      <a
-                        href={msg.content}
-                        download={msg.fileName}
-                        className="text-decoration-none fw-semibold"
+                      <div
+                        className="bg-white d-flex align-items-center justify-content-center rounded-circle"
                         style={{
-                          color: isSender
-                            ? "#fff"
-                            : theme === "night"
-                            ? "#fff"
-                            : "#000",
-                          wordBreak: "break-word",
+                          width: "40px",
+                          height: "40px",
+                          fontSize: "1.25rem",
+                          color: "#0d6efd",
                         }}
                       >
-                        {msg.fileName}
-                      </a>
-                  <div className="small text-muted">
-                        {msg.fileName?.split(".").pop()?.toUpperCase()} File
+                        📄
+                      </div>
+                      <div className="flex-grow-1">
+                        <a
+                          href={msg.content}
+                          download={msg.fileName}
+                          className="text-decoration-none fw-semibold"
+                          style={{
+                            color: isSender
+                              ? "#fff"
+                              : theme === "night"
+                              ? "#fff"
+                              : "#000",
+                            wordBreak: "break-word",
+                          }}
+                        >
+                          {msg.fileName}
+                        </a>
+                        <div className="small text-muted">
+                          {msg.fileName?.split(".").pop()?.toUpperCase()} File
+                        </div>
                       </div>
                     </div>
+                  )}
+
+                  <div className="small text-muted mt-1">
+                    {new Date(msg.createdAt).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </div>
-                )}
 
-                <div className="small text-muted mt-1">
-                  {new Date(msg.createdAt).toLocaleString()}
-                </div>
-
-                {/* Show Edit/Delete only on right-click */}
-                {isSender && selectedMsgId === msg._id && (
-                  <div className="mt-2 d-flex gap-3">
-                    {msg.type === "text" && (
+                  {isSender && selectedMsgId === msg._id && (
+                    <div className="mt-2 d-flex gap-3">
+                      {msg.type === "text" && (
+                        <button
+                          className="btn btn-sm btn-light text-primary"
+                          onClick={() => {
+                            handleEdit(msg);
+                            setSelectedMsgId(null);
+                          }}
+                        >
+                          ✏️ Edit
+                        </button>
+                      )}
                       <button
-                        className="btn btn-sm btn-light text-primary"
+                        className="btn btn-sm btn-light text-danger"
                         onClick={() => {
-                          handleEdit(msg);
+                          handleDelete(msg._id);
                           setSelectedMsgId(null);
                         }}
                       >
-                        ✏️ Edit
+                        🗑️ Delete
                       </button>
-                    )}
-                    <button
-                      className="btn btn-sm btn-light text-danger"
-                      onClick={() => {
-                        handleDelete(msg._id);
-                        setSelectedMsgId(null);
-                      }}
-                    >
-                      🗑️ Delete
-                    </button>
-                  </div>
-                )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           );
