@@ -115,6 +115,21 @@ export default function ChatPage() {
     return () => container.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    const container = document.getElementById("chat-scroll-container");
+    if (!container) return;
+
+    const handleScroll = () => {
+      const atBottom =
+        container.scrollHeight - container.scrollTop <=
+        container.clientHeight + 80;
+      setShowScrollButton(!atBottom);
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const handleSend = async () => {
     if (!user || !chatUser || !input.trim()) return;
 
@@ -417,6 +432,17 @@ export default function ChatPage() {
           </button>
         </div>
       </div>
+
+      {showScrollButton && (
+        <button
+          className="btn btn-primary position-fixed bottom-0 end-0 m-4 rounded-circle shadow"
+          style={{ zIndex: 1000, width: "48px", height: "48px" }}
+          onClick={scrollToBottom}
+          title="Scroll to latest"
+        >
+          ⬇
+        </button>
+      )}
     </div>
   );
 }
