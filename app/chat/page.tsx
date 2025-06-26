@@ -28,6 +28,7 @@ export default function ChatPage() {
   const socketRef = useRef<Socket | null>(null);
   const prevLengthRef = useRef(0); // Initialize ref here
   const [selectedMsgId, setSelectedMsgId] = useState<string | null>(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -97,6 +98,21 @@ export default function ChatPage() {
     const clearSelection = () => setSelectedMsgId(null);
     window.addEventListener("click", clearSelection);
     return () => window.removeEventListener("click", clearSelection);
+  }, []);
+
+  useEffect(() => {
+    const container = document.getElementById("chat-scroll-container");
+    if (!container) return;
+
+    const handleScroll = () => {
+      const atBottom =
+        container.scrollHeight - container.scrollTop <=
+        container.clientHeight + 80;
+      setShowScrollButton(!atBottom);
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
   }, []);
 
   const handleSend = async () => {
@@ -199,7 +215,7 @@ export default function ChatPage() {
 
   return (
     <div
-      className={`container-fluid d-flex flex-column vh-100 p-0 ${
+      className={`flex-grow-1 overflow-auto p-3 ${
         theme === "night" ? "bg-dark text-white" : "bg-light"
       }`}
     >
@@ -357,6 +373,16 @@ export default function ChatPage() {
             </div>
           );
         })}
+        {showScrollButton && (
+          <button
+            className="btn btn-primary position-fixed bottom-0 end-0 m-4 rounded-circle shadow"
+            style={{ zIndex: 1000, width: "48px", height: "48px" }}
+            onClick={scrollToBottom}
+            title="Scroll to latest"
+          >
+            ⬇
+          </button>
+        )}
         <div ref={bottomRef}></div> {/* Scroll target */}
       </div>
 
