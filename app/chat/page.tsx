@@ -128,7 +128,7 @@ export default function ChatPage() {
     const reader = new FileReader();
     reader.onload = async () => {
       const isImage = file.type.startsWith("image/");
-      const payload: Message = {
+      const payload: Omit<Message, "_id"> = {
         from: user.username,
         to: chatUser,
         type: isImage ? "image" : "file",
