@@ -231,16 +231,15 @@ export default function ChatPage() {
   return (
     <div
       id="chat-scroll-container"
-      className={`flex-grow-1 overflow-auto p-3 ${
+      className={`container-fluid d-flex flex-column vh-100 p-0 ${
         theme === "night" ? "bg-dark text-white" : "bg-light"
       }`}
     >
       {/* Header */}
       <div
-        className={`position-sticky top-0 z-3 px-4 py-3 d-flex justify-content-between align-items-center ${
+        className={`px-4 py-3 d-flex justify-content-between align-items-center ${
           theme === "night" ? "bg-dark text-white" : "bg-primary text-white"
         }`}
-        style={{ height: "60px" }}
       >
         <div className="d-flex align-items-center gap-3">
           <h5 className="mb-0">Chat {chatUser && `with ${chatUser}`}</h5>
