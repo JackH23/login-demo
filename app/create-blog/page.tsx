@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 
 export default function CreateBlogPage() {
   const [title, setTitle] = useState("");
@@ -10,6 +11,7 @@ export default function CreateBlogPage() {
   const [image, setImage] = useState<string | null>(null);
   const router = useRouter();
   const { user } = useAuth();
+  const { theme } = useTheme();
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -45,7 +47,11 @@ export default function CreateBlogPage() {
   };
 
   return (
-    <div className="container py-5">
+    <div
+      className={`container py-5 min-vh-100 ${
+        theme === "night" ? "bg-dark text-white" : "bg-light"
+      }`}
+    >
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -61,7 +67,12 @@ export default function CreateBlogPage() {
       </div>
 
       {/* Blog Form */}
-      <form onSubmit={handleSubmit} className="card shadow-sm p-4 bg-white">
+      <form
+        onSubmit={handleSubmit}
+        className={`card shadow-sm p-4 ${
+          theme === "night" ? "bg-dark text-white" : "bg-white"
+        }`}
+      >
         {/* Title Input */}
         <div className="mb-3">
           <label className="form-label fw-semibold">Title</label>
