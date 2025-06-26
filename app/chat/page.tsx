@@ -13,6 +13,7 @@ interface Message {
   fileName?: string;
   from: string;
   to: string;
+  createdAt: string;
 }
 
 export default function ChatPage() {
@@ -277,12 +278,16 @@ export default function ChatPage() {
                       >
                         {msg.fileName}
                       </a>
-                      <div className="small text-muted">
+                  <div className="small text-muted">
                         {msg.fileName?.split(".").pop()?.toUpperCase()} File
                       </div>
                     </div>
                   </div>
                 )}
+
+                <div className="small text-muted mt-1">
+                  {new Date(msg.createdAt).toLocaleString()}
+                </div>
 
                 {/* Show Edit/Delete only on right-click */}
                 {isSender && selectedMsgId === msg._id && (
