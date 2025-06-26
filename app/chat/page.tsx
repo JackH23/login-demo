@@ -80,12 +80,13 @@ export default function ChatPage() {
     return () => clearInterval(interval); // Cleanup
   }, [user, chatUser]);
 
-  // Scroll when a new message arrives from the chat partner
+  // Scroll when a new message arrives or when opening the chat
   useEffect(() => {
-    // Only scroll if the conversation grew and the last message is from the other user
+    // Only scroll if the conversation grew since last render
     if (messages.length > prevLengthRef.current) {
       const last = messages[messages.length - 1];
-      if (last && last.from === chatUser) {
+      // Scroll to the bottom on initial load or when the last message is from the chat partner
+      if (prevLengthRef.current === 0 || (last && last.from === chatUser)) {
         scrollToBottom();
       }
     }
