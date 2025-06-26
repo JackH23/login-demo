@@ -1,0 +1,20 @@
+.section { display: none; }
+.section.active { display: block; }
+.nav-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #0d6efd;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+}
+.nav-button:hover { background: #0b5ed7; }
+.number-center { text-align: center; }
+.number-white { color: white; }
+.number-input::-webkit-outer-spin-button,
+.number-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.number-input { -moz-appearance: textfield; }
+.slideshow-wrapper { position: relative; }
