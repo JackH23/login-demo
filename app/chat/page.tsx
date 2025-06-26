@@ -100,6 +100,8 @@ export default function ChatPage() {
     return () => window.removeEventListener("click", clearSelection);
   }, []);
 
+  // Show the scroll-to-bottom button when the user scrolls away from the bottom
+  // or when new messages arrive while not at the bottom
   useEffect(() => {
     const container = document.getElementById("chat-scroll-container");
     if (!container) return;
@@ -111,24 +113,14 @@ export default function ChatPage() {
       setShowScrollButton(!atBottom);
     };
 
-    container.addEventListener("scroll", handleScroll);
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
-    const container = document.getElementById("chat-scroll-container");
-    if (!container) return;
-
-    const handleScroll = () => {
-      const atBottom =
-        container.scrollHeight - container.scrollTop <=
-        container.clientHeight + 80;
-      setShowScrollButton(!atBottom);
-    };
+    // Initial check in case the list overflows on first render
+    handleScroll();
 
     container.addEventListener("scroll", handleScroll);
     return () => container.removeEventListener("scroll", handleScroll);
-  }, []);
+    // Re-run when messages change so the button updates if new messages push
+    // content while the user is scrolled up
+  }, [messages]);
 
   const handleSend = async () => {
     if (!user || !chatUser || !input.trim()) return;
