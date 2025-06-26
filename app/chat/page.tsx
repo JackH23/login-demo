@@ -399,7 +399,7 @@ export default function ChatPage() {
             ⬇
           </button>
         )}
-        <div ref={bottomRef}></div> {/* Scroll target */}
+        <div ref={bottomRef}></div>
       </div>
 
       {/* Input + File Upload */}
@@ -431,17 +431,6 @@ export default function ChatPage() {
           </button>
         </div>
       </div>
-
-      {showScrollButton && (
-        <button
-          className="btn btn-primary position-fixed bottom-0 end-0 m-4 rounded-circle shadow"
-          style={{ zIndex: 1000, width: "48px", height: "48px" }}
-          onClick={scrollToBottom}
-          title="Scroll to latest"
-        >
-          ⬇
-        </button>
-      )}
     </div>
   );
 }
