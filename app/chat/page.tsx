@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import { io, Socket } from "socket.io-client";
 
 interface Message {
@@ -18,6 +19,7 @@ export default function ChatPage() {
   const searchParams = useSearchParams();
   const chatUser = searchParams.get("user") ?? "";
   const { user } = useAuth();
+  const { theme } = useTheme();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -176,9 +178,17 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="container-fluid d-flex flex-column vh-100 p-0">
+    <div
+      className={`container-fluid d-flex flex-column vh-100 p-0 ${
+        theme === "night" ? "bg-dark text-white" : "bg-light"
+      }`}
+    >
       {/* Header */}
-      <div className="bg-primary text-white px-4 py-3 d-flex justify-content-between align-items-center">
+      <div
+        className={`px-4 py-3 d-flex justify-content-between align-items-center ${
+          theme === "night" ? "bg-dark text-white" : "bg-primary text-white"
+        }`}
+      >
         <div className="d-flex align-items-center gap-3">
           <h5 className="mb-0">Chat {chatUser && `with ${chatUser}`}</h5>
           <span className="badge bg-light text-dark">Online</span>
@@ -189,7 +199,11 @@ export default function ChatPage() {
       </div>
 
       {/* Message Area */}
-      <div className="flex-grow-1 overflow-auto bg-light p-3">
+      <div
+        className={`flex-grow-1 overflow-auto p-3 ${
+          theme === "night" ? "bg-dark text-white" : "bg-light"
+        }`}
+      >
         {messages.map((msg) => {
           const isSender = msg.from === user?.username;
           return (
@@ -208,6 +222,8 @@ export default function ChatPage() {
                 className={`p-2 rounded shadow-sm ${
                   isSender
                     ? "bg-info text-white text-end"
+                    : theme === "night"
+                    ? "bg-secondary text-white text-start"
                     : "bg-white text-dark text-start"
                 }`}
                 style={{ maxWidth: "75%", position: "relative" }}
@@ -226,8 +242,12 @@ export default function ChatPage() {
                   <div
                     className="d-flex align-items-center gap-2 p-2 rounded"
                     style={{
-                      backgroundColor: isSender ? "#0d6efd" : "#f8f9fa",
-                      color: isSender ? "#fff" : "#000",
+                      backgroundColor: isSender
+                        ? "#0d6efd"
+                        : theme === "night"
+                        ? "#343a40"
+                        : "#f8f9fa",
+                      color: isSender ? "#fff" : theme === "night" ? "#fff" : "#000",
                     }}
                   >
                     <div
@@ -247,7 +267,11 @@ export default function ChatPage() {
                         download={msg.fileName}
                         className="text-decoration-none fw-semibold"
                         style={{
-                          color: isSender ? "#fff" : "#000",
+                          color: isSender
+                            ? "#fff"
+                            : theme === "night"
+                            ? "#fff"
+                            : "#000",
                           wordBreak: "break-word",
                         }}
                       >
@@ -293,7 +317,11 @@ export default function ChatPage() {
       </div>
 
       {/* Input + File Upload */}
-      <div className="border-top p-3 bg-white">
+      <div
+        className={`border-top p-3 ${
+          theme === "night" ? "bg-dark" : "bg-white"
+        }`}
+      >
         <div className="input-group">
           <input
             type="text"
