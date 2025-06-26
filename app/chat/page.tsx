@@ -236,6 +236,7 @@ export default function ChatPage() {
 
       {/* Message Area */}
       <div
+        id="chat-scroll-container"
         className={`flex-grow-1 overflow-auto p-3 ${
           theme === "night" ? "bg-dark text-white" : "bg-light"
         }`}
