@@ -13,12 +13,19 @@ interface User {
   image: string;
 }
 
+interface Post {
+  _id: string;
+  author: string;
+  title: string;
+}
+
 export default function AdminPage() {
   const { user, loading } = useAuth();
   const { theme } = useTheme();
   const router = useRouter();
 
   const [users, setUsers] = useState<User[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [currentUserData, setCurrentUserData] = useState<User | null>(null);
   const [isFetching, setIsFetching] = useState(true);
 
@@ -30,16 +37,24 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!user || user.username !== "Smith") return;
-    fetch("/api/users")
-      .then((res) => res.json())
-      .then((data) => {
-        const userList = data.users ?? [];
+
+    Promise.all([
+      fetch("/api/users").then((res) => res.json()),
+      fetch("/api/posts").then((res) => res.json()),
+    ])
+      .then(([userData, postData]) => {
+        const userList = userData.users ?? [];
+        const postList = postData.posts ?? [];
+
         setUsers(userList);
-        const current = userList.find((u: User) => u.username === user.username);
+        setPosts(postList);
+
+        const current = userList.find((u) => u.username === user.username);
         setCurrentUserData(current ?? null);
       })
       .catch(() => {
         setUsers([]);
+        setPosts([]);
         setCurrentUserData(null);
       })
       .finally(() => setIsFetching(false));
@@ -53,6 +68,9 @@ export default function AdminPage() {
     router.push("/home");
     return null;
   }
+
+  const getPostCount = (username: string) =>
+    posts.filter((p) => p.author === username).length;
 
   return (
     <div
@@ -69,22 +87,39 @@ export default function AdminPage() {
         }}
       />
 
-      <div className="container mt-4" style={{ maxWidth: "600px" }}>
-        <h3 className="mb-4 text-center">Admin Dashboard</h3>
+      <div className="container mt-4" style={{ maxWidth: "900px" }}>
+        <h3 className="mb-4 text-center">📋 Admin Dashboard – Users & Posts</h3>
+
         {users.length === 0 ? (
           <p className="text-muted text-center">No users found.</p>
         ) : (
-          <ul className="list-group">
+          <div className="row g-4">
             {users.map((u) => (
-              <li
-                key={u.username}
-                className="list-group-item d-flex justify-content-between align-items-center"
-              >
-                <span>{u.username}</span>
-                <span className="text-muted">{u.position}</span>
-              </li>
+              <div key={u.username} className="col-md-6">
+                <div className="card shadow-sm">
+                  <div className="card-body d-flex align-items-center gap-3">
+                    <img
+                      src={u.image}
+                      alt={u.username}
+                      className="rounded-circle"
+                      width={60}
+                      height={60}
+                      style={{ objectFit: "cover" }}
+                    />
+                    <div>
+                      <h5 className="mb-1">{u.username}</h5>
+                      <p className="mb-1 text-muted small">
+                        Role: {u.position} | Age: {u.age}
+                      </p>
+                      <span className="badge bg-primary">
+                        Posts: {getPostCount(u.username)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </div>
     </div>
