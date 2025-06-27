@@ -34,6 +34,14 @@ export default function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Request browser notification permission on mount
+  useEffect(() => {
+    if (typeof window === "undefined" || !("Notification" in window)) return;
+    if (Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  }, []);
+
   // Initialize socket connection once
   useEffect(() => {
     socketRef.current = io("http://localhost:3000");
@@ -50,6 +58,11 @@ export default function ChatPage() {
     const handleReceive = (message: Message) => {
       if (message.from === chatUser && message.to === user?.username) {
         setMessages((prev) => [...prev, message]);
+        if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+          const body =
+            message.type === "text" ? message.content : `sent a ${message.type}`;
+          new Notification(`Message from ${message.from}`, { body });
+        }
       }
     };
 
