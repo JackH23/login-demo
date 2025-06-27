@@ -14,6 +14,12 @@ interface User {
   friends?: string[];
 }
 
+interface LastMessage {
+  type: "text" | "image" | "file";
+  content: string;
+  fileName?: string;
+}
+
 export default function FriendPage() {
   const { user, loading } = useAuth();
   const { theme } = useTheme();
@@ -21,6 +27,8 @@ export default function FriendPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [friends, setFriends] = useState<string[]>([]);
   const [isFetching, setIsFetching] = useState(true);
+  const [lastMessages, setLastMessages] = useState<Record<string, LastMessage | null>>({});
+  const [loadingMessages, setLoadingMessages] = useState(true);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -52,7 +60,42 @@ export default function FriendPage() {
     fetchData();
   }, [user]);
 
-  if (loading || isFetching || !user) {
+  useEffect(() => {
+    const fetchLastMessages = async () => {
+      if (!user || friends.length === 0) {
+        setLastMessages({});
+        setLoadingMessages(false);
+        return;
+      }
+
+      try {
+        const results = await Promise.all(
+          friends.map(async (friend) => {
+            const res = await fetch(
+              `/api/messages?user1=${user.username}&user2=${friend}`
+            );
+            const data = await res.json();
+            const msgs = data.messages ?? [];
+            return { friend, msg: msgs[msgs.length - 1] as LastMessage | undefined };
+          })
+        );
+
+        const map: Record<string, LastMessage | null> = {};
+        results.forEach(({ friend, msg }) => {
+          map[friend] = msg ?? null;
+        });
+        setLastMessages(map);
+      } catch {
+        setLastMessages({});
+      } finally {
+        setLoadingMessages(false);
+      }
+    };
+
+    fetchLastMessages();
+  }, [user, friends]);
+
+  if (loading || isFetching || loadingMessages || !user) {
     return <div className="text-center mt-5">Loading...</div>;
   }
 
@@ -81,34 +124,50 @@ export default function FriendPage() {
         <div className="card-body">
           {friendUsers.length > 0 ? (
             <ul className="list-group">
-              {friendUsers.map((f) => (
-                <li key={f.username} className="list-group-item list-group-item-light">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <div className="d-flex align-items-center">
-                      {f.image && (
-                        <img
-                          src={f.image}
-                          alt={`${f.username} profile`}
-                          className="rounded-circle me-3"
-                          style={{ width: "50px", height: "50px", objectFit: "cover" }}
-                        />
-                      )}
-                      <div>
-                        <div className="fw-bold">{f.username}</div>
-                        {f.position && <div className="text-muted">Position: {f.position}</div>}
+              {friendUsers.map((f) => {
+                const last = lastMessages[f.username];
+                let preview = "";
+                if (last) {
+                  if (last.type === "text") preview = last.content;
+                  else if (last.type === "image") preview = "[Image]";
+                  else preview = last.fileName ? `[File] ${last.fileName}` : "[File]";
+                }
+                return (
+                  <li key={f.username} className="list-group-item list-group-item-light">
+                    <div className="d-flex justify-content-between align-items-center">
+                      <div className="d-flex align-items-center">
+                        {f.image && (
+                          <img
+                            src={f.image}
+                            alt={`${f.username} profile`}
+                            className="rounded-circle me-3"
+                            style={{ width: "50px", height: "50px", objectFit: "cover" }}
+                          />
+                        )}
+                        <div>
+                          <div className="fw-bold">{f.username}</div>
+                          {f.position && (
+                            <div className="text-muted">Position: {f.position}</div>
+                          )}
+                          {preview && (
+                            <div className="text-muted small" style={{ maxWidth: "200px" }}>
+                              {preview}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="btn-group">
+                        <button
+                          className="btn btn-sm btn-outline-secondary"
+                          onClick={() => router.push(`/chat?user=${f.username}`)}
+                        >
+                          <i className="bi bi-chat-dots me-1"></i> Message
+                        </button>
                       </div>
                     </div>
-                    <div className="btn-group">
-                      <button
-                        className="btn btn-sm btn-outline-secondary"
-                        onClick={() => router.push(`/chat?user=${f.username}`)}
-                      >
-                        <i className="bi bi-chat-dots me-1"></i> Message
-                      </button>
-                    </div>
-                  </div>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <p className="text-muted text-center">You have no friends added.</p>
