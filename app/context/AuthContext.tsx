@@ -41,7 +41,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      const parsed = JSON.parse(storedUser);
+      setUser(parsed);
+      // Mark the persisted user as online
+      fetch(`/api/users/${parsed.username}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: parsed.username },
+        body: JSON.stringify({ online: true }),
+      });
     }
     // Loading complete after attempting to read from storage
     setLoading(false);
@@ -75,6 +82,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Persist the username in local storage so the session survives reloads
       localStorage.setItem("user", JSON.stringify({ username: data.username }));
       setUser({ username: data.username });
+      // Mark user as online after successful sign in
+      fetch(`/api/users/${data.username}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: data.username },
+        body: JSON.stringify({ online: true }),
+      });
       return true;
     }
     return false;
@@ -82,6 +95,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     // Remove session information when logging out
+    const current = user?.username;
+    if (current) {
+      // Mark the user as offline before clearing session
+      fetch(`/api/users/${current}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: current },
+        body: JSON.stringify({ online: false }),
+      });
+    }
     localStorage.removeItem("user");
     setUser(null);
   };

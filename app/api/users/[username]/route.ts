@@ -22,7 +22,7 @@ export async function GET(
   await dbConnect();
   const user = await User.findOne(
     { username: params.username },
-    'username position age image friends -_id'
+    'username position age image friends online -_id'
   ).lean();
   if (!user) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -43,7 +43,7 @@ export async function PUT(
   }
 
   // Extract potential updates from the request body
-  const { username, position, age, image } = await req.json();
+  const { username, position, age, image, online } = await req.json();
 
   await dbConnect();
 
@@ -53,11 +53,12 @@ export async function PUT(
   if (position !== undefined) update.position = position;
   if (age !== undefined) update.age = age;
   if (image !== undefined) update.image = image;
+  if (online !== undefined) update.online = online;
 
   const user = await User.findOneAndUpdate(
     { username: params.username },
     update,
-    { new: true, fields: 'username position age image friends -_id' }
+    { new: true, fields: 'username position age image friends online -_id' }
   ).lean();
 
   if (!user) {

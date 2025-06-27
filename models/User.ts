@@ -15,6 +15,8 @@ const UserSchema = new Schema({
   image: { type: String },
   // List of usernames that this user has added as friends
   friends: { type: [String], default: [] },
+  // Indicates whether the user is currently online
+  online: { type: Boolean, default: false },
 });
 
 // Reuse the model if it has already been compiled

@@ -11,6 +11,7 @@ interface User {
   position: string;
   age: number;
   image: string;
+  online?: boolean;
 }
 
 export default function SettingPage() {
