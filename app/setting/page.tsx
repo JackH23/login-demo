@@ -84,7 +84,10 @@ export default function SettingPage() {
     try {
       const res = await fetch(`/api/users/${user.username}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: user.username,
+        },
         body: JSON.stringify(updates),
       });
       if (res.ok) {
@@ -117,6 +120,7 @@ export default function SettingPage() {
     try {
       const res = await fetch(`/api/users/${user.username}`, {
         method: "DELETE",
+        headers: { Authorization: user.username },
       });
       if (res.ok) {
         logout();
