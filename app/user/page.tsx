@@ -47,9 +47,13 @@ export default function UserPage() {
     return <div className="text-center mt-5">Loading user data...</div>;
   }
 
+  // Admin operations require the current username in the Authorization header
   const handleDelete = async (username: string) => {
     if (!confirm("Delete this user?")) return;
-    const res = await fetch(`/api/users/${username}`, { method: "DELETE" });
+    const res = await fetch(`/api/users/${username}`, {
+      method: "DELETE",
+      headers: { Authorization: user.username },
+    });
     if (res.ok) {
       setUsers((prev) => prev.filter((u) => u.username !== username));
     }
@@ -73,7 +77,10 @@ export default function UserPage() {
     if (!newImage) return;
     const res = await fetch(`/api/users/${u.username}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: user.username,
+      },
       body: JSON.stringify({ image: newImage }),
     });
     if (res.ok) {
@@ -96,7 +103,10 @@ export default function UserPage() {
 
     const res = await fetch(`/api/users/${u.username}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: user.username,
+      },
       body: JSON.stringify({ username, position, age }),
     });
     if (res.ok) {
