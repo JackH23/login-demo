@@ -33,14 +33,6 @@ export default function SignupPage() {
       });
     }
 
-    console.log("Signup Data:", {
-      username,
-      password,
-      position,
-      age,
-      image: imageData,
-    });
-
     const ok = await signup(
       username,
       password,
