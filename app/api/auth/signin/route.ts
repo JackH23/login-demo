@@ -4,6 +4,8 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 // Mongoose User model used to query the database
 import User from '@/models/User';
+// Library used to compare hashed passwords
+import bcrypt from 'bcrypt';
 
 // Handle POST /api/auth/signin to verify a user's credentials
 export async function POST(req: Request) {
@@ -13,10 +15,10 @@ export async function POST(req: Request) {
   // Ensure database connection is established
   await dbConnect();
 
-  // Look for a user document matching the credentials
-  const user = await User.findOne({ username, password });
+  // Look up the user by username
+  const user = await User.findOne({ username });
 
-  if (user) {
+  if (user && (await bcrypt.compare(password, user.password))) {
     // Credentials are valid; respond with the username
     return NextResponse.json({ success: true, username: user.username });
   }
