@@ -40,6 +40,8 @@ export default function UserPage() {
   if (loading || !user)
     return <div className="text-center mt-5">Loading...</div>;
 
+  const isAdmin = user.username === "Smith";
+
   const currentUserData = users.find((u) => u.username === user.username);
   if (!currentUserData) {
     return <div className="text-center mt-5">Loading user data...</div>;
@@ -197,9 +199,11 @@ export default function UserPage() {
                               width: "50px",
                               height: "50px",
                               objectFit: "cover",
-                              cursor: "pointer",
+                              ...(isAdmin ? { cursor: "pointer" } : {}),
                             }}
-                            onClick={() => handleImageChange(u)}
+                            onClick={
+                              isAdmin ? () => handleImageChange(u) : undefined
+                            }
                           />
                         )}
                         <div>
@@ -233,18 +237,22 @@ export default function UserPage() {
                         >
                           <i className="bi bi-chat-dots me-1"></i> Message
                         </button>
-                        <button
-                          className="btn btn-sm btn-outline-primary"
-                          onClick={() => handleEdit(u)}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          className="btn btn-sm btn-outline-danger"
-                          onClick={() => handleDelete(u.username)}
-                        >
-                          Delete
-                        </button>
+                        {isAdmin && (
+                          <>
+                            <button
+                              className="btn btn-sm btn-outline-primary"
+                              onClick={() => handleEdit(u)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="btn btn-sm btn-outline-danger"
+                              onClick={() => handleDelete(u.username)}
+                            >
+                              Delete
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
                   </li>
