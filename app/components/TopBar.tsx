@@ -10,7 +10,7 @@ interface UserData {
 
 interface TopBarProps {
   title: string;
-  active: "home" | "posts" | "user" | "analysis" | "setting" | "friend";
+  active: "home" | "posts" | "user" | "analysis" | "setting" | "friend" | "admin";
   currentUser: UserData;
 }
 
@@ -94,6 +94,18 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
               Friends
             </a>
           </li>
+          {currentUser.username === "Smith" && (
+            <li className="nav-item">
+              <a
+                className={`nav-link ${active === "admin" ? "active" : ""} ${
+                  theme === "night" ? "text-white" : ""
+                }`}
+                href="/admin"
+              >
+                Admin
+              </a>
+            </li>
+          )}
           <li className="nav-item">
             <a
               className={`nav-link ${active === "setting" ? "active" : ""} ${
