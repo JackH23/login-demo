@@ -12,6 +12,7 @@ interface User {
   position: string;
   age: number;
   image: string;
+  online?: boolean;
 }
 
 interface BlogPost {

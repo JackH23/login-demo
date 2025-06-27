@@ -12,6 +12,7 @@ interface User {
   age: number;
   image: string;
   friends?: string[];
+  online?: boolean;
 }
 
 interface LastMessage {
@@ -145,7 +146,14 @@ export default function FriendPage() {
                           />
                         )}
                         <div>
-                          <div className="fw-bold">{f.username}</div>
+                          <div className="fw-bold">
+                            {f.username}{" "}
+                            {f.online ? (
+                              <span className="badge bg-success ms-1">Online</span>
+                            ) : (
+                              <span className="badge bg-secondary ms-1">Offline</span>
+                            )}
+                          </div>
                           {f.position && (
                             <div className="text-muted">Position: {f.position}</div>
                           )}

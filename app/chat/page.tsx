@@ -29,6 +29,7 @@ export default function ChatPage() {
   const prevLengthRef = useRef(0); // Initialize ref here
   const [selectedMsgId, setSelectedMsgId] = useState<string | null>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [chatOnline, setChatOnline] = useState(false);
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -112,6 +113,23 @@ export default function ChatPage() {
     window.addEventListener("click", clearSelection);
     return () => window.removeEventListener("click", clearSelection);
   }, []);
+
+  // Poll the online status of the chat partner
+  useEffect(() => {
+    if (!chatUser) return;
+    const fetchStatus = async () => {
+      try {
+        const res = await fetch(`/api/users/${chatUser}`);
+        const data = await res.json();
+        setChatOnline(data.user?.online ?? false);
+      } catch {
+        setChatOnline(false);
+      }
+    };
+    fetchStatus();
+    const interval = setInterval(fetchStatus, 5000);
+    return () => clearInterval(interval);
+  }, [chatUser]);
 
   // Show the scroll-to-bottom button when the user scrolls away from the bottom
   // or when new messages arrive while not at the bottom
@@ -248,7 +266,9 @@ export default function ChatPage() {
       >
         <div className="d-flex align-items-center gap-3">
           <h5 className="mb-0">Chat {chatUser && `with ${chatUser}`}</h5>
-          <span className="badge bg-light text-dark">Online</span>
+          <span className={`badge ${chatOnline ? 'bg-success' : 'bg-secondary'} text-light`}>
+            {chatOnline ? 'Online' : 'Offline'}
+          </span>
         </div>
         <a href="/user" className="btn btn-sm btn-light text-dark">
           🏠 Home

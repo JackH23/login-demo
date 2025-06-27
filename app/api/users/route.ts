@@ -6,7 +6,7 @@ export async function GET() {
   await dbConnect();
   const users = await User.find(
     {},
-    'username position age image friends -_id'
+    'username position age image friends online -_id'
   ).lean();
   return NextResponse.json({ users });
 }

@@ -18,6 +18,7 @@ export default function UserPage() {
     age: number;
     image: string;
     friends?: string[];
+    online?: boolean;
   }
 
   const [users, setUsers] = useState<User[]>([]);
@@ -217,7 +218,14 @@ export default function UserPage() {
                           />
                         )}
                         <div>
-                          <div className="fw-bold">{u.username}</div>
+                          <div className="fw-bold">
+                            {u.username}{" "}
+                            {u.online ? (
+                              <span className="badge bg-success ms-1">Online</span>
+                            ) : (
+                              <span className="badge bg-secondary ms-1">Offline</span>
+                            )}
+                          </div>
                           {u.position && (
                             <div className="text-muted">
                               Position: {u.position}

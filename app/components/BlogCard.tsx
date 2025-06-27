@@ -19,6 +19,7 @@ interface BlogPost {
 interface AuthorData {
   username: string;
   image?: string;
+  online?: boolean;
 }
 
 interface Reply {
@@ -464,7 +465,14 @@ export default function BlogCard({
         )}
         <div>
           <h4 className="mb-0">{blog.title}</h4>
-          <small>{author?.username}</small>
+          <small>
+            {author?.username}{" "}
+            {author?.online !== undefined && (
+              <span className={`badge ${author.online ? 'bg-success' : 'bg-secondary'} ms-1`}>
+                {author.online ? 'Online' : 'Offline'}
+              </span>
+            )}
+          </small>
         </div>
       </div>
 
