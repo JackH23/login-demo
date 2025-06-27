@@ -32,10 +32,18 @@ export default function UserPage() {
 
   useEffect(() => {
     if (!user) return;
-    fetch("/api/users")
-      .then((res) => res.json())
-      .then((data) => setUsers(data.users ?? []))
-      .catch(() => setUsers([]));
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch("/api/users");
+        const data = await res.json();
+        setUsers(data.users ?? []);
+      } catch {
+        setUsers([]);
+      }
+    };
+    fetchUsers();
+    const interval = setInterval(fetchUsers, 5000);
+    return () => clearInterval(interval);
   }, [user]);
 
   if (loading || !user)
