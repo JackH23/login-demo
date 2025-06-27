@@ -38,7 +38,7 @@ export default function SignupPage() {
       password,
       position,
       Number(age),
-      imageData,
+      imageData
     );
     if (ok) {
       router.push("/signin");
@@ -87,13 +87,17 @@ export default function SignupPage() {
 
           <div className="mb-3">
             <label className="form-label">Position</label>
-            <input
-              type="text"
-              className="form-control"
+            <select
+              className="form-select"
               value={position}
               onChange={(e) => setPosition(e.target.value)}
-              placeholder="Enter position"
-            />
+              required
+            >
+              <option value="">Select position</option>
+              <option value="A">AM</option>
+              <option value="STAFF">STAFF</option>
+              <option value="MANAGER">MANAGER</option>
+            </select>
           </div>
 
           <div className="mb-3">
