@@ -2,6 +2,7 @@
 
 // React hooks for managing context state on the client
 import { createContext, useContext, useEffect, useState } from "react";
+import { io, Socket } from "socket.io-client";
 
 // Basic representation of a user stored in the context
 interface User {
@@ -26,6 +27,8 @@ interface AuthContextValue {
   signin: (username: string, password: string) => Promise<boolean>;
   // Clears user information from state and storage
   logout: () => void;
+  // Socket connection for real-time updates
+  socket: Socket | null;
 }
 
 // Create the authentication context with a default null value
@@ -36,6 +39,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   // Indicates whether the provider has finished restoring a session
   const [loading, setLoading] = useState(true);
+  const [socket, setSocket] = useState<Socket | null>(null);
+
+  useEffect(() => {
+    const s = io('http://localhost:3001');
+    setSocket(s);
+    return () => {
+      s.disconnect();
+    };
+  }, []);
 
   // On first render, restore user from local storage to persist sessions
   useEffect(() => {
@@ -43,7 +55,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (storedUser) {
       const parsed = JSON.parse(storedUser);
       setUser(parsed);
-      // Mark the persisted user as online
+      if (socket) {
+        socket.emit("user-online", parsed.username);
+      }
       fetch(`/api/users/${parsed.username}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: parsed.username },
@@ -52,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     // Loading complete after attempting to read from storage
     setLoading(false);
-  }, []);
+  }, [socket]);
 
   // Mark the user offline when the tab is closed or hidden
   useEffect(() => {
@@ -64,6 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: { "Content-Type": "application/json", Authorization: user.username },
         body: JSON.stringify({ online: false }),
       });
+      if (socket) socket.emit("user-offline", user.username);
     };
 
     const handleVisibility = () => {
@@ -79,7 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       window.removeEventListener("beforeunload", markOffline);
       document.removeEventListener("visibilitychange", handleVisibility);
     };
-  }, [user]);
+  }, [user, socket]);
 
   const signup = async (
     username: string,
@@ -110,6 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("user", JSON.stringify({ username: data.username }));
       setUser({ username: data.username });
       // Mark user as online after successful sign in
+      if (socket) socket.emit("user-online", data.username);
       fetch(`/api/users/${data.username}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: data.username },
@@ -130,6 +146,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: { "Content-Type": "application/json", Authorization: current },
         body: JSON.stringify({ online: false }),
       });
+      if (socket) socket.emit("user-offline", current);
     }
     localStorage.removeItem("user");
     setUser(null);
@@ -137,7 +154,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Provide authentication utilities and state to child components
   return (
-    <AuthContext.Provider value={{ user, loading, signup, signin, logout }}>
+    <AuthContext.Provider
+      value={{ user, loading, signup, signin, logout, socket }}
+    >
       {children}
     </AuthContext.Provider>
   );

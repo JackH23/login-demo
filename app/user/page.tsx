@@ -9,7 +9,7 @@ import TopBar from "../components/TopBar";
 import { ADMIN_USERNAME } from "@/lib/constants";
 
 export default function UserPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, socket } = useAuth();
   const { theme } = useTheme();
   const router = useRouter();
 
@@ -43,9 +43,29 @@ export default function UserPage() {
       }
     };
     fetchUsers();
-    const interval = setInterval(fetchUsers, 5000);
-    return () => clearInterval(interval);
   }, [user]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handleOnline = (username: string) => {
+      setUsers((prev) =>
+        prev.map((u) => (u.username === username ? { ...u, online: true } : u))
+      );
+    };
+    const handleOffline = (username: string) => {
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.username === username ? { ...u, online: false } : u
+        )
+      );
+    };
+    socket.on("user-online", handleOnline);
+    socket.on("user-offline", handleOffline);
+    return () => {
+      socket.off("user-online", handleOnline);
+      socket.off("user-offline", handleOffline);
+    };
+  }, [socket]);
 
   if (loading || !user)
     return <div className="text-center mt-5">Loading...</div>;

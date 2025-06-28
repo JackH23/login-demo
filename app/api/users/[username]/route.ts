@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
 import { ADMIN_USERNAME } from '@/lib/constants';
+import { emitUserOnline, emitUserOffline } from '@/lib/socketServer';
 
 // Helper to get the username of the requester from headers/cookies
 function getRequester(req: Request): string | null {
@@ -48,6 +49,8 @@ export async function PUT(
 
   await dbConnect();
 
+  const prev = await User.findOne({ username: params.username }, 'online').lean();
+
   // Only include fields that were provided in the update payload
   const update: Record<string, unknown> = {};
   if (username !== undefined) update.username = username;
@@ -61,6 +64,11 @@ export async function PUT(
     update,
     { new: true, fields: 'username position age image friends online -_id' }
   ).lean();
+
+  if (user && prev && online !== undefined && prev.online !== online) {
+    if (user.online) emitUserOnline(user.username);
+    else emitUserOffline(user.username);
+  }
 
   if (!user) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
