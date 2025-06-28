@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
-import { io, Socket } from "socket.io-client";
+import { Socket } from "socket.io-client";
 
 interface Message {
   _id: string;
@@ -19,13 +19,12 @@ interface Message {
 export default function ChatPage() {
   const searchParams = useSearchParams();
   const chatUser = searchParams.get("user") ?? "";
-  const { user } = useAuth();
+  const { user, socket } = useAuth();
   const { theme } = useTheme();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement | null>(null);
-  const socketRef = useRef<Socket | null>(null);
   const prevLengthRef = useRef(0); // Initialize ref here
   const [selectedMsgId, setSelectedMsgId] = useState<string | null>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -43,18 +42,15 @@ export default function ChatPage() {
     }
   }, []);
 
-  // Initialize socket connection once
+  // Use socket from AuthContext
   useEffect(() => {
-    socketRef.current = io("http://localhost:3000");
-    return () => {
-      socketRef.current?.disconnect();
-    };
-  }, []);
+    socketRef.current = socket || null;
+  }, [socket]);
 
   // Listen for incoming messages from the server
   useEffect(() => {
-    const socket = socketRef.current;
-    if (!socket) return;
+    const sock = socketRef.current;
+    if (!sock) return;
 
     const handleReceive = (message: Message) => {
       if (message.from === chatUser && message.to === user?.username) {
@@ -67,11 +63,11 @@ export default function ChatPage() {
       }
     };
 
-    socket.on("receive-message", handleReceive);
+    sock.on("receive-message", handleReceive);
     return () => {
-      socket.off("receive-message", handleReceive);
+      sock.off("receive-message", handleReceive);
     };
-  }, [chatUser, user]);
+  }, [chatUser, user, socket]);
 
   // Fetch messages
   useEffect(() => {
@@ -114,7 +110,24 @@ export default function ChatPage() {
     return () => window.removeEventListener("click", clearSelection);
   }, []);
 
-  // Poll the online status of the chat partner
+  // Listen for online/offline status of the chat partner
+  useEffect(() => {
+    if (!socket || !chatUser) return;
+    const handleOnline = (username: string) => {
+      if (username === chatUser) setChatOnline(true);
+    };
+    const handleOffline = (username: string) => {
+      if (username === chatUser) setChatOnline(false);
+    };
+    socket.on("user-online", handleOnline);
+    socket.on("user-offline", handleOffline);
+    return () => {
+      socket.off("user-online", handleOnline);
+      socket.off("user-offline", handleOffline);
+    };
+  }, [socket, chatUser]);
+
+  // Initial status fetch
   useEffect(() => {
     if (!chatUser) return;
     const fetchStatus = async () => {
@@ -127,8 +140,6 @@ export default function ChatPage() {
       }
     };
     fetchStatus();
-    const interval = setInterval(fetchStatus, 5000);
-    return () => clearInterval(interval);
   }, [chatUser]);
 
   // Show the scroll-to-bottom button when the user scrolls away from the bottom
