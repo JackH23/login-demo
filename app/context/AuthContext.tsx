@@ -54,6 +54,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   }, []);
 
+  // Mark the user offline when the tab is closed or hidden
+  useEffect(() => {
+    if (!user) return;
+
+    const markOffline = () => {
+      fetch(`/api/users/${user.username}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: user.username },
+        body: JSON.stringify({ online: false }),
+      });
+    };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        markOffline();
+      }
+    };
+
+    window.addEventListener("beforeunload", markOffline);
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      window.removeEventListener("beforeunload", markOffline);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [user]);
+
   const signup = async (
     username: string,
     password: string,
