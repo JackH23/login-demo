@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
+import { ADMIN_USERNAME } from "@/lib/constants";
 
 interface User {
   username: string;
@@ -37,7 +38,7 @@ export default function AdminPage() {
   }, [loading, user, router]);
 
   useEffect(() => {
-    if (!user || user.username !== "Smith") return;
+    if (!user || user.username !== ADMIN_USERNAME) return;
 
     Promise.all([
       fetch("/api/users").then((res) => res.json()),
@@ -65,7 +66,7 @@ export default function AdminPage() {
     return <div className="text-center mt-5">Loading...</div>;
   }
 
-  if (user.username !== "Smith") {
+  if (user.username !== ADMIN_USERNAME) {
     router.push("/home");
     return null;
   }

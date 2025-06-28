@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useTheme } from "../context/ThemeContext";
+import { ADMIN_USERNAME } from "@/lib/constants";
 
 interface UserData {
   username: string;
@@ -94,7 +95,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
               Friends
             </a>
           </li>
-          {currentUser.username === "Smith" && (
+          {currentUser.username === ADMIN_USERNAME && (
             <li className="nav-item">
               <a
                 className={`nav-link ${active === "admin" ? "active" : ""} ${

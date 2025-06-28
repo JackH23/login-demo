@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
+import { ADMIN_USERNAME } from "@/lib/constants";
 
 export default function UserPage() {
   const { user, loading } = useAuth();
@@ -49,7 +50,7 @@ export default function UserPage() {
   if (loading || !user)
     return <div className="text-center mt-5">Loading...</div>;
 
-  const isAdmin = user.username === "Smith";
+  const isAdmin = user.username === ADMIN_USERNAME;
 
   const currentUserData = users.find((u) => u.username === user.username);
   if (!currentUserData) {

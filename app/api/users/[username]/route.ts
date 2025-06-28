@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
+import { ADMIN_USERNAME } from '@/lib/constants';
 
 // Helper to get the username of the requester from headers/cookies
 function getRequester(req: Request): string | null {
@@ -38,7 +39,7 @@ export async function PUT(
   if (!requester) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  if (requester !== params.username && requester !== 'Smith') {
+  if (requester !== params.username && requester !== ADMIN_USERNAME) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -76,7 +77,7 @@ export async function DELETE(
   if (!requester) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  if (requester !== params.username && requester !== 'Smith') {
+  if (requester !== params.username && requester !== ADMIN_USERNAME) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
