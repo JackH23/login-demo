@@ -4,10 +4,11 @@ import Message from '@/models/Message';
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
+  const { id } = await context.params;
   await dbConnect();
-  const message = await Message.findByIdAndDelete(params.id);
+  const message = await Message.findByIdAndDelete(id);
   if (!message) {
     return NextResponse.json({ error: 'Message not found' }, { status: 404 });
   }
@@ -16,12 +17,13 @@ export async function DELETE(
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
+  const { id } = await context.params;
   const { content } = await req.json();
   await dbConnect();
   const message = await Message.findByIdAndUpdate(
-    params.id,
+    id,
     { content },
     { new: true }
   ).lean();

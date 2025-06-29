@@ -4,8 +4,9 @@ import Post from '@/models/Post';
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
+  const { id } = await context.params;
   const { action, username } = await req.json();
   if (!['like', 'dislike'].includes(action) || !username) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
@@ -13,7 +14,7 @@ export async function PATCH(
 
   await dbConnect();
 
-  const existing = await Post.findById(params.id).lean();
+  const existing = await Post.findById(id).lean();
   if (!existing) {
     return NextResponse.json({ error: 'Post not found' }, { status: 404 });
   }
@@ -36,7 +37,7 @@ export async function PATCH(
       ? { $addToSet: { likedBy: username }, $inc: { likes: 1 } }
       : { $addToSet: { dislikedBy: username }, $inc: { dislikes: 1 } };
 
-  const post = await Post.findByIdAndUpdate(params.id, update, { new: true }).lean();
+  const post = await Post.findByIdAndUpdate(id, update, { new: true }).lean();
 
   return NextResponse.json({
     post: {
@@ -49,10 +50,11 @@ export async function PATCH(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
+  const { id } = await context.params;
   await dbConnect();
-  const post = await Post.findByIdAndDelete(params.id);
+  const post = await Post.findByIdAndDelete(id);
   if (!post) {
     return NextResponse.json({ error: 'Post not found' }, { status: 404 });
   }

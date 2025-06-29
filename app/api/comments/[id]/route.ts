@@ -4,12 +4,13 @@ import Comment from '@/models/Comment';
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
+  const { id } = await context.params;
   const { author, text } = await req.json();
   await dbConnect();
   const comment = await Comment.findByIdAndUpdate(
-    params.id,
+    id,
     { $push: { replies: { author, text } } },
     { new: true }
   ).lean();
@@ -21,14 +22,15 @@ export async function POST(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
+  const { id } = await context.params;
   const { action, username } = await req.json();
   if (!['like', 'dislike'].includes(action) || !username) {
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   }
   await dbConnect();
-  const existing = await Comment.findById(params.id).lean();
+  const existing = await Comment.findById(id).lean();
   if (!existing) {
     return NextResponse.json({ error: 'Comment not found' }, { status: 404 });
   }
@@ -51,7 +53,7 @@ export async function PATCH(
       ? { $addToSet: { likedBy: username }, $inc: { likes: 1 } }
       : { $addToSet: { dislikedBy: username }, $inc: { dislikes: 1 } };
 
-  const comment = await Comment.findByIdAndUpdate(params.id, update, { new: true }).lean();
+  const comment = await Comment.findByIdAndUpdate(id, update, { new: true }).lean();
 
   return NextResponse.json({
     comment: {
