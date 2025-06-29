@@ -84,6 +84,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const handleVisibility = () => {
       if (document.visibilityState === "hidden") {
         markOffline();
+      } else if (document.visibilityState === "visible" && user) {
+        fetch(`/api/users/${user.username}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: user.username,
+          },
+          body: JSON.stringify({ online: true }),
+        });
+        if (socket) socket.emit("user-online", user.username);
       }
     };
 
