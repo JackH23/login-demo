@@ -25,6 +25,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const socketRef = useRef<Socket | null>(null);
   const prevLengthRef = useRef(0); // Initialize ref here
   const [selectedMsgId, setSelectedMsgId] = useState<string | null>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
