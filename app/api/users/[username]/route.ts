@@ -19,11 +19,12 @@ function getRequester(req: Request): string | null {
 
 export async function GET(
   req: Request,
-  { params }: { params: { username: string } }
+  context: { params: { username: string } }
 ) {
+  const { username } = await context.params;
   await dbConnect();
   const user = await User.findOne(
-    { username: params.username },
+    { username },
     'username position age image friends online -_id'
   ).lean();
   if (!user) {
@@ -34,13 +35,14 @@ export async function GET(
 
 export async function PUT(
   req: Request,
-  { params }: { params: { username: string } }
+  context: { params: { username: string } }
 ) {
+  const { username: target } = await context.params;
   const requester = getRequester(req);
   if (!requester) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  if (requester !== params.username && requester !== ADMIN_USERNAME) {
+  if (requester !== target && requester !== ADMIN_USERNAME) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -49,7 +51,7 @@ export async function PUT(
 
   await dbConnect();
 
-  const prev = await User.findOne({ username: params.username }, 'online').lean();
+  const prev = await User.findOne({ username: target }, 'online').lean();
 
   // Only include fields that were provided in the update payload
   const update: Record<string, unknown> = {};
@@ -60,7 +62,7 @@ export async function PUT(
   if (online !== undefined) update.online = online;
 
   const user = await User.findOneAndUpdate(
-    { username: params.username },
+    { username: target },
     update,
     { new: true, fields: 'username position age image friends online -_id' }
   ).lean();
@@ -79,17 +81,18 @@ export async function PUT(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { username: string } }
+  context: { params: { username: string } }
 ) {
+  const { username: target } = await context.params;
   const requester = getRequester(req);
   if (!requester) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  if (requester !== params.username && requester !== ADMIN_USERNAME) {
+  if (requester !== target && requester !== ADMIN_USERNAME) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   await dbConnect();
-  await User.deleteOne({ username: params.username });
+  await User.deleteOne({ username: target });
   return NextResponse.json({ success: true });
 }
