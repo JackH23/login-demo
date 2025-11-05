@@ -54,7 +54,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (!resolvedUrl) return;
 
-    const s = io(resolvedUrl);
+    const s = io(resolvedUrl, {
+      // Force the websocket transport to avoid cross-origin XHR issues on
+      // platforms where the fallback polling transport is blocked. The server
+      // is already configured to accept websocket upgrades so this remains
+      // compatible while preventing the noisy "xhr poll error" message.
+      transports: ["websocket"],
+    });
     const handleConnectError = (error: Error) => {
       console.error("Socket connection error:", error);
     };
