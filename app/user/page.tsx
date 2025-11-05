@@ -8,6 +8,7 @@ import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 import { ADMIN_USERNAME } from "@/lib/constants";
 import { useConfirmDialog } from "../components/useConfirmDialog";
+import { usePromptDialog } from "../components/usePromptDialog";
 
 export default function UserPage() {
   const { user, loading, socket } = useAuth();
@@ -16,8 +17,8 @@ export default function UserPage() {
 
   interface User {
     username: string;
-    position: string;
-    age: number;
+    position?: string;
+    age?: number;
     image: string;
     friends?: string[];
     online?: boolean;
@@ -26,6 +27,7 @@ export default function UserPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const { confirm: showConfirm, dialog: confirmDialog } = useConfirmDialog();
+  const { prompt: showPrompt, dialog: promptDialog } = usePromptDialog();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -149,14 +151,62 @@ export default function UserPage() {
   };
 
   const handleEdit = async (u: User) => {
-    const username = prompt("Enter new username", u.username);
-    if (!username || username.trim() === "") return;
-    const position = prompt("Enter position", u.position ?? "");
-    if (position === null) return;
-    const ageStr = prompt("Enter age", u.age?.toString() ?? "");
-    if (ageStr === null) return;
-    const age = Number(ageStr);
-    if (Number.isNaN(age)) return;
+    const result = await showPrompt({
+      contextLabel: "Profile edit",
+      title: `Edit ${u.username}'s profile`,
+      description: (
+        <>
+          <p className="mb-2">
+            Craft a friendlier snapshot of <span className="fw-semibold">{u.username}</span>
+            ’s profile so teammates know who they are meeting.
+          </p>
+          <p className="mb-0 text-muted small">
+            Fields marked with an asterisk are required. You can review every change before saving.
+          </p>
+        </>
+      ),
+      confirmText: "Review updates",
+      cancelText: "Keep current info",
+      confirmVariant: "edit",
+      icon: <span aria-hidden="true">📝</span>,
+      confirmIcon: <span aria-hidden="true">✨</span>,
+      fields: [
+        {
+          name: "username",
+          label: "Display name",
+          defaultValue: u.username,
+          required: true,
+          autoFocus: true,
+          helperText: "Visible to everyone across the platform.",
+        },
+        {
+          name: "position",
+          label: "Role or focus",
+          defaultValue: u.position ?? "",
+          placeholder: "e.g. Product Designer",
+          helperText: "Give teammates a hint about what you do.",
+        },
+        {
+          name: "age",
+          label: "Age",
+          type: "number",
+          defaultValue: typeof u.age === "number" ? u.age.toString() : "",
+          helperText: "Optional — numbers only.",
+        },
+      ],
+    });
+
+    if (!result) return;
+
+    const username = result.username?.trim();
+    if (!username) return;
+    const position = result.position?.trim() ?? "";
+    const ageInput = result.age?.trim() ?? "";
+    const parsedAge = ageInput === "" ? null : Number(ageInput);
+    if (parsedAge !== null && Number.isNaN(parsedAge)) {
+      alert("Please enter a valid number for age.");
+      return;
+    }
 
     const changes: { label: string; from: ReactNode; to: ReactNode }[] = [];
     if (username !== u.username)
@@ -171,11 +221,12 @@ export default function UserPage() {
         from: formatValue(u.position ?? ""),
         to: formatValue(position ?? ""),
       });
-    if (age !== u.age)
+    const currentAge = typeof u.age === "number" ? u.age : null;
+    if (parsedAge !== currentAge)
       changes.push({
         label: "Age",
         from: formatValue(u.age),
-        to: formatValue(age),
+        to: formatValue(parsedAge),
       });
 
     if (changes.length === 0) {
@@ -246,7 +297,11 @@ export default function UserPage() {
         "Content-Type": "application/json",
         Authorization: user.username,
       },
-      body: JSON.stringify({ username, position, age }),
+      body: JSON.stringify({
+        username,
+        position,
+        age: parsedAge,
+      }),
     });
     if (res.ok) {
       const data = await res.json();
@@ -327,6 +382,7 @@ export default function UserPage() {
         theme === "night" ? "bg-dark text-white" : "bg-light"
       }`}
     >
+      {promptDialog}
       {confirmDialog}
       {/* Sticky Top Bar and Menu */}
       <TopBar
