@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 
@@ -58,7 +58,6 @@ export default function BlogCard({
 
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
-  const [showAllComments] = useState(false);
   const [showCommentsModal, setShowCommentsModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [userImages, setUserImages] = useState<Record<string, string>>({});
@@ -66,6 +65,7 @@ export default function BlogCard({
   const { theme } = useTheme();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isCommentsExpanded, setIsCommentsExpanded] = useState(false);
 
   useEffect(() => {
     setLikes(blog.likes ?? 0);
@@ -140,6 +140,7 @@ export default function BlogCard({
 
     // Always update UI immediately
     setNewComment("");
+    setIsCommentsExpanded(true);
 
     if (blog._id && user) {
       const res = await fetch("/api/comments", {
@@ -191,6 +192,7 @@ export default function BlogCard({
         newReply: "",
       },
     ]);
+    setIsCommentsExpanded(true);
   };
 
   const handleLikeComment = async (index: number) => {
@@ -352,6 +354,7 @@ export default function BlogCard({
               : c
           )
         );
+        setIsCommentsExpanded(true);
         return;
       }
     }
@@ -376,6 +379,7 @@ export default function BlogCard({
           : c
       )
     );
+    setIsCommentsExpanded(true);
   };
 
   const handleLikePost = async () => {
@@ -396,7 +400,7 @@ export default function BlogCard({
       setLikes(post.likes);
       setDislikes(post.dislikes);
     } catch (error) {
-      setLikes((prev) => prev - 1); // Revert on error
+      setLikes((prev) => prev - 1);
       setHasLikedPost(false);
       console.error("Failed to like post", error);
     }
@@ -449,135 +453,248 @@ export default function BlogCard({
     }
   };
 
-  return (
-    <div
-      className="card shadow-sm w-100 mx-auto mb-4"
-      style={{ maxWidth: "100%" }}
-    >
-      <div className="card-header bg-primary text-white d-flex align-items-center gap-3">
-        {author?.image && (
-          <img
-            src={author.image}
-            alt={author.username}
-            className="rounded-circle"
-            style={{ width: "40px", height: "40px", objectFit: "cover" }}
-          />
-        )}
-        <div>
-          <h4 className="mb-0">{blog.title}</h4>
-        </div>
-      </div>
+  const commentCount = comments.length;
+  const limitedComments = isCommentsExpanded ? comments : comments.slice(-3);
+  const offset = isCommentsExpanded ? 0 : commentCount - limitedComments.length;
+  const visibleComments = limitedComments.map((comment, idx) => ({
+    comment,
+    originalIndex: offset + idx,
+  }));
+  const conversationLabel = isCommentsExpanded
+    ? "Hide conversation"
+    : commentCount
+    ? `Conversation (${commentCount})`
+    : "Start a conversation";
+  const descriptionTone = theme === "night" ? "text-white-50" : "text-muted";
+  const surfaceClass = theme === "night" ? "bg-dark text-white" : "bg-white";
+  const authorName = author?.username ?? blog.author;
+  const authorInitial = authorName.charAt(0).toUpperCase();
+  const readingTime = Math.max(
+    1,
+    Math.round(blog.content.trim().split(/\s+/).length / 200)
+  );
 
-      {blog.image && (
-        <img
-          src={blog.image}
-          alt="Blog Visual"
-          className="card-img-top"
-          style={{ objectFit: "cover", maxHeight: "500px", cursor: "pointer" }}
+  const handleShare = () => {
+    const shareText = `${blog.title}\n\n${blog.content}\n\nShared from Blog App`;
+    const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+    if (typeof navigator !== "undefined" && navigator.share) {
+      navigator
+        .share({ title: blog.title, text: shareText, url: shareUrl })
+        .catch((err) => console.error("Share failed", err));
+      return;
+    }
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
+    }
+    alert("Link copied to clipboard!");
+  };
+
+  return (
+    <article
+      className={`blog-card card border-0 shadow-lg h-100 overflow-hidden ${surfaceClass}`}
+    >
+      {blog.image ? (
+        <div
+          className="blog-card__media position-relative"
+          role="button"
+          tabIndex={0}
           onClick={() => setShowImageModal(true)}
-        />
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              setShowImageModal(true);
+            }
+          }}
+        >
+          <img
+            src={blog.image}
+            alt="Blog visual"
+            className="w-100 h-100 object-fit-cover"
+          />
+          <div className="blog-card__media-overlay" />
+          <div className="position-absolute top-0 start-0 p-3 d-flex flex-column gap-2">
+            <span className="badge bg-dark bg-opacity-50 text-white border border-white border-opacity-25">
+              Visual story
+            </span>
+            {author?.online && (
+              <span className="badge bg-success-subtle text-success">
+                <i className="bi bi-circle-fill me-1"></i>
+                Online now
+              </span>
+            )}
+          </div>
+          <div className="position-absolute bottom-0 start-0 end-0 p-3 d-flex align-items-center justify-content-between">
+            <span className="text-white-75 small">
+              Click to open the full-size cover
+            </span>
+            <span className="badge bg-white text-dark rounded-pill">
+              <i className="bi bi-arrows-fullscreen me-1"></i>
+              Expand
+            </span>
+          </div>
+        </div>
+      ) : (
+        <div className="blog-card__placeholder text-center p-5">
+          <i className="bi bi-image display-6 d-block mb-2"></i>
+          <p className={`mb-0 ${descriptionTone}`}>
+            Add a cover image to make your story pop.
+          </p>
+        </div>
       )}
 
-      <div className="card-body">
-        <p className="card-text">{blog.content}</p>
+      <div className="card-body p-4">
+        <div className="d-flex align-items-center gap-3 mb-4">
+          {author?.image ? (
+            <img
+              src={author.image}
+              alt={authorName}
+              className="blog-card__avatar rounded-circle"
+            />
+          ) : (
+            <div className="blog-card__avatar blog-card__avatar--fallback rounded-circle">
+              {authorInitial}
+            </div>
+          )}
+          <div className="flex-grow-1">
+            <div className="d-flex flex-wrap align-items-center gap-2 mb-1">
+              <span className="fw-semibold">{authorName}</span>
+              {author?.online && (
+                <span className="badge bg-success-subtle text-success rounded-pill">
+                  Active
+                </span>
+              )}
+            </div>
+            <p className={`small mb-0 ${descriptionTone}`}>
+              Community storyteller • {readingTime} min read
+            </p>
+          </div>
+          <div className="text-end">
+            <span className="badge bg-primary-subtle text-primary rounded-pill">
+              {likes} likes
+            </span>
+          </div>
+        </div>
 
-        <div className="d-flex gap-3 align-items-center mt-3">
+        <h3 className="h4 fw-bold mb-3">{blog.title}</h3>
+        <p className={`mb-0 line-clamp-3 ${descriptionTone}`}>{blog.content}</p>
+      </div>
+
+      <div className="card-footer bg-transparent border-0 px-4 pb-4">
+        <div className="d-flex flex-wrap gap-2 mb-3">
           <button
-            className="btn btn-outline-success"
+            className={`btn btn-soft-success btn-sm d-flex align-items-center gap-2 ${
+              hasLikedPost ? "active" : ""
+            }`}
             onClick={handleLikePost}
             disabled={hasLikedPost || !user}
+            aria-pressed={hasLikedPost}
           >
-            👍 {likes}
+            <i className="bi bi-hand-thumbs-up"></i>
+            {likes}
           </button>
-
           <button
-            className="btn btn-outline-danger"
+            className={`btn btn-soft-danger btn-sm d-flex align-items-center gap-2 ${
+              hasDislikedPost ? "active" : ""
+            }`}
             onClick={handleDislikePost}
             disabled={hasDislikedPost || !user}
+            aria-pressed={hasDislikedPost}
           >
-            👎 {dislikes}
+            <i className="bi bi-hand-thumbs-down"></i>
+            {dislikes}
           </button>
           <button
-            className="btn btn-outline-secondary"
-            onClick={() => {
-              const shareText = `${blog.title}\n\n${blog.content}\n\nShared from Blog App`;
-              const shareUrl = window.location.href;
-              if (navigator.share) {
-                navigator
-                  .share({
-                    title: blog.title,
-                    text: shareText,
-                    url: shareUrl,
-                  })
-                  .catch((err) => console.error("Share failed", err));
-              } else {
-                navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
-                alert("Link copied to clipboard!");
-              }
-            }}
+            className="btn btn-soft-secondary btn-sm d-flex align-items-center gap-2"
+            onClick={handleShare}
           >
-            🔗 Share
+            <i className="bi bi-share"></i>
+            Share
+          </button>
+          <button
+            className="btn btn-soft-secondary btn-sm d-flex align-items-center gap-2"
+            onClick={() => setIsCommentsExpanded((prev) => !prev)}
+            aria-expanded={isCommentsExpanded}
+          >
+            <i className="bi bi-chat-dots"></i>
+            {conversationLabel}
           </button>
           {user && user.username === blog.author && (
             <button
-              className="btn btn-danger"
+              className="btn btn-soft-danger btn-sm d-flex align-items-center gap-2 ms-auto"
               onClick={() => setShowDeleteModal(true)}
             >
-              🗑️ Delete
+              <i className="bi bi-trash"></i>
+              Delete
             </button>
           )}
         </div>
 
-        {/* Comments Section */}
-        <div className="mt-4">
-          <h5>Comments</h5>
-
-          {comments.length === 0 ? (
-            <p className="text-muted">No comments yet.</p>
-          ) : (
-            <>
-              <div
-                style={{
-                  maxHeight: "300px",
-                  overflowY: "auto",
-                  paddingRight: "10px",
-                }}
-                className="mb-3"
-              >
-                <ul className="list-group">
-                  {(showAllComments ? comments : comments.slice(-3)).map(
-                    (comment, idx) => (
-                      <li
-                        key={idx}
-                        className={`list-group-item mb-3 rounded shadow-sm ${
-                          theme === "night" ? "bg-dark text-white" : "bg-white"
-                        }`}
-                      >
-                        <div className="d-flex justify-content-between align-items-center">
-                          <div className="d-flex align-items-center gap-2">
-                            {comment.authorImage && (
-                              <img
-                                src={comment.authorImage}
-                                alt={comment.author}
-                                className="rounded-circle"
-                                style={{
-                                  width: "30px",
-                                  height: "30px",
-                                  objectFit: "cover",
-                                }}
-                              />
-                            )}
-                            <div>
-                              <div className="fw-semibold small">
-                                {comment.author}
-                              </div>
-                              <div>{comment.text}</div>
-                            </div>
+        {isCommentsExpanded && (
+          <div
+            className={`conversation-panel rounded-4 p-3 ${
+              theme === "night"
+                ? "bg-dark-subtle border border-secondary-subtle"
+                : "bg-body-tertiary border border-light-subtle"
+            }`}
+          >
+            <div className="d-flex align-items-center justify-content-between mb-3">
+              <div>
+                <h6 className="mb-0 fw-semibold">Discussion</h6>
+                <small className={descriptionTone}>
+                  {commentCount
+                    ? `${commentCount} ${
+                        commentCount === 1 ? "comment" : "comments"
+                      }`
+                    : "Be the first to respond"}
+                </small>
+              </div>
+              {commentCount > 3 && (
+                <button
+                  className="btn btn-link btn-sm px-0"
+                  onClick={() => setShowCommentsModal(true)}
+                >
+                  View all
+                </button>
+              )}
+            </div>
+            {commentCount === 0 ? (
+              <p className={`mb-3 ${descriptionTone}`}>
+                No comments yet. Share your thoughts to start the conversation.
+              </p>
+            ) : (
+              <ul className="list-unstyled d-flex flex-column gap-3 mb-3">
+                {visibleComments.map(({ comment, originalIndex }) => (
+                  <li
+                    key={comment._id ?? `${comment.author}-${originalIndex}`}
+                    className={`comment-bubble rounded-4 p-3 ${
+                      theme === "night"
+                        ? "bg-dark text-white border border-secondary-subtle"
+                        : "bg-white border border-light-subtle"
+                    }`}
+                  >
+                    <div className="d-flex gap-3 align-items-start">
+                      {comment.authorImage ? (
+                        <img
+                          src={comment.authorImage}
+                          alt={comment.author}
+                          className="comment-avatar rounded-circle"
+                        />
+                      ) : (
+                        <div className="comment-avatar comment-avatar--fallback rounded-circle">
+                          {comment.author.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="flex-grow-1">
+                        <div className="d-flex justify-content-between align-items-start mb-2">
+                          <div>
+                            <span className="fw-semibold d-block">{comment.author}</span>
+                            <span className={`small ${descriptionTone}`}>
+                              Joined the conversation
+                            </span>
                           </div>
-                          <div className="btn-group btn-group-sm">
+                          <div className="d-flex flex-wrap gap-2">
                             <button
-                              className="btn btn-outline-success"
-                              onClick={() => handleLikeComment(idx)}
+                              className="btn btn-soft-success btn-sm"
+                              onClick={() => handleLikeComment(originalIndex)}
                               disabled={
                                 user
                                   ? comment.likedBy?.includes(user.username) ||
@@ -585,11 +702,12 @@ export default function BlogCard({
                                   : true
                               }
                             >
-                              👍 {comment.likes}
+                              <i className="bi bi-hand-thumbs-up me-1"></i>
+                              {comment.likes}
                             </button>
                             <button
-                              className="btn btn-outline-danger"
-                              onClick={() => handleDislikeComment(idx)}
+                              className="btn btn-soft-danger btn-sm"
+                              onClick={() => handleDislikeComment(originalIndex)}
                               disabled={
                                 user
                                   ? comment.likedBy?.includes(user.username) ||
@@ -597,105 +715,91 @@ export default function BlogCard({
                                   : true
                               }
                             >
-                              👎 {comment.dislikes}
+                              <i className="bi bi-hand-thumbs-down me-1"></i>
+                              {comment.dislikes}
                             </button>
                             <button
-                              className="btn btn-outline-primary"
-                              onClick={() => toggleReplyInput(idx)}
+                              className="btn btn-soft-secondary btn-sm"
+                              onClick={() => toggleReplyInput(originalIndex)}
                             >
-                              💬 Reply
+                              <i className="bi bi-reply"></i>
+                              Reply
                             </button>
                           </div>
                         </div>
+                        <p className="mb-0">{comment.text}</p>
 
-                        {/* Replies */}
                         {comment.replies.length > 0 && (
-                          <ul className="mt-2 ps-3 list-unstyled">
-                            {comment.replies.map((reply, rIdx) => (
-                              <li
-                                key={rIdx}
-                                className={`d-flex align-items-center gap-2 ${
-                                  theme === "night" ? "text-light" : "text-muted"
-                                } small mb-2`}
+                          <div className="mt-3 ps-4 border-start border-2 d-flex flex-column gap-2">
+                            {comment.replies.map((reply, replyIdx) => (
+                              <div
+                                key={replyIdx}
+                                className={`d-flex align-items-start gap-2 ${descriptionTone}`}
                               >
-                                {reply.authorImage && (
+                                {reply.authorImage ? (
                                   <img
                                     src={reply.authorImage}
                                     alt={reply.author}
-                                    className="rounded-circle"
-                                    style={{
-                                      width: "24px",
-                                      height: "24px",
-                                      objectFit: "cover",
-                                    }}
+                                    className="comment-avatar comment-avatar--small rounded-circle"
                                   />
+                                ) : (
+                                  <div className="comment-avatar comment-avatar--small comment-avatar--fallback rounded-circle">
+                                    {reply.author.charAt(0).toUpperCase()}
+                                  </div>
                                 )}
-                                ↪{" "}
-                                <span className="fw-semibold">
-                                  {reply.author}
-                                </span>
-                                : {reply.text}
-                              </li>
+                                <div>
+                                  <span className="fw-semibold me-1">
+                                    {reply.author}
+                                  </span>
+                                  {reply.text}
+                                </div>
+                              </div>
                             ))}
-                          </ul>
+                          </div>
                         )}
 
-                        {/* Reply Input */}
                         {comment.showReplyInput && (
-                          <div className="d-flex gap-2 mt-2">
+                          <div className="d-flex gap-2 mt-3">
                             <input
                               type="text"
                               className="form-control form-control-sm"
                               placeholder="Write a reply..."
                               value={comment.newReply}
                               onChange={(e) =>
-                                handleReplyChange(idx, e.target.value)
+                                handleReplyChange(originalIndex, e.target.value)
                               }
                             />
                             <button
-                              className="btn btn-sm btn-primary"
-                              onClick={() => handleReplySubmit(idx)}
+                              className="btn btn-primary btn-sm"
+                              onClick={() => handleReplySubmit(originalIndex)}
                             >
                               Send
                             </button>
                           </div>
                         )}
-                      </li>
-                    )
-                  )}
-                </ul>
-              </div>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
 
-              {comments.length > 3 && (
-                <div className="text-center mb-3">
-                  <button
-                    className="btn btn-link btn-sm"
-                    onClick={() => setShowCommentsModal(true)}
-                  >
-                    View all comments
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Add Comment Input */}
-          <div className="d-flex gap-2">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Write a comment..."
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-            />
-            <button className="btn btn-primary" onClick={handleCommentSubmit}>
-              Send
-            </button>
+            <div className="input-group input-group-sm">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Share your perspective..."
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+              />
+              <button className="btn btn-primary" onClick={handleCommentSubmit}>
+                Send
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* showDeleteModal */}
       {showDeleteModal && (
         <div
           className="modal fade show d-block"
@@ -709,9 +813,9 @@ export default function BlogCard({
             role="document"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Confirm Delete</h5>
+            <div className="modal-content rounded-4 border-0">
+              <div className="modal-header border-0 pb-0">
+                <h5 className="modal-title fw-semibold">Delete post</h5>
                 <button
                   type="button"
                   className="btn-close"
@@ -719,19 +823,19 @@ export default function BlogCard({
                   disabled={isDeleting}
                 />
               </div>
-              <div className="modal-body">
-                Are you sure you want to delete this post?
+              <div className="modal-body pt-1">
+                Are you sure you want to remove this post? This action cannot be
+                undone.
               </div>
-              <div className="modal-footer">
+              <div className="modal-footer border-0 pt-0">
                 <button
                   type="button"
-                  className="btn btn-secondary"
+                  className="btn btn-outline-secondary"
                   onClick={() => setShowDeleteModal(false)}
                   disabled={isDeleting}
                 >
                   Cancel
                 </button>
-
                 <button
                   type="button"
                   className="btn btn-danger"
@@ -756,7 +860,6 @@ export default function BlogCard({
         </div>
       )}
 
-      {/* showCommentsModal */}
       {showCommentsModal && (
         <div
           className="modal fade show d-block"
@@ -772,156 +875,123 @@ export default function BlogCard({
             onClick={(e) => e.stopPropagation()}
           >
             <div
-              className={`modal-content ${
+              className={`modal-content rounded-4 border-0 ${
                 theme === "night" ? "bg-dark text-white" : ""
               }`}
-              style={{
-                height: "90vh",
-                display: "flex",
-                flexDirection: "column",
-              }}
+              style={{ height: "90vh", display: "flex", flexDirection: "column" }}
             >
-              <div className="modal-header">
-                <h5 className="modal-title">All Comments</h5>
+              <div className="modal-header border-0">
+                <h5 className="modal-title">All comments</h5>
                 <button
                   type="button"
                   className="btn-close"
                   onClick={() => setShowCommentsModal(false)}
                 />
               </div>
-
-              {/* Scrollable Comments */}
               <div
                 className="modal-body"
                 style={{ overflowY: "auto", flexGrow: 1, paddingRight: "10px" }}
               >
-                <ul className="list-group">
+                <div className="d-flex flex-column gap-3">
                   {comments.map((comment, idx) => (
-                    <li
-                      key={idx}
-                      className={`list-group-item mb-3 rounded shadow-sm ${
-                        theme === "night" ? "bg-dark text-white" : "bg-white"
+                    <div
+                      key={comment._id ?? `${comment.author}-${idx}`}
+                      className={`comment-bubble rounded-4 p-3 ${
+                        theme === "night"
+                          ? "bg-dark text-white border border-secondary-subtle"
+                          : "bg-white border border-light-subtle"
                       }`}
                     >
-                      <div className="d-flex justify-content-between align-items-center">
-                        <div className="d-flex align-items-center gap-2">
-                          {comment.authorImage && (
-                            <img
-                              src={comment.authorImage}
-                              alt={comment.author}
-                              className="rounded-circle"
-                              style={{
-                                width: "30px",
-                                height: "30px",
-                                objectFit: "cover",
-                              }}
-                            />
-                          )}
-                          <div>
-                            <div className="fw-semibold small">
-                              {comment.author}
-                            </div>
-                            <div>{comment.text}</div>
+                      <div className="d-flex gap-3 align-items-start">
+                        {comment.authorImage ? (
+                          <img
+                            src={comment.authorImage}
+                            alt={comment.author}
+                            className="comment-avatar rounded-circle"
+                          />
+                        ) : (
+                          <div className="comment-avatar comment-avatar--fallback rounded-circle">
+                            {comment.author.charAt(0).toUpperCase()}
                           </div>
-                        </div>
-                        <div className="btn-group btn-group-sm">
-                          <button
-                            className="btn btn-outline-success"
-                            onClick={() => handleLikeComment(idx)}
-                            disabled={
-                              user
-                                ? comment.likedBy?.includes(user.username) ||
-                                  comment.dislikedBy?.includes(user.username)
-                                : true
-                            }
-                          >
-                            👍 {comment.likes}
-                          </button>
-                          <button
-                            className="btn btn-outline-danger"
-                            onClick={() => handleDislikeComment(idx)}
-                            disabled={
-                              user
-                                ? comment.likedBy?.includes(user.username) ||
-                                  comment.dislikedBy?.includes(user.username)
-                                : true
-                            }
-                          >
-                            👎 {comment.dislikes}
-                          </button>
-                          <button
-                            className="btn btn-outline-primary"
-                            onClick={() => toggleReplyInput(idx)}
-                          >
-                            💬 Reply
-                          </button>
+                        )}
+                        <div className="flex-grow-1">
+                          <div className="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                              <span className="fw-semibold d-block">{comment.author}</span>
+                              <span className={`small ${descriptionTone}`}>
+                                Joined the conversation
+                              </span>
+                            </div>
+                            <div className="d-flex flex-wrap gap-2">
+                              <button
+                                className="btn btn-soft-success btn-sm"
+                                onClick={() => handleLikeComment(idx)}
+                                disabled={
+                                  user
+                                    ? comment.likedBy?.includes(user.username) ||
+                                      comment.dislikedBy?.includes(user.username)
+                                    : true
+                                }
+                              >
+                                <i className="bi bi-hand-thumbs-up me-1"></i>
+                                {comment.likes}
+                              </button>
+                              <button
+                                className="btn btn-soft-danger btn-sm"
+                                onClick={() => handleDislikeComment(idx)}
+                                disabled={
+                                  user
+                                    ? comment.likedBy?.includes(user.username) ||
+                                      comment.dislikedBy?.includes(user.username)
+                                    : true
+                                }
+                              >
+                                <i className="bi bi-hand-thumbs-down me-1"></i>
+                                {comment.dislikes}
+                              </button>
+                            </div>
+                          </div>
+                          <p className="mb-0">{comment.text}</p>
+                          {comment.replies.length > 0 && (
+                            <div className="mt-3 ps-4 border-start border-2 d-flex flex-column gap-2">
+                              {comment.replies.map((reply, replyIdx) => (
+                                <div
+                                  key={replyIdx}
+                                  className={`d-flex align-items-start gap-2 ${descriptionTone}`}
+                                >
+                                  {reply.authorImage ? (
+                                    <img
+                                      src={reply.authorImage}
+                                      alt={reply.author}
+                                      className="comment-avatar comment-avatar--small rounded-circle"
+                                    />
+                                  ) : (
+                                    <div className="comment-avatar comment-avatar--small comment-avatar--fallback rounded-circle">
+                                      {reply.author.charAt(0).toUpperCase()}
+                                    </div>
+                                  )}
+                                  <div>
+                                    <span className="fw-semibold me-1">
+                                      {reply.author}
+                                    </span>
+                                    {reply.text}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
-
-                      {/* Replies */}
-                      {comment.replies.length > 0 && (
-                        <ul className="mt-2 ps-3 list-unstyled">
-                          {comment.replies.map((reply, rIdx) => (
-                            <li
-                              key={rIdx}
-                              className={`d-flex align-items-center gap-2 ${
-                                theme === "night" ? "text-light" : "text-muted"
-                              } small mb-2`}
-                            >
-                              {reply.authorImage && (
-                                <img
-                                  src={reply.authorImage}
-                                  alt={reply.author}
-                                  className="rounded-circle"
-                                  style={{
-                                    width: "24px",
-                                    height: "24px",
-                                    objectFit: "cover",
-                                  }}
-                                />
-                              )}
-                              ↪{" "}
-                              <span className="fw-semibold">
-                                {reply.author}
-                              </span>
-                              : {reply.text}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-
-                      {/* Reply Input */}
-                      {comment.showReplyInput && (
-                        <div className="d-flex gap-2 mt-2">
-                          <input
-                            type="text"
-                            className="form-control form-control-sm"
-                            placeholder="Write a reply..."
-                            value={comment.newReply}
-                            onChange={(e) =>
-                              handleReplyChange(idx, e.target.value)
-                            }
-                          />
-                          <button
-                            className="btn btn-sm btn-primary"
-                            onClick={() => handleReplySubmit(idx)}
-                          >
-                            Send
-                          </button>
-                        </div>
-                      )}
-                    </li>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
-
-              {/* Comment Input */}
-              <div className="modal-footer">
-                <div className="d-flex gap-2 w-100">
+              <div className="modal-footer border-0">
+                <div className="input-group">
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="Write a comment..."
+                    placeholder="Share your perspective..."
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                   />
@@ -938,7 +1008,6 @@ export default function BlogCard({
         </div>
       )}
 
-      {/* Image Modal */}
       {showImageModal && blog.image && (
         <div
           className="modal fade show d-block"
@@ -952,7 +1021,7 @@ export default function BlogCard({
             role="document"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="modal-content bg-dark text-white border-0">
+            <div className="modal-content bg-dark text-white border-0 rounded-4">
               <div className="modal-header border-0">
                 <button
                   type="button"
@@ -963,19 +1032,15 @@ export default function BlogCard({
               <div className="modal-body p-0 d-flex justify-content-center align-items-center">
                 <img
                   src={blog.image}
-                  alt="Full Blog View"
+                  alt="Full blog view"
                   className="img-fluid"
-                  style={{
-                    maxHeight: "85vh",
-                    objectFit: "contain",
-                    borderRadius: "0.5rem",
-                  }}
+                  style={{ maxHeight: "85vh", objectFit: "contain", borderRadius: "0.75rem" }}
                 />
               </div>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </article>
   );
 }
