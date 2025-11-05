@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { useTheme } from "../context/ThemeContext";
+import { useConfirmDialog } from "../context/ConfirmDialogContext";
 import TopBar from "../components/TopBar";
 import { ADMIN_USERNAME } from "@/lib/constants";
 
@@ -12,6 +13,7 @@ export default function UserPage() {
   const { user, loading, socket } = useAuth();
   const { theme } = useTheme();
   const router = useRouter();
+  const confirmDialog = useConfirmDialog();
 
   interface User {
     username: string;
@@ -79,7 +81,15 @@ export default function UserPage() {
 
   // Admin operations require the current username in the Authorization header
   const handleDelete = async (username: string) => {
-    if (!confirm("Delete this user?")) return;
+    const confirmed = await confirmDialog({
+      title: `Delete ${username}?`,
+      description:
+        "This will permanently remove the user and all of their posts from the community.",
+      confirmText: "Delete user",
+      cancelText: "Cancel",
+      tone: "danger",
+    });
+    if (!confirmed) return;
     const res = await fetch(`/api/users/${username}`, {
       method: "DELETE",
       headers: { Authorization: user.username },
