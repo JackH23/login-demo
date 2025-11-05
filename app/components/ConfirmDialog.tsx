@@ -3,7 +3,13 @@
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 
-export type ConfirmDialogVariant = "primary" | "danger" | "success" | "warning";
+type ConfirmDialogBaseVariant = "primary" | "danger" | "success" | "warning" | "info";
+
+export type ConfirmDialogVariant =
+  | ConfirmDialogBaseVariant
+  | "friend"
+  | "edit"
+  | "save";
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -12,15 +18,27 @@ interface ConfirmDialogProps {
   confirmText?: string;
   cancelText?: string;
   confirmVariant?: ConfirmDialogVariant;
+  contextLabel?: string;
+  icon?: ReactNode;
+  confirmIcon?: ReactNode;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
-const variantToSymbol: Record<ConfirmDialogVariant, string> = {
-  primary: "?",
-  danger: "!",
-  success: "✓",
-  warning: "!",
+type VariantTheme = {
+  icon: ReactNode;
+  base: ConfirmDialogBaseVariant;
+};
+
+const variantThemes: Record<ConfirmDialogVariant, VariantTheme> = {
+  primary: { icon: "?", base: "primary" },
+  info: { icon: "ℹ️", base: "info" },
+  danger: { icon: "🗑️", base: "danger" },
+  success: { icon: "🎉", base: "success" },
+  warning: { icon: "⚠️", base: "warning" },
+  friend: { icon: "🤝", base: "success" },
+  edit: { icon: "✏️", base: "primary" },
+  save: { icon: "💾", base: "info" },
 };
 
 export default function ConfirmDialog({
@@ -30,6 +48,9 @@ export default function ConfirmDialog({
   confirmText = "Confirm",
   cancelText = "Cancel",
   confirmVariant = "primary",
+  contextLabel,
+  icon,
+  confirmIcon,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
@@ -39,7 +60,27 @@ export default function ConfirmDialog({
     setMounted(true);
   }, []);
 
-  const symbol = useMemo(() => variantToSymbol[confirmVariant], [confirmVariant]);
+  const theme = useMemo(
+    () => variantThemes[confirmVariant] ?? variantThemes.primary,
+    [confirmVariant]
+  );
+
+  const finalIcon = icon ?? theme.icon;
+  const iconContent = useMemo(() => {
+    if (typeof finalIcon === "string") {
+      return (
+        <span aria-hidden className="confirm-dialog-icon-symbol">
+          {finalIcon}
+        </span>
+      );
+    }
+
+    return (
+      <span aria-hidden className="confirm-dialog-icon-symbol">
+        {finalIcon}
+      </span>
+    );
+  }, [finalIcon]);
 
   if (!mounted || !isOpen) return null;
 
@@ -50,12 +91,20 @@ export default function ConfirmDialog({
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
         className="confirm-dialog-card"
+        data-variant={confirmVariant}
+        data-base-variant={theme.base}
       >
-        <div className={`confirm-dialog-icon confirm-dialog-icon-${confirmVariant}`}>
-          <span aria-hidden className="confirm-dialog-icon-symbol">
-            {symbol}
-          </span>
+        <div
+          className={`confirm-dialog-icon confirm-dialog-icon-${theme.base}`}
+          data-icon-variant={confirmVariant}
+        >
+          {iconContent}
         </div>
+        {contextLabel && (
+          <p className="confirm-dialog-eyebrow text-center text-uppercase mb-1">
+            {contextLabel}
+          </p>
+        )}
         <h5 id="confirm-dialog-title" className="text-center mb-3 fw-semibold">
           {title}
         </h5>
@@ -72,10 +121,17 @@ export default function ConfirmDialog({
           </button>
           <button
             type="button"
-            className={`btn btn-${confirmVariant} flex-fill`}
+            className={`btn btn-${theme.base} flex-fill`}
             onClick={onConfirm}
           >
-            {confirmText}
+            <span className="confirm-dialog-button-content">
+              {confirmIcon && (
+                <span aria-hidden className="confirm-dialog-button-icon">
+                  {confirmIcon}
+                </span>
+              )}
+              <span>{confirmText}</span>
+            </span>
           </button>
         </div>
       </div>

@@ -9,6 +9,9 @@ interface ConfirmDialogOptions {
   confirmText?: string;
   cancelText?: string;
   confirmVariant?: ConfirmDialogVariant;
+  contextLabel?: string;
+  icon?: ReactNode;
+  confirmIcon?: ReactNode;
 }
 
 export function useConfirmDialog() {
@@ -40,6 +43,9 @@ export function useConfirmDialog() {
         confirmText={options.confirmText}
         cancelText={options.cancelText}
         confirmVariant={options.confirmVariant}
+        contextLabel={options.contextLabel}
+        icon={options.icon}
+        confirmIcon={options.confirmIcon}
         onCancel={() => resolve(false)}
         onConfirm={() => resolve(true)}
       />

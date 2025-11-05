@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -69,6 +69,13 @@ export default function SettingPage() {
     return <div className="text-center mt-5">Loading...</div>;
   }
 
+  const describeValue = (value: unknown): ReactNode => {
+    if (value === undefined || value === null || value === "") {
+      return <span className="text-muted fst-italic">Not set</span>;
+    }
+    return <span className="fw-semibold">{value}</span>;
+  };
+
   const handleSave = async () => {
     if (!user) return;
 
@@ -83,6 +90,61 @@ export default function SettingPage() {
       alert("No changes to save.");
       return;
     }
+
+    const changeSummary: { label: string; from: ReactNode; to: ReactNode }[] = [];
+    if (updates.username)
+      changeSummary.push({
+        label: "Username",
+        from: describeValue(currentUserData.username),
+        to: describeValue(updates.username),
+      });
+    if (updates.age)
+      changeSummary.push({
+        label: "Age",
+        from: describeValue(currentUserData.age),
+        to: describeValue(updates.age),
+      });
+    if (updates.image)
+      changeSummary.push({
+        label: "Profile photo",
+        from: currentUserData.image ? (
+          <span className="fw-semibold">Current photo</span>
+        ) : (
+          <span className="text-muted fst-italic">No photo</span>
+        ),
+        to: <span className="fw-semibold">New upload</span>,
+      });
+
+    const confirmed = await showConfirm({
+      contextLabel: "Save changes",
+      title: "Ready to save your profile?",
+      message: (
+        <>
+          <p className="mb-2">
+            We’ll apply the following updates to your profile settings.
+          </p>
+          <div className="confirm-dialog-summary">
+            {changeSummary.map((change) => (
+              <div key={change.label} className="confirm-dialog-summary-item">
+                <div className="confirm-dialog-diff-label">{change.label}</div>
+                <div className="confirm-dialog-diff-values">
+                  <span>{change.from}</span>
+                  <span className="confirm-dialog-diff-arrow" aria-hidden="true">
+                    →
+                  </span>
+                  <span>{change.to}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      ),
+      confirmText: "Save changes",
+      cancelText: "Keep editing",
+      confirmVariant: "save",
+      confirmIcon: <span aria-hidden="true">💾</span>,
+    });
+    if (!confirmed) return;
 
     try {
       const res = await fetch(`/api/users/${user.username}`, {

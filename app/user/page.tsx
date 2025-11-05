@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 import "bootstrap-icons/font/bootstrap-icons.css";
@@ -141,6 +141,13 @@ export default function UserPage() {
     }
   };
 
+  const formatValue = (value: unknown): ReactNode => {
+    if (value === undefined || value === null || value === "") {
+      return <span className="text-muted fst-italic">Not set</span>;
+    }
+    return <span className="fw-semibold text-body">{value}</span>;
+  };
+
   const handleEdit = async (u: User) => {
     const username = prompt("Enter new username", u.username);
     if (!username || username.trim() === "") return;
@@ -150,6 +157,62 @@ export default function UserPage() {
     if (ageStr === null) return;
     const age = Number(ageStr);
     if (Number.isNaN(age)) return;
+
+    const changes: { label: string; from: ReactNode; to: ReactNode }[] = [];
+    if (username !== u.username)
+      changes.push({
+        label: "Username",
+        from: formatValue(u.username),
+        to: formatValue(username),
+      });
+    if ((position ?? "") !== (u.position ?? ""))
+      changes.push({
+        label: "Position",
+        from: formatValue(u.position ?? ""),
+        to: formatValue(position ?? ""),
+      });
+    if (age !== u.age)
+      changes.push({
+        label: "Age",
+        from: formatValue(u.age),
+        to: formatValue(age),
+      });
+
+    if (changes.length === 0) {
+      alert("No changes detected.");
+      return;
+    }
+
+    const confirmed = await showConfirm({
+      contextLabel: "Profile edit",
+      title: `Apply updates for ${u.username}?`,
+      message: (
+        <>
+          <p className="mb-2">
+            Review the updates before saving them to the community.
+          </p>
+          <div className="confirm-dialog-summary">
+            {changes.map((change) => (
+              <div key={change.label} className="confirm-dialog-summary-item">
+                <div className="confirm-dialog-diff-label">{change.label}</div>
+                <div className="confirm-dialog-diff-values">
+                  <span>{change.from}</span>
+                  <span className="confirm-dialog-diff-arrow" aria-hidden="true">
+                    →
+                  </span>
+                  <span>{change.to}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      ),
+      confirmText: "Apply changes",
+      cancelText: "Review again",
+      confirmVariant: "edit",
+      confirmIcon: <span aria-hidden="true">✏️</span>,
+    });
+    if (!confirmed) return;
 
     const res = await fetch(`/api/users/${u.username}`, {
       method: "PUT",
@@ -173,6 +236,44 @@ export default function UserPage() {
 
   const handleAddFriend = async (friend: string) => {
     if (!user) return;
+    const friendUser = users.find((item) => item.username === friend);
+
+    const confirmed = await showConfirm({
+      contextLabel: "Add friend",
+      title: `Send a friend invite to ${friend}?`,
+      message: (
+        <>
+          <p className="mb-2">
+            {friendUser ? (
+              <>
+                We’ll send <span className="fw-semibold">{friendUser.username}</span> a
+                friendly nudge to connect.
+              </>
+            ) : (
+              <>We’ll let them know you’d like to stay in touch.</>
+            )}
+          </p>
+          {friendUser?.position && (
+            <div className="confirm-dialog-summary">
+              <div className="confirm-dialog-summary-item">
+                <div className="confirm-dialog-diff-label">Role snapshot</div>
+                <div className="fw-semibold">{friendUser.position}</div>
+              </div>
+            </div>
+          )}
+          <ul className="confirm-dialog-highlight mb-0">
+            <li>They’ll see your invite instantly.</li>
+            <li>Chat unlocks as soon as they accept.</li>
+          </ul>
+        </>
+      ),
+      confirmText: "Send invite",
+      cancelText: "Not now",
+      confirmVariant: "friend",
+      confirmIcon: <span aria-hidden="true">📨</span>,
+    });
+    if (!confirmed) return;
+
     const res = await fetch('/api/friends', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
