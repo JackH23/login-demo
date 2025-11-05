@@ -21,6 +21,7 @@ interface ConfirmDialogProps {
   contextLabel?: string;
   icon?: ReactNode;
   confirmIcon?: ReactNode;
+  confirmDisabled?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -51,6 +52,7 @@ export default function ConfirmDialog({
   contextLabel,
   icon,
   confirmIcon,
+  confirmDisabled = false,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
@@ -123,6 +125,7 @@ export default function ConfirmDialog({
             type="button"
             className={`btn btn-${theme.base} flex-fill`}
             onClick={onConfirm}
+            disabled={confirmDisabled}
           >
             <span className="confirm-dialog-button-content">
               {confirmIcon && (
