@@ -66,21 +66,37 @@ export default function BlogCard({
   const { theme } = useTheme();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  // Check if the current theme is "night"
   const isNight = theme === "night";
+
+  // Set header background gradient based on the theme
   const headerGradient = isNight
-    ? "linear-gradient(135deg, rgba(17,24,39,0.95), rgba(30,64,175,0.85))"
-    : "linear-gradient(135deg, rgba(59,130,246,0.95), rgba(129,140,248,0.85))";
+    ? "linear-gradient(135deg, rgba(17,24,39,0.95), rgba(30,64,175,0.85))" // Dark gradient for night mode
+    : "linear-gradient(135deg, rgba(59,130,246,0.95), rgba(129,140,248,0.85))"; // Bright blue gradient for day mode
+
+  // Define border color for cards depending on theme
   const cardBorderColor = isNight
-    ? "rgba(96,165,250,0.35)"
-    : "rgba(59,130,246,0.2)";
+    ? "rgba(96,165,250,0.35)" // Light blue border for dark background
+    : "rgba(59,130,246,0.2)"; // Soft blue border for light mode
+
+  // Apply text color class for muted or less prominent text
   const mutedTextClass = isNight ? "text-light text-opacity-75" : "text-muted";
+
+  // Define badge (pill) style used for statistics like likes/comments
   const statBadgeClass = `badge rounded-pill ${
     isNight
-      ? "bg-dark bg-opacity-75 text-light border border-primary border-opacity-50"
-      : "bg-white text-primary border border-primary border-opacity-25"
+      ? "bg-dark bg-opacity-75 text-light border border-primary border-opacity-50" // Semi-transparent dark background for night
+      : "bg-white text-primary border border-primary border-opacity-25"           // Light background for day mode
   }`;
+
+  // Determine which author name to display
+  // Priority: author.username → blog.author → empty string
   const displayAuthor = author?.username ?? blog.author ?? "";
+
+  // Extract the first character from author name (used as fallback avatar initial)
   const authorInitial = displayAuthor.charAt(0).toUpperCase() || "?";
+
+  // Count total number of comments for the blog post
   const totalComments = comments.length;
 
   useEffect(() => {
@@ -467,83 +483,110 @@ export default function BlogCard({
 
   return (
     <div
+      // Card container with responsive layout and theme-based styling
       className={`card border-0 shadow-lg w-100 mx-auto mb-5 ${
         isNight ? "bg-dark text-light" : "bg-white"
       }`}
       style={{
-        maxWidth: "100%",
-        borderRadius: "24px",
-        overflow: "hidden",
-        border: `1px solid ${cardBorderColor}`,
+        maxWidth: "100%",                // Ensures the card takes full available width
+        borderRadius: "24px",            // Rounded corners for a smooth, modern look
+        overflow: "hidden",              // Prevents content from overflowing outside card edges
+        border: `1px solid ${cardBorderColor}`, // Dynamic border color based on theme
       }}
     >
+      {/* Header section with background gradient and author info */}
       <div
-        className="position-relative p-4 text-white"
-        style={{ background: headerGradient }}
+        className="position-relative p-4 text-white" // Relative positioning for overlays, padding, and white text
+        style={{ background: headerGradient }}       // Dynamic background based on theme
       >
+        {/* Row: author avatar + title + author name */}
         <div className="d-flex align-items-center gap-3">
+          {/* If author has an image, display it */}
           {author?.image ? (
             <img
-              src={author.image}
-              alt={author.username}
-              className="rounded-circle border border-3 border-white"
-              style={{ width: "56px", height: "56px", objectFit: "cover" }}
+              src={author.image}                    // Author's profile picture
+              alt={author.username}                 // Accessible alt text
+              className="rounded-circle border border-3 border-white" // Circular avatar with white border
+              style={{
+                width: "56px",                      // Avatar width
+                height: "56px",                     // Avatar height
+                objectFit: "cover",                 // Ensures image fills the circle without distortion
+              }}
             />
           ) : (
+            // Otherwise, show the author’s initial in a styled circle
             <div
               className="rounded-circle bg-white text-primary fw-semibold d-flex align-items-center justify-content-center"
-              style={{ width: "56px", height: "56px" }}
+              style={{ width: "56px", height: "56px" }} // Same size as avatar
             >
-              {authorInitial}
+              {authorInitial} // Display first letter of author’s name
             </div>
           )}
+
+          {/* Blog title and author name section */}
           <div className="flex-grow-1">
+            {/* Tag label above the title */}
             <span className="badge bg-white bg-opacity-25 text-white mb-2">
               Featured Story
             </span>
+
+            {/* Blog title */}
             <h3 className="mb-1 fw-bold">{blog.title}</h3>
+
+            {/* Author name line */}
             <p className="mb-0 small text-white-50">
               By <span className="fw-semibold text-white">{displayAuthor}</span>
             </p>
           </div>
         </div>
 
+        {/* Blog statistics (likes, dislikes, comments) */}
         <div className="d-flex flex-wrap align-items-center gap-2 mt-4">
+          {/* Display like count */}
           <span className={statBadgeClass}>❤️ {likes}</span>
+          {/* Display dislike count */}
           <span className={statBadgeClass}>👎 {dislikes}</span>
+          {/* Display comment count */}
           <span className={statBadgeClass}>💬 {totalComments}</span>
         </div>
       </div>
 
       {blog.image && (
-        <div className="position-relative" style={{ cursor: "pointer" }}>
-          <img
-            src={blog.image}
-            alt="Blog Visual"
-            className="card-img-top"
-            style={{
-              objectFit: "cover",
-              maxHeight: "420px",
-              width: "100%",
-              filter: isNight ? "brightness(0.9)" : "saturate(1.05)",
-            }}
-            onClick={() => setShowImageModal(true)}
-          />
-          <div
-            className="position-absolute top-0 start-0 w-100 h-100"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.35) 100%)",
-            }}
-          />
-          <div className="position-absolute bottom-0 end-0 m-3">
-            <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-3 py-2 d-flex align-items-center gap-2">
-              <span>🔍</span>
-              <span>Tap to expand</span>
-            </span>
-          </div>
+      <div className="position-relative" style={{ cursor: "pointer" }}>
+        {/* Image container section with clickable behavior */}
+        <img
+          src={blog.image}                        // Main blog image source
+          alt="Blog Visual"                       // Descriptive alt text for accessibility
+          className="card-img-top"                // Bootstrap class for top-positioned card image
+          style={{
+            objectFit: "cover",
+            maxHeight: "420px",
+            width: "100%",
+            filter: isNight
+              ? "brightness(0.9)"
+              : "saturate(1.05)",
+          }}
+          onClick={() => setShowImageModal(true)}
+        />
+
+        {/* Transparent gradient overlay for visual depth */}
+        <div
+          className="position-absolute top-0 start-0 w-100 h-100"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.35) 100%)",
+          }}
+        />
+
+        {/* Bottom-right floating badge prompting user interaction */}
+        <div className="position-absolute bottom-0 end-0 m-3">
+          <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-3 py-2 d-flex align-items-center gap-2">
+            <span>🔍</span>
+            <span>Tap to expand</span>
+          </span>
         </div>
-      )}
+      </div>
+    )}
 
       <div className="card-body p-4">
         <p
