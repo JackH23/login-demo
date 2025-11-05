@@ -33,17 +33,17 @@ export default function SignupPage() {
       });
     }
 
-    const ok = await signup(
+    const result = await signup(
       username,
       password,
       position,
       Number(age),
       imageData
     );
-    if (ok) {
+    if (result.success) {
       router.push("/signin");
     } else {
-      setError("Account creation failed.");
+      setError(result.message);
     }
   };
 
