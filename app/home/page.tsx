@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
+import { useConfirmDialog } from "../context/ConfirmDialogContext";
 import TopBar from "../components/TopBar";
 import BlogCard from "../components/BlogCard";
 
@@ -32,12 +33,21 @@ export default function HomePage() {
   const { user, loading } = useAuth();
   const { theme } = useTheme();
   const router = useRouter();
+  const confirmDialog = useConfirmDialog();
 
   const [users, setUsers] = useState<User[]>([]);
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [isFetching, setIsFetching] = useState(true);
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this post?")) return;
+    const confirmed = await confirmDialog({
+      title: "Delete this post?",
+      description:
+        "Removing this post will permanently erase it for everyone. This action cannot be undone.",
+      confirmText: "Delete",
+      cancelText: "Keep post",
+      tone: "danger",
+    });
+    if (!confirmed) return;
     const res = await fetch(`/api/posts/${id}`, { method: "DELETE" });
     if (res.ok) {
       setPosts((prev) => prev.filter((p) => p._id !== id));

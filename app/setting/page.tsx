@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
+import { useConfirmDialog } from "../context/ConfirmDialogContext";
 import TopBar from "../components/TopBar";
 
 interface User {
@@ -25,6 +26,7 @@ export default function SettingPage() {
   const [newAge, setNewAge] = useState<number>(0);
   const [profileImage, setProfileImage] = useState<string>("");
   const { theme, setTheme } = useTheme();
+  const confirmDialog = useConfirmDialog();
 
   // Convert selected image file to base64 string
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,7 +118,15 @@ export default function SettingPage() {
 
   const handleDeleteAccount = async () => {
     if (!user) return;
-    if (!confirm("Are you sure you want to delete your account?")) return;
+    const confirmed = await confirmDialog({
+      title: "Delete your account?",
+      description:
+        "Your profile, posts, and connections will be permanently removed. This cannot be undone.",
+      confirmText: "Delete account",
+      cancelText: "Keep account",
+      tone: "danger",
+    });
+    if (!confirmed) return;
 
     try {
       const res = await fetch(`/api/users/${user.username}`, {
