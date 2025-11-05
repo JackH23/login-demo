@@ -525,10 +525,6 @@ export default function BlogCard({
 
           {/* Blog title and author name section */}
           <div className="flex-grow-1">
-            {/* Tag label above the title */}
-            <span className="badge bg-white bg-opacity-25 text-white mb-2">
-              Featured Story
-            </span>
 
             {/* Blog title */}
             <h3 className="mb-1 fw-bold">{blog.title}</h3>
@@ -579,12 +575,17 @@ export default function BlogCard({
           />
 
           {/* Bottom-right floating badge prompting user interaction */}
-          <div className="position-absolute bottom-0 end-0 m-3">
+          <button
+            type="button"
+            className="position-absolute bottom-0 end-0 m-3 border-0 bg-transparent p-0"
+            onClick={() => setShowImageModal(true)}
+            aria-label="Expand image"
+          >
             <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-3 py-2 d-flex align-items-center gap-2">
               <span>🔍</span>
               <span>Tap to expand</span>
             </span>
-          </div>
+          </button>
         </div>
       )}
 
@@ -1108,11 +1109,11 @@ export default function BlogCard({
           onClick={() => setShowImageModal(false)}
         >
           <div
-            className="modal-dialog modal-xl modal-dialog-centered"
+            className="modal-dialog modal-fullscreen"
             role="document"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="modal-content bg-dark text-white border-0">
+            <div className="modal-content bg-black text-white border-0">
               <div className="modal-header border-0">
                 <button
                   type="button"
@@ -1120,15 +1121,13 @@ export default function BlogCard({
                   onClick={() => setShowImageModal(false)}
                 />
               </div>
-              <div className="modal-body p-0 d-flex justify-content-center align-items-center">
+              <div className="modal-body p-0 position-relative bg-black d-flex justify-content-center align-items-center">
                 <img
                   src={blog.image}
                   alt="Full Blog View"
-                  className="img-fluid"
+                  className="w-100 h-100"
                   style={{
-                    maxHeight: "85vh",
                     objectFit: "contain",
-                    borderRadius: "0.5rem",
                   }}
                 />
               </div>
