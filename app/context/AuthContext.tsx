@@ -22,7 +22,7 @@ interface AuthContextValue {
     position: string,
     age: number,
     image: string | null
-  ) => Promise<boolean>;
+  ) => Promise<{ success: true } | { success: false; message: string }>;
   // Logs an existing user in; resolves to true on success
   signin: (username: string, password: string) => Promise<boolean>;
   // Clears user information from state and storage
@@ -140,7 +140,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password, position, age, image }),
     });
-    return res.ok;
+
+    if (res.ok) {
+      return { success: true } as const;
+    }
+
+    let message = "Account creation failed.";
+    try {
+      const data = await res.json();
+      if (typeof data?.error === "string" && data.error.trim()) {
+        message = data.error;
+      }
+    } catch (error) {
+      console.error("Unable to parse signup error response", error);
+    }
+
+    return { success: false as const, message };
   };
 
   const signin = async (username: string, password: string) => {

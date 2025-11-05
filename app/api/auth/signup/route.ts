@@ -12,17 +12,52 @@ export async function POST(req: Request) {
   // Get all provided fields from the request body
   const { username, password, position, age, image } = await req.json();
 
+  if (typeof username !== 'string' || !username.trim()) {
+    return NextResponse.json({ error: 'Username is required' }, { status: 400 });
+  }
+
+  if (typeof password !== 'string' || !password) {
+    return NextResponse.json({ error: 'Password is required' }, { status: 400 });
+  }
+
   // Connect to the database before creating the user
   await dbConnect();
+
+  const existingUser = await User.findOne({ username: username.trim() });
+  if (existingUser) {
+    return NextResponse.json({ error: 'Username already exists' }, { status: 409 });
+  }
 
   try {
     // Hash the provided password before saving
     const hashed = await bcrypt.hash(password, 10);
+
+    const userDoc: Record<string, unknown> = {
+      username: username.trim(),
+      password: hashed,
+    };
+
+    if (typeof position === 'string' && position.trim()) {
+      userDoc.position = position.trim();
+    }
+
+    const parsedAge = Number(age);
+    if (!Number.isNaN(parsedAge) && parsedAge > 0) {
+      userDoc.age = parsedAge;
+    }
+
+    if (typeof image === 'string' && image.trim()) {
+      userDoc.image = image;
+    }
+
     // Insert the new user document with additional details
-    await User.create({ username, password: hashed, position, age, image });
+    await User.create(userDoc);
     return NextResponse.json({ success: true });
-  } catch {
-    // Likely a duplicate username or validation error
-    return NextResponse.json({ error: 'User creation failed' }, { status: 400 });
+  } catch (error) {
+    console.error('Failed to create user', error);
+    return NextResponse.json(
+      { error: 'User creation failed. Please try again later.' },
+      { status: 500 }
+    );
   }
 }
