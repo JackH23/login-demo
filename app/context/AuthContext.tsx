@@ -1,7 +1,7 @@
 "use client";
 
 // React hooks for managing context state on the client
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
 // Basic representation of a user stored in the context
@@ -42,11 +42,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    const s = io('http://localhost:3001');
+    const urlFromEnv = process.env.NEXT_PUBLIC_SOCKET_URL;
+    const portFromEnv =
+      process.env.NEXT_PUBLIC_SOCKET_PORT || process.env.SOCKET_PORT || "3001";
+
+    const resolvedUrl =
+      urlFromEnv ||
+      (typeof window !== "undefined"
+        ? `${window.location.protocol}//${window.location.hostname}:${portFromEnv}`
+        : undefined);
+
+    if (!resolvedUrl) return;
+
+    const s = io(resolvedUrl);
+    const handleConnectError = (error: Error) => {
+      console.error("Socket connection error:", error);
+    };
+    s.on("connect_error", handleConnectError);
     setSocket(s);
     return () => {
+      s.off("connect_error", handleConnectError);
       s.disconnect();
     };
+  }, []);
+
+  const updateOnlineStatus = useCallback(async (username: string, online: boolean) => {
+    try {
+      const res = await fetch(`/api/users/${encodeURIComponent(username)}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: username,
+        },
+        body: JSON.stringify({ online }),
+      });
+      if (!res.ok) {
+        const message = await res.text();
+        throw new Error(message || "Failed to update user");
+      }
+    } catch (error) {
+      console.error("Unable to update user status", error);
+    }
   }, []);
 
   // On first render, restore user from local storage to persist sessions
@@ -58,26 +94,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (socket) {
         socket.emit("user-online", parsed.username);
       }
-      fetch(`/api/users/${parsed.username}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", Authorization: parsed.username },
-        body: JSON.stringify({ online: true }),
-      });
+      void updateOnlineStatus(parsed.username, true);
     }
     // Loading complete after attempting to read from storage
     setLoading(false);
-  }, [socket]);
+  }, [socket, updateOnlineStatus]);
 
   // Mark the user offline when the tab is closed or hidden
   useEffect(() => {
     if (!user) return;
 
     const markOffline = () => {
-      fetch(`/api/users/${user.username}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", Authorization: user.username },
-        body: JSON.stringify({ online: false }),
-      });
+      void updateOnlineStatus(user.username, false);
       if (socket) socket.emit("user-offline", user.username);
     };
 
@@ -85,14 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (document.visibilityState === "hidden") {
         markOffline();
       } else if (document.visibilityState === "visible" && user) {
-        fetch(`/api/users/${user.username}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: user.username,
-          },
-          body: JSON.stringify({ online: true }),
-        });
+        void updateOnlineStatus(user.username, true);
         if (socket) socket.emit("user-online", user.username);
       }
     };
@@ -104,7 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       window.removeEventListener("beforeunload", markOffline);
       document.removeEventListener("visibilitychange", handleVisibility);
     };
-  }, [user, socket]);
+  }, [user, socket, updateOnlineStatus]);
 
   const signup = async (
     username: string,
@@ -136,11 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser({ username: data.username });
       // Mark user as online after successful sign in
       if (socket) socket.emit("user-online", data.username);
-      fetch(`/api/users/${data.username}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", Authorization: data.username },
-        body: JSON.stringify({ online: true }),
-      });
+      await updateOnlineStatus(data.username, true);
       return true;
     }
     return false;
@@ -151,11 +168,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const current = user?.username;
     if (current) {
       // Mark the user as offline before clearing session
-      fetch(`/api/users/${current}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", Authorization: current },
-        body: JSON.stringify({ online: false }),
-      });
+      void updateOnlineStatus(current, false);
       if (socket) socket.emit("user-offline", current);
     }
     localStorage.removeItem("user");
