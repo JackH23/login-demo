@@ -7,6 +7,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 import { ADMIN_USERNAME } from "@/lib/constants";
+import { useConfirmDialog } from "../components/useConfirmDialog";
 
 export default function UserPage() {
   const { user, loading, socket } = useAuth();
@@ -24,6 +25,7 @@ export default function UserPage() {
 
   const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const { confirm: showConfirm, dialog: confirmDialog } = useConfirmDialog();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -79,7 +81,25 @@ export default function UserPage() {
 
   // Admin operations require the current username in the Authorization header
   const handleDelete = async (username: string) => {
-    if (!confirm("Delete this user?")) return;
+    const confirmed = await showConfirm({
+      title: "Remove user account",
+      message: (
+        <div>
+          <p className="mb-1">
+            Are you sure you want to delete
+            {" "}
+            <span className="fw-semibold">{username}</span>’s profile?
+          </p>
+          <small className="text-muted">
+            This will revoke their access and remove their activity history.
+          </small>
+        </div>
+      ),
+      confirmText: "Delete user",
+      cancelText: "Cancel",
+      confirmVariant: "danger",
+    });
+    if (!confirmed) return;
     const res = await fetch(`/api/users/${username}`, {
       method: "DELETE",
       headers: { Authorization: user.username },
@@ -180,6 +200,7 @@ export default function UserPage() {
         theme === "night" ? "bg-dark text-white" : "bg-light"
       }`}
     >
+      {confirmDialog}
       {/* Sticky Top Bar and Menu */}
       <TopBar
         title="Home"

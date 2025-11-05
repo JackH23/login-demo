@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 import BlogCard from "../components/BlogCard";
+import { useConfirmDialog } from "../components/useConfirmDialog";
 
 interface User {
   username: string;
@@ -35,8 +36,28 @@ export default function PostsPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [isFetching, setIsFetching] = useState(true);
   const [posts, setPosts] = useState<BlogPost[]>([]);
+  const { confirm: showConfirm, dialog: confirmDialog } = useConfirmDialog();
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this post?")) return;
+    const targetPost = posts.find((p) => p._id === id);
+    const confirmed = await showConfirm({
+      title: "Remove this story?",
+      message: targetPost ? (
+        <div>
+          <p className="mb-1">
+            <span className="fw-semibold">“{targetPost.title}”</span> will be permanently removed from your posts.
+          </p>
+          <small className="text-muted">
+            Your readers won’t be able to access it anymore.
+          </small>
+        </div>
+      ) : (
+        "This post will be permanently removed from your list."
+      ),
+      confirmText: "Delete post",
+      cancelText: "Go back",
+      confirmVariant: "danger",
+    });
+    if (!confirmed) return;
     const res = await fetch(`/api/posts/${id}`, { method: "DELETE" });
     if (res.ok) {
       setPosts((prev) => prev.filter((p) => p._id !== id));
@@ -84,6 +105,7 @@ export default function PostsPage() {
         theme === "night" ? "bg-dark text-white" : "bg-light"
       }`}
     >
+      {confirmDialog}
       <TopBar
         title="Posts"
         active="posts"

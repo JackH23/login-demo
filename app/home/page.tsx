@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 import BlogCard from "../components/BlogCard";
+import { useConfirmDialog } from "../components/useConfirmDialog";
 
 interface User {
   username: string;
@@ -36,8 +37,31 @@ export default function HomePage() {
   const [users, setUsers] = useState<User[]>([]);
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [isFetching, setIsFetching] = useState(true);
+  const { confirm: showConfirm, dialog: confirmDialog } = useConfirmDialog();
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this post?")) return;
+    const targetPost = posts.find((p) => p._id === id);
+    const confirmed = await showConfirm({
+      title: "Delete this post?",
+      message: targetPost ? (
+        <div>
+          <p className="mb-1">
+            You’re about to permanently remove
+            {" "}
+            <span className="fw-semibold">“{targetPost.title}”</span>.
+          </p>
+          <small className="text-muted">
+            This action cannot be undone and the conversation will disappear for
+            everyone.
+          </small>
+        </div>
+      ) : (
+        "You’re about to permanently delete this post. This action cannot be undone."
+      ),
+      confirmText: "Yes, delete it",
+      cancelText: "Keep post",
+      confirmVariant: "danger",
+    });
+    if (!confirmed) return;
     const res = await fetch(`/api/posts/${id}`, { method: "DELETE" });
     if (res.ok) {
       setPosts((prev) => prev.filter((p) => p._id !== id));
@@ -83,6 +107,7 @@ export default function HomePage() {
         theme === "night" ? "bg-dark text-white" : "bg-light"
       }`}
     >
+      {confirmDialog}
       {/* Sticky Top Bar and Menu */}
       <TopBar
         title="Home"

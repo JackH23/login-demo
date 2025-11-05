@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
+import { useConfirmDialog } from "../components/useConfirmDialog";
 
 interface User {
   username: string;
@@ -25,6 +26,7 @@ export default function SettingPage() {
   const [newAge, setNewAge] = useState<number>(0);
   const [profileImage, setProfileImage] = useState<string>("");
   const { theme, setTheme } = useTheme();
+  const { confirm: showConfirm, dialog: confirmDialog } = useConfirmDialog();
 
   // Convert selected image file to base64 string
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,7 +118,23 @@ export default function SettingPage() {
 
   const handleDeleteAccount = async () => {
     if (!user) return;
-    if (!confirm("Are you sure you want to delete your account?")) return;
+    const confirmed = await showConfirm({
+      title: "Delete your account",
+      message: (
+        <div>
+          <p className="mb-1">
+            This will permanently erase your profile, posts, and connections.
+          </p>
+          <small className="text-muted">
+            You will need to create a new account to rejoin the community.
+          </small>
+        </div>
+      ),
+      confirmText: "Yes, delete my account",
+      cancelText: "Keep account",
+      confirmVariant: "danger",
+    });
+    if (!confirmed) return;
 
     try {
       const res = await fetch(`/api/users/${user.username}`, {
@@ -136,6 +154,7 @@ export default function SettingPage() {
 
   return (
     <div className="container-fluid min-vh-100 p-4">
+      {confirmDialog}
       <TopBar
         title="Settings"
         active="setting"
