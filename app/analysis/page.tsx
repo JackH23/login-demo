@@ -120,7 +120,7 @@ export default function AnalysisPage() {
                 <span className="badge bg-success">👍 {topLikedPost.likes}</span>
               </div>
             ) : (
-              <p className="text-muted">You haven't posted anything yet.</p>
+              <p className="text-muted">You haven’t posted anything yet.</p>
             )}
           </div>
         </div>
