@@ -22,6 +22,14 @@ export function initSocketServer(port: number = Number(process.env.SOCKET_PORT) 
   return g._io!;
 }
 
+// In a traditional Node.js runtime we want the Socket.IO server to be ready
+// as soon as the module is imported so client connections do not immediately
+// fail while waiting for the first API handler to emit an event. Guard the
+// call so it does not run in edge runtimes or during client-side bundling.
+if (typeof process !== 'undefined' && process.release?.name === 'node') {
+  initSocketServer();
+}
+
 export function emitUserOnline(username: string) {
   const io = initSocketServer();
   io.emit('user-online', username);
