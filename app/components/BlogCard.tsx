@@ -483,7 +483,6 @@ export default function BlogCard({
 
   return (
     <div
-      // Card container with responsive layout and theme-based styling
       className={`card border-0 shadow-lg w-100 mx-auto mb-5 ${
         isNight ? "bg-dark text-light" : "bg-white"
       }`}
@@ -496,17 +495,19 @@ export default function BlogCard({
     >
       {/* Header section with background gradient and author info */}
       <div
-        className="position-relative p-4 text-white" // Relative positioning for overlays, padding, and white text
-        style={{ background: headerGradient }}       // Dynamic background based on theme
+        className="position-relative p-4 text-white"
+        style={{
+          background: headerGradient, // Dynamic background based on theme
+        }}
       >
         {/* Row: author avatar + title + author name */}
         <div className="d-flex align-items-center gap-3">
           {/* If author has an image, display it */}
           {author?.image ? (
             <img
-              src={author.image}                    // Author's profile picture
-              alt={author.username}                 // Accessible alt text
-              className="rounded-circle border border-3 border-white" // Circular avatar with white border
+              src={author.image}
+              alt={author.username}
+              className="rounded-circle border border-3 border-white"
               style={{
                 width: "56px",                      // Avatar width
                 height: "56px",                     // Avatar height
@@ -514,12 +515,11 @@ export default function BlogCard({
               }}
             />
           ) : (
-            // Otherwise, show the author’s initial in a styled circle
             <div
               className="rounded-circle bg-white text-primary fw-semibold d-flex align-items-center justify-content-center"
-              style={{ width: "56px", height: "56px" }} // Same size as avatar
+              style={{ width: "56px", height: "56px" }}
             >
-              {authorInitial} // Display first letter of author’s name
+              {authorInitial}
             </div>
           )}
 
@@ -553,40 +553,40 @@ export default function BlogCard({
 
       {blog.image && (
       <div className="position-relative" style={{ cursor: "pointer" }}>
-        {/* Image container section with clickable behavior */}
-        <img
-          src={blog.image}                        // Main blog image source
-          alt="Blog Visual"                       // Descriptive alt text for accessibility
-          className="card-img-top"                // Bootstrap class for top-positioned card image
-          style={{
-            objectFit: "cover",
-            maxHeight: "420px",
-            width: "100%",
-            filter: isNight
-              ? "brightness(0.9)"
-              : "saturate(1.05)",
-          }}
-          onClick={() => setShowImageModal(true)}
-        />
+          {/* Image container section with clickable behavior */}
+          <img
+            src={blog.image}
+            alt="Blog Visual"
+            className="card-img-top"
+            style={{
+              objectFit: "cover",
+              maxHeight: "420px",
+              width: "100%",
+              filter: isNight
+                ? "brightness(0.9)"
+                : "saturate(1.05)",
+            }}
+            onClick={() => setShowImageModal(true)}
+          />
 
-        {/* Transparent gradient overlay for visual depth */}
-        <div
-          className="position-absolute top-0 start-0 w-100 h-100"
-          style={{
-            background:
-              "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.35) 100%)",
-          }}
-        />
+          {/* Transparent gradient overlay for visual depth */}
+          <div
+            className="position-absolute top-0 start-0 w-100 h-100"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.35) 100%)",
+            }}
+          />
 
-        {/* Bottom-right floating badge prompting user interaction */}
-        <div className="position-absolute bottom-0 end-0 m-3">
-          <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-3 py-2 d-flex align-items-center gap-2">
-            <span>🔍</span>
-            <span>Tap to expand</span>
-          </span>
+          {/* Bottom-right floating badge prompting user interaction */}
+          <div className="position-absolute bottom-0 end-0 m-3">
+            <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-3 py-2 d-flex align-items-center gap-2">
+              <span>🔍</span>
+              <span>Tap to expand</span>
+            </span>
+          </div>
         </div>
-      </div>
-    )}
+      )}
 
       <div className="card-body p-4">
         <p
