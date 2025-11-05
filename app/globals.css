@@ -120,40 +120,114 @@
 
 .confirm-dialog-summary {
   display: grid;
-  gap: 0.75rem;
+  gap: 1rem;
   margin-top: 1rem;
   text-align: left;
 }
 
 .confirm-dialog-summary-item {
-  border-radius: 0.9rem;
-  padding: 0.75rem 1rem;
-  background: rgba(var(--bs-secondary-rgb), 0.06);
-  border: 1px solid rgba(var(--bs-secondary-rgb), 0.08);
+  border-radius: 1rem;
+  padding: 1rem 1.1rem;
+  background: linear-gradient(
+      135deg,
+      rgba(var(--bs-primary-rgb), 0.08),
+      rgba(var(--bs-secondary-rgb), 0.04)
+    ),
+    rgba(var(--bs-secondary-rgb), 0.04);
+  border: 1px solid rgba(var(--bs-secondary-rgb), 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.confirm-dialog-diff-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
 }
 
 .confirm-dialog-diff-label {
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(var(--bs-secondary-rgb), 0.8);
-  margin-bottom: 0.35rem;
+  color: rgba(var(--bs-secondary-rgb), 0.78);
+  font-weight: 700;
+}
+
+.confirm-dialog-diff-pill {
+  font-size: 0.65rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(var(--bs-primary-rgb), 0.15);
+  color: rgb(var(--bs-primary-rgb));
 }
 
 .confirm-dialog-diff-values {
-  display: flex;
-  align-items: center;
+  display: grid;
   gap: 0.65rem;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: stretch;
+}
+
+.confirm-dialog-diff-value {
+  border-radius: 0.85rem;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
   font-weight: 600;
-  flex-wrap: wrap;
+  border: 1px solid rgba(var(--bs-secondary-rgb), 0.12);
+  background: rgba(var(--bs-body-color-rgb, 15, 23, 42), 0.02);
+}
+
+.confirm-dialog-diff-value-from {
+  background: rgba(var(--bs-secondary-rgb), 0.05);
+}
+
+.confirm-dialog-diff-value-to {
+  background: rgba(var(--bs-success-rgb), 0.1);
+  border-color: rgba(var(--bs-success-rgb), 0.2);
+}
+
+.confirm-dialog-diff-chip {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(var(--bs-secondary-rgb), 0.75);
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(var(--bs-secondary-rgb), 0.12);
+}
+
+.confirm-dialog-diff-value-text {
+  font-size: 0.95rem;
+  color: var(--bs-body-color);
 }
 
 .confirm-dialog-diff-arrow {
-  color: rgba(var(--bs-secondary-rgb), 0.65);
-  font-size: 0.95rem;
-  display: inline-flex;
+  color: rgba(var(--bs-secondary-rgb), 0.6);
+  font-size: 1.5rem;
+  display: flex;
   align-items: center;
+  justify-content: center;
+  padding: 0 0.35rem;
+}
+
+@media (max-width: 576px) {
+  .confirm-dialog-diff-values {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .confirm-dialog-diff-arrow {
+    display: none;
+  }
 }
 
 .confirm-dialog-highlight {

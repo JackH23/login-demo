@@ -189,21 +189,47 @@ export default function UserPage() {
       message: (
         <>
           <p className="mb-2">
-            Review the updates before saving them to the community.
+            Review what will change before sharing the polished profile update
+            with everyone.
           </p>
-          <div className="confirm-dialog-summary">
-            {changes.map((change) => (
-              <div key={change.label} className="confirm-dialog-summary-item">
-                <div className="confirm-dialog-diff-label">{change.label}</div>
-                <div className="confirm-dialog-diff-values">
-                  <span>{change.from}</span>
-                  <span className="confirm-dialog-diff-arrow" aria-hidden="true">
-                    →
-                  </span>
-                  <span>{change.to}</span>
-                </div>
-              </div>
-            ))}
+          <div className="confirm-dialog-summary" role="list">
+            {changes.map((change) => {
+              const labelId = `confirm-change-${change.label
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "-")}`;
+              return (
+                <article
+                  key={change.label}
+                  className="confirm-dialog-summary-item"
+                  role="listitem"
+                  aria-labelledby={labelId}
+                >
+                  <div className="confirm-dialog-diff-header">
+                    <span id={labelId} className="confirm-dialog-diff-label">
+                      {change.label}
+                    </span>
+                    <span className="confirm-dialog-diff-pill">Updated</span>
+                  </div>
+                  <div className="confirm-dialog-diff-values" role="presentation">
+                    <div className="confirm-dialog-diff-value confirm-dialog-diff-value-from">
+                      <span className="confirm-dialog-diff-chip">Before</span>
+                      <span className="confirm-dialog-diff-value-text">
+                        {change.from}
+                      </span>
+                    </div>
+                    <div className="confirm-dialog-diff-arrow" aria-hidden="true">
+                      →
+                    </div>
+                    <div className="confirm-dialog-diff-value confirm-dialog-diff-value-to">
+                      <span className="confirm-dialog-diff-chip">After</span>
+                      <span className="confirm-dialog-diff-value-text">
+                        {change.to}
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </>
       ),
