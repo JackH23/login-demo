@@ -66,6 +66,22 @@ export default function BlogCard({
   const { theme } = useTheme();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const isNight = theme === "night";
+  const headerGradient = isNight
+    ? "linear-gradient(135deg, rgba(17,24,39,0.95), rgba(30,64,175,0.85))"
+    : "linear-gradient(135deg, rgba(59,130,246,0.95), rgba(129,140,248,0.85))";
+  const cardBorderColor = isNight
+    ? "rgba(96,165,250,0.35)"
+    : "rgba(59,130,246,0.2)";
+  const mutedTextClass = isNight ? "text-light text-opacity-75" : "text-muted";
+  const statBadgeClass = `badge rounded-pill ${
+    isNight
+      ? "bg-dark bg-opacity-75 text-light border border-primary border-opacity-50"
+      : "bg-white text-primary border border-primary border-opacity-25"
+  }`;
+  const displayAuthor = author?.username ?? blog.author ?? "";
+  const authorInitial = displayAuthor.charAt(0).toUpperCase() || "?";
+  const totalComments = comments.length;
 
   useEffect(() => {
     setLikes(blog.likes ?? 0);
@@ -451,76 +467,142 @@ export default function BlogCard({
 
   return (
     <div
-      className="card shadow-sm w-100 mx-auto mb-4"
-      style={{ maxWidth: "100%" }}
+      className={`card border-0 shadow-lg w-100 mx-auto mb-5 ${
+        isNight ? "bg-dark text-light" : "bg-white"
+      }`}
+      style={{
+        maxWidth: "100%",
+        borderRadius: "24px",
+        overflow: "hidden",
+        border: `1px solid ${cardBorderColor}`,
+      }}
     >
-      <div className="card-header bg-primary text-white d-flex align-items-center gap-3">
-        {author?.image && (
-          <img
-            src={author.image}
-            alt={author.username}
-            className="rounded-circle"
-            style={{ width: "40px", height: "40px", objectFit: "cover" }}
-          />
-        )}
-        <div>
-          <h4 className="mb-0">{blog.title}</h4>
+      <div
+        className="position-relative p-4 text-white"
+        style={{ background: headerGradient }}
+      >
+        <div className="d-flex align-items-center gap-3">
+          {author?.image ? (
+            <img
+              src={author.image}
+              alt={author.username}
+              className="rounded-circle border border-3 border-white"
+              style={{ width: "56px", height: "56px", objectFit: "cover" }}
+            />
+          ) : (
+            <div
+              className="rounded-circle bg-white text-primary fw-semibold d-flex align-items-center justify-content-center"
+              style={{ width: "56px", height: "56px" }}
+            >
+              {authorInitial}
+            </div>
+          )}
+          <div className="flex-grow-1">
+            <span className="badge bg-white bg-opacity-25 text-white mb-2">
+              Featured Story
+            </span>
+            <h3 className="mb-1 fw-bold">{blog.title}</h3>
+            <p className="mb-0 small text-white-50">
+              By <span className="fw-semibold text-white">{displayAuthor}</span>
+            </p>
+          </div>
+        </div>
+
+        <div className="d-flex flex-wrap align-items-center gap-2 mt-4">
+          <span className={statBadgeClass}>❤️ {likes}</span>
+          <span className={statBadgeClass}>👎 {dislikes}</span>
+          <span className={statBadgeClass}>💬 {totalComments}</span>
         </div>
       </div>
 
       {blog.image && (
-        <img
-          src={blog.image}
-          alt="Blog Visual"
-          className="card-img-top"
-          style={{ objectFit: "cover", maxHeight: "500px", cursor: "pointer" }}
-          onClick={() => setShowImageModal(true)}
-        />
+        <div className="position-relative" style={{ cursor: "pointer" }}>
+          <img
+            src={blog.image}
+            alt="Blog Visual"
+            className="card-img-top"
+            style={{
+              objectFit: "cover",
+              maxHeight: "420px",
+              width: "100%",
+              filter: isNight ? "brightness(0.9)" : "saturate(1.05)",
+            }}
+            onClick={() => setShowImageModal(true)}
+          />
+          <div
+            className="position-absolute top-0 start-0 w-100 h-100"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.35) 100%)",
+            }}
+          />
+          <div className="position-absolute bottom-0 end-0 m-3">
+            <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-3 py-2 d-flex align-items-center gap-2">
+              <span>🔍</span>
+              <span>Tap to expand</span>
+            </span>
+          </div>
+        </div>
       )}
 
-      <div className="card-body">
-        <p className="card-text">{blog.content}</p>
+      <div className="card-body p-4">
+        <p
+          className="card-text fs-6"
+          style={{ lineHeight: 1.7, letterSpacing: "0.01em" }}
+        >
+          {blog.content}
+        </p>
 
-        <div className="d-flex gap-3 align-items-center mt-3">
-          <button
-            className="btn btn-outline-success"
-            onClick={handleLikePost}
-            disabled={hasLikedPost || !user}
-          >
-            👍 {likes}
-          </button>
+        <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mt-4">
+          <div className="d-flex flex-wrap gap-2">
+            <button
+              className="btn btn-sm btn-success rounded-pill d-flex align-items-center gap-2 px-3"
+              onClick={handleLikePost}
+              disabled={hasLikedPost || !user}
+            >
+              <span>👍</span>
+              <span>Appreciate</span>
+              <span className="badge bg-white text-success ms-1">{likes}</span>
+            </button>
 
-          <button
-            className="btn btn-outline-danger"
-            onClick={handleDislikePost}
-            disabled={hasDislikedPost || !user}
-          >
-            👎 {dislikes}
-          </button>
-          <button
-            className="btn btn-outline-secondary"
-            onClick={() => {
-              const shareText = `${blog.title}\n\n${blog.content}\n\nShared from Blog App`;
-              const shareUrl = window.location.href;
-              if (navigator.share) {
-                navigator
-                  .share({
-                    title: blog.title,
-                    text: shareText,
-                    url: shareUrl,
-                  })
-                  .catch((err) => console.error("Share failed", err));
-              } else {
-                navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
-                alert("Link copied to clipboard!");
-              }
-            }}
-          >
-            🔗 Share
-          </button>
+            <button
+              className="btn btn-sm btn-outline-danger rounded-pill d-flex align-items-center gap-2 px-3"
+              onClick={handleDislikePost}
+              disabled={hasDislikedPost || !user}
+            >
+              <span>👎</span>
+              <span>Not for me</span>
+              <span className="badge bg-light text-danger ms-1">{dislikes}</span>
+            </button>
+            <button
+              className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 px-3 ${
+                isNight ? "btn-outline-light" : "btn-outline-secondary"
+              }`}
+              onClick={() => {
+                const shareText = `${blog.title}\n\n${blog.content}\n\nShared from Blog App`;
+                const shareUrl = window.location.href;
+                if (navigator.share) {
+                  navigator
+                    .share({
+                      title: blog.title,
+                      text: shareText,
+                      url: shareUrl,
+                    })
+                    .catch((err) => console.error("Share failed", err));
+                } else {
+                  navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
+                  alert("Link copied to clipboard!");
+                }
+              }}
+            >
+              <span>🔗</span>
+              <span>Share</span>
+            </button>
+          </div>
+
           {user && user.username === blog.author && (
             <button
-              className="btn btn-danger"
+              className="btn btn-sm btn-outline-danger rounded-pill px-3"
               onClick={() => setShowDeleteModal(true)}
             >
               🗑️ Delete
@@ -529,166 +611,201 @@ export default function BlogCard({
         </div>
 
         {/* Comments Section */}
-        <div className="mt-4">
-          <h5>Comments</h5>
+        <div
+          className={`mt-5 p-4 rounded-4 ${
+            isNight ? "bg-secondary bg-opacity-25" : "bg-light"
+          }`}
+        >
+          <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <div>
+              <h5 className="mb-1 d-flex align-items-center gap-2">
+                <span>💬</span>
+                <span>Conversation</span>
+              </h5>
+              <p className={`mb-0 small ${mutedTextClass}`}>
+                {totalComments === 0
+                  ? "Be the first to start the discussion."
+                  : `Join ${totalComments} ${
+                      totalComments === 1 ? "comment" : "comments"
+                    } from the community.`}
+              </p>
+            </div>
+            {totalComments > 0 && (
+              <button
+                className="btn btn-sm btn-outline-primary rounded-pill"
+                onClick={() => setShowCommentsModal(true)}
+              >
+                View all
+              </button>
+            )}
+          </div>
 
           {comments.length === 0 ? (
-            <p className="text-muted">No comments yet.</p>
+            <div
+              className={`p-4 rounded-4 text-center ${mutedTextClass}`}
+              style={{
+                border: `2px dashed ${
+                  isNight ? "rgba(255,255,255,0.25)" : "rgba(59,130,246,0.35)"
+                }`,
+              }}
+            >
+              <p className="mb-0">No comments yet. Share your thoughts below!</p>
+            </div>
           ) : (
-            <>
-              <div
-                style={{
-                  maxHeight: "300px",
-                  overflowY: "auto",
-                  paddingRight: "10px",
-                }}
-                className="mb-3"
-              >
-                <ul className="list-group">
-                  {(showAllComments ? comments : comments.slice(-3)).map(
-                    (comment, idx) => (
-                      <li
-                        key={idx}
-                        className={`list-group-item mb-3 rounded shadow-sm ${
-                          theme === "night" ? "bg-dark text-white" : "bg-white"
-                        }`}
-                      >
-                        <div className="d-flex justify-content-between align-items-center">
-                          <div className="d-flex align-items-center gap-2">
-                            {comment.authorImage && (
-                              <img
-                                src={comment.authorImage}
-                                alt={comment.author}
-                                className="rounded-circle"
-                                style={{
-                                  width: "30px",
-                                  height: "30px",
-                                  objectFit: "cover",
-                                }}
-                              />
-                            )}
-                            <div>
-                              <div className="fw-semibold small">
-                                {comment.author}
-                              </div>
-                              <div>{comment.text}</div>
+            <div
+              style={{
+                maxHeight: "280px",
+                overflowY: "auto",
+                paddingRight: "10px",
+              }}
+              className="mb-3"
+            >
+              <ul className="list-unstyled mb-0">
+                {(showAllComments ? comments : comments.slice(-3)).map(
+                  (comment, idx) => (
+                    <li
+                      key={idx}
+                      className={`p-3 mb-3 rounded-4 shadow-sm ${
+                        isNight ? "bg-dark bg-opacity-75 text-white" : "bg-white"
+                      }`}
+                    >
+                      <div className="d-flex justify-content-between align-items-start gap-3">
+                        <div className="d-flex align-items-start gap-3">
+                          {comment.authorImage ? (
+                            <img
+                              src={comment.authorImage}
+                              alt={comment.author}
+                              className="rounded-circle"
+                              style={{
+                                width: "36px",
+                                height: "36px",
+                                objectFit: "cover",
+                              }}
+                            />
+                          ) : (
+                            <div
+                              className={`rounded-circle d-flex align-items-center justify-content-center fw-semibold ${
+                                isNight
+                                  ? "bg-secondary text-white"
+                                  : "bg-primary bg-opacity-10 text-primary"
+                              }`}
+                              style={{ width: "36px", height: "36px" }}
+                            >
+                              {comment.author?.charAt(0)?.toUpperCase() || "?"}
                             </div>
-                          </div>
-                          <div className="btn-group btn-group-sm">
-                            <button
-                              className="btn btn-outline-success"
-                              onClick={() => handleLikeComment(idx)}
-                              disabled={
-                                user
-                                  ? comment.likedBy?.includes(user.username) ||
-                                    comment.dislikedBy?.includes(user.username)
-                                  : true
-                              }
-                            >
-                              👍 {comment.likes}
-                            </button>
-                            <button
-                              className="btn btn-outline-danger"
-                              onClick={() => handleDislikeComment(idx)}
-                              disabled={
-                                user
-                                  ? comment.likedBy?.includes(user.username) ||
-                                    comment.dislikedBy?.includes(user.username)
-                                  : true
-                              }
-                            >
-                              👎 {comment.dislikes}
-                            </button>
-                            <button
-                              className="btn btn-outline-primary"
-                              onClick={() => toggleReplyInput(idx)}
-                            >
-                              💬 Reply
-                            </button>
+                          )}
+                          <div>
+                            <div className="fw-semibold small text-uppercase text-primary">
+                              {comment.author}
+                            </div>
+                            <div className={`small ${isNight ? "text-light" : "text-body"}`}>
+                              {comment.text}
+                            </div>
                           </div>
                         </div>
 
+                        <div className="btn-group btn-group-sm">
+                          <button
+                            className="btn btn-outline-success"
+                            onClick={() => handleLikeComment(idx)}
+                            disabled={
+                              user
+                                ? comment.likedBy?.includes(user.username) ||
+                                  comment.dislikedBy?.includes(user.username)
+                                : true
+                            }
+                          >
+                            👍 {comment.likes}
+                          </button>
+                          <button
+                            className="btn btn-outline-danger"
+                            onClick={() => handleDislikeComment(idx)}
+                            disabled={
+                              user
+                                ? comment.likedBy?.includes(user.username) ||
+                                  comment.dislikedBy?.includes(user.username)
+                                : true
+                            }
+                          >
+                            👎 {comment.dislikes}
+                          </button>
+                          <button
+                            className="btn btn-outline-primary"
+                            onClick={() => toggleReplyInput(idx)}
+                          >
+                            💬 Reply
+                          </button>
+                        </div>
+                      </div>
+
                         {/* Replies */}
-                        {comment.replies.length > 0 && (
-                          <ul className="mt-2 ps-3 list-unstyled">
-                            {comment.replies.map((reply, rIdx) => (
-                              <li
-                                key={rIdx}
-                                className={`d-flex align-items-center gap-2 ${
-                                  theme === "night" ? "text-light" : "text-muted"
-                                } small mb-2`}
-                              >
-                                {reply.authorImage && (
-                                  <img
-                                    src={reply.authorImage}
-                                    alt={reply.author}
-                                    className="rounded-circle"
-                                    style={{
-                                      width: "24px",
-                                      height: "24px",
-                                      objectFit: "cover",
-                                    }}
-                                  />
-                                )}
-                                ↪{" "}
-                                <span className="fw-semibold">
-                                  {reply.author}
-                                </span>
-                                : {reply.text}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-
-                        {/* Reply Input */}
-                        {comment.showReplyInput && (
-                          <div className="d-flex gap-2 mt-2">
-                            <input
-                              type="text"
-                              className="form-control form-control-sm"
-                              placeholder="Write a reply..."
-                              value={comment.newReply}
-                              onChange={(e) =>
-                                handleReplyChange(idx, e.target.value)
-                              }
-                            />
-                            <button
-                              className="btn btn-sm btn-primary"
-                              onClick={() => handleReplySubmit(idx)}
+                      {comment.replies.length > 0 && (
+                        <ul className="mt-3 ps-4 list-unstyled">
+                          {comment.replies.map((reply, rIdx) => (
+                            <li
+                              key={rIdx}
+                              className={`d-flex align-items-center gap-2 ${
+                                theme === "night" ? "text-light" : "text-muted"
+                              } small mb-2`}
                             >
-                              Send
-                            </button>
-                          </div>
-                        )}
-                      </li>
-                    )
-                  )}
-                </ul>
-              </div>
+                              {reply.authorImage && (
+                                <img
+                                  src={reply.authorImage}
+                                  alt={reply.author}
+                                  className="rounded-circle"
+                                  style={{
+                                    width: "28px",
+                                    height: "28px",
+                                    objectFit: "cover",
+                                  }}
+                                />
+                              )}
+                              ↪{" "}
+                              <span className="fw-semibold">{reply.author}</span>
+                              : {reply.text}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
 
-              {comments.length > 3 && (
-                <div className="text-center mb-3">
-                  <button
-                    className="btn btn-link btn-sm"
-                    onClick={() => setShowCommentsModal(true)}
-                  >
-                    View all comments
-                  </button>
-                </div>
-              )}
-            </>
+              {/* Reply Input */}
+                      {comment.showReplyInput && (
+                        <div className="d-flex gap-2 mt-3">
+                          <input
+                            type="text"
+                            className="form-control form-control-sm rounded-pill"
+                            placeholder="Write a reply..."
+                            value={comment.newReply}
+                            onChange={(e) => handleReplyChange(idx, e.target.value)}
+                          />
+                          <button
+                            className="btn btn-sm btn-primary rounded-pill px-3"
+                            onClick={() => handleReplySubmit(idx)}
+                          >
+                            Send
+                          </button>
+                        </div>
+                      )}
+                    </li>
+                  )
+                )}
+              </ul>
+            </div>
           )}
 
           {/* Add Comment Input */}
-          <div className="d-flex gap-2">
+          <div className="d-flex flex-column flex-sm-row gap-2 align-items-stretch align-items-sm-center">
             <input
               type="text"
-              className="form-control"
-              placeholder="Write a comment..."
+              className="form-control rounded-pill px-4 py-2"
+              placeholder="Share your perspective..."
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
             />
-            <button className="btn btn-primary" onClick={handleCommentSubmit}>
+            <button
+              className="btn btn-primary rounded-pill px-4"
+              onClick={handleCommentSubmit}
+            >
               Send
             </button>
           </div>
