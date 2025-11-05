@@ -1,9 +1,16 @@
-import { Server } from 'socket.io';
-import { createServer } from 'http';
+type SocketServer = import('socket.io').Server;
+
+function loadHttpModule() {
+  return eval('require')('node:http') as typeof import('node:http');
+}
+
+function loadSocketIo() {
+  return eval('require')('socket.io') as typeof import('socket.io');
+}
 
 // Global type to avoid recreating the server on hot reloads
 interface GlobalWithIo extends NodeJS.Global {
-  _io?: Server;
+  _io?: SocketServer;
 }
 
 const g = global as GlobalWithIo;
@@ -11,6 +18,8 @@ const g = global as GlobalWithIo;
 // Initialize the Socket.IO server if it hasn't been created yet
 export function initSocketServer(port: number = Number(process.env.SOCKET_PORT) || 3001) {
   if (!g._io) {
+    const { createServer } = loadHttpModule();
+    const { Server } = loadSocketIo();
     const httpServer = createServer();
     g._io = new Server(httpServer, {
       cors: { origin: '*' },
