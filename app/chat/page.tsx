@@ -2,6 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import type { ChangeEvent, KeyboardEvent } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { Socket } from "socket.io-client";
@@ -27,6 +28,8 @@ export default function ChatPage() {
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const socketRef = useRef<Socket | null>(null);
+  const composerRef = useRef<HTMLTextAreaElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const prevLengthRef = useRef(0); // Initialize ref here
   const [selectedMsgId, setSelectedMsgId] = useState<string | null>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -195,10 +198,11 @@ export default function ChatPage() {
       setMessages((prev) => [...prev, data.message]);
       socketRef.current?.emit("send-message", data.message);
       scrollToBottom();
+      composerRef.current?.focus();
     }
   };
 
-  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user || !chatUser) return;
 
@@ -227,7 +231,25 @@ export default function ChatPage() {
       }
     };
     reader.readAsDataURL(file);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
+
+  const handleComposerKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      handleSend();
+    }
+  };
+
+  useEffect(() => {
+    const textarea = composerRef.current;
+    if (!textarea) return;
+    textarea.style.height = "auto";
+    const maxHeight = 160;
+    textarea.style.height = `${Math.min(textarea.scrollHeight, maxHeight)}px`;
+  }, [input]);
 
   const handleDelete = async (id: string) => {
     const res = await fetch(`/api/messages/${id}`, { method: "DELETE" });
@@ -456,34 +478,54 @@ export default function ChatPage() {
       </div>
 
       {/* Input + File Upload */}
-      <div
-        className={`border-top p-3 ${
-          theme === "night" ? "bg-dark" : "bg-white"
+      <footer
+        className={`chat-footer ${
+          theme === "night" ? "chat-footer-night" : "chat-footer-day"
         }`}
+        aria-label="Message composer"
       >
-        <div className="input-group">
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Type your message..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          />
-          <label className="btn btn-outline-secondary mb-0">
-            📎
-            <input
-              type="file"
-              accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
-              onChange={handleFile}
-              hidden
-            />
-          </label>
-          <button className="btn btn-primary" onClick={handleSend}>
+        <div className="chat-footer-inner">
+          <div className="chat-composer">
+            <div className="chat-composer-field">
+              <button
+                type="button"
+                className="chat-composer-tool"
+                aria-label="Insert emoji"
+              >
+                😊
+              </button>
+              <textarea
+                ref={composerRef}
+                value={input}
+                onChange={(event) => setInput(event.target.value)}
+                onKeyDown={handleComposerKeyDown}
+                placeholder="Write a message..."
+                rows={1}
+                className="chat-composer-input"
+                aria-label="Write a message"
+              />
+              <div className="chat-composer-trailing">
+                <label className="chat-composer-tool" aria-label="Attach a file">
+                  📎
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+                    onChange={handleFile}
+                    hidden
+                  />
+                </label>
+              </div>
+            </div>
+            <div className="chat-composer-hint">
+              Press <kbd>Enter</kbd> to send · <kbd>Shift</kbd> + <kbd>Enter</kbd> for a new line
+            </div>
+          </div>
+          <button type="button" className="chat-send-btn" onClick={handleSend}>
             Send
           </button>
         </div>
-      </div>
+      </footer>
     </div>
   );
 }
