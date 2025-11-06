@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 import { useConfirmDialog } from "../components/useConfirmDialog";
+import { useCachedApi } from "../hooks/useCachedApi";
 
 interface User {
   username: string;
@@ -19,8 +20,15 @@ export default function SettingPage() {
   const { user, loading, logout, updateUser } = useAuth();
   const router = useRouter();
 
-  const [users, setUsers] = useState<User[]>([]);
-  const [isFetching, setIsFetching] = useState(true);
+  const {
+    data: users,
+    setData: setUsers,
+    loading: loadingUsers,
+  } = useCachedApi<User[]>(user ? "/api/users" : null, {
+    fallback: [],
+    transform: (payload) =>
+      (payload as { users?: User[] | null })?.users ?? [],
+  });
 
   const [newUsername, setNewUsername] = useState("");
   const [newAge, setNewAge] = useState<number>(0);
@@ -51,16 +59,6 @@ export default function SettingPage() {
     }
   }, [loading, user, router]);
 
-  // Load user data
-  useEffect(() => {
-    if (!user) return;
-    fetch("/api/users")
-      .then((res) => res.json())
-      .then((data) => setUsers(data.users ?? []))
-      .catch(() => setUsers([]))
-      .finally(() => setIsFetching(false));
-  }, [user]);
-
   const handleThemeChange = (value: "brightness" | "night") => {
     setTheme(value);
   };
@@ -70,7 +68,7 @@ export default function SettingPage() {
   const age = newAge || currentUserData?.age || 0;
   const image = profileImage || currentUserData?.image || "";
 
-  if (loading || isFetching || !user || !currentUserData) {
+  if (loading || loadingUsers || !user || !currentUserData) {
     return <div className="text-center mt-5">Loading...</div>;
   }
 

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
+import { useCachedApi } from "../hooks/useCachedApi";
 
 interface BlogPost {
   _id?: string;
@@ -66,6 +67,15 @@ export default function BlogCard({
   const { theme } = useTheme();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const { data: knownUsers } = useCachedApi<AuthorData[]>(
+    user ? "/api/users" : null,
+    {
+      fallback: [],
+      transform: (payload) =>
+        (payload as { users?: AuthorData[] | null })?.users ?? [],
+    }
+  );
   // Check if the current theme is "night"
   const isNight = theme === "night";
 
@@ -115,34 +125,37 @@ export default function BlogCard({
   }, [blog.likedBy, blog.dislikedBy, user]);
 
   useEffect(() => {
+    const images: Record<string, string> = {};
+    knownUsers.forEach((u) => {
+      if (u.image) images[u.username] = u.image;
+    });
+    setUserImages(images);
+  }, [knownUsers]);
+
+  useEffect(() => {
     if (!blog._id) return;
+    let isMounted = true;
 
-    Promise.all([
-      fetch(`/api/comments?postId=${blog._id}`).then((res) => res.json()),
-      fetch("/api/users").then((res) => res.json()),
-    ])
-      .then(([commentsData, usersData]) => {
-        const images: Record<string, string> = {};
-        (usersData.users ?? []).forEach(
-          (u: { username: string; image?: string }) => {
-            if (u.image) images[u.username] = u.image as string;
-          }
-        );
-        setUserImages(images);
-
-        const list = (commentsData.comments ?? []).map(
+    const fetchComments = async () => {
+      try {
+        const res = await fetch(`/api/comments?postId=${blog._id}`);
+        const data = await res.json();
+        if (!isMounted) return;
+        const list = (data.comments ?? []).map(
           (c: {
             _id: string;
             text: string;
             author: string;
             likes: number;
             dislikes: number;
+            likedBy?: string[];
+            dislikedBy?: string[];
             replies?: { text: string; author: string }[];
           }) => ({
             _id: c._id as string,
             text: c.text as string,
             author: c.author as string,
-            authorImage: images[c.author],
+            authorImage: undefined,
             likes: c.likes ?? 0,
             dislikes: c.dislikes ?? 0,
             likedBy: c.likedBy ?? [],
@@ -151,7 +164,7 @@ export default function BlogCard({
               (r: { text: string; author: string }) => ({
                 text: r.text as string,
                 author: r.author as string,
-                authorImage: images[r.author],
+                authorImage: undefined,
               })
             ),
             showReplyInput: false,
@@ -159,12 +172,31 @@ export default function BlogCard({
           })
         );
         setComments(list);
-      })
-      .catch(() => {
+      } catch {
+        if (!isMounted) return;
         setComments([]);
-        setUserImages({});
-      });
+      }
+    };
+
+    fetchComments();
+
+    return () => {
+      isMounted = false;
+    };
   }, [blog._id]);
+
+  useEffect(() => {
+    setComments((prev) =>
+      prev.map((comment) => ({
+        ...comment,
+        authorImage: userImages[comment.author],
+        replies: comment.replies.map((reply) => ({
+          ...reply,
+          authorImage: userImages[reply.author],
+        })),
+      }))
+    );
+  }, [userImages]);
 
   const handleCommentSubmit = async () => {
     const text = newComment.trim();

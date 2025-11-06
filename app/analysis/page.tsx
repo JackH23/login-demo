@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
+import { useCachedApi } from "../hooks/useCachedApi";
 
 interface User {
   username: string;
@@ -28,9 +29,23 @@ export default function AnalysisPage() {
   const { theme } = useTheme();
   const router = useRouter();
 
-  const [users, setUsers] = useState<User[]>([]);
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [isFetching, setIsFetching] = useState(true);
+  const {
+    data: users,
+    loading: loadingUsers,
+  } = useCachedApi<User[]>(user ? "/api/users" : null, {
+    fallback: [],
+    transform: (payload) =>
+      (payload as { users?: User[] | null })?.users ?? [],
+  });
+
+  const { data: posts, loading: loadingPosts } = useCachedApi<Post[]>(
+    user ? "/api/posts" : null,
+    {
+      fallback: [],
+      transform: (payload) =>
+        (payload as { posts?: Post[] | null })?.posts ?? [],
+    }
+  );
 
   useEffect(() => {
     if (!loading && !user) {
@@ -38,25 +53,9 @@ export default function AnalysisPage() {
     }
   }, [loading, user, router]);
 
-  useEffect(() => {
-    if (!user) return;
+  const isLoading = loading || !user || loadingUsers || loadingPosts;
 
-    Promise.all([
-      fetch("/api/users").then((res) => res.json()),
-      fetch("/api/posts").then((res) => res.json()),
-    ])
-      .then(([usersData, postsData]) => {
-        setUsers(usersData.users ?? []);
-        setPosts(postsData.posts ?? []);
-      })
-      .catch(() => {
-        setUsers([]);
-        setPosts([]);
-      })
-      .finally(() => setIsFetching(false));
-  }, [user]);
-
-  if (loading || isFetching || !user) {
+  if (isLoading) {
     return <div className="text-center mt-5">Loading...</div>;
   }
 

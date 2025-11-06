@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 import BlogCard from "../components/BlogCard";
 import { useConfirmDialog } from "../components/useConfirmDialog";
+import { useCachedApi } from "../hooks/useCachedApi";
 
 interface User {
   username: string;
@@ -33,9 +34,27 @@ export default function PostsPage() {
   const { theme } = useTheme();
   const router = useRouter();
 
-  const [users, setUsers] = useState<User[]>([]);
-  const [isFetching, setIsFetching] = useState(true);
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const {
+    data: users,
+    loading: loadingUsers,
+  } = useCachedApi<User[]>(user ? "/api/users" : null, {
+    fallback: [],
+    transform: (payload) =>
+      (payload as { users?: User[] | null })?.users ?? [],
+  });
+
+  const {
+    data: posts,
+    loading: loadingPosts,
+    setData: setPosts,
+  } = useCachedApi<BlogPost[]>(
+    user ? `/api/posts?author=${encodeURIComponent(user.username)}` : null,
+    {
+      fallback: [],
+      transform: (payload) =>
+        (payload as { posts?: BlogPost[] | null })?.posts ?? [],
+    }
+  );
   const { confirm: showConfirm, dialog: confirmDialog } = useConfirmDialog();
   const handleDelete = async (id: string) => {
     const targetPost = posts.find((p) => p._id === id);
@@ -70,27 +89,9 @@ export default function PostsPage() {
     }
   }, [loading, user, router]);
 
-  useEffect(() => {
-    if (!user) return;
+  const isLoading = loading || !user || loadingUsers || loadingPosts;
 
-    Promise.all([
-      fetch("/api/users").then((res) => res.json()),
-      fetch(`/api/posts?author=${encodeURIComponent(user.username)}`).then(
-        (res) => res.json()
-      ),
-    ])
-      .then(([usersData, postsData]) => {
-        setUsers(usersData.users ?? []);
-        setPosts(postsData.posts ?? []);
-      })
-      .catch(() => {
-        setUsers([]);
-        setPosts([]);
-      })
-      .finally(() => setIsFetching(false));
-  }, [user]);
-
-  if (loading || !user || isFetching) {
+  if (isLoading) {
     return <div className="text-center mt-5">Loading...</div>;
   }
 
