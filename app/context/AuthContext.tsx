@@ -197,7 +197,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser({ username: data.username });
       // Mark user as online after successful sign in
       if (socket) socket.emit("user-online", data.username);
-      await updateOnlineStatus(data.username, true);
+      void updateOnlineStatus(data.username, true);
       return true;
     }
     return false;
