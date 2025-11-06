@@ -95,7 +95,7 @@ export default function FriendPage() {
         const results = await Promise.all(
           friends.map(async (friend) => {
             const res = await fetch(
-              `/api/messages?user1=${user.username}&user2=${friend}`
+              `/api/messages?user1=${user.username}&user2=${friend}&limit=1`
             );
             const data = await res.json();
             const msgs = data.messages ?? [];

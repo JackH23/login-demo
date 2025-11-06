@@ -9,5 +9,7 @@ const MessageSchema = new Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
+MessageSchema.index({ from: 1, to: 1, createdAt: -1 });
+
 export default models.Message || model('Message', MessageSchema);
 
