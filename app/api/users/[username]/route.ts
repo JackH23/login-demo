@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
+import Message from '@/models/Message';
+import Post from '@/models/Post';
+import Comment from '@/models/Comment';
 import { ADMIN_USERNAME } from '@/lib/constants';
 import { emitUserOnline, emitUserOffline } from '@/lib/socketServer';
 
@@ -93,6 +96,17 @@ export async function DELETE(
   }
 
   await dbConnect();
-  await User.deleteOne({ username: target });
+  
+  await Promise.all([
+    User.deleteOne({ username: target }),
+    Message.deleteMany({ $or: [{ from: target }, { to: target }] }),
+    Post.deleteMany({ author: target }),
+    Comment.deleteMany({ author: target }),
+    Comment.updateMany(
+      { 'replies.author': target },
+      { $pull: { replies: { author: target } } }
+    ),
+  ]);
+
   return NextResponse.json({ success: true });
 }
