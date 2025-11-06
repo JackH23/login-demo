@@ -173,6 +173,40 @@ export default function ChatPage() {
     // content while the user is scrolled up
   }, [messages]);
 
+  const postMessage = async (payload: Omit<Message, "_id" | "createdAt">) => {
+    const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const optimisticMessage: Message = {
+      _id: tempId,
+      createdAt: new Date().toISOString(),
+      ...payload,
+    };
+
+    setMessages((prev) => [...prev, optimisticMessage]);
+    scrollToBottom();
+
+    try {
+      const res = await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to send message: ${res.status}`);
+      }
+
+      const data = (await res.json()) as { message: Message };
+      setMessages((prev) =>
+        prev.map((m) => (m._id === tempId ? data.message : m))
+      );
+      socketRef.current?.emit("send-message", data.message);
+      scrollToBottom();
+    } catch (error) {
+      console.error("Unable to send message", error);
+      setMessages((prev) => prev.filter((m) => m._id !== tempId));
+    }
+  };
+
   const handleSend = async () => {
     if (!user || !chatUser || !input.trim()) return;
 
@@ -185,18 +219,7 @@ export default function ChatPage() {
 
     setInput("");
 
-    const res = await fetch("/api/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      setMessages((prev) => [...prev, data.message]);
-      socketRef.current?.emit("send-message", data.message);
-      scrollToBottom();
-    }
+    await postMessage(payload);
   };
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -204,28 +227,25 @@ export default function ChatPage() {
     if (!file || !user || !chatUser) return;
 
     const reader = new FileReader();
-    reader.onload = async () => {
+    reader.onload = () => {
+      if (typeof reader.result !== "string") {
+        console.error("Unsupported file result type", reader.result);
+        return;
+      }
+
       const isImage = file.type.startsWith("image/");
-      const payload: Omit<Message, "_id"> = {
+      const payload: Omit<Message, "_id" | "createdAt"> = {
         from: user.username,
         to: chatUser,
         type: isImage ? "image" : "file",
-        content: reader.result as string,
+        content: reader.result,
         fileName: file.name,
       };
 
-      const res = await fetch("/api/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setMessages((prev) => [...prev, data.message]);
-        socketRef.current?.emit("send-message", data.message);
-        scrollToBottom();
-      }
+      void postMessage(payload);
+    };
+    reader.onerror = () => {
+      console.error("Failed to read file", reader.error);
     };
     reader.readAsDataURL(file);
   };
