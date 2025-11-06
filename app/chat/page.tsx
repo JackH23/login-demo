@@ -152,8 +152,7 @@ export default function ChatPage() {
     fetchStatus();
   }, [chatUser]);
 
-  // Show the scroll-to-bottom button when the user scrolls away from the bottom
-  // or when new messages arrive while not at the bottom
+  // Track if the user has scrolled away from the latest messages
   useEffect(() => {
     const container = document.getElementById("chat-scroll-container");
     if (!container) return;
@@ -165,13 +164,25 @@ export default function ChatPage() {
       setShowScrollButton(!atBottom);
     };
 
-    // Initial check in case the list overflows on first render
     handleScroll();
 
     container.addEventListener("scroll", handleScroll);
     return () => container.removeEventListener("scroll", handleScroll);
-    // Re-run when messages change so the button updates if new messages push
-    // content while the user is scrolled up
+  }, []);
+
+  // When new messages arrive while scrolled up, surface the jump button
+  useEffect(() => {
+    const container = document.getElementById("chat-scroll-container");
+    if (!container) return;
+
+    const atBottom =
+      container.scrollHeight - container.scrollTop <=
+      container.clientHeight + 80;
+    if (atBottom) {
+      setShowScrollButton(false);
+    } else {
+      setShowScrollButton(true);
+    }
   }, [messages]);
 
   const handleSend = async () => {
@@ -290,7 +301,15 @@ export default function ChatPage() {
           {/* Header */}
           <div
             className="px-4 py-3 d-flex justify-content-between align-items-center"
-            style={{ backgroundImage: headerGradient }}
+            style={{
+              backgroundImage: headerGradient,
+              position: "sticky",
+              top: 0,
+              zIndex: 5,
+              boxShadow: isNight
+                ? "0 4px 12px rgba(15, 23, 42, 0.45)"
+                : "0 4px 12px rgba(15, 23, 42, 0.15)",
+            }}
           >
             <div className="d-flex align-items-center gap-3">
               <div
@@ -529,19 +548,26 @@ export default function ChatPage() {
             })}
             {showScrollButton && (
               <button
-                className="btn btn-primary rounded-circle shadow-lg position-absolute"
+                type="button"
+                className="btn btn-primary shadow-lg position-absolute d-flex align-items-center gap-2"
                 style={{
                   right: "1.5rem",
                   bottom: "1.5rem",
-                  width: "52px",
-                  height: "52px",
+                  borderRadius: "9999px",
+                  padding: "0.65rem 1.25rem",
                   background: `linear-gradient(135deg, ${accentColor}, ${isNight ? "#22d3ee" : "#38bdf8"})`,
                   border: "none",
+                  letterSpacing: "0.05em",
+                  textTransform: "uppercase",
+                  fontWeight: 600,
+                  fontSize: "0.75rem",
                 }}
                 onClick={scrollToBottom}
-                title="Scroll to latest"
+                title="Jump to latest message"
+                aria-label="Jump to latest message"
               >
-                ⬇
+                <span style={{ fontSize: "1.15rem", lineHeight: 1 }}>⬇</span>
+                Jump to latest
               </button>
             )}
             <div ref={bottomRef}></div>
