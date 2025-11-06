@@ -25,6 +25,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const prevLengthRef = useRef(0); // Initialize ref here
   const [selectedMsgId, setSelectedMsgId] = useState<string | null>(null);
@@ -146,7 +147,7 @@ export default function ChatPage() {
   // Show the scroll-to-bottom button when the user scrolls away from the bottom
   // or when new messages arrive while not at the bottom
   useEffect(() => {
-    const container = document.getElementById("chat-scroll-container");
+    const container = messagesContainerRef.current;
     if (!container) return;
 
     const handleScroll = () => {
@@ -265,7 +266,6 @@ export default function ChatPage() {
 
   return (
     <div
-      id="chat-scroll-container"
       className={`container-fluid d-flex flex-column vh-100 p-0 ${
         theme === "night" ? "bg-dark text-white" : "bg-light"
       }`}
@@ -289,6 +289,8 @@ export default function ChatPage() {
 
       {/* Message Area */}
       <div
+        ref={messagesContainerRef}
+        id="chat-scroll-container"
         className={`flex-grow-1 overflow-auto p-3 ${
           theme === "night" ? "bg-dark text-white" : "bg-light"
         }`}
