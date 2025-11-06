@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
+import { useCachedApi } from "../hooks/useCachedApi";
 
 interface User {
   username: string;
@@ -25,7 +26,15 @@ export default function FriendPage() {
   const { user, loading, socket } = useAuth();
   const { theme } = useTheme();
   const router = useRouter();
-  const [users, setUsers] = useState<User[]>([]);
+  const {
+    data: users,
+    setData: setUsers,
+    loading: loadingUsers,
+  } = useCachedApi<User[]>(user ? "/api/users" : null, {
+    fallback: [],
+    transform: (payload) =>
+      (payload as { users?: User[] | null })?.users ?? [],
+  });
   const [friends, setFriends] = useState<string[]>([]);
   const [isFetching, setIsFetching] = useState(true);
   const [lastMessages, setLastMessages] = useState<Record<string, LastMessage | null>>({});
@@ -59,7 +68,7 @@ export default function FriendPage() {
     };
 
     fetchData();
-  }, [user]);
+  }, [setUsers, user]);
 
   useEffect(() => {
     if (!socket) return;
@@ -81,7 +90,7 @@ export default function FriendPage() {
       socket.off("user-online", handleOnline);
       socket.off("user-offline", handleOffline);
     };
-  }, [socket]);
+  }, [setUsers, socket]);
 
   useEffect(() => {
     const fetchLastMessages = async () => {
@@ -118,7 +127,7 @@ export default function FriendPage() {
     fetchLastMessages();
   }, [user, friends]);
 
-  if (loading || isFetching || loadingMessages || !user) {
+  if (loading || isFetching || loadingMessages || loadingUsers || !user) {
     return <div className="text-center mt-5">Loading...</div>;
   }
 

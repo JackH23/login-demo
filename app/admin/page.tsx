@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 import { ADMIN_USERNAME } from "@/lib/constants";
+import { useCachedApi } from "../hooks/useCachedApi";
 
 interface User {
   username: string;
@@ -26,10 +27,25 @@ export default function AdminPage() {
   const { theme } = useTheme();
   const router = useRouter();
 
-  const [users, setUsers] = useState<User[]>([]);
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [currentUserData, setCurrentUserData] = useState<User | null>(null);
-  const [isFetching, setIsFetching] = useState(true);
+  const shouldFetch = user?.username === ADMIN_USERNAME;
+
+  const {
+    data: users,
+    loading: loadingUsers,
+  } = useCachedApi<User[]>(shouldFetch ? "/api/users" : null, {
+    fallback: [],
+    transform: (payload) =>
+      (payload as { users?: User[] | null })?.users ?? [],
+  });
+
+  const { data: posts, loading: loadingPosts } = useCachedApi<Post[]>(
+    shouldFetch ? "/api/posts" : null,
+    {
+      fallback: [],
+      transform: (payload) =>
+        (payload as { posts?: Post[] | null })?.posts ?? [],
+    }
+  );
 
   useEffect(() => {
     if (!loading && !user) {
@@ -37,32 +53,9 @@ export default function AdminPage() {
     }
   }, [loading, user, router]);
 
-  useEffect(() => {
-    if (!user || user.username !== ADMIN_USERNAME) return;
+  const currentUserData = users.find((u) => u.username === user?.username) ?? null;
 
-    Promise.all([
-      fetch("/api/users").then((res) => res.json()),
-      fetch("/api/posts").then((res) => res.json()),
-    ])
-      .then(([userData, postData]) => {
-        const userList = userData.users ?? [];
-        const postList = postData.posts ?? [];
-
-        setUsers(userList);
-        setPosts(postList);
-
-        const current = userList.find((u) => u.username === user.username);
-        setCurrentUserData(current ?? null);
-      })
-      .catch(() => {
-        setUsers([]);
-        setPosts([]);
-        setCurrentUserData(null);
-      })
-      .finally(() => setIsFetching(false));
-  }, [user]);
-
-  if (loading || isFetching || !user) {
+  if (loading || loadingUsers || loadingPosts || !user) {
     return <div className="text-center mt-5">Loading...</div>;
   }
 

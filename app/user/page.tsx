@@ -9,6 +9,7 @@ import TopBar from "../components/TopBar";
 import { ADMIN_USERNAME } from "@/lib/constants";
 import { useConfirmDialog } from "../components/useConfirmDialog";
 import { usePromptDialog } from "../components/usePromptDialog";
+import { useCachedApi } from "../hooks/useCachedApi";
 
 export default function UserPage() {
   const { user, loading, socket, updateUser } = useAuth();
@@ -24,7 +25,15 @@ export default function UserPage() {
     online?: boolean;
   }
 
-  const [users, setUsers] = useState<User[]>([]);
+  const {
+    data: users,
+    setData: setUsers,
+    loading: usersLoading,
+  } = useCachedApi<User[]>(user ? "/api/users" : null, {
+    fallback: [],
+    transform: (payload) =>
+      (payload as { users?: User[] | null })?.users ?? [],
+  });
   const [searchTerm, setSearchTerm] = useState("");
   const { confirm: showConfirm, dialog: confirmDialog } = useConfirmDialog();
   const { prompt: showPrompt, dialog: promptDialog } = usePromptDialog();
@@ -34,20 +43,6 @@ export default function UserPage() {
       router.push("/signin");
     }
   }, [loading, user, router]);
-
-  useEffect(() => {
-    if (!user) return;
-    const fetchUsers = async () => {
-      try {
-        const res = await fetch("/api/users");
-        const data = await res.json();
-        setUsers(data.users ?? []);
-      } catch {
-        setUsers([]);
-      }
-    };
-    fetchUsers();
-  }, [user]);
 
   useEffect(() => {
     if (!socket) return;
@@ -69,9 +64,9 @@ export default function UserPage() {
       socket.off("user-online", handleOnline);
       socket.off("user-offline", handleOffline);
     };
-  }, [socket]);
+  }, [setUsers, socket]);
 
-  if (loading || !user)
+  if (loading || usersLoading || !user)
     return <div className="text-center mt-5">Loading...</div>;
 
   const isAdmin = user.username === ADMIN_USERNAME;
