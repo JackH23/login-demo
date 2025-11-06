@@ -57,9 +57,15 @@ export default function ChatPage() {
     const handleReceive = (message: Message) => {
       if (message.from === chatUser && message.to === user?.username) {
         setMessages((prev) => [...prev, message]);
-        if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+        if (
+          typeof window !== "undefined" &&
+          "Notification" in window &&
+          Notification.permission === "granted"
+        ) {
           const body =
-            message.type === "text" ? message.content : `sent a ${message.type}`;
+            message.type === "text"
+              ? message.content
+              : `sent a ${message.type}`;
           new Notification(`Message from ${message.from}`, { body });
         }
       }
@@ -278,8 +284,12 @@ export default function ChatPage() {
       >
         <div className="d-flex align-items-center gap-3">
           <h5 className="mb-0">Chat {chatUser && `with ${chatUser}`}</h5>
-          <span className={`badge ${chatOnline ? 'bg-success' : 'bg-secondary'} text-light`}>
-            {chatOnline ? 'Online' : 'Offline'}
+          <span
+            className={`badge ${
+              chatOnline ? "bg-success" : "bg-secondary"
+            } text-light`}
+          >
+            {chatOnline ? "Online" : "Offline"}
           </span>
         </div>
         <a href="/user" className="btn btn-sm btn-light text-dark">
@@ -429,14 +439,14 @@ export default function ChatPage() {
           );
         })}
         {showScrollButton && (
-  <button
-    className="scroll-to-bottom-btn"
-    onClick={scrollToBottom}
-    title="Scroll to latest"
-  >
-    ⬇
-  </button>
-)}
+          <button
+            className="scroll-to-bottom-btn"
+            onClick={scrollToBottom}
+            title="Scroll to latest"
+          >
+            ⬇
+          </button>
+        )}
 
         <div ref={bottomRef}></div>
       </div>
