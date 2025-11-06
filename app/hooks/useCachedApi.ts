@@ -148,7 +148,12 @@ export function useCachedApi<T>(
       return;
     }
 
-    setLoading(true);
+    const hasCachedData = entry.data != null;
+    if (hasCachedData) {
+      setState(entry.data as T);
+      setError(entry.error);
+    }
+    setLoading(!hasCachedData);
     const promise =
       entry.promise ??
       performFetch().then((result) => {
@@ -173,7 +178,7 @@ export function useCachedApi<T>(
           err instanceof Error ? err : new Error("Failed to load data");
         entry.error = errorObj;
         setError(errorObj);
-        setLoading(false);
+        setLoading(entry.data == null);
       })
       .finally(() => {
         entry.promise = null;
