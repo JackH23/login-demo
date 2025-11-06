@@ -25,6 +25,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const prevLengthRef = useRef(0); // Initialize ref here
   const [selectedMsgId, setSelectedMsgId] = useState<string | null>(null);
@@ -146,7 +147,7 @@ export default function ChatPage() {
   // Show the scroll-to-bottom button when the user scrolls away from the bottom
   // or when new messages arrive while not at the bottom
   useEffect(() => {
-    const container = document.getElementById("chat-scroll-container");
+    const container = messagesContainerRef.current;
     if (!container) return;
 
     const handleScroll = () => {
@@ -263,11 +264,12 @@ export default function ChatPage() {
 
   let lastDateLabel = "";
 
+  const isNight = theme === "night";
+
   return (
     <div
-      id="chat-scroll-container"
       className={`container-fluid d-flex flex-column vh-100 p-0 ${
-        theme === "night" ? "bg-dark text-white" : "bg-light"
+        isNight ? "bg-dark text-white" : "bg-light"
       }`}
     >
       {/* Header */}
@@ -288,11 +290,15 @@ export default function ChatPage() {
       </div>
 
       {/* Message Area */}
-      <div
-        className={`flex-grow-1 overflow-auto p-3 ${
-          theme === "night" ? "bg-dark text-white" : "bg-light"
-        }`}
-      >
+      <div className="flex-grow-1 position-relative">
+        <div
+          ref={messagesContainerRef}
+          id="chat-scroll-container"
+          className={`overflow-auto h-100 p-3 ${
+            isNight ? "bg-dark text-white" : "bg-light"
+          }`}
+          style={{ paddingBottom: "6rem" }}
+        >
         {messages.map((msg, idx) => {
           const msgDate = new Date(msg.createdAt).toDateString();
           const isSender = msg.from === user?.username;
@@ -426,23 +432,36 @@ export default function ChatPage() {
             </div>
           );
         })}
+          <div ref={bottomRef}></div>
+        </div>
         {showScrollButton && (
           <button
-            className="btn btn-primary position-fixed bottom-0 end-0 m-4 rounded-circle shadow"
-            style={{ zIndex: 1000, width: "48px", height: "48px" }}
+            type="button"
+            aria-label="Scroll to latest message"
+            className={`btn rounded-circle shadow-lg d-flex align-items-center justify-content-center ${
+              isNight ? "btn-info text-white" : "btn-primary text-white"
+            }`}
+            style={{
+              position: "absolute",
+              bottom: "calc(1.5rem + 64px)",
+              right: "1.5rem",
+              width: "52px",
+              height: "52px",
+              zIndex: 10,
+              transition: "transform 0.2s ease, opacity 0.2s ease",
+            }}
             onClick={scrollToBottom}
             title="Scroll to latest"
           >
-            ⬇
+            <span style={{ fontSize: "1.5rem", lineHeight: 1 }}>⬇</span>
           </button>
         )}
-        <div ref={bottomRef}></div>
       </div>
 
       {/* Input + File Upload */}
       <div
         className={`border-top p-3 ${
-          theme === "night" ? "bg-dark" : "bg-white"
+          isNight ? "bg-dark" : "bg-white"
         }`}
       >
         <div className="input-group">
