@@ -146,32 +146,78 @@ export default function SettingPage() {
     });
     if (!confirmed) return;
 
-    try {
-      const res = await fetch(`/api/users/${user.username}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: user.username,
-        },
-        body: JSON.stringify(updates),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setUsers((prev) =>
-          prev.map((u) => (u.username === user.username ? data.user : u))
-        );
-        if (typeof updates.username === "string") {
-          updateUser({ username: updates.username });
+    const performUpdate = async (): Promise<void> => {
+      try {
+        const res = await fetch(`/api/users/${user.username}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: user.username,
+          },
+          body: JSON.stringify(updates),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUsers((prev) =>
+            prev.map((u) => (u.username === user.username ? data.user : u))
+          );
+          if (typeof updates.username === "string") {
+            updateUser({ username: updates.username });
+          }
+          setNewUsername("");
+          setNewAge(0);
+          setProfileImage("");
+        } else {
+          const retry = await showConfirm({
+            contextLabel: "Profile update",
+            title: "We couldn&apos;t save your changes",
+            message: (
+              <div className="text-start">
+                <p className="mb-2">
+                  Something went wrong while saving your profile details.
+                </p>
+                <p className="mb-0 text-body-secondary">
+                  Please check your connection and try again.
+                </p>
+              </div>
+            ),
+            confirmText: "Retry save",
+            cancelText: "Dismiss",
+            confirmVariant: "danger",
+            icon: <span aria-hidden="true">😕</span>,
+          });
+          if (retry) {
+            await performUpdate();
+          }
         }
-        setNewUsername("");
-        setNewAge(0);
-        setProfileImage("");
-      } else {
-        alert("Failed to update profile");
+      } catch {
+        const retry = await showConfirm({
+          contextLabel: "Profile update",
+          title: "Network hiccup",
+          message: (
+            <div className="text-start">
+              <p className="mb-2">
+                We hit a snag reaching the server, so your profile stayed the
+                same.
+              </p>
+              <p className="mb-0 text-body-secondary">
+                Give it another go once you&apos;re back online.
+              </p>
+            </div>
+          ),
+          confirmText: "Try again",
+          cancelText: "Close",
+          confirmVariant: "danger",
+          icon: <span aria-hidden="true">📡</span>,
+        });
+        if (retry) {
+          await performUpdate();
+        }
+        
       }
-    } catch {
-      alert("Failed to update profile");
-    }
+    };
+
+    await performUpdate();
   };
 
   const handleDeleteAccount = async () => {
