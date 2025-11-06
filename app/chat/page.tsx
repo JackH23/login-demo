@@ -22,6 +22,15 @@ export default function ChatPage() {
   const { user, socket } = useAuth();
   const { theme } = useTheme();
 
+  const isNight = theme === "night";
+  const accentColor = isNight ? "#4dabf7" : "#0d6efd";
+  const headerGradient = isNight
+    ? "linear-gradient(135deg, rgba(35,48,78,0.9), rgba(20,20,35,0.95))"
+    : "linear-gradient(135deg, rgba(13,110,253,0.92), rgba(111,66,193,0.92))";
+  const backgroundGradient = isNight
+    ? "radial-gradient(circle at top, rgba(77,171,247,0.2), transparent 55%), radial-gradient(circle at bottom, rgba(111,66,193,0.12), transparent 65%)"
+    : "radial-gradient(circle at top, rgba(13,110,253,0.22), transparent 55%), radial-gradient(circle at bottom, rgba(255,193,7,0.18), transparent 70%)";
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -265,84 +274,171 @@ export default function ChatPage() {
 
   return (
     <div
-      id="chat-scroll-container"
-      className={`container-fluid d-flex flex-column vh-100 p-0 ${
-        theme === "night" ? "bg-dark text-white" : "bg-light"
+      className={`min-vh-100 d-flex flex-column position-relative ${
+        isNight ? "text-white" : "text-dark"
       }`}
+      style={{
+        backgroundColor: isNight ? "#0f172a" : "#f5f7fb",
+        backgroundImage: backgroundGradient,
+      }}
     >
-      {/* Header */}
-      <div
-        className={`px-4 py-3 d-flex justify-content-between align-items-center ${
-          theme === "night" ? "bg-dark text-white" : "bg-primary text-white"
-        }`}
-      >
-        <div className="d-flex align-items-center gap-3">
-          <h5 className="mb-0">Chat {chatUser && `with ${chatUser}`}</h5>
-          <span className={`badge ${chatOnline ? 'bg-success' : 'bg-secondary'} text-light`}>
-            {chatOnline ? 'Online' : 'Offline'}
-          </span>
-        </div>
-        <a href="/user" className="btn btn-sm btn-light text-dark">
-          🏠 Home
-        </a>
-      </div>
-
-      {/* Message Area */}
-      <div
-        className={`flex-grow-1 overflow-auto p-3 ${
-          theme === "night" ? "bg-dark text-white" : "bg-light"
-        }`}
-      >
-        {messages.map((msg, idx) => {
-          const msgDate = new Date(msg.createdAt).toDateString();
-          const isSender = msg.from === user?.username;
-
-          const showDateLabel = msgDate !== lastDateLabel;
-          if (showDateLabel) lastDateLabel = msgDate;
-
-          return (
-            <div key={msg._id + idx}>
-              {showDateLabel && (
-                <div className="text-center text-muted small my-3">
-                  <span className="badge bg-secondary">
-                    {formatDateLabel(msg.createdAt)}
+      <div className="container-fluid px-3 px-md-5 py-4 flex-grow-1 d-flex flex-column">
+        <div
+          className="rounded-4 shadow-lg overflow-hidden d-flex flex-column flex-grow-1 border border-0"
+          style={{ backdropFilter: "blur(8px)", backgroundColor: isNight ? "rgba(17,24,39,0.82)" : "rgba(255,255,255,0.9)" }}
+        >
+          {/* Header */}
+          <div
+            className="px-4 py-3 d-flex justify-content-between align-items-center"
+            style={{ backgroundImage: headerGradient }}
+          >
+            <div className="d-flex align-items-center gap-3">
+              <div
+                className="rounded-circle d-flex align-items-center justify-content-center fw-semibold shadow"
+                style={{
+                  width: "48px",
+                  height: "48px",
+                  backgroundColor: isNight ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.25)",
+                  border: `2px solid ${chatOnline ? "#34d399" : "rgba(255,255,255,0.35)"}`,
+                }}
+              >
+                {chatUser ? chatUser.charAt(0).toUpperCase() : "?"}
+              </div>
+              <div>
+                <h4 className="mb-1 fw-semibold">{chatUser ? chatUser : "Select a conversation"}</h4>
+                <div className="d-flex align-items-center gap-2 small">
+                  <span
+                    className="rounded-pill px-3 py-1 text-uppercase fw-semibold"
+                    style={{
+                      backgroundColor: chatOnline ? "rgba(52,211,153,0.15)" : "rgba(148,163,184,0.2)",
+                      color: chatOnline ? "#34d399" : isNight ? "#94a3b8" : "#475569",
+                      letterSpacing: "0.06em",
+                    }}
+                  >
+                    {chatOnline ? "Online" : "Offline"}
+                  </span>
+                  <span className="opacity-75">
+                    {messages.length > 0
+                      ? `${messages.length} message${messages.length === 1 ? "" : "s"}`
+                      : "No messages yet"}
                   </span>
                 </div>
-              )}
-
-              <div
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  if (isSender) setSelectedMsgId(msg._id);
-                  else setSelectedMsgId(null);
-                }}
-                className={`d-flex mb-2 ${
-                  isSender ? "justify-content-end" : "justify-content-start"
-                }`}
+              </div>
+            </div>
+            <div className="d-flex align-items-center gap-2">
+              <a
+                href="/user"
+                className="btn btn-light border-0 fw-semibold d-flex align-items-center gap-2"
+                style={{ color: "#0f172a" }}
               >
-                <div
-                  className={`p-2 rounded shadow-sm ${
-                    isSender
-                      ? "bg-info text-white text-end"
-                      : theme === "night"
-                      ? "bg-secondary text-white text-start"
-                      : "bg-white text-dark text-start"
-                  }`}
-                  style={{ maxWidth: "75%", position: "relative" }}
-                >
-                  {/* Message content */}
-                  {msg.type === "text" && <div>{msg.content}</div>}
-                  {msg.type === "image" && (
-                    <img
-                      src={msg.content}
-                      alt="sent-img"
-                      className="img-fluid rounded"
-                      style={{ maxWidth: "200px" }}
-                    />
+                <span role="img" aria-label="Home">
+                  🏠
+                </span>
+                Dashboard
+              </a>
+            </div>
+          </div>
+
+          {/* Message Area */}
+          <div
+            id="chat-scroll-container"
+            className="flex-grow-1 overflow-auto position-relative"
+            style={{
+              backgroundImage: isNight
+                ? "linear-gradient(180deg, rgba(15,23,42,0.9), rgba(15,15,35,0.96))"
+                : "linear-gradient(180deg, rgba(248,250,255,0.9), rgba(232,240,255,0.7))",
+              padding: "1.75rem 1.5rem",
+            }}
+          >
+            {messages.length === 0 && (
+              <div className="h-100 d-flex flex-column justify-content-center align-items-center text-center text-muted">
+                <div className="display-6 mb-3">💬</div>
+                <h5 className="fw-semibold mb-2">Start the conversation</h5>
+                <p className="mb-0" style={{ maxWidth: "340px" }}>
+                  Share a friendly greeting, drop a question, or send a file to kick things off.
+                </p>
+              </div>
+            )}
+            {messages.map((msg, idx) => {
+              const msgDate = new Date(msg.createdAt).toDateString();
+              const isSender = msg.from === user?.username;
+
+              const showDateLabel = msgDate !== lastDateLabel;
+              if (showDateLabel) lastDateLabel = msgDate;
+
+              return (
+                <div key={msg._id + idx}>
+                  {showDateLabel && (
+                    <div className="text-center text-muted small my-3">
+                      <span
+                        className="badge rounded-pill"
+                        style={{
+                          backgroundColor: isNight ? "rgba(148,163,184,0.25)" : "rgba(148,163,184,0.18)",
+                          color: isNight ? "#e2e8f0" : "#1e293b",
+                          padding: "0.65rem 1.5rem",
+                        }}
+                      >
+                        {formatDateLabel(msg.createdAt)}
+                      </span>
+                    </div>
                   )}
-                  {msg.type === "file" && (
+
+                  <div
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      if (isSender) setSelectedMsgId(msg._id);
+                      else setSelectedMsgId(null);
+                    }}
+                    className={`d-flex mb-4 gap-3 ${
+                      isSender ? "flex-row-reverse" : "flex-row"
+                    }`}
+                  >
                     <div
-                      className="d-flex align-items-center gap-2 p-2 rounded"
+                      className="rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        backgroundColor: isSender
+                          ? accentColor
+                          : isNight
+                          ? "rgba(148,163,184,0.25)"
+                          : "rgba(148,163,184,0.2)",
+                        color: isSender ? "#fff" : isNight ? "#e2e8f0" : "#1e293b",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {(isSender ? user?.username : msg.from)?.charAt(0).toUpperCase() ?? "?"}
+                    </div>
+                    <div
+                      className="p-3 rounded-4 shadow"
+                      style={{
+                        maxWidth: "70%",
+                        position: "relative",
+                        background: isSender
+                          ? `linear-gradient(135deg, ${accentColor}, ${isNight ? "#38bdf8" : "#60a5fa"})`
+                          : isNight
+                          ? "rgba(148,163,184,0.18)"
+                          : "rgba(255,255,255,0.95)",
+                        color: isSender ? "#ffffff" : isNight ? "#e2e8f0" : "#0f172a",
+                        border: isSender ? "none" : `1px solid ${isNight ? "rgba(148,163,184,0.35)" : "rgba(148,163,184,0.35)"}`,
+                      }}
+                    >
+                      {/* Message content */}
+                      {msg.type === "text" && <div>{msg.content}</div>}
+                      {msg.type === "image" && (
+                        <img
+                          src={msg.content}
+                          alt="sent-img"
+                          className="img-fluid rounded"
+                          style={{
+                            maxWidth: "220px",
+                            border: isSender ? "2px solid rgba(255,255,255,0.45)" : "2px solid rgba(148,163,184,0.25)",
+                          }}
+                        />
+                      )}
+                      {msg.type === "file" && (
+                        <div
+                          className="d-flex align-items-center gap-2 p-2 rounded"
                       style={{
                         backgroundColor: isSender
                           ? "#0d6efd"
@@ -390,82 +486,116 @@ export default function ChatPage() {
                     </div>
                   )}
 
-                  <div className="small text-muted mt-1">
-                    {new Date(msg.createdAt).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </div>
+                      <div className="small mt-2 d-flex align-items-center justify-content-between" style={{ opacity: 0.75 }}>
+                        <span>
+                          {new Date(msg.createdAt).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                        <span className="small fw-semibold">
+                          {isSender ? "You" : msg.from}
+                        </span>
+                      </div>
 
-                  {isSender && selectedMsgId === msg._id && (
-                    <div className="mt-2 d-flex gap-3">
-                      {msg.type === "text" && (
-                        <button
-                          className="btn btn-sm btn-light text-primary"
-                          onClick={() => {
-                            handleEdit(msg);
-                            setSelectedMsgId(null);
-                          }}
-                        >
-                          ✏️ Edit
-                        </button>
+                      {isSender && selectedMsgId === msg._id && (
+                        <div className="mt-3 d-flex flex-wrap gap-2">
+                          {msg.type === "text" && (
+                            <button
+                              className="btn btn-sm btn-light border-0 text-primary px-3"
+                              onClick={() => {
+                                handleEdit(msg);
+                                setSelectedMsgId(null);
+                              }}
+                            >
+                              ✏️ Edit
+                            </button>
+                          )}
+                          <button
+                            className="btn btn-sm btn-light border-0 text-danger px-3"
+                            onClick={() => {
+                              handleDelete(msg._id);
+                              setSelectedMsgId(null);
+                            }}
+                          >
+                            🗑️ Delete
+                          </button>
+                        </div>
                       )}
-                      <button
-                        className="btn btn-sm btn-light text-danger"
-                        onClick={() => {
-                          handleDelete(msg._id);
-                          setSelectedMsgId(null);
-                        }}
-                      >
-                        🗑️ Delete
-                      </button>
                     </div>
-                  )}
+                  </div>
                 </div>
-              </div>
-            </div>
-          );
-        })}
-        {showScrollButton && (
-          <button
-            className="btn btn-primary position-fixed bottom-0 end-0 m-4 rounded-circle shadow"
-            style={{ zIndex: 1000, width: "48px", height: "48px" }}
-            onClick={scrollToBottom}
-            title="Scroll to latest"
-          >
-            ⬇
-          </button>
-        )}
-        <div ref={bottomRef}></div>
-      </div>
+              );
+            })}
+            {showScrollButton && (
+              <button
+                className="btn btn-primary rounded-circle shadow-lg position-absolute"
+                style={{
+                  right: "1.5rem",
+                  bottom: "1.5rem",
+                  width: "52px",
+                  height: "52px",
+                  background: `linear-gradient(135deg, ${accentColor}, ${isNight ? "#22d3ee" : "#38bdf8"})`,
+                  border: "none",
+                }}
+                onClick={scrollToBottom}
+                title="Scroll to latest"
+              >
+                ⬇
+              </button>
+            )}
+            <div ref={bottomRef}></div>
+          </div>
 
-      {/* Input + File Upload */}
-      <div
-        className={`border-top p-3 ${
-          theme === "night" ? "bg-dark" : "bg-white"
-        }`}
-      >
-        <div className="input-group">
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Type your message..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          />
-          <label className="btn btn-outline-secondary mb-0">
-            📎
-            <input
-              type="file"
-              accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
-              onChange={handleFile}
-              hidden
-            />
-          </label>
-          <button className="btn btn-primary" onClick={handleSend}>
-            Send
-          </button>
+          {/* Input + File Upload */}
+          <div
+            className={`border-top px-3 px-md-4 py-3 ${isNight ? "bg-transparent" : "bg-white"}`}
+            style={{
+              backdropFilter: "blur(10px)",
+              borderTop: isNight ? "1px solid rgba(148,163,184,0.15)" : "1px solid rgba(148,163,184,0.3)",
+            }}
+          >
+            <div className="input-group rounded-pill overflow-hidden shadow-sm">
+              <input
+                type="text"
+                className="form-control border-0"
+                placeholder="Send a message, emoji, or file..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                style={{
+                  backgroundColor: isNight ? "rgba(15,23,42,0.6)" : "rgba(248,250,255,0.9)",
+                  color: isNight ? "#e2e8f0" : "#0f172a",
+                }}
+              />
+              <label
+                className="btn border-0 d-flex align-items-center px-3"
+                style={{
+                  backgroundColor: isNight ? "rgba(15,23,42,0.6)" : "rgba(255,255,255,0.95)",
+                  color: accentColor,
+                  cursor: "pointer",
+                }}
+                title="Attach a file"
+              >
+                📎
+                <input
+                  type="file"
+                  accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+                  onChange={handleFile}
+                  hidden
+                />
+              </label>
+              <button
+                className="btn fw-semibold text-white px-4 border-0"
+                style={{
+                  background: `linear-gradient(135deg, ${accentColor}, ${isNight ? "#22d3ee" : "#38bdf8"})`,
+                }}
+                onClick={handleSend}
+              >
+                Send
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
