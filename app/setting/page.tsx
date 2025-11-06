@@ -87,7 +87,23 @@ export default function SettingPage() {
       updates.image = profileImage;
 
     if (Object.keys(updates).length === 0) {
-      alert("No changes to save.");
+      await showConfirm({
+        contextLabel: "Profile updates",
+        title: "All caught up!",
+        message: (
+          <div className="text-start">
+            <p className="mb-2">Your profile already matches these details.</p>
+            <p className="mb-0 text-body-secondary">
+              Update your username, age, or add a fresh profile photo to save
+              new changes.
+            </p>
+          </div>
+        ),
+        confirmText: "Sounds good",
+        cancelText: "Keep editing",
+        confirmVariant: "info",
+        icon: <span aria-hidden="true">✨</span>,
+      });
       return;
     }
 
