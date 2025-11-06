@@ -169,7 +169,6 @@ export default function SettingPage() {
         setNewUsername("");
         setNewAge(0);
         setProfileImage("");
-        alert("Profile updated.");
       } else {
         alert("Failed to update profile");
       }

@@ -361,7 +361,6 @@ export default function UserPage() {
       body: JSON.stringify({ user: user.username, friend }),
     });
     if (res.ok) {
-      alert(`Friend request sent to ${friend}`);
       setUsers((prev) =>
         prev.map((item) =>
           item.username === user.username
