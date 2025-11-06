@@ -277,25 +277,56 @@ export default function ChatPage() {
       }`}
     >
       {/* Header */}
-      <div
-        className={`px-4 py-3 d-flex justify-content-between align-items-center ${
-          theme === "night" ? "bg-dark text-white" : "bg-primary text-white"
+      <header
+        className={`chat-header ${
+          theme === "night" ? "chat-header-night" : "chat-header-day"
         }`}
       >
-        <div className="d-flex align-items-center gap-3">
-          <h5 className="mb-0">Chat {chatUser && `with ${chatUser}`}</h5>
-          <span
-            className={`badge ${
-              chatOnline ? "bg-success" : "bg-secondary"
-            } text-light`}
-          >
-            {chatOnline ? "Online" : "Offline"}
-          </span>
+        <div className="d-flex align-items-center gap-3 flex-wrap">
+          <div className="brand-badge">
+            <span className="brand-icon" aria-hidden="true">
+              💬
+            </span>
+          </div>
+          <div className="d-flex flex-column flex-sm-row align-items-sm-center gap-1 gap-sm-3">
+            <span className="brand-name">PulseChat</span>
+            <span className="brand-tagline">Conversations that keep you close.</span>
+          </div>
         </div>
-        <a href="/user" className="btn btn-sm btn-light text-dark">
-          🏠 Home
-        </a>
-      </div>
+
+        {chatUser && (
+          <div className="chat-user-status d-flex align-items-center gap-3 flex-wrap">
+            <div className="d-flex align-items-center gap-2">
+              <div
+                className={`status-dot ${chatOnline ? "status-dot-online" : "status-dot-offline"}`}
+                aria-hidden="true"
+              ></div>
+              <div className="d-flex flex-column">
+                <span className="status-username">{chatUser}</span>
+                <span className="status-text">
+                  {chatOnline ? "Online now" : "Last seen moments ago"}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="chat-header-actions d-flex align-items-center gap-2">
+          <button
+            type="button"
+            className="chat-header-action"
+            aria-label="Toggle notifications"
+          >
+            🔔
+          </button>
+          <button type="button" className="chat-header-action" aria-label="Open settings">
+            ⚙️
+          </button>
+          <a href="/user" className="chat-header-action" aria-label="Back to home">
+            🏠
+          </a>
+        </div>
+      </header>
 
       {/* Message Area */}
       <div
