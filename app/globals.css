@@ -473,6 +473,33 @@
   text-align: left;
 }
 
+.chat-user-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid rgba(59, 130, 246, 0.35);
+  object-fit: cover;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: rgba(148, 163, 184, 0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #1f2937;
+  text-transform: uppercase;
+}
+
+.chat-user-avatar--fallback {
+  letter-spacing: 0.02em;
+}
+
+.chat-header-night .chat-user-avatar {
+  border-color: rgba(96, 165, 250, 0.45);
+  background: rgba(30, 41, 59, 0.65);
+  color: #e2e8f0;
+}
+
 .status-dot {
   width: 12px;
   height: 12px;

@@ -16,6 +16,19 @@ interface Message {
   createdAt: string;
 }
 
+interface ChatParticipant {
+  username: string;
+  image?: string;
+  online?: boolean;
+}
+
+interface ChatEmoji {
+  shortcode: string;
+  unicode: string;
+  category?: string;
+  hasSkinTones?: boolean;
+}
+
 export default function ChatPage() {
   const searchParams = useSearchParams();
   const chatUser = searchParams.get("user") ?? "";
@@ -32,6 +45,15 @@ export default function ChatPage() {
   const [selectedMsgId, setSelectedMsgId] = useState<string | null>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [chatOnline, setChatOnline] = useState(false);
+  const [participants, setParticipants] = useState<ChatParticipant[]>([]);
+  const [emojiList, setEmojiList] = useState<ChatEmoji[]>([]);
+  const emojiLoadedRef = useRef(false);
+  const fetchingMessagesRef = useRef(false);
+
+  useEffect(() => {
+    setParticipants([]);
+    setChatOnline(false);
+  }, [chatUser]);
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -83,20 +105,55 @@ export default function ChatPage() {
     if (!user || !chatUser) return;
 
     const fetchMessages = async () => {
+      if (fetchingMessagesRef.current) return;
+      fetchingMessagesRef.current = true;
       try {
-        const res = await fetch(
-          `/api/messages?user1=${user.username}&user2=${chatUser}`
-        );
-        const data = await res.json();
-        setMessages(data.messages ?? []);
-      } catch {
+        const params = new URLSearchParams({
+          user1: user.username,
+          user2: chatUser,
+          limit: "200",
+        });
+        const res = await fetch(`/api/messages?${params.toString()}`);
+        if (!res.ok) {
+          throw new Error(`Failed to fetch messages: ${res.status}`);
+        }
+        const data = (await res.json()) as {
+          messages?: Message[];
+          participants?: ChatParticipant[];
+          emojis?: ChatEmoji[];
+        };
+
+        if (Array.isArray(data.messages)) {
+          setMessages(data.messages);
+        } else {
+          setMessages([]);
+        }
+
+        if (Array.isArray(data.participants)) {
+          setParticipants(data.participants);
+          const partner = data.participants.find((p) => p.username === chatUser);
+          if (partner && typeof partner.online === "boolean") {
+            setChatOnline(partner.online);
+          }
+        }
+
+        if (!emojiLoadedRef.current && Array.isArray(data.emojis)) {
+          setEmojiList(data.emojis);
+          emojiLoadedRef.current = true;
+        }
+      } catch (error) {
+        console.error("Unable to fetch conversation", error);
         setMessages([]);
+      } finally {
+        fetchingMessagesRef.current = false;
       }
     };
 
-    fetchMessages(); // Initial load
+    void fetchMessages(); // Initial load
 
-    const interval = setInterval(fetchMessages, 3000); // Poll for new messages
+    const interval = setInterval(() => {
+      void fetchMessages();
+    }, 3000); // Poll for new messages
     return () => clearInterval(interval); // Cleanup
   }, [user, chatUser]);
 
@@ -136,20 +193,10 @@ export default function ChatPage() {
     };
   }, [socket, chatUser]);
 
-  // Initial status fetch
-  useEffect(() => {
-    if (!chatUser) return;
-    const fetchStatus = async () => {
-      try {
-        const res = await fetch(`/api/users/${chatUser}`);
-        const data = await res.json();
-        setChatOnline(data.user?.online ?? false);
-      } catch {
-        setChatOnline(false);
-      }
-    };
-    fetchStatus();
-  }, [chatUser]);
+  const chatPartner = participants.find((p) => p.username === chatUser);
+  const emojiButtonTitle = emojiList.length
+    ? `Insert emoji (${emojiList.length} available)`
+    : "Add emoji";
 
   // Show the scroll-to-bottom button when the user scrolls away from the bottom
   // or when new messages arrive while not at the bottom
@@ -318,6 +365,17 @@ export default function ChatPage() {
         {chatUser && (
           <div className="chat-user-status d-flex align-items-center gap-3 flex-wrap">
             <div className="d-flex align-items-center gap-2">
+              {chatPartner?.image ? (
+                <img
+                  src={chatPartner.image}
+                  alt={`${chatUser}'s avatar`}
+                  className="chat-user-avatar"
+                />
+              ) : (
+                <div className="chat-user-avatar chat-user-avatar--fallback">
+                  {chatUser.charAt(0).toUpperCase()}
+                </div>
+              )}
               <div
                 className={`status-dot ${chatOnline ? "status-dot-online" : "status-dot-offline"}`}
                 aria-hidden="true"
@@ -487,6 +545,7 @@ export default function ChatPage() {
             type="button"
             className="chat-composer__icon-btn"
             aria-label="Add emoji"
+            title={emojiButtonTitle}
           >
             😊
           </button>
