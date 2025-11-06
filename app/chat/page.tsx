@@ -429,15 +429,15 @@ export default function ChatPage() {
           );
         })}
         {showScrollButton && (
-          <button
-            className="btn btn-primary position-fixed bottom-0 end-0 m-4 rounded-circle shadow"
-            style={{ zIndex: 1000, width: "48px", height: "48px" }}
-            onClick={scrollToBottom}
-            title="Scroll to latest"
-          >
-            ⬇
-          </button>
-        )}
+  <button
+    className="scroll-to-bottom-btn"
+    onClick={scrollToBottom}
+    title="Scroll to latest"
+  >
+    ⬇
+  </button>
+)}
+
         <div ref={bottomRef}></div>
       </div>
 
