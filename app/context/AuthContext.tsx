@@ -29,6 +29,8 @@ interface AuthContextValue {
   logout: () => void;
   // Socket connection for real-time updates
   socket: Socket | null;
+  // Updates fields on the active session user
+  updateUser: (updates: Partial<User>) => void;
 }
 
 // Create the authentication context with a default null value
@@ -190,10 +192,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   };
 
+  const updateUser = useCallback((updates: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, ...updates };
+      if (typeof updates.username === "string") {
+        localStorage.setItem("user", JSON.stringify({ username: updates.username }));
+      }
+      return next;
+    });
+  }, []);
+
   // Provide authentication utilities and state to child components
   return (
     <AuthContext.Provider
-      value={{ user, loading, signup, signin, logout, socket }}
+      value={{ user, loading, signup, signin, logout, socket, updateUser }}
     >
       {children}
     </AuthContext.Provider>

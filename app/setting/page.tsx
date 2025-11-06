@@ -16,7 +16,7 @@ interface User {
 }
 
 export default function SettingPage() {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout, updateUser } = useAuth();
   const router = useRouter();
 
   const [users, setUsers] = useState<User[]>([]);
@@ -160,11 +160,8 @@ export default function SettingPage() {
         setUsers((prev) =>
           prev.map((u) => (u.username === user.username ? data.user : u))
         );
-        if (updates.username) {
-          localStorage.setItem(
-            "user",
-            JSON.stringify({ username: updates.username })
-          );
+        if (typeof updates.username === "string") {
+          updateUser({ username: updates.username });
         }
         setNewUsername("");
         setNewAge(0);

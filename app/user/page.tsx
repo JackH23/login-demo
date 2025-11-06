@@ -11,7 +11,7 @@ import { useConfirmDialog } from "../components/useConfirmDialog";
 import { usePromptDialog } from "../components/usePromptDialog";
 
 export default function UserPage() {
-  const { user, loading, socket } = useAuth();
+  const { user, loading, socket, updateUser } = useAuth();
   const { theme } = useTheme();
   const router = useRouter();
 
@@ -310,7 +310,7 @@ export default function UserPage() {
       );
 
       if (user.username === u.username && username !== u.username) {
-        localStorage.setItem("user", JSON.stringify({ username }));
+        updateUser({ username });
       }
     }
   };
