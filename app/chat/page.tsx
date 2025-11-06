@@ -1,7 +1,13 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { Socket } from "socket.io-client";
@@ -31,6 +37,10 @@ export default function ChatPage() {
   const [selectedMsgId, setSelectedMsgId] = useState<string | null>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [chatOnline, setChatOnline] = useState(false);
+
+  const isNight = theme === "night";
+  const chatInitial = chatUser ? chatUser.charAt(0).toUpperCase() : "C";
+  const statusLabel = chatOnline ? "Online" : "Offline";
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -192,7 +202,7 @@ export default function ChatPage() {
     }
   };
 
-  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user || !chatUser) return;
 
@@ -246,6 +256,23 @@ export default function ChatPage() {
     }
   };
 
+  const handleNotificationAction = () => {
+    if (typeof window === "undefined") return;
+    if (!("Notification" in window)) return;
+    if (Notification.permission === "default") {
+      Notification.requestPermission().catch(() => undefined);
+    }
+  };
+
+  const handleEmojiInsert = (emoji: string) => {
+    setInput((prev) => `${prev}${emoji}`);
+  };
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    handleSend();
+  };
+
   function formatDateLabel(dateStr: string) {
     const date = new Date(dateStr);
     const today = new Date();
@@ -265,211 +292,260 @@ export default function ChatPage() {
   let lastDateLabel = "";
 
   return (
-    <div
-      className={`container-fluid d-flex flex-column vh-100 p-0 ${
-        theme === "night" ? "bg-dark text-white" : "bg-light"
-      }`}
-    >
-      {/* Header */}
-      <div
-        className={`px-4 py-3 d-flex justify-content-between align-items-center ${
-          theme === "night" ? "bg-dark text-white" : "bg-primary text-white"
-        }`}
-      >
-        <div className="d-flex align-items-center gap-3">
-          <h5 className="mb-0">Chat {chatUser && `with ${chatUser}`}</h5>
-          <span className={`badge ${chatOnline ? 'bg-success' : 'bg-secondary'} text-light`}>
-            {chatOnline ? 'Online' : 'Offline'}
-          </span>
-        </div>
-        <a href="/user" className="btn btn-sm btn-light text-dark">
-          🏠 Home
-        </a>
-      </div>
-
-      {/* Message Area */}
-      <div
-        ref={messagesContainerRef}
-        id="chat-scroll-container"
-        className={`flex-grow-1 overflow-auto p-3 ${
-          theme === "night" ? "bg-dark text-white" : "bg-light"
-        }`}
-      >
-        {messages.map((msg, idx) => {
-          const msgDate = new Date(msg.createdAt).toDateString();
-          const isSender = msg.from === user?.username;
-
-          const showDateLabel = msgDate !== lastDateLabel;
-          if (showDateLabel) lastDateLabel = msgDate;
-
-          return (
-            <div key={msg._id + idx}>
-              {showDateLabel && (
-                <div className="text-center text-muted small my-3">
-                  <span className="badge bg-secondary">
-                    {formatDateLabel(msg.createdAt)}
-                  </span>
-                </div>
-              )}
-
-              <div
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  if (isSender) setSelectedMsgId(msg._id);
-                  else setSelectedMsgId(null);
-                }}
-                className={`d-flex mb-2 ${
-                  isSender ? "justify-content-end" : "justify-content-start"
+    <div className={`chat-shell ${isNight ? "chat-shell-dark" : "chat-shell-light"}`}>
+      <header className={`chat-header ${isNight ? "chat-header-dark" : "chat-header-light"}`}>
+        <div className="chat-header-left">
+          <div className="chat-avatar" aria-hidden="true">
+            <span className="chat-avatar-initial">{chatInitial}</span>
+            <span
+              className={`chat-status-dot ${
+                chatOnline ? "chat-status-dot-online" : "chat-status-dot-offline"
+              }`}
+              aria-hidden="true"
+            />
+          </div>
+          <div className="chat-header-meta">
+            <p className="chat-header-eyebrow">Direct message</p>
+            <h1 className="chat-header-title">
+              {chatUser ? chatUser : "Choose a person"}
+            </h1>
+            <div className="chat-header-status" aria-live="polite">
+              <span
+                className={`chat-status-pill ${
+                  chatOnline ? "chat-status-pill-online" : "chat-status-pill-offline"
                 }`}
               >
-                <div
-                  className={`p-2 rounded shadow-sm ${
-                    isSender
-                      ? "bg-info text-white text-end"
-                      : theme === "night"
-                      ? "bg-secondary text-white text-start"
-                      : "bg-white text-dark text-start"
-                  }`}
-                  style={{ maxWidth: "75%", position: "relative" }}
-                >
-                  {/* Message content */}
-                  {msg.type === "text" && <div>{msg.content}</div>}
-                  {msg.type === "image" && (
-                    <img
-                      src={msg.content}
-                      alt="sent-img"
-                      className="img-fluid rounded"
-                      style={{ maxWidth: "200px" }}
-                    />
-                  )}
-                  {msg.type === "file" && (
-                    <div
-                      className="d-flex align-items-center gap-2 p-2 rounded"
-                      style={{
-                        backgroundColor: isSender
-                          ? "#0d6efd"
-                          : theme === "night"
-                          ? "#343a40"
-                          : "#f8f9fa",
-                        color: isSender
-                          ? "#fff"
-                          : theme === "night"
-                          ? "#fff"
-                          : "#000",
-                      }}
-                    >
-                      <div
-                        className="bg-white d-flex align-items-center justify-content-center rounded-circle"
-                        style={{
-                          width: "40px",
-                          height: "40px",
-                          fontSize: "1.25rem",
-                          color: "#0d6efd",
-                        }}
-                      >
-                        📄
-                      </div>
-                      <div className="flex-grow-1">
-                        <a
-                          href={msg.content}
-                          download={msg.fileName}
-                          className="text-decoration-none fw-semibold"
-                          style={{
-                            color: isSender
-                              ? "#fff"
-                              : theme === "night"
-                              ? "#fff"
-                              : "#000",
-                            wordBreak: "break-word",
-                          }}
-                        >
-                          {msg.fileName}
-                        </a>
-                        <div className="small text-muted">
-                          {msg.fileName?.split(".").pop()?.toUpperCase()} File
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                {statusLabel}
+              </span>
+              {chatUser && (
+                <span className="chat-header-subtitle">{`Chat channel with ${chatUser}`}</span>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="chat-header-actions">
+          <a
+            className="chat-header-action"
+            href="/user"
+            title="Back to home"
+            aria-label="Back to home"
+          >
+            🏠
+          </a>
+          <a
+            className="chat-header-action"
+            href="/setting"
+            title="Open settings"
+            aria-label="Open settings"
+          >
+            ⚙️
+          </a>
+          <button
+            type="button"
+            className="chat-header-action"
+            title="Manage notifications"
+            aria-label="Manage notifications"
+            onClick={handleNotificationAction}
+          >
+            🔔
+          </button>
+        </div>
+      </header>
 
-                  <div className="small text-muted mt-1">
-                    {new Date(msg.createdAt).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+      <main className="chat-main" role="main">
+        <div
+          ref={messagesContainerRef}
+          id="chat-scroll-container"
+          className={`chat-body ${isNight ? "chat-body-dark" : "chat-body-light"}`}
+        >
+          {messages.length === 0 && (
+            <div className="chat-empty-state">
+              <div className="chat-empty-icon" aria-hidden="true">
+                💬
+              </div>
+              <p className="chat-empty-title">No messages yet</p>
+              <p className="chat-empty-subtitle">
+                {chatUser
+                  ? `Say hello to ${chatUser} and start the conversation.`
+                  : "Select someone to begin a conversation."}
+              </p>
+            </div>
+          )}
+
+          {messages.map((msg, idx) => {
+            const msgDate = new Date(msg.createdAt).toDateString();
+            const isSender = msg.from === user?.username;
+
+            const showDateLabel = msgDate !== lastDateLabel;
+            if (showDateLabel) lastDateLabel = msgDate;
+
+            const timeLabel = new Date(msg.createdAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+
+            return (
+              <div key={`${msg._id}-${idx}`} className="chat-message-block">
+                {showDateLabel && (
+                  <div className="chat-date-divider">
+                    <span>{formatDateLabel(msg.createdAt)}</span>
                   </div>
+                )}
 
-                  {isSender && selectedMsgId === msg._id && (
-                    <div className="mt-2 d-flex gap-3">
-                      {msg.type === "text" && (
+                <div
+                  className={`chat-message-wrapper ${
+                    isSender
+                      ? "chat-message-wrapper-self"
+                      : "chat-message-wrapper-recipient"
+                  }`}
+                >
+                  <div
+                    onContextMenu={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      if (isSender) setSelectedMsgId(msg._id);
+                      else setSelectedMsgId(null);
+                    }}
+                    onClick={(event) => event.stopPropagation()}
+                    className={`chat-bubble ${
+                      isSender ? "chat-bubble-self" : "chat-bubble-other"
+                    } ${isNight ? "chat-bubble-night" : "chat-bubble-day"} ${
+                      selectedMsgId === msg._id ? "chat-bubble-selected" : ""
+                    }`}
+                  >
+                    <div className="chat-bubble-content">
+                      {msg.type === "text" && <p className="mb-0">{msg.content}</p>}
+
+                      {msg.type === "image" && (
+                        <figure className="chat-bubble-media">
+                          <img src={msg.content} alt="Sent media" className="chat-media-image" />
+                          {msg.fileName && (
+                            <figcaption className="chat-media-caption">{msg.fileName}</figcaption>
+                          )}
+                        </figure>
+                      )}
+
+                      {msg.type === "file" && (
+                        <div className="chat-attachment-card">
+                          <div className="chat-attachment-icon" aria-hidden="true">
+                            📄
+                          </div>
+                          <div className="chat-attachment-meta">
+                            <a
+                              href={msg.content}
+                              download={msg.fileName}
+                              className="chat-attachment-link"
+                            >
+                              {msg.fileName ?? "Download file"}
+                            </a>
+                            {msg.fileName && (
+                              <span className="chat-attachment-subtext">
+                                {msg.fileName.split(".").pop()?.toUpperCase()} file
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="chat-bubble-meta">
+                      <span className="chat-sender-tag">{isSender ? "You" : msg.from}</span>
+                      <span className="chat-meta-divider">•</span>
+                      <time className="chat-timestamp" dateTime={msg.createdAt}>
+                        {timeLabel}
+                      </time>
+                    </div>
+
+                    {isSender && selectedMsgId === msg._id && (
+                      <div className="chat-bubble-actions">
+                        {msg.type === "text" && (
+                          <button
+                            type="button"
+                            className="chat-bubble-action"
+                            onClick={() => {
+                              handleEdit(msg);
+                              setSelectedMsgId(null);
+                            }}
+                          >
+                            ✏️ Edit
+                          </button>
+                        )}
                         <button
-                          className="btn btn-sm btn-light text-primary"
+                          type="button"
+                          className="chat-bubble-action chat-bubble-action-danger"
                           onClick={() => {
-                            handleEdit(msg);
+                            handleDelete(msg._id);
                             setSelectedMsgId(null);
                           }}
                         >
-                          ✏️ Edit
+                          🗑️ Delete
                         </button>
-                      )}
-                      <button
-                        className="btn btn-sm btn-light text-danger"
-                        onClick={() => {
-                          handleDelete(msg._id);
-                          setSelectedMsgId(null);
-                        }}
-                      >
-                        🗑️ Delete
-                      </button>
-                    </div>
-                  )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
-        {showScrollButton && (
-  <button
-    className="scroll-to-bottom-btn"
-    onClick={scrollToBottom}
-    title="Scroll to latest"
-  >
-    ⬇
-  </button>
-)}
+            );
+          })}
 
-        <div ref={bottomRef}></div>
-      </div>
+          {showScrollButton && (
+            <button
+              className="scroll-to-bottom-btn"
+              onClick={scrollToBottom}
+              title="Scroll to latest"
+              type="button"
+            >
+              ⬇
+            </button>
+          )}
 
-      {/* Input + File Upload */}
-      <div
-        className={`border-top p-3 ${
-          theme === "night" ? "bg-dark" : "bg-white"
-        }`}
-      >
-        <div className="input-group">
+          <div ref={bottomRef} />
+        </div>
+      </main>
+
+      <footer className={`chat-footer ${isNight ? "chat-footer-dark" : "chat-footer-light"}`}>
+        <form className="chat-input-bar" onSubmit={handleSubmit}>
+          <button
+            type="button"
+            className="chat-icon-button"
+            title="Add emoji"
+            aria-label="Add emoji"
+            onClick={() => handleEmojiInsert("😊")}
+          >
+            😊
+          </button>
+
           <input
             type="text"
-            className="form-control"
+            className="chat-input-field"
             placeholder="Type your message..."
             value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            onChange={(event) => setInput(event.target.value)}
           />
-          <label className="btn btn-outline-secondary mb-0">
-            📎
-            <input
-              type="file"
-              accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
-              onChange={handleFile}
-              hidden
-            />
-          </label>
-          <button className="btn btn-primary" onClick={handleSend}>
-            Send
-          </button>
-        </div>
-      </div>
+
+          <div className="chat-input-actions">
+            <label
+              className="chat-icon-button"
+              title="Attach a file"
+              aria-label="Attach a file"
+            >
+              📎
+              <input
+                type="file"
+                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+                onChange={handleFile}
+                className="chat-input-file"
+              />
+            </label>
+            <button type="submit" className="chat-send-btn">
+              <span className="chat-send-text">Send</span>
+              <span className="chat-send-icon" aria-hidden="true">
+                ➤
+              </span>
+            </button>
+          </div>
+        </form>
+      </footer>
     </div>
   );
 }
