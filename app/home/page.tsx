@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
+import LoadingScreen from "../components/LoadingScreen";
 import BlogCard from "../components/BlogCard";
 import { useConfirmDialog } from "../components/useConfirmDialog";
 import { useCachedApi } from "../hooks/useCachedApi";
@@ -93,12 +94,22 @@ export default function HomePage() {
   const isLoading = loading || !user || loadingUsers || loadingPosts;
 
   if (isLoading) {
-    return <div className="text-center mt-5">Loading...</div>;
+    return (
+      <LoadingScreen
+        title="Preparing your personalized feed"
+        subtitle="We\'re gathering the newest posts, friends, and reactions for you."
+      />
+    );
   }
 
   const currentUserData = users.find((u) => u.username === user.username);
   if (!currentUserData) {
-    return <div className="text-center mt-5">Loading user data...</div>;
+    return (
+      <LoadingScreen
+        title="Loading your profile details"
+        subtitle="Fetching the essentials so your home view feels like home."
+      />
+    );
   }
 
 

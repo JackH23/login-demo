@@ -1024,3 +1024,19 @@
     font-size: 1.15rem;
   }
 }
+
+@keyframes loading-bar {
+  0% {
+    transform: translateX(-120%);
+  }
+  50% {
+    transform: translateX(30%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+.loading-bar {
+  animation: loading-bar 1.8s ease-in-out infinite;
+}

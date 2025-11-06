@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
+import LoadingScreen from "../components/LoadingScreen";
 import { ADMIN_USERNAME } from "@/lib/constants";
 import { useConfirmDialog } from "../components/useConfirmDialog";
 import { usePromptDialog } from "../components/usePromptDialog";
@@ -66,14 +67,25 @@ export default function UserPage() {
     };
   }, [setUsers, socket]);
 
-  if (loading || usersLoading || !user)
-    return <div className="text-center mt-5">Loading...</div>;
+  if (loading || usersLoading || !user) {
+    return (
+      <LoadingScreen
+        title="Preparing the community roster"
+        subtitle="Fetching members and syncing presence details for you."
+      />
+    );
+  }
 
   const isAdmin = user.username === ADMIN_USERNAME;
 
   const currentUserData = users.find((u) => u.username === user.username);
   if (!currentUserData) {
-    return <div className="text-center mt-5">Loading user data...</div>;
+    return (
+      <LoadingScreen
+        title="Loading your profile data"
+        subtitle="We\'re getting everything ready so you can manage members."
+      />
+    );
   }
 
   // Admin operations require the current username in the Authorization header

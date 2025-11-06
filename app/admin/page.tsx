@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
+import LoadingScreen from "../components/LoadingScreen";
 import { ADMIN_USERNAME } from "@/lib/constants";
 import { useCachedApi } from "../hooks/useCachedApi";
 
@@ -56,7 +57,12 @@ export default function AdminPage() {
   const currentUserData = users.find((u) => u.username === user?.username) ?? null;
 
   if (loading || loadingUsers || loadingPosts || !user) {
-    return <div className="text-center mt-5">Loading...</div>;
+    return (
+      <LoadingScreen
+        title="Opening the admin dashboard"
+        subtitle="We\'re compiling user stats and recent posts for your review."
+      />
+    );
   }
 
   if (user.username !== ADMIN_USERNAME) {

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
+import LoadingScreen from "../components/LoadingScreen";
 import { useCachedApi } from "../hooks/useCachedApi";
 
 interface User {
@@ -56,12 +57,22 @@ export default function AnalysisPage() {
   const isLoading = loading || !user || loadingUsers || loadingPosts;
 
   if (isLoading) {
-    return <div className="text-center mt-5">Loading...</div>;
+    return (
+      <LoadingScreen
+        title="Crunching your analytics"
+        subtitle="We\'re assembling readership trends and engagement insights."
+      />
+    );
   }
 
   const currentUserData = users.find((u) => u.username === user.username);
   if (!currentUserData) {
-    return <div className="text-center mt-5">Loading user data...</div>;
+    return (
+      <LoadingScreen
+        title="Loading your profile data"
+        subtitle="Just a moment while we personalize your analytics dashboard."
+      />
+    );
   }
 
   const userPosts = posts.filter((p) => p.author === user.username);
