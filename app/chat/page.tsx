@@ -332,8 +332,8 @@ export default function ChatPage() {
       <div
         ref={messagesContainerRef}
         id="chat-scroll-container"
-        className={`flex-grow-1 overflow-auto p-3 ${
-          theme === "night" ? "bg-dark text-white" : "bg-light"
+        className={`chat-canvas flex-grow-1 overflow-auto ${
+          theme === "night" ? "chat-canvas-night" : "chat-canvas-day"
         }`}
       >
         {messages.map((msg, idx) => {
@@ -359,92 +359,65 @@ export default function ChatPage() {
                   if (isSender) setSelectedMsgId(msg._id);
                   else setSelectedMsgId(null);
                 }}
-                className={`d-flex mb-2 ${
-                  isSender ? "justify-content-end" : "justify-content-start"
+                className={`chat-message ${
+                  isSender ? "chat-message--sent" : "chat-message--received"
                 }`}
               >
                 <div
-                  className={`p-2 rounded shadow-sm ${
+                  className={`chat-message-bubble ${
                     isSender
-                      ? "bg-info text-white text-end"
+                      ? "chat-message-bubble--sent"
                       : theme === "night"
-                      ? "bg-secondary text-white text-start"
-                      : "bg-white text-dark text-start"
+                      ? "chat-message-bubble--night"
+                      : "chat-message-bubble--day"
                   }`}
-                  style={{ maxWidth: "75%", position: "relative" }}
                 >
-                  {/* Message content */}
-                  {msg.type === "text" && <div>{msg.content}</div>}
-                  {msg.type === "image" && (
-                    <img
-                      src={msg.content}
-                      alt="sent-img"
-                      className="img-fluid rounded"
-                      style={{ maxWidth: "200px" }}
-                    />
-                  )}
-                  {msg.type === "file" && (
-                    <div
-                      className="d-flex align-items-center gap-2 p-2 rounded"
-                      style={{
-                        backgroundColor: isSender
-                          ? "#0d6efd"
-                          : theme === "night"
-                          ? "#343a40"
-                          : "#f8f9fa",
-                        color: isSender
-                          ? "#fff"
-                          : theme === "night"
-                          ? "#fff"
-                          : "#000",
-                      }}
+                  <div className="chat-message-meta">
+                    {!isSender && (
+                      <span className="chat-message-sender">{msg.from}</span>
+                    )}
+                    <time
+                      className="chat-message-time"
+                      dateTime={msg.createdAt}
                     >
-                      <div
-                        className="bg-white d-flex align-items-center justify-content-center rounded-circle"
-                        style={{
-                          width: "40px",
-                          height: "40px",
-                          fontSize: "1.25rem",
-                          color: "#0d6efd",
-                        }}
-                      >
+                      {new Date(msg.createdAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </time>
+                  </div>
+
+                  {msg.type === "text" && (
+                    <p className="chat-message-text">{msg.content}</p>
+                  )}
+
+                  {msg.type === "image" && (
+                    <div className="chat-message-media">
+                      <img src={msg.content} alt="sent-img" />
+                    </div>
+                  )}
+
+                  {msg.type === "file" && (
+                    <div className="chat-message-file">
+                      <div className="chat-message-file-icon" aria-hidden="true">
                         📄
                       </div>
-                      <div className="flex-grow-1">
-                        <a
-                          href={msg.content}
-                          download={msg.fileName}
-                          className="text-decoration-none fw-semibold"
-                          style={{
-                            color: isSender
-                              ? "#fff"
-                              : theme === "night"
-                              ? "#fff"
-                              : "#000",
-                            wordBreak: "break-word",
-                          }}
-                        >
+                      <div className="chat-message-file-meta">
+                        <a href={msg.content} download={msg.fileName}>
                           {msg.fileName}
                         </a>
-                        <div className="small text-muted">
+                        <span className="chat-message-file-type">
                           {msg.fileName?.split(".").pop()?.toUpperCase()} File
-                        </div>
+                        </span>
                       </div>
                     </div>
                   )}
 
-                  <div className="small text-muted mt-1">
-                    {new Date(msg.createdAt).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </div>
-
                   {isSender && selectedMsgId === msg._id && (
-                    <div className="mt-2 d-flex gap-3">
+                    <div className="chat-message-actions">
                       {msg.type === "text" && (
                         <button
-                          className="btn btn-sm btn-light text-primary"
+                          className="chat-message-action"
                           onClick={() => {
                             handleEdit(msg);
                             setSelectedMsgId(null);
@@ -454,7 +427,7 @@ export default function ChatPage() {
                         </button>
                       )}
                       <button
-                        className="btn btn-sm btn-light text-danger"
+                        className="chat-message-action chat-message-action--danger"
                         onClick={() => {
                           handleDelete(msg._id);
                           setSelectedMsgId(null);
