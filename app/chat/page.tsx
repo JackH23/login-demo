@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { Socket } from "socket.io-client";
@@ -28,10 +28,13 @@ export default function ChatPage() {
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const emojiPickerRef = useRef<HTMLDivElement | null>(null);
+  const emojiButtonRef = useRef<HTMLButtonElement | null>(null);
   const prevLengthRef = useRef(0); // Initialize ref here
   const [selectedMsgId, setSelectedMsgId] = useState<string | null>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [chatOnline, setChatOnline] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -119,6 +122,34 @@ export default function ChatPage() {
     return () => window.removeEventListener("click", clearSelection);
   }, []);
 
+  useEffect(() => {
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (
+        showEmojiPicker &&
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(target) &&
+        !(emojiButtonRef.current && emojiButtonRef.current.contains(target))
+      ) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [showEmojiPicker]);
+
   // Listen for online/offline status of the chat partner
   useEffect(() => {
     if (!socket || !chatUser) return;
@@ -173,17 +204,24 @@ export default function ChatPage() {
     // content while the user is scrolled up
   }, [messages]);
 
+  const handleEmojiSelect = (emoji: string) => {
+    setInput((prev) => `${prev}${emoji}`);
+    setShowEmojiPicker(false);
+  };
+
   const handleSend = async () => {
-    if (!user || !chatUser || !input.trim()) return;
+    const trimmed = input.trim();
+    if (!user || !chatUser || !trimmed) return;
 
     const payload = {
       from: user.username,
       to: chatUser,
       type: "text" as const,
-      content: input,
+      content: trimmed,
     };
 
     setInput("");
+    setShowEmojiPicker(false);
 
     const res = await fetch("/api/messages", {
       method: "POST",
@@ -199,8 +237,9 @@ export default function ChatPage() {
     }
   };
 
-  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleFile = async (e: ChangeEvent<HTMLInputElement>) => {
+    const inputEl = e.target;
+    const file = inputEl.files?.[0];
     if (!file || !user || !chatUser) return;
 
     const reader = new FileReader();
@@ -228,6 +267,8 @@ export default function ChatPage() {
       }
     };
     reader.readAsDataURL(file);
+    inputEl.value = "";
+    setShowEmojiPicker(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -467,9 +508,37 @@ export default function ChatPage() {
             type="button"
             className="chat-composer__icon-btn"
             aria-label="Add emoji"
+            ref={emojiButtonRef}
+            onClick={() => setShowEmojiPicker((prev) => !prev)}
           >
             😊
           </button>
+          {showEmojiPicker && (
+            <div
+              ref={emojiPickerRef}
+              className={`chat-emoji-picker ${
+                theme === "night"
+                  ? "chat-emoji-picker--night"
+                  : "chat-emoji-picker--day"
+              }`}
+              role="dialog"
+              aria-label="Emoji picker"
+            >
+              {["😀", "😂", "😊", "😍", "👍", "🎉", "🙏", "🤔", "🙌", "❤️", "🔥", "🥳"].map(
+                (emoji) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    className="chat-emoji-picker__item"
+                    onClick={() => handleEmojiSelect(emoji)}
+                    aria-label={`Insert ${emoji}`}
+                  >
+                    {emoji}
+                  </button>
+                )
+              )}
+            </div>
+          )}
           <input
             type="text"
             className="chat-composer__input"
