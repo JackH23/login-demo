@@ -26,6 +26,11 @@ export default function SettingPage() {
   const [newAge, setNewAge] = useState<number>(0);
   const [profileImage, setProfileImage] = useState<string>("");
   const { theme, setTheme } = useTheme();
+  const isNight = theme === "night";
+  const mutedTextClass = isNight ? "text-light opacity-75" : "text-muted";
+  const inputClassName = `form-control ${
+    isNight ? "bg-dark text-white border-secondary" : ""
+  }`;
   const { confirm: showConfirm, dialog: confirmDialog } = useConfirmDialog();
 
   // Convert selected image file to base64 string
@@ -273,7 +278,17 @@ export default function SettingPage() {
   };
 
   return (
-    <div className="container-fluid min-vh-100 p-4">
+    <div
+      className={`container-fluid min-vh-100 p-4 ${
+        isNight ? "text-light" : "text-dark"
+      }`}
+      style={{
+        background: isNight
+          ? "radial-gradient(circle at top, rgba(30,64,175,0.35), rgba(15,23,42,0.95))"
+          : "radial-gradient(circle at top, rgba(59,130,246,0.15), rgba(255,255,255,0.95))",
+        transition: "background 0.4s ease-in-out, color 0.2s ease-in-out",
+      }}
+    >
       {confirmDialog}
       <TopBar
         title="Settings"
@@ -284,112 +299,252 @@ export default function SettingPage() {
         }}
       />
 
-      <div className="container mt-4" style={{ maxWidth: "600px" }}>
+      <div className="container mt-4" style={{ maxWidth: "680px" }}>
         {/* Theme Settings */}
-        <div className="card shadow-sm mb-4">
-          <div className="card-header bg-primary text-white">
-            <h5 className="mb-0">Display Settings</h5>
-          </div>
-          <div className="card-body">
-            <label className="form-label">Choose Theme</label>
-            <select
-              className="form-select"
-              value={theme}
-              onChange={(e) =>
-                handleThemeChange(e.target.value as "brightness" | "night")
-              }
+        <div
+          className={`card shadow-sm border-0 rounded-4 mb-4 ${
+            isNight ? "bg-transparent text-light" : "bg-transparent"
+          }`}
+          style={{
+            background: isNight
+              ? "linear-gradient(135deg, rgba(17,24,39,0.95), rgba(30,64,175,0.75))"
+              : "linear-gradient(135deg, #eef2ff, #ffffff)",
+          }}
+        >
+          <div className="card-body p-4 position-relative">
+            <span
+              aria-hidden="true"
+              className="position-absolute top-0 end-0 translate-middle mt-4 me-4 display-5"
             >
-              <option value="brightness">Brightness (Light Mode)</option>
-              <option value="night">Night (Dark Mode)</option>
-            </select>
+              {isNight ? "🌙" : "🌞"}
+            </span>
+            <h5 className="fw-semibold mb-2">Display Settings</h5>
+            <p className={`mb-4 ${mutedTextClass}`}>
+              Choose how the interface appears across the app.
+            </p>
+            <div className="d-flex flex-column flex-sm-row align-items-sm-center gap-3">
+              <div className="btn-group" role="group" aria-label="Theme selection">
+                <button
+                  type="button"
+                  className={`btn btn-sm ${
+                    theme === "brightness"
+                      ? "btn-primary fw-semibold shadow-sm"
+                      : isNight
+                      ? "btn-outline-light"
+                      : "btn-outline-secondary"
+                  }`}
+                  onClick={() => handleThemeChange("brightness")}
+                  aria-pressed={theme === "brightness"}
+                >
+                  <span aria-hidden="true" className="me-1">
+                    🌞
+                  </span>
+                  Bright mode
+                </button>
+                <button
+                  type="button"
+                  className={`btn btn-sm ${
+                    theme === "night"
+                      ? "btn-secondary fw-semibold shadow-sm"
+                      : isNight
+                      ? "btn-outline-light"
+                      : "btn-outline-secondary"
+                  }`}
+                  onClick={() => handleThemeChange("night")}
+                  aria-pressed={theme === "night"}
+                >
+                  <span aria-hidden="true" className="me-1">
+                    🌙
+                  </span>
+                  Night mode
+                </button>
+              </div>
+              <div className={`small ${mutedTextClass} ms-sm-3`}>
+                Currently using
+                <span className="fw-semibold ms-1 text-reset">
+                  {theme === "night" ? "Night" : "Bright"} theme
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Profile Settings */}
-        <div className="card shadow-sm">
-          <div className="card-header bg-success text-white">
-            <h5 className="mb-0">Profile Settings</h5>
+        <div
+          className={`card shadow-sm border-0 rounded-4 ${
+            isNight ? "bg-dark text-light" : "bg-white"
+          }`}
+        >
+          <div
+            className="px-4 py-3 border-bottom rounded-top-4"
+            style={{
+              background: isNight
+                ? "linear-gradient(135deg, rgba(148,163,184,0.2), rgba(30,41,59,0.75))"
+                : "linear-gradient(135deg, #f1f5ff, #ffffff)",
+              borderColor: isNight ? "rgba(148,163,184,0.35)" : "rgba(99,102,241,0.2)",
+            }}
+          >
+            <h5 className="fw-semibold mb-1 d-flex align-items-center gap-2">
+              <span aria-hidden="true">🧩</span>Profile Settings
+            </h5>
+            <p className={`mb-0 ${mutedTextClass}`}>
+              Personalise how your profile looks to everyone else.
+            </p>
           </div>
 
-          <div className="card-body">
-            <div className="mb-3 text-center">
-              <img
-                src={image}
-                alt="Profile"
-                className="rounded-circle"
-                style={{ width: "100px", height: "100px", objectFit: "cover" }}
-              />
+          <div className="card-body p-4">
+            <div className="d-flex flex-column flex-sm-row align-items-center gap-3 mb-4">
+              <div
+                className="rounded-circle border border-primary-subtle d-flex align-items-center justify-content-center"
+                style={{
+                  width: "96px",
+                  height: "96px",
+                  background: isNight ? "rgba(15,23,42,0.6)" : "rgba(59,130,246,0.08)",
+                }}
+              >
+                <img
+                  src={image}
+                  alt="Profile"
+                  className="rounded-circle"
+                  style={{ width: "84px", height: "84px", objectFit: "cover" }}
+                />
+              </div>
+              <div className={`${mutedTextClass} text-center text-sm-start`}>
+                <div className="fw-semibold text-reset">Profile preview</div>
+                <small>
+                  Update your avatar and details to keep your profile fresh.
+                </small>
+              </div>
             </div>
 
-            <div className="mb-3">
-              <label className="form-label">Username</label>
-              <input
-                type="text"
-                className="form-control"
-                value={username}
-                onChange={(e) => setNewUsername(e.target.value)}
-              />
-            </div>
+            <div className="row g-4">
+              <div className="col-12">
+                <label className="form-label fw-semibold">Username</label>
+                <input
+                  type="text"
+                  className={inputClassName}
+                  value={username}
+                  onChange={(e) => setNewUsername(e.target.value)}
+                />
+              </div>
 
-            <div className="mb-3">
-              <label className="form-label">Age</label>
-              <input
-                type="number"
-                className="form-control"
-                value={age}
-                onChange={(e) => setNewAge(Number(e.target.value))}
-              />
-            </div>
+              <div className="col-12">
+                <label className="form-label fw-semibold">Age</label>
+                <input
+                  type="number"
+                  className={inputClassName}
+                  value={age}
+                  onChange={(e) => setNewAge(Number(e.target.value))}
+                />
+              </div>
 
-            <div className="mb-3">
-              <label className="form-label">Profile Image</label>
-              <input
-                type="file"
-                className="form-control"
-                accept="image/*"
-                onChange={handleImageUpload}
-              />
-              {profileImage && (
-                <div className="text-center mt-2">
-                  <img
-                    src={profileImage}
-                    alt="Preview"
-                    className="rounded-circle mb-2"
-                    style={{ width: "100px", height: "100px", objectFit: "cover" }}
-                  />
-                  <br />
-                  <button
-                    type="button"
-                    className="btn btn-outline-danger btn-sm"
-                    onClick={handleRemoveImage}
+              <div className="col-12">
+                <label className="form-label fw-semibold">Profile image</label>
+                <input
+                  type="file"
+                  className={inputClassName}
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                />
+                {profileImage && (
+                  <div
+                    className={`d-flex flex-column flex-sm-row align-items-center gap-3 mt-3 p-3 border rounded-3 ${
+                      isNight ? "border-secondary" : "border-primary-subtle"
+                    }`}
+                    style={{
+                      background: isNight
+                        ? "rgba(30,41,59,0.55)"
+                        : "rgba(59,130,246,0.05)",
+                    }}
                   >
-                    Remove Image
-                  </button>
-                </div>
-              )}
+                    <img
+                      src={profileImage}
+                      alt="Preview"
+                      className="rounded-circle"
+                      style={{
+                        width: "72px",
+                        height: "72px",
+                        objectFit: "cover",
+                      }}
+                    />
+                    <div className="flex-grow-1 text-center text-sm-start">
+                      <div className="fw-semibold text-reset">New image ready</div>
+                      <small className={mutedTextClass}>
+                        This preview will replace your current profile picture
+                        after saving.
+                      </small>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn-outline-danger btn-sm"
+                      onClick={handleRemoveImage}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
-            <div className="d-grid">
-              <button className="btn btn-success" onClick={handleSave}>
-                Save Changes
+            <div className="d-grid mt-4">
+              <button
+                className="btn btn-primary btn-lg shadow-sm"
+                style={{
+                  background: isNight
+                    ? "linear-gradient(135deg, #60a5fa, #2563eb)"
+                    : "linear-gradient(135deg, #4f46e5, #2563eb)",
+                  border: "none",
+                }}
+                onClick={handleSave}
+              >
+                Save changes
               </button>
             </div>
           </div>
         </div>
 
         {/* Danger Zone */}
-        <div className="card shadow-sm mt-4 border-danger">
-          <div className="card-body">
-            <h6 className="text-danger">Danger Zone</h6>
-            <p className="text-muted small">
-              Deleting your account is permanent and cannot be undone.
-            </p>
-            <button
-              className="btn btn-outline-danger w-100"
-              onClick={handleDeleteAccount}
-            >
-              Delete My Account
-            </button>
+        <div
+          className={`card shadow-sm border-0 rounded-4 mt-4 ${
+            isNight ? "text-light" : "text-dark"
+          }`}
+          style={{
+            background: isNight
+              ? "linear-gradient(135deg, rgba(88,28,28,0.75), rgba(127,29,29,0.85))"
+              : "linear-gradient(135deg, #fff1f2, #ffe4e6)",
+            border: isNight
+              ? "1px solid rgba(248,113,113,0.45)"
+              : "1px solid rgba(244,63,94,0.35)",
+          }}
+        >
+          <div className="card-body p-4">
+            <div className="d-flex align-items-start gap-3">
+              <div
+                className="rounded-circle d-flex align-items-center justify-content-center"
+                style={{
+                  width: "48px",
+                  height: "48px",
+                  background: isNight ? "rgba(239,68,68,0.35)" : "rgba(225,29,72,0.1)",
+                }}
+              >
+                <span aria-hidden="true" className="fs-4">
+                  ⚠️
+                </span>
+              </div>
+              <div className="flex-grow-1">
+                <h5 className="fw-semibold text-danger mb-1">Danger zone</h5>
+                <p className={`mb-3 ${mutedTextClass}`}>
+                  Deleting your account will permanently remove your profile,
+                  posts, and connections. This action cannot be undone.
+                </p>
+                <button
+                  className="btn btn-danger w-100 fw-semibold shadow-sm"
+                  onClick={handleDeleteAccount}
+                >
+                  Delete my account
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
