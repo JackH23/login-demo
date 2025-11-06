@@ -27,6 +27,7 @@ export default function ChatPage() {
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const socketRef = useRef<Socket | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const prevLengthRef = useRef(0); // Initialize ref here
   const [selectedMsgId, setSelectedMsgId] = useState<string | null>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -455,35 +456,53 @@ export default function ChatPage() {
         <div ref={bottomRef}></div>
       </div>
 
-      {/* Input + File Upload */}
-      <div
-        className={`border-top p-3 ${
-          theme === "night" ? "bg-dark" : "bg-white"
+      {/* Composer Footer */}
+      <footer
+        className={`chat-footer ${
+          theme === "night" ? "chat-footer--night" : "chat-footer--day"
         }`}
       >
-        <div className="input-group">
+        <div className="chat-composer" role="group" aria-label="Message composer">
+          <button
+            type="button"
+            className="chat-composer__icon-btn"
+            aria-label="Add emoji"
+          >
+            😊
+          </button>
           <input
             type="text"
-            className="form-control"
+            className="chat-composer__input"
             placeholder="Type your message..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
           />
-          <label className="btn btn-outline-secondary mb-0">
+          <button
+            type="button"
+            className="chat-composer__icon-btn"
+            aria-label="Attach a file"
+            onClick={() => fileInputRef.current?.click()}
+          >
             📎
-            <input
-              type="file"
-              accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
-              onChange={handleFile}
-              hidden
-            />
-          </label>
-          <button className="btn btn-primary" onClick={handleSend}>
-            Send
           </button>
+          <button
+            type="button"
+            className="chat-composer__send"
+            aria-label="Send message"
+            onClick={handleSend}
+          >
+            ➤
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+            onChange={handleFile}
+            hidden
+          />
         </div>
-      </div>
+      </footer>
     </div>
   );
 }
