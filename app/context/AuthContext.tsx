@@ -68,24 +68,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const updateOnlineStatus = useCallback(async (username: string, online: boolean) => {
-    try {
-      const res = await fetch(`/api/users/${encodeURIComponent(username)}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: username,
-        },
-        body: JSON.stringify({ online }),
-      });
-      if (!res.ok) {
-        const message = await res.text();
-        throw new Error(message || "Failed to update user");
+  const updateOnlineStatus = useCallback(
+    async (username: string, online: boolean) => {
+      try {
+        const res = await fetch(`/api/users/${encodeURIComponent(username)}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: username,
+          },
+          body: JSON.stringify({ online }),
+        });
+
+        if (!res.ok) {
+          let message = "Failed to update user";
+          try {
+            const data = await res.json();
+            if (typeof data?.error === "string" && data.error.trim()) {
+              message = data.error;
+            }
+          } catch {
+            const fallback = await res.text();
+            if (fallback.trim()) message = fallback;
+          }
+
+          if (res.status === 404) {
+            console.warn(
+              `Unable to update status for missing user "${username}". Clearing local session.`
+            );
+            localStorage.removeItem("user");
+            setUser(null);
+            return;
+          }
+
+          throw new Error(message);
+        }
+      } catch (error) {
+        console.error("Unable to update user status", error);
       }
-    } catch (error) {
-      console.error("Unable to update user status", error);
-    }
-  }, []);
+    },
+    [setUser]
+  );
 
   // On first render, restore user from local storage to persist sessions
   useEffect(() => {
