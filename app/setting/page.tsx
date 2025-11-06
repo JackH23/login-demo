@@ -273,7 +273,12 @@ export default function SettingPage() {
   };
 
   return (
-    <div className="container-fluid min-vh-100 p-4">
+    <div
+      className="container-fluid min-vh-100 py-5"
+      style={{
+        background: "linear-gradient(135deg, #f8f9ff 0%, #eef4ff 100%)",
+      }}
+    >
       {confirmDialog}
       <TopBar
         title="Settings"
@@ -284,112 +289,225 @@ export default function SettingPage() {
         }}
       />
 
-      <div className="container mt-4" style={{ maxWidth: "600px" }}>
+      <div className="container mt-4" style={{ maxWidth: "720px" }}>
         {/* Theme Settings */}
-        <div className="card shadow-sm mb-4">
-          <div className="card-header bg-primary text-white">
-            <h5 className="mb-0">Display Settings</h5>
+        <div className="card shadow-sm mb-4 border-0 overflow-hidden">
+          <div
+            className="card-header border-0 text-white"
+            style={{
+              background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)",
+            }}
+          >
+            <div className="d-flex align-items-center">
+              <span className="fs-3 me-2" aria-hidden="true">
+                🎨
+              </span>
+              <div>
+                <h5 className="mb-0">Display Settings</h5>
+                <small className="text-white-50">
+                  Personalize how the app looks and feels.
+                </small>
+              </div>
+            </div>
           </div>
           <div className="card-body">
-            <label className="form-label">Choose Theme</label>
-            <select
-              className="form-select"
-              value={theme}
-              onChange={(e) =>
-                handleThemeChange(e.target.value as "brightness" | "night")
-              }
+            <p className="text-muted mb-3">
+              Switch between themes at any time—your preference is saved
+              instantly.
+            </p>
+            <div className="btn-group w-100" role="group" aria-label="Theme selection">
+              <button
+                type="button"
+                className={`btn ${
+                  theme === "brightness" ? "btn-primary" : "btn-outline-primary"
+                }`}
+                onClick={() => handleThemeChange("brightness")}
+              >
+                <span className="me-2" aria-hidden="true">
+                  🌞
+                </span>
+                Bright Mode
+              </button>
+              <button
+                type="button"
+                className={`btn ${
+                  theme === "night" ? "btn-primary" : "btn-outline-primary"
+                }`}
+                onClick={() => handleThemeChange("night")}
+              >
+                <span className="me-2" aria-hidden="true">
+                  🌙
+                </span>
+                Night Mode
+              </button>
+            </div>
+            <div
+              className={`rounded-4 mt-4 p-4 d-flex align-items-center justify-content-between shadow-sm ${
+                theme === "night"
+                  ? "bg-dark text-white border border-dark"
+                  : "bg-white text-dark border border-light"
+              }`}
+              style={{ transition: "all 0.3s ease" }}
             >
-              <option value="brightness">Brightness (Light Mode)</option>
-              <option value="night">Night (Dark Mode)</option>
-            </select>
+              <div>
+                <h6 className="mb-1">Live preview</h6>
+                <p className="mb-0 small text-muted">
+                  {theme === "night"
+                    ? "High contrast details with deep midnight tones."
+                    : "Crisp whites with gentle shadows for daytime focus."}
+                </p>
+              </div>
+              <span className="display-6" aria-hidden="true">
+                {theme === "night" ? "🌌" : "☀️"}
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Profile Settings */}
-        <div className="card shadow-sm">
-          <div className="card-header bg-success text-white">
-            <h5 className="mb-0">Profile Settings</h5>
+        <div className="card shadow-sm border-0 overflow-hidden">
+          <div
+            className="card-header border-0 text-white"
+            style={{
+              background: "linear-gradient(135deg, #16a34a 0%, #22c55e 100%)",
+            }}
+          >
+            <div className="d-flex align-items-center">
+              <span className="fs-3 me-2" aria-hidden="true">
+                🙋
+              </span>
+              <div>
+                <h5 className="mb-0">Profile Settings</h5>
+                <small className="text-white-50">
+                  Keep your information fresh and welcoming.
+                </small>
+              </div>
+            </div>
           </div>
 
           <div className="card-body">
-            <div className="mb-3 text-center">
-              <img
-                src={image}
-                alt="Profile"
-                className="rounded-circle"
-                style={{ width: "100px", height: "100px", objectFit: "cover" }}
-              />
-            </div>
-
-            <div className="mb-3">
-              <label className="form-label">Username</label>
-              <input
-                type="text"
-                className="form-control"
-                value={username}
-                onChange={(e) => setNewUsername(e.target.value)}
-              />
-            </div>
-
-            <div className="mb-3">
-              <label className="form-label">Age</label>
-              <input
-                type="number"
-                className="form-control"
-                value={age}
-                onChange={(e) => setNewAge(Number(e.target.value))}
-              />
-            </div>
-
-            <div className="mb-3">
-              <label className="form-label">Profile Image</label>
-              <input
-                type="file"
-                className="form-control"
-                accept="image/*"
-                onChange={handleImageUpload}
-              />
-              {profileImage && (
-                <div className="text-center mt-2">
+            <div className="row g-4 align-items-center">
+              <div className="col-md-4 text-center">
+                <div className="position-relative d-inline-block">
                   <img
-                    src={profileImage}
-                    alt="Preview"
-                    className="rounded-circle mb-2"
-                    style={{ width: "100px", height: "100px", objectFit: "cover" }}
+                    src={image}
+                    alt="Profile"
+                    className="rounded-circle border border-3 border-white shadow"
+                    style={{ width: "120px", height: "120px", objectFit: "cover" }}
                   />
-                  <br />
-                  <button
-                    type="button"
-                    className="btn btn-outline-danger btn-sm"
-                    onClick={handleRemoveImage}
+                  <span
+                    className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success"
+                    aria-hidden="true"
                   >
-                    Remove Image
+                    ✨
+                  </span>
+                </div>
+                <p className="small text-muted mt-3 mb-0">
+                  Upload a smiling photo to boost your first impression.
+                </p>
+              </div>
+              <div className="col-md-8">
+                <div className="mb-3">
+                  <label className="form-label">Username</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={username}
+                    onChange={(e) => setNewUsername(e.target.value)}
+                  />
+                  <div className="form-text">
+                    This is how friends find you across the community.
+                  </div>
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label">Age</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={age}
+                    onChange={(e) => setNewAge(Number(e.target.value))}
+                  />
+                  <div className="form-text">
+                    We tailor suggestions so they match your vibe.
+                  </div>
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label">Profile Image</label>
+                  <input
+                    type="file"
+                    className="form-control"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                  />
+                  <div className="form-text">JPG or PNG, at least 400 × 400 pixels.</div>
+                  {profileImage && (
+                    <div className="text-center mt-3">
+                      <img
+                        src={profileImage}
+                        alt="Preview"
+                        className="rounded-circle mb-2 shadow-sm"
+                        style={{
+                          width: "120px",
+                          height: "120px",
+                          objectFit: "cover",
+                        }}
+                      />
+                      <br />
+                      <button
+                        type="button"
+                        className="btn btn-outline-danger btn-sm"
+                        onClick={handleRemoveImage}
+                      >
+                        Remove Image
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="d-grid">
+                  <button className="btn btn-success btn-lg" onClick={handleSave}>
+                    <span className="me-2" aria-hidden="true">
+                      💾
+                    </span>
+                    Save Profile
                   </button>
                 </div>
-              )}
-            </div>
-
-            <div className="d-grid">
-              <button className="btn btn-success" onClick={handleSave}>
-                Save Changes
-              </button>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Danger Zone */}
-        <div className="card shadow-sm mt-4 border-danger">
-          <div className="card-body">
-            <h6 className="text-danger">Danger Zone</h6>
-            <p className="text-muted small">
-              Deleting your account is permanent and cannot be undone.
-            </p>
-            <button
-              className="btn btn-outline-danger w-100"
-              onClick={handleDeleteAccount}
-            >
-              Delete My Account
-            </button>
+        <div className="card shadow-sm mt-4 border-0">
+          <div
+            className="card-body border border-danger rounded-4 p-4"
+            style={{ backgroundColor: "rgba(220, 53, 69, 0.08)" }}
+          >
+            <div className="d-flex align-items-start">
+              <span className="fs-3 me-3 text-danger" aria-hidden="true">
+                ⚠️
+              </span>
+              <div>
+                <h6 className="text-danger mb-1">Danger Zone</h6>
+                <p className="text-muted small mb-3">
+                  Deleting your account is permanent—your posts, followers, and
+                  conversations disappear instantly.
+                </p>
+                <p className="small text-muted mb-4">
+                  Prefer a break? Consider logging out instead so you can return
+                  anytime.
+                </p>
+                <button
+                  type="button"
+                  className="btn btn-danger w-100"
+                  onClick={handleDeleteAccount}
+                >
+                  Delete My Account
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
