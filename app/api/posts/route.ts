@@ -16,10 +16,28 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const author = searchParams.get('author');
+  const limitParam = searchParams.get('limit');
+  const skipParam = searchParams.get('skip');
 
   await dbConnect();
 
   const query = author ? { author } : {};
-  const posts = await Post.find(query).sort({ createdAt: -1 }).lean();
+  let finder = Post.find(query)
+    .select(
+      'title content image author likes dislikes likedBy dislikedBy createdAt updatedAt'
+    )
+    .sort({ createdAt: -1 });
+
+  const limit = limitParam ? Number.parseInt(limitParam, 10) : undefined;
+  if (typeof limit === 'number' && Number.isFinite(limit) && limit > 0) {
+    finder = finder.limit(Math.min(limit, 100));
+  }
+
+  const skip = skipParam ? Number.parseInt(skipParam, 10) : undefined;
+  if (typeof skip === 'number' && Number.isFinite(skip) && skip > 0) {
+    finder = finder.skip(skip);
+  }
+
+  const posts = await finder.lean();
   return NextResponse.json({ posts });
 }

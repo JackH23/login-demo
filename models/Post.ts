@@ -14,4 +14,7 @@ const PostSchema = new Schema(
   { timestamps: true }
 );
 
+PostSchema.index({ author: 1, createdAt: -1 });
+PostSchema.index({ createdAt: -1 });
+
 export default models.Post || model('Post', PostSchema);

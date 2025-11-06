@@ -7,6 +7,8 @@ export async function GET() {
   const users = await User.find(
     {},
     'username position age image friends online -_id'
-  ).lean();
+  )
+    .sort({ username: 1 })
+    .lean();
   return NextResponse.json({ users });
 }

@@ -10,7 +10,12 @@ export async function GET(req: Request) {
   }
 
   await dbConnect();
-  const comments = await Comment.find({ postId }).sort({ createdAt: 1 }).lean();
+  const comments = await Comment.find({ postId })
+    .select(
+      'postId author text likes dislikes likedBy dislikedBy replies createdAt updatedAt'
+    )
+    .sort({ createdAt: 1 })
+    .lean();
   return NextResponse.json({ comments });
 }
 
