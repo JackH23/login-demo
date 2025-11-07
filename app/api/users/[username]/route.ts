@@ -96,12 +96,18 @@ export async function DELETE(
   }
 
   await dbConnect();
+
+  const userPosts = await Post.find({ author: target }, '_id').lean();
+  const postIds = userPosts.map((post) => post._id);
+  const commentQuery = postIds.length
+    ? { $or: [{ author: target }, { postId: { $in: postIds } }] }
+    : { author: target };
   
   await Promise.all([
     User.deleteOne({ username: target }),
     Message.deleteMany({ $or: [{ from: target }, { to: target }] }),
     Post.deleteMany({ author: target }),
-    Comment.deleteMany({ author: target }),
+    Comment.deleteMany(commentQuery),
     Comment.updateMany(
       { 'replies.author': target },
       { $pull: { replies: { author: target } } }
