@@ -434,88 +434,136 @@ export default function UserPage() {
 
           {filteredUsers.length > 0 ? (
             <>
-              <ul className="list-group">
-                {filteredUsers.map((u) => (
-                  <li
-                    key={u.username}
-                    className="list-group-item list-group-item-light"
-                  >
-                    <div className="d-flex justify-content-between align-items-center">
-                      <div className="d-flex align-items-center">
-                        {u.image && (
-                          <img
-                            src={u.image}
-                            alt={`${u.username} profile`}
-                            className="rounded-circle me-3"
-                            style={{
-                              width: "50px",
-                              height: "50px",
-                              objectFit: "cover",
-                              ...(isAdmin ? { cursor: "pointer" } : {}),
-                            }}
-                            onClick={
-                              isAdmin ? () => handleImageChange(u) : undefined
-                            }
-                          />
-                        )}
-                        <div>
-                          <div className="fw-bold">
-                            {u.username}{" "}
-                            {u.online ? (
-                              <span className="badge bg-success ms-1">Online</span>
+              <ul className="user-directory" role="list">
+                {filteredUsers.map((u) => {
+                  const isFriend = currentUserData.friends?.includes(u.username);
+                  const presenceClass = u.online
+                    ? "user-card-presence user-card-presence--online"
+                    : "user-card-presence user-card-presence--offline";
+                  const initials = u.username.charAt(0).toUpperCase();
+                  return (
+                    <li key={u.username} className="user-card" role="listitem">
+                      <div className="user-card-main">
+                        <div className="user-card-avatar">
+                          {u.image ? (
+                            isAdmin ? (
+                              <button
+                                type="button"
+                                className="user-card-avatar-button"
+                                onClick={() => handleImageChange(u)}
+                                title={`Update ${u.username}'s profile picture`}
+                                aria-label={`Update ${u.username}'s profile picture`}
+                              >
+                                <img
+                                  src={u.image}
+                                  alt={`${u.username} profile`}
+                                  className="user-card-avatar-img"
+                                />
+                              </button>
                             ) : (
-                              <span className="badge bg-secondary ms-1">Offline</span>
-                            )}
+                              <img
+                                src={u.image}
+                                alt={`${u.username} profile`}
+                                className="user-card-avatar-img"
+                              />
+                            )
+                          ) : isAdmin ? (
+                            <button
+                              type="button"
+                              className="user-card-avatar-button"
+                              onClick={() => handleImageChange(u)}
+                              title={`Add a profile picture for ${u.username}`}
+                              aria-label={`Add a profile picture for ${u.username}`}
+                            >
+                              <span
+                                className="user-card-avatar-placeholder"
+                                aria-hidden="true"
+                              >
+                                {initials}
+                              </span>
+                            </button>
+                          ) : (
+                            <span
+                              className="user-card-avatar-placeholder"
+                              aria-hidden="true"
+                            >
+                              {initials}
+                            </span>
+                          )}
+                          <span
+                            className={presenceClass}
+                            aria-hidden="true"
+                          ></span>
+                          <span className="visually-hidden">
+                            {u.online ? "Online" : "Offline"}
+                          </span>
+                        </div>
+                        <div className="user-card-body">
+                          <div className="user-card-header">
+                            <span className="user-card-name">{u.username}</span>
+                            <span className={presenceClass} data-variant="label">
+                              {u.online ? "Online" : "Offline"}
+                            </span>
                           </div>
                           {u.position && (
-                            <div className="text-muted">
-                              Position: {u.position}
-                            </div>
+                            <p className="user-card-subtext mb-1">{u.position}</p>
                           )}
-                          {typeof u.age === "number" && (
-                            <div className="text-muted">Age: {u.age}</div>
-                          )}
+                          <div className="user-card-meta">
+                            {typeof u.age === "number" && (
+                              <span className="user-card-chip">Age {u.age}</span>
+                            )}
+                            {isFriend && (
+                              <span className="user-card-chip user-card-chip--success">
+                                Friend
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                      <div className="btn-group">
+                      <div className="user-card-actions" role="group" aria-label={`Actions for ${u.username}`}>
                         <button
-                          className="btn btn-sm btn-outline-success"
-                          disabled={currentUserData.friends?.includes(u.username)}
+                          type="button"
+                          className={`user-card-action user-card-action--friend${
+                            isFriend ? " is-disabled" : ""
+                          }`}
+                          disabled={isFriend}
                           onClick={() => handleAddFriend(u.username)}
                         >
-                          <i className="bi bi-person-plus me-1"></i>{" "}
-                          {currentUserData.friends?.includes(u.username)
-                            ? "Friend"
-                            : "Add Friend"}
+                          <i className="bi bi-person-plus" aria-hidden="true"></i>
+                          {isFriend ? "Friend" : "Add Friend"}
                         </button>
                         <button
-                          className="btn btn-sm btn-outline-secondary"
-                          onClick={() =>
-                            router.push(`/chat?user=${u.username}`)
-                          }
+                          type="button"
+                          className="user-card-action user-card-action--secondary"
+                          onClick={() => router.push(`/chat?user=${u.username}`)}
                         >
-                          <i className="bi bi-chat-dots me-1"></i> Message
+                          <i className="bi bi-chat-dots" aria-hidden="true"></i>
+                          Message
                         </button>
                         {isAdmin && (
                           <>
                             <button
-                              className="btn btn-sm btn-outline-primary"
+                              type="button"
+                              className="user-card-action user-card-action--edit"
                               onClick={() => handleEdit(u)}
                             >
+                              <i className="bi bi-pencil-square" aria-hidden="true"></i>
                               Edit
                             </button>
                             <button
-                              className="btn btn-sm btn-outline-danger"
+                              type="button"
+                              className="user-card-action user-card-action--danger"
                               onClick={() => handleDelete(u.username)}
                             >
+                              <i className="bi bi-trash" aria-hidden="true"></i>
                               Delete
                             </button>
                           </>
                         )}
                       </div>
-                    </div>
-                  </li>
-                ))}
+                    </li>
+                  );
+                })}
               </ul>
             </>
           ) : (
