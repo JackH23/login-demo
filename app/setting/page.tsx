@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
+import LoadingState from "../components/LoadingState";
 import { useConfirmDialog } from "../components/useConfirmDialog";
 import { useCachedApi } from "../hooks/useCachedApi";
 
@@ -69,7 +70,13 @@ export default function SettingPage() {
   const image = profileImage || currentUserData?.image || "";
 
   if (loading || loadingUsers || !user || !currentUserData) {
-    return <div className="text-center mt-5">Loading...</div>;
+    return (
+      <LoadingState
+        title="Loading your settings"
+        subtitle="We’re preparing your preferences and syncing your profile information."
+        skeletonCount={2}
+      />
+    );
   }
 
   const describeValue = (value: unknown): ReactNode => {
