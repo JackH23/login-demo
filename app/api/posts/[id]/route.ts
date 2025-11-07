@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Post from '@/models/Post';
+import { emitPostDeleted } from '@/lib/socketServer';
 
 export async function PATCH(
   req: Request,
@@ -58,5 +59,6 @@ export async function DELETE(
   if (!post) {
     return NextResponse.json({ error: 'Post not found' }, { status: 404 });
   }
+  emitPostDeleted(id);
   return NextResponse.json({ success: true });
 }

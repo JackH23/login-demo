@@ -8,6 +8,7 @@ import TopBar from "../components/TopBar";
 import BlogCard from "../components/BlogCard";
 import { useConfirmDialog } from "../components/useConfirmDialog";
 import { useCachedApi } from "../hooks/useCachedApi";
+import { usePostDeletionSubscription } from "../hooks/usePostRealtimeUpdates";
 
 interface User {
   username: string;
@@ -55,6 +56,7 @@ export default function PostsPage() {
         (payload as { posts?: BlogPost[] | null })?.posts ?? [],
     }
   );
+  usePostDeletionSubscription(setPosts);
   const { confirm: showConfirm, dialog: confirmDialog } = useConfirmDialog();
   const handleDelete = async (id: string) => {
     const targetPost = posts.find((p) => p._id === id);

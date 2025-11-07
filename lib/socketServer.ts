@@ -40,6 +40,11 @@ export function emitUserOffline(username: string) {
   io.emit('user-offline', username);
 }
 
+export function emitPostDeleted(postId: string) {
+  const io = initSocketServer();
+  io.emit('post-deleted', { postId });
+}
+
 // Start the server automatically when executed directly
 if (require.main === module) {
   initSocketServer();
