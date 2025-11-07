@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 import BlogCard from "../components/BlogCard";
+import LoadingState from "../components/LoadingState";
 import { useConfirmDialog } from "../components/useConfirmDialog";
 import { useCachedApi } from "../hooks/useCachedApi";
 import { usePostRealtimeUpdates } from "../hooks/usePostRealtimeUpdates";
@@ -94,12 +95,24 @@ export default function PostsPage() {
   const isLoading = loading || !user || loadingUsers || loadingPosts;
 
   if (isLoading) {
-    return <div className="text-center mt-5">Loading...</div>;
+    return (
+      <LoadingState
+        title="Preparing your stories"
+        subtitle="We’re loading your published posts and the latest engagement insights."
+        skeletonCount={3}
+      />
+    );
   }
 
   const currentUserData = users.find((u) => u.username === user.username);
   if (!currentUserData) {
-    return <div className="text-center mt-5">Loading user data...</div>;
+    return (
+      <LoadingState
+        title="Fetching your profile"
+        subtitle="We’re syncing your account details so everything looks just right."
+        skeletonCount={1}
+      />
+    );
   }
 
   return (

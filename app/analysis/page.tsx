@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
+import LoadingState from "../components/LoadingState";
 import { useCachedApi } from "../hooks/useCachedApi";
 
 interface User {
@@ -56,12 +57,24 @@ export default function AnalysisPage() {
   const isLoading = loading || !user || loadingUsers || loadingPosts;
 
   if (isLoading) {
-    return <div className="text-center mt-5">Loading...</div>;
+    return (
+      <LoadingState
+        title="Analyzing your performance"
+        subtitle="We’re crunching the numbers to surface your engagement metrics and highlights."
+        skeletonCount={2}
+      />
+    );
   }
 
   const currentUserData = users.find((u) => u.username === user.username);
   if (!currentUserData) {
-    return <div className="text-center mt-5">Loading user data...</div>;
+    return (
+      <LoadingState
+        title="Fetching your profile"
+        subtitle="We’re refreshing your account information before rendering the analytics dashboard."
+        skeletonCount={1}
+      />
+    );
   }
 
   const userPosts = posts.filter((p) => p.author === user.username);

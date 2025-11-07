@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
+import LoadingState from "../components/LoadingState";
 import { ADMIN_USERNAME } from "@/lib/constants";
 import { useConfirmDialog } from "../components/useConfirmDialog";
 import { usePromptDialog } from "../components/usePromptDialog";
@@ -66,14 +67,27 @@ export default function UserPage() {
     };
   }, [setUsers, socket]);
 
-  if (loading || usersLoading || !user)
-    return <div className="text-center mt-5">Loading...</div>;
+  if (loading || usersLoading || !user) {
+    return (
+      <LoadingState
+        title="Preparing your profile"
+        subtitle="We’re loading your connections and preferences so everything is ready."
+        skeletonCount={2}
+      />
+    );
+  }
 
   const isAdmin = user.username === ADMIN_USERNAME;
 
   const currentUserData = users.find((u) => u.username === user.username);
   if (!currentUserData) {
-    return <div className="text-center mt-5">Loading user data...</div>;
+    return (
+      <LoadingState
+        title="Syncing your profile"
+        subtitle="We’re refreshing your account information so your profile looks great."
+        skeletonCount={1}
+      />
+    );
   }
 
   // Admin operations require the current username in the Authorization header

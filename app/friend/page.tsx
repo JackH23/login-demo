@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
+import LoadingState from "../components/LoadingState";
 import { useCachedApi } from "../hooks/useCachedApi";
 
 interface User {
@@ -128,12 +129,24 @@ export default function FriendPage() {
   }, [user, friends]);
 
   if (loading || isFetching || loadingMessages || loadingUsers || !user) {
-    return <div className="text-center mt-5">Loading...</div>;
+    return (
+      <LoadingState
+        title="Loading your conversations"
+        subtitle="We’re syncing your friends list and the most recent messages."
+        skeletonCount={3}
+      />
+    );
   }
 
   const currentUserData = users.find((u) => u.username === user.username);
   if (!currentUserData) {
-    return <div className="text-center mt-5">Loading user data...</div>;
+    return (
+      <LoadingState
+        title="Syncing your profile"
+        subtitle="We’re loading your account so we can show the right contacts."
+        skeletonCount={1}
+      />
+    );
   }
 
   const friendUsers = users.filter((u) => friends.includes(u.username));

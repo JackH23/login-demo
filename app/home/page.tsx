@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 import BlogCard from "../components/BlogCard";
+import LoadingState from "../components/LoadingState";
 import { useConfirmDialog } from "../components/useConfirmDialog";
 import { useCachedApi } from "../hooks/useCachedApi";
 import { usePostRealtimeUpdates } from "../hooks/usePostRealtimeUpdates";
@@ -95,12 +96,24 @@ export default function HomePage() {
   const isLoading = loading || !user || loadingUsers || loadingPosts;
 
   if (isLoading) {
-    return <div className="text-center mt-5">Loading...</div>;
+    return (
+      <LoadingState
+        title="Loading your personalized feed"
+        subtitle="We’re gathering the newest posts and activity from your community."
+        skeletonCount={3}
+      />
+    );
   }
 
   const currentUserData = users.find((u) => u.username === user.username);
   if (!currentUserData) {
-    return <div className="text-center mt-5">Loading user data...</div>;
+    return (
+      <LoadingState
+        title="Syncing your profile"
+        subtitle="We’re refreshing your account details to keep everything up to date."
+        skeletonCount={1}
+      />
+    );
   }
 
 
