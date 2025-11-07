@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, CSSProperties } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { useCachedApi } from "../hooks/useCachedApi";
@@ -67,6 +67,7 @@ export default function BlogCard({
   const { theme } = useTheme();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isContentExpanded, setIsContentExpanded] = useState(false);
 
   const { data: knownUsers } = useCachedApi<AuthorData[]>(
     user ? "/api/users" : null,
@@ -108,6 +109,27 @@ export default function BlogCard({
 
   // Count total number of comments for the blog post
   const totalComments = comments.length;
+
+  const isContentLong = (blog.content ?? "").length > 240;
+  const collapsedLines = 5;
+  const collapsedMaxHeight = `${(1.7 * collapsedLines).toFixed(1)}em`;
+
+  const contentStyle: CSSProperties = {
+    lineHeight: 1.7,
+    letterSpacing: "0.01em",
+    transition: "max-height 0.3s ease",
+    cursor: isContentLong ? "pointer" : "default",
+    display: isContentExpanded ? "block" : "-webkit-box",
+    WebkitLineClamp: isContentExpanded ? undefined : collapsedLines,
+    WebkitBoxOrient: isContentExpanded ? undefined : "vertical",
+    overflow: isContentExpanded ? "visible" : "hidden",
+    maxHeight: isContentExpanded ? undefined : collapsedMaxHeight,
+  };
+
+  const handleToggleContent = () => {
+    if (!isContentLong) return;
+    setIsContentExpanded((prev) => !prev);
+  };
 
   useEffect(() => {
     setLikes(blog.likes ?? 0);
@@ -623,11 +645,45 @@ export default function BlogCard({
 
       <div className="card-body p-4">
         <p
-          className="card-text fs-6"
-          style={{ lineHeight: 1.7, letterSpacing: "0.01em" }}
+          className="card-text fs-6 mb-2"
+          style={contentStyle}
+          onClick={handleToggleContent}
+          onKeyDown={(event) => {
+            if (!isContentLong) return;
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              handleToggleContent();
+            }
+          }}
+          role={isContentLong ? "button" : undefined}
+          tabIndex={isContentLong ? 0 : undefined}
+          aria-expanded={isContentLong ? isContentExpanded : undefined}
+          aria-label={
+            isContentLong
+              ? isContentExpanded
+                ? "Collapse blog content"
+                : "Expand blog content"
+              : undefined
+          }
+          title={
+            isContentLong
+              ? isContentExpanded
+                ? "Click to collapse"
+                : "Click to read more"
+              : undefined
+          }
         >
           {blog.content}
         </p>
+        {isContentLong && (
+          <small
+            className={`d-inline-block ${mutedTextClass}`}
+            role="presentation"
+            aria-hidden="true"
+          >
+            {isContentExpanded ? "Show less" : "Show more"}
+          </small>
+        )}
 
         <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mt-4">
           <div className="d-flex flex-wrap gap-2">
