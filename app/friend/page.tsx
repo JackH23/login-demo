@@ -168,7 +168,7 @@ export default function FriendPage() {
       <div className="card shadow-sm w-100 mx-auto" style={{ maxWidth: "100%", top: "10px" }}>
         <div className="card-body">
           {friendUsers.length > 0 ? (
-            <ul className="list-group">
+            <ul className="user-directory" role="list">
               {friendUsers.map((f) => {
                 const last = lastMessages[f.username];
                 let preview = "";
@@ -177,45 +177,67 @@ export default function FriendPage() {
                   else if (last.type === "image") preview = "[Image]";
                   else preview = last.fileName ? `[File] ${last.fileName}` : "[File]";
                 }
+                const presenceClass = f.online
+                  ? "user-card-presence user-card-presence--online"
+                  : "user-card-presence user-card-presence--offline";
+                const initials = f.username.charAt(0).toUpperCase();
                 return (
-                  <li key={f.username} className="list-group-item list-group-item-light">
-                    <div className="d-flex justify-content-between align-items-center">
-                      <div className="d-flex align-items-center">
-                        {f.image && (
+                  <li
+                    key={f.username}
+                    className="user-card user-card--friend"
+                    role="listitem"
+                  >
+                    <div className="user-card-main">
+                      <div className="user-card-avatar">
+                        {f.image ? (
                           <img
                             src={f.image}
                             alt={`${f.username} profile`}
-                            className="rounded-circle me-3"
-                            style={{ width: "50px", height: "50px", objectFit: "cover" }}
+                            className="user-card-avatar-img"
                           />
+                        ) : (
+                          <span
+                            className="user-card-avatar-placeholder"
+                            aria-hidden="true"
+                          >
+                            {initials}
+                          </span>
                         )}
-                        <div>
-                          <div className="fw-bold">
-                            {f.username}{" "}
-                            {f.online ? (
-                              <span className="badge bg-success ms-1">Online</span>
-                            ) : (
-                              <span className="badge bg-secondary ms-1">Offline</span>
-                            )}
-                          </div>
-                          {f.position && (
-                            <div className="text-muted">Position: {f.position}</div>
-                          )}
-                          {preview && (
-                            <div className="text-muted small" style={{ maxWidth: "200px" }}>
-                              {preview}
-                            </div>
-                          )}
+                        <span className={presenceClass} aria-hidden="true"></span>
+                        <span className="visually-hidden">
+                          {f.online ? "Online" : "Offline"}
+                        </span>
+                      </div>
+                      <div className="user-card-body">
+                        <div className="user-card-header">
+                          <span className="user-card-name">{f.username}</span>
+                          <span className={presenceClass} data-variant="label">
+                            {f.online ? "Online" : "Offline"}
+                          </span>
                         </div>
+                        {f.position && (
+                          <p className="user-card-subtext mb-1">{f.position}</p>
+                        )}
+                        {preview && (
+                          <p className="user-card-preview mb-0" title={preview}>
+                            {preview}
+                          </p>
+                        )}
                       </div>
-                      <div className="btn-group">
-                        <button
-                          className="btn btn-sm btn-outline-secondary"
-                          onClick={() => router.push(`/chat?user=${f.username}`)}
-                        >
-                          <i className="bi bi-chat-dots me-1"></i> Message
-                        </button>
-                      </div>
+                    </div>
+                    <div
+                      className="user-card-actions"
+                      role="group"
+                      aria-label={`Message ${f.username}`}
+                    >
+                      <button
+                        type="button"
+                        className="user-card-action user-card-action--secondary"
+                        onClick={() => router.push(`/chat?user=${f.username}`)}
+                      >
+                        <i className="bi bi-chat-dots" aria-hidden="true"></i>
+                        Message
+                      </button>
                     </div>
                   </li>
                 );
