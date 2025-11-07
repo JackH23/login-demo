@@ -45,6 +45,11 @@ export function emitPostDeleted(postId: string) {
   io.emit('post-deleted', { postId });
 }
 
+export function emitPostCreated(post: Record<string, unknown>) {
+  const io = initSocketServer();
+  io.emit('post-created', { post });
+}
+
 // Start the server automatically when executed directly
 if (require.main === module) {
   initSocketServer();

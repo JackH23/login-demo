@@ -1,13 +1,30 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Post from '@/models/Post';
+import { emitPostCreated } from '@/lib/socketServer';
 
 export async function POST(req: Request) {
   const { title, content, image, author } = await req.json();
   await dbConnect();
   try {
     const post = await Post.create({ title, content, image, author });
-    return NextResponse.json({ post });
+    const plainPost = post.toObject({ versionKey: false });
+
+    if (plainPost._id) {
+      plainPost._id = plainPost._id.toString();
+    }
+
+    if (plainPost.createdAt instanceof Date) {
+      plainPost.createdAt = plainPost.createdAt.toISOString();
+    }
+
+    if (plainPost.updatedAt instanceof Date) {
+      plainPost.updatedAt = plainPost.updatedAt.toISOString();
+    }
+
+    emitPostCreated(plainPost);
+
+    return NextResponse.json({ post: plainPost });
   } catch {
     return NextResponse.json({ error: 'Failed to create post' }, { status: 400 });
   }
