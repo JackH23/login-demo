@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useCallback, useMemo } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from "react";
 import {
   BarChart3,
   FileText,
@@ -33,6 +39,13 @@ type ActivePage =
   | "friend"
   | "admin";
 
+type NavItem = {
+  key: ActivePage;
+  label: string;
+  href: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+};
+
 interface TopBarProps {
   title: string;
   active: ActivePage;
@@ -62,12 +75,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
   }, [logout, router]);
 
   const navItems = useMemo(() => {
-    const baseItems: Array<{
-      key: ActivePage;
-      label: string;
-      href: string;
-      icon: React.ComponentType<{ size?: number; className?: string }>;
-    }> = [
+    const baseItems: NavItem[] = [
       { key: "home", label: "Home", href: "/home", icon: Home },
       { key: "posts", label: "All Posts", href: "/posts", icon: FileText },
       { key: "user", label: "Profile", href: "/user", icon: UserCircle2 },
@@ -87,6 +95,45 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
 
     return baseItems;
   }, [currentUser.username]);
+
+  const [optimisticActive, setOptimisticActive] = useState<ActivePage>(active);
+  const [isNavigating, startTransition] = useTransition();
+
+  useEffect(() => {
+    setOptimisticActive(active);
+  }, [active]);
+
+  const prefetchRoute = useCallback(
+    (href: string) => {
+      router.prefetch(href);
+    },
+    [router],
+  );
+
+  const handleNavClick = useCallback(
+    (event: React.MouseEvent<HTMLAnchorElement>, item: NavItem) => {
+      if (
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey ||
+        event.button !== 0 ||
+        event.defaultPrevented
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      if (optimisticActive !== item.key) {
+        setOptimisticActive(item.key);
+      }
+
+      startTransition(() => {
+        router.push(item.href);
+      });
+    },
+    [optimisticActive, router, startTransition],
+  );
 
   const containerStyle: React.CSSProperties = {
     borderBottom:
@@ -180,7 +227,9 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
         <div className="d-flex flex-wrap gap-2">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = active === item.key;
+            const isActive = optimisticActive === item.key;
+            const isPendingSelection =
+              isNavigating && active !== item.key && optimisticActive === item.key;
             const baseClass =
               "nav-link d-flex align-items-center gap-2 px-3 py-2 rounded-pill border-0 fw-semibold";
             const visualState = isActive
@@ -189,7 +238,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
               ? "text-white-50 bg-transparent"
               : "text-secondary bg-white bg-opacity-75";
 
-            const style: React.CSSProperties = isActive
+            const baseStyle: React.CSSProperties = isActive
               ? {
                   background:
                     theme === "night"
@@ -206,8 +255,13 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
                     theme === "night"
                       ? "rgba(148, 163, 184, 0.12)"
                       : "rgba(226, 232, 240, 0.65)",
-                  transition: "all 0.2s ease", 
+                  transition: "all 0.2s ease",
                 };
+
+            const style =
+              isPendingSelection && !isActive
+                ? { ...baseStyle, opacity: 0.8 }
+                : baseStyle;
 
             return (
               <Link
@@ -215,6 +269,10 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
                 href={item.href}
                 className={`${baseClass} ${visualState}`}
                 style={style}
+                aria-current={isActive ? "page" : undefined}
+                onPointerEnter={() => prefetchRoute(item.href)}
+                onFocus={() => prefetchRoute(item.href)}
+                onClick={(event) => handleNavClick(event, item)}
               >
                 <Icon size={18} />
                 <span>{item.label}</span>
