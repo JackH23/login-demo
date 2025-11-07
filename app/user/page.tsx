@@ -384,17 +384,24 @@ export default function UserPage() {
     .filter((u) => u.username !== user.username)
     .filter((u) => u.username.toLowerCase().includes(searchTerm.toLowerCase()));
 
+  const totalConnections = currentUserData.friends?.length ?? 0;
+  const activeConnections = users.filter(
+    (u) => u.username !== user.username && u.online
+  ).length;
+  const discoverablePeople = users.filter((u) => u.username !== user.username).length;
+  const friendPreview = (currentUserData.friends ?? []).slice(0, 6);
+  const hasMoreFriends = (currentUserData.friends?.length ?? 0) > friendPreview.length;
+
   return (
     <div
-      className={`container-fluid min-vh-100 p-4 ${
-        theme === "night" ? "bg-dark text-white" : "bg-light"
+      className={`profile-shell ${
+        theme === "night" ? "profile-shell--night" : "profile-shell--day"
       }`}
     >
       {promptDialog}
       {confirmDialog}
-      {/* Sticky Top Bar and Menu */}
       <TopBar
-        title="Home"
+        title="Profile"
         active="user"
         currentUser={{
           username: currentUserData.username,
@@ -402,127 +409,251 @@ export default function UserPage() {
         }}
       />
 
-      {/* Search input */}
-      {/* Sticky Search Bar */}
-      <div
-        className="input-group position-sticky z-2"
-        style={{
-          top: "75px", // adjust based on your sticky header height
-          maxWidth: "400px",
-          marginBottom: "1rem",
-          paddingTop: "0.5rem",
-        }}
-      >
-        <input
-          type="text"
-          className="form-control"
-          placeholder="Search users by username..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
+      <main className="profile-layout container-xxl">
+        <section
+          aria-labelledby="profile-hero-heading"
+          className={`profile-hero card ${
+            theme === "night" ? "profile-hero--night" : "profile-hero--day"
+          }`}
+        >
+          <div className="profile-hero__body">
+            <div className="profile-hero__identity">
+              {currentUserData.image && (
+                <div
+                  className={`profile-hero__avatar ${
+                    isAdmin ? "profile-hero__avatar--interactive" : ""
+                  }`}
+                >
+                  <img
+                    src={currentUserData.image}
+                    alt={`${currentUserData.username} profile`}
+                    onClick={
+                      isAdmin ? () => handleImageChange(currentUserData) : undefined
+                    }
+                  />
+                  {isAdmin && (
+                    <span className="profile-hero__avatar-hint">Update photo</span>
+                  )}
+                </div>
+              )}
+              <div>
+                <p className="profile-hero__eyebrow">Welcome back</p>
+                <h1 id="profile-hero-heading" className="profile-hero__title">
+                  {currentUserData.username}
+                </h1>
+                <p className="profile-hero__subtitle">
+                  {currentUserData.position
+                    ? currentUserData.position
+                    : "Add your role to let teammates know how to collaborate with you."}
+                </p>
+                <div className="profile-hero__meta">
+                  {typeof currentUserData.age === "number" && (
+                    <span className="profile-hero__meta-item">Age {currentUserData.age}</span>
+                  )}
+                  <span className="profile-hero__meta-item">
+                    {totalConnections} {totalConnections === 1 ? "connection" : "connections"}
+                  </span>
+                  <span className="profile-hero__meta-item">{discoverablePeople} people in your workspace</span>
+                </div>
+              </div>
+            </div>
+            <ul className="profile-stats" aria-label="Profile quick stats">
+              <li className="profile-stat">
+                <span className="profile-stat__label">Active now</span>
+                <span className="profile-stat__value">{activeConnections}</span>
+                <span className="profile-stat__hint">Friends who are online</span>
+              </li>
+              <li className="profile-stat">
+                <span className="profile-stat__label">Discover</span>
+                <span className="profile-stat__value">{filteredUsers.length}</span>
+                <span className="profile-stat__hint">Matching teammates</span>
+              </li>
+              <li className="profile-stat">
+                <span className="profile-stat__label">Invites sent</span>
+                <span className="profile-stat__value">{totalConnections}</span>
+                <span className="profile-stat__hint">People already connected</span>
+              </li>
+            </ul>
+          </div>
+          {isAdmin && (
+            <div className="profile-admin-callout" role="note">
+              <strong>Admin tools enabled.</strong> You can edit profiles, update
+              avatars, and remove accounts directly from the directory below.
+            </div>
+          )}
+        </section>
 
-      {/* Main content card */}
-      <div
-        className="card shadow-sm w-100 mx-auto"
-        style={{ maxWidth: "100%" }}
-      >
-        <div className="card-body">
-          <p className="text-muted text-center mb-4">
-            Registered users (excluding yourself):
-          </p>
-
-          {filteredUsers.length > 0 ? (
-            <>
-              <ul className="list-group">
-                {filteredUsers.map((u) => (
-                  <li
-                    key={u.username}
-                    className="list-group-item list-group-item-light"
+        <div className="row g-4 profile-columns">
+          <aside className="col-lg-4">
+            <section className="card profile-card">
+              <div className="card-body">
+                <h2 className="profile-card__title">About you</h2>
+                <p className="profile-card__description">
+                  Keep your profile sharp so teammates instantly know how to work with
+                  you.
+                </p>
+                <dl className="profile-attributes">
+                  <div className="profile-attribute">
+                    <dt>Display name</dt>
+                    <dd>{formatValue(currentUserData.username)}</dd>
+                  </div>
+                  <div className="profile-attribute">
+                    <dt>Role or focus</dt>
+                    <dd>{formatValue(currentUserData.position)}</dd>
+                  </div>
+                  <div className="profile-attribute">
+                    <dt>Age</dt>
+                    <dd>{formatValue(currentUserData.age)}</dd>
+                  </div>
+                </dl>
+                <div className="profile-friends">
+                  <h3 className="profile-friends__title">Friend highlights</h3>
+                  {friendPreview.length > 0 ? (
+                    <div className="profile-friends__chips" role="list">
+                      {friendPreview.map((friend) => (
+                        <span key={friend} role="listitem" className="profile-friend-chip">
+                          <span aria-hidden="true">👋</span> {friend}
+                        </span>
+                      ))}
+                      {hasMoreFriends && (
+                        <span className="profile-friend-chip profile-friend-chip--more">
+                          +{(currentUserData.friends?.length ?? 0) - friendPreview.length} more
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="profile-friends__empty">
+                      You haven’t added any friends yet. Invite teammates from the directory
+                      to unlock fast chat shortcuts.
+                    </p>
+                  )}
+                  <button
+                    type="button"
+                    className="btn btn-outline-primary w-100 mt-3"
+                    onClick={() => router.push("/friend")}
                   >
-                    <div className="d-flex justify-content-between align-items-center">
-                      <div className="d-flex align-items-center">
-                        {u.image && (
-                          <img
-                            src={u.image}
-                            alt={`${u.username} profile`}
-                            className="rounded-circle me-3"
-                            style={{
-                              width: "50px",
-                              height: "50px",
-                              objectFit: "cover",
-                              ...(isAdmin ? { cursor: "pointer" } : {}),
-                            }}
-                            onClick={
-                              isAdmin ? () => handleImageChange(u) : undefined
-                            }
-                          />
-                        )}
-                        <div>
-                          <div className="fw-bold">
-                            {u.username}{" "}
-                            {u.online ? (
-                              <span className="badge bg-success ms-1">Online</span>
-                            ) : (
-                              <span className="badge bg-secondary ms-1">Offline</span>
+                    View friend dashboard
+                  </button>
+                </div>
+              </div>
+            </section>
+          </aside>
+
+          <section className="col-lg-8">
+            <div className="card profile-directory">
+              <div className="card-body">
+                <header className="profile-directory__header">
+                  <div>
+                    <h2 className="profile-card__title mb-1">People directory</h2>
+                    <p className="profile-directory__description mb-0">
+                      Search across everyone in your workspace and grow your network.
+                    </p>
+                  </div>
+                  <div className="profile-directory__search">
+                    <label htmlFor="user-search" className="visually-hidden">
+                      Search users by username
+                    </label>
+                    <i className="bi bi-search"></i>
+                    <input
+                      id="user-search"
+                      type="text"
+                      placeholder="Search by username"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                </header>
+
+                {filteredUsers.length > 0 ? (
+                  <ul className="people-grid list-unstyled" role="list">
+                    {filteredUsers.map((u) => (
+                      <li key={u.username} className="people-grid__item" role="listitem">
+                        <article
+                          className={`person-card ${
+                            u.online ? "person-card--online" : "person-card--offline"
+                          }`}
+                        >
+                          <div className="person-card__identity">
+                            {u.image && (
+                              <img
+                                src={u.image}
+                                alt={`${u.username} profile`}
+                                className={`person-card__avatar ${
+                                  isAdmin ? "person-card__avatar--interactive" : ""
+                                }`}
+                                onClick={
+                                  isAdmin ? () => handleImageChange(u) : undefined
+                                }
+                              />
+                            )}
+                            <div>
+                              <div className="person-card__name-row">
+                                <h3 className="person-card__name">{u.username}</h3>
+                                <span className="person-card__status">
+                                  <span className="person-card__status-indicator" aria-hidden="true"></span>
+                                  {u.online ? "Online" : "Offline"}
+                                </span>
+                              </div>
+                              {u.position && (
+                                <p className="person-card__meta">{u.position}</p>
+                              )}
+                              {typeof u.age === "number" && (
+                                <p className="person-card__meta">Age {u.age}</p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="person-card__actions">
+                            <button
+                              className="btn btn-sm btn-success"
+                              disabled={currentUserData.friends?.includes(u.username)}
+                              onClick={() => handleAddFriend(u.username)}
+                            >
+                              <i className="bi bi-person-plus me-1"></i>
+                              {currentUserData.friends?.includes(u.username)
+                                ? "Friend"
+                                : "Add Friend"}
+                            </button>
+                            <button
+                              className="btn btn-sm btn-outline-secondary"
+                              onClick={() => router.push(`/chat?user=${u.username}`)}
+                            >
+                              <i className="bi bi-chat-dots me-1"></i>
+                              Message
+                            </button>
+                            {isAdmin && (
+                              <div className="person-card__admin-actions">
+                                <button
+                                  className="btn btn-sm btn-outline-primary"
+                                  onClick={() => handleEdit(u)}
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  className="btn btn-sm btn-outline-danger"
+                                  onClick={() => handleDelete(u.username)}
+                                >
+                                  Delete
+                                </button>
+                              </div>
                             )}
                           </div>
-                          {u.position && (
-                            <div className="text-muted">
-                              Position: {u.position}
-                            </div>
-                          )}
-                          {typeof u.age === "number" && (
-                            <div className="text-muted">Age: {u.age}</div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="btn-group">
-                        <button
-                          className="btn btn-sm btn-outline-success"
-                          disabled={currentUserData.friends?.includes(u.username)}
-                          onClick={() => handleAddFriend(u.username)}
-                        >
-                          <i className="bi bi-person-plus me-1"></i>{" "}
-                          {currentUserData.friends?.includes(u.username)
-                            ? "Friend"
-                            : "Add Friend"}
-                        </button>
-                        <button
-                          className="btn btn-sm btn-outline-secondary"
-                          onClick={() =>
-                            router.push(`/chat?user=${u.username}`)
-                          }
-                        >
-                          <i className="bi bi-chat-dots me-1"></i> Message
-                        </button>
-                        {isAdmin && (
-                          <>
-                            <button
-                              className="btn btn-sm btn-outline-primary"
-                              onClick={() => handleEdit(u)}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              className="btn btn-sm btn-outline-danger"
-                              onClick={() => handleDelete(u.username)}
-                            >
-                              Delete
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </>
-          ) : (
-            <p className="text-muted text-center">No users found.</p>
-          )}
+                        </article>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="profile-directory__empty">
+                    <h3>No matches found</h3>
+                    <p>
+                      Try a different search term or invite a teammate to join the workspace.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

@@ -150,82 +150,152 @@ export default function FriendPage() {
   }
 
   const friendUsers = users.filter((u) => friends.includes(u.username));
+  const totalFriends = friendUsers.length;
+  const onlineFriends = friendUsers.filter((f) => f.online).length;
+  const chatReadyFriends = friendUsers.filter((f) => lastMessages[f.username]).length;
 
   return (
     <div
-      className={`container-fluid min-vh-100 p-4 ${
-        theme === "night" ? "bg-dark text-white" : "bg-light"
+      className={`profile-shell ${
+        theme === "night" ? "profile-shell--night" : "profile-shell--day"
       }`}
     >
-      {/* Sticky Top Bar and Menu */}
       <TopBar
-        title="Friend"
+        title="Friends"
         active="friend"
         currentUser={{ username: currentUserData.username, image: currentUserData.image }}
       />
 
-      {/* Content */}
-      <div className="card shadow-sm w-100 mx-auto" style={{ maxWidth: "100%", top: "10px" }}>
-        <div className="card-body">
-          {friendUsers.length > 0 ? (
-            <ul className="list-group">
-              {friendUsers.map((f) => {
-                const last = lastMessages[f.username];
-                let preview = "";
-                if (last) {
-                  if (last.type === "text") preview = last.content;
-                  else if (last.type === "image") preview = "[Image]";
-                  else preview = last.fileName ? `[File] ${last.fileName}` : "[File]";
-                }
-                return (
-                  <li key={f.username} className="list-group-item list-group-item-light">
-                    <div className="d-flex justify-content-between align-items-center">
-                      <div className="d-flex align-items-center">
-                        {f.image && (
-                          <img
-                            src={f.image}
-                            alt={`${f.username} profile`}
-                            className="rounded-circle me-3"
-                            style={{ width: "50px", height: "50px", objectFit: "cover" }}
-                          />
-                        )}
-                        <div>
-                          <div className="fw-bold">
-                            {f.username}{" "}
-                            {f.online ? (
-                              <span className="badge bg-success ms-1">Online</span>
-                            ) : (
-                              <span className="badge bg-secondary ms-1">Offline</span>
-                            )}
-                          </div>
-                          {f.position && (
-                            <div className="text-muted">Position: {f.position}</div>
-                          )}
-                          {preview && (
-                            <div className="text-muted small" style={{ maxWidth: "200px" }}>
-                              {preview}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="btn-group">
-                        <button
-                          className="btn btn-sm btn-outline-secondary"
-                          onClick={() => router.push(`/chat?user=${f.username}`)}
-                        >
-                          <i className="bi bi-chat-dots me-1"></i> Message
-                        </button>
-                      </div>
-                    </div>
-                  </li>
-                );
-              })}
+      <main className="profile-layout container-xxl">
+        <section
+          aria-labelledby="friends-hero-heading"
+          className={`profile-hero card ${
+            theme === "night" ? "profile-hero--night" : "profile-hero--day"
+          }`}
+        >
+          <div className="profile-hero__body">
+            <div className="profile-hero__identity profile-hero__identity--compact">
+              <div>
+                <p className="profile-hero__eyebrow">Connections</p>
+                <h1 id="friends-hero-heading" className="profile-hero__title">
+                  Stay close to your team
+                </h1>
+                <p className="profile-hero__subtitle">
+                  Pick a conversation to jump back into or keep exploring new teammates to
+                  collaborate with.
+                </p>
+              </div>
+            </div>
+            <ul className="profile-stats" aria-label="Friendship insights">
+              <li className="profile-stat">
+                <span className="profile-stat__label">Connections</span>
+                <span className="profile-stat__value">{totalFriends}</span>
+                <span className="profile-stat__hint">Total friends added</span>
+              </li>
+              <li className="profile-stat">
+                <span className="profile-stat__label">Active now</span>
+                <span className="profile-stat__value">{onlineFriends}</span>
+                <span className="profile-stat__hint">Friends currently online</span>
+              </li>
+              <li className="profile-stat">
+                <span className="profile-stat__label">Chats with updates</span>
+                <span className="profile-stat__value">{chatReadyFriends}</span>
+                <span className="profile-stat__hint">Recent messages waiting</span>
+              </li>
             </ul>
-          ) : (
-            <p className="text-muted text-center">You have no friends added.</p>
-          )}
-        </div>
-      </div>
+          </div>
+        </section>
+
+        <section className="card friend-directory">
+          <div className="card-body">
+            <header className="friend-directory__header">
+              <div>
+                <h2 className="profile-card__title mb-1">Your friends</h2>
+                <p className="friend-directory__description mb-0">
+                  Start a conversation, celebrate wins, or share files with the people you
+                  collaborate with most.
+                </p>
+              </div>
+            </header>
+
+            {friendUsers.length > 0 ? (
+              <ul className="friend-grid list-unstyled" role="list">
+                {friendUsers.map((f) => {
+                  const last = lastMessages[f.username];
+                  let preview = "";
+                  if (last) {
+                    if (last.type === "text") preview = last.content;
+                    else if (last.type === "image") preview = "[Image]";
+                    else preview = last.fileName ? `[File] ${last.fileName}` : "[File]";
+                  }
+
+                  return (
+                    <li key={f.username} className="friend-grid__item" role="listitem">
+                      <article
+                        className={`friend-card ${
+                          f.online ? "friend-card--online" : "friend-card--offline"
+                        }`}
+                      >
+                        <div className="friend-card__identity">
+                          {f.image && (
+                            <img
+                              src={f.image}
+                              alt={`${f.username} profile`}
+                              className="friend-card__avatar"
+                            />
+                          )}
+                          <div>
+                            <div className="friend-card__name-row">
+                              <h3 className="friend-card__name">{f.username}</h3>
+                              <span className="friend-card__status">
+                                <span
+                                  className="friend-card__status-indicator"
+                                  aria-hidden="true"
+                                ></span>
+                                {f.online ? "Online" : "Offline"}
+                              </span>
+                            </div>
+                            {f.position && (
+                              <p className="friend-card__meta">{f.position}</p>
+                            )}
+                            <p className="friend-card__preview">
+                              {preview || "No messages yet — be the first to say hi!"}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="friend-card__actions">
+                          <button
+                            className="btn btn-sm btn-primary"
+                            onClick={() => router.push(`/chat?user=${f.username}`)}
+                          >
+                            <i className="bi bi-chat-dots me-1"></i>
+                            Open chat
+                          </button>
+                        </div>
+                      </article>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <div className="friend-directory__empty">
+                <h3>Build your circle</h3>
+                <p>
+                  Add teammates from the profile directory to see their status, exchange
+                  messages, and collaborate faster.
+                </p>
+                <button
+                  type="button"
+                  className="btn btn-outline-primary"
+                  onClick={() => router.push("/user")}
+                >
+                  Browse the directory
+                </button>
+              </div>
+            )}
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
