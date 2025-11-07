@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import React, { useMemo } from "react";
+import { useRouter } from "next/navigation";
+import React, { useCallback, useMemo } from "react";
 import {
   BarChart3,
   FileText,
@@ -16,6 +17,7 @@ import {
 } from "lucide-react";
 import { ADMIN_USERNAME } from "@/lib/constants";
 import { useTheme } from "../context/ThemeContext";
+import { useAuth } from "../context/AuthContext";
 
 interface UserData {
   username: string;
@@ -50,7 +52,14 @@ function getGreeting() {
 
 export default function TopBar({ title, active, currentUser }: TopBarProps) {
   const { theme, setTheme } = useTheme();
+  const { logout } = useAuth();
+  const router = useRouter();
   const greeting = getGreeting();
+
+  const handleLogout = useCallback(() => {
+    logout();
+    router.push("/signin");
+  }, [logout, router]);
 
   const navItems = useMemo(() => {
     const baseItems: Array<{
@@ -154,13 +163,14 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
                   style={{ width: "42px", height: "42px", objectFit: "cover" }}
                 />
               )}
-              <Link
-                href="/logout"
+              <button
+                type="button"
+                onClick={handleLogout}
                 className="btn btn-sm btn-outline-danger d-flex align-items-center gap-2"
               >
                 <LogOut size={18} />
                 <span>Log out</span>
-              </Link>
+              </button>
             </div>
           </div>
         </div>
