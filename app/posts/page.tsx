@@ -131,21 +131,6 @@ export default function PostsPage() {
         }}
       />
 
-      {/* Create Blog Button */}
-      <div
-        className={`text-end py-3 px-4 position-sticky top-0 z-2 ${
-          theme === "night" ? "bg-dark text-white" : "bg-white"
-        }`}
-        style={{ borderBottom: "1px solid #dee2e6" }}
-      >
-        <button
-          className="btn btn-success"
-          onClick={() => router.push("/create-blog")}
-        >
-          + Create Blog
-        </button>
-      </div>
-
       <div className="container mt-4">
         {posts.length === 0 ? (
           <div className="card text-center">
