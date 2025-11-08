@@ -20,9 +20,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Email is required' }, { status: 400 });
   }
 
-  if (typeof password !== 'string' || !password) {
+  if (typeof password !== 'string' || !password.trim()) {
     return NextResponse.json({ error: 'Password is required' }, { status: 400 });
   }
+
+  const sanitizedPassword = password.trim();
 
   // Connect to the database before creating the user
   await dbConnect();
@@ -39,7 +41,7 @@ export async function POST(req: Request) {
 
   try {
     // Hash the provided password before saving
-    const hashed = await bcrypt.hash(password, 10);
+    const hashed = await bcrypt.hash(sanitizedPassword, 10);
 
     const userDoc: Record<string, unknown> = {
       username: username.trim(),

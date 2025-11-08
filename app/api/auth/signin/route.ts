@@ -16,17 +16,35 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Email is required' }, { status: 400 });
   }
 
+  if (typeof password !== 'string' || !password.trim()) {
+    return NextResponse.json({ error: 'Password is required' }, { status: 400 });
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const normalizedPassword = password.trim();
+
   // Ensure database connection is established
   await dbConnect();
 
   // Look up the user by email
-  const user = await User.findOne({ email: email.trim().toLowerCase() });
+  const user = await User.findOne({ email: normalizedEmail }).select(
+    'username email password'
+  );
 
-  if (user && (await bcrypt.compare(password, user.password))) {
-    // Credentials are valid; respond with the username
-    return NextResponse.json({ success: true, username: user.username });
+  if (!user) {
+    return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
   }
 
-  // Authentication failed
-  return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+  const isPasswordMatch = await bcrypt.compare(normalizedPassword, user.password);
+
+  if (!isPasswordMatch) {
+    return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+  }
+
+  // Credentials are valid; respond with the username and normalized email
+  return NextResponse.json({
+    success: true,
+    username: user.username,
+    email: user.email,
+  });
 }
