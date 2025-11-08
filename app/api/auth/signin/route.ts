@@ -20,16 +20,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Password is required' }, { status: 400 });
   }
 
-  const normalizedEmail = email.trim().toLowerCase();
+  const sanitizedEmail = email.trim();
+  const normalizedEmail = sanitizedEmail.toLowerCase();
   const normalizedPassword = password.trim();
 
   // Ensure database connection is established
   await dbConnect();
 
   // Look up the user by email
-  const user = await User.findOne({ email: normalizedEmail }).select(
-    'username email password'
-  );
+  const user = await User.findOne({ email: sanitizedEmail })
+    .collation({ locale: 'en', strength: 2 })
+    .select('username email password');
 
   if (!user) {
     return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
@@ -45,6 +46,9 @@ export async function POST(req: Request) {
   return NextResponse.json({
     success: true,
     username: user.username,
-    email: user.email,
+    email:
+      typeof user.email === 'string' && user.email.trim()
+        ? user.email.trim().toLowerCase()
+        : normalizedEmail,
   });
 }
