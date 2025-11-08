@@ -2,7 +2,7 @@
 
 // React hooks for managing context state on the client
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { io, Socket } from "socket.io-client";
+import type { Socket } from "socket.io-client";
 
 // Basic representation of a user stored in the context
 interface User {
@@ -45,27 +45,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    const urlFromEnv = process.env.NEXT_PUBLIC_SOCKET_URL;
-    const portFromEnv =
-      process.env.NEXT_PUBLIC_SOCKET_PORT || process.env.SOCKET_PORT || "3001";
+    let subscribed = true;
+    let socketInstance: Socket | null = null;
+    let handleConnectError: ((error: Error) => void) | null = null;
+
+    const connectSocket = async () => {
+      const urlFromEnv = process.env.NEXT_PUBLIC_SOCKET_URL;
+      const portFromEnv = process.env.NEXT_PUBLIC_SOCKET_PORT || "3001";
 
     const resolvedUrl =
-      urlFromEnv ||
-      (typeof window !== "undefined"
-        ? `${window.location.protocol}//${window.location.hostname}:${portFromEnv}`
-        : undefined);
+        urlFromEnv ||
+        (typeof window !== "undefined"
+          ? `${window.location.protocol}//${window.location.hostname}:${portFromEnv}`
+          : undefined);
 
     if (!resolvedUrl) return;
 
-    const s = io(resolvedUrl);
-    const handleConnectError = (error: Error) => {
-      console.error("Socket connection error:", error);
+      const { io } = await import("socket.io-client");
+
+      const socket = io(resolvedUrl);
+      handleConnectError = (error: Error) => {
+        console.error("Socket connection error:", error);
+      };
+      socket.on("connect_error", handleConnectError);
+
+      if (!subscribed) {
+        socket.off("connect_error", handleConnectError);
+        socket.disconnect();
+        return;
+      }
+
+      socketInstance = socket;
+      setSocket(socket);
     };
-    s.on("connect_error", handleConnectError);
-    setSocket(s);
+    
+    connectSocket().catch((error) => {
+      console.error("Unable to establish socket connection:", error);
+    });
+
     return () => {
-      s.off("connect_error", handleConnectError);
-      s.disconnect();
+      subscribed = false;
+      if (socketInstance) {
+        if (handleConnectError) {
+          socketInstance.off("connect_error", handleConnectError);
+        }
+        socketInstance.disconnect();
+      }
     };
   }, []);
 
