@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -398,9 +399,9 @@ export default function ChatPage() {
           >
             🔔
           </button>
-          <button type="button" className="chat-header-action" aria-label="Open settings">
+          <Link href="/setting" className="chat-header-action" aria-label="Open settings">
             ⚙️
-          </button>
+          </Link>
           <a href="/user" className="chat-header-action" aria-label="Back to home">
             🏠
           </a>
