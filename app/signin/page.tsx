@@ -18,7 +18,7 @@ export default function SigninPage() {
     if (ok) {
       router.push("/home");
     } else {
-      setError("Invalid username or password.");
+      setError("Invalid email or password.");
     }
   };
 
@@ -39,13 +39,13 @@ export default function SigninPage() {
           )}
 
           <div className="mb-3">
-            <label className="form-label">Username</label>
+            <label className="form-label">Email</label>
             <input
               type="text"
               className="form-control"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter username"
+              placeholder="Enter email"
             />
           </div>
 
