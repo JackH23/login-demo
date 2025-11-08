@@ -33,6 +33,54 @@ interface UseCachedApiOptions<T> {
   transform?: (payload: unknown) => T;
 }
 
+interface PrefetchOptions<T> {
+  staleTime?: number;
+  transform?: (payload: unknown) => T;
+}
+
+export function prefetchCachedApi<T>(
+  url: string,
+  { staleTime = DEFAULT_STALE_TIME, transform }: PrefetchOptions<T> = {}
+): Promise<T> {
+  const entry = ensureEntry<T>(url);
+  const now = Date.now();
+  if (entry.data != null && now - entry.timestamp < staleTime) {
+    return Promise.resolve(entry.data as T);
+  }
+
+  if (entry.promise) {
+    return entry.promise;
+  }
+
+  const request = fetch(url, { cache: "no-store" })
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error(`Request failed with status ${res.status}`);
+      }
+      return res.json();
+    })
+    .then((payload) => (transform ? transform(payload) : (payload as T)) as T);
+
+  const wrapped = request
+    .then((result) => {
+      entry.data = result;
+      entry.timestamp = Date.now();
+      entry.error = null;
+      return result;
+    })
+    .catch((err) => {
+      const errorObj = err instanceof Error ? err : new Error("Failed to prefetch data");
+      entry.error = errorObj;
+      throw errorObj;
+    })
+    .finally(() => {
+      entry.promise = null;
+    });
+
+  entry.promise = wrapped;
+  return wrapped;
+}
+
 interface UseCachedApiReturn<T> {
   data: T;
   loading: boolean;

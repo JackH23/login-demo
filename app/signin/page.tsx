@@ -4,11 +4,31 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
+import { prefetchCachedApi } from "../hooks/useCachedApi";
+
+interface PrefetchUser {
+  username: string;
+  image: string;
+  online?: boolean;
+}
+
+interface PrefetchPost {
+  _id?: string;
+  title: string;
+  content: string;
+  image: string | null;
+  author: string;
+  likes: number;
+  dislikes: number;
+  likedBy?: string[];
+  dislikedBy?: string[];
+}
 
 export default function SigninPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const { signin } = useAuth();
   const { theme } = useTheme();
   const router = useRouter();
@@ -18,11 +38,31 @@ export default function SigninPage() {
   }, [router]);
 
   const handleSignin = async () => {
-    const ok = await signin(email, password);
-    if (ok) {
-      router.push("/home");
-    } else {
-      setError("Invalid email or password.");
+    setError("");
+    setSubmitting(true);
+    try {
+      const ok = await signin(email, password);
+      if (ok) {
+        const warmUsers = prefetchCachedApi<PrefetchUser[]>("/api/users", {
+          transform: (payload) =>
+            (payload as { users?: PrefetchUser[] | null })?.users ?? [],
+        });
+        const warmPosts = prefetchCachedApi<PrefetchPost[]>("/api/posts", {
+          transform: (payload) =>
+            (payload as { posts?: PrefetchPost[] | null })?.posts ?? [],
+        });
+        router.push("/home");
+        void Promise.all([warmUsers, warmPosts]).catch((prefetchError) => {
+          console.error("Failed to prefetch home data", prefetchError);
+        });
+      } else {
+        setError("Invalid email or password.");
+      }
+    } catch (err) {
+      console.error("Signin failed", err);
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -64,8 +104,12 @@ export default function SigninPage() {
             />
           </div>
 
-          <button className="btn btn-primary w-100" onClick={handleSignin}>
-            Log In
+          <button
+            className="btn btn-primary w-100"
+            onClick={handleSignin}
+            disabled={submitting}
+          >
+            {submitting ? "Signing In..." : "Log In"}
           </button>
 
           <p className="text-center mt-3 mb-0">
