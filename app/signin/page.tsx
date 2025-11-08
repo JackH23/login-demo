@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -12,6 +12,10 @@ export default function SigninPage() {
   const { signin } = useAuth();
   const { theme } = useTheme();
   const router = useRouter();
+
+  useEffect(() => {
+    void router.prefetch("/home");
+  }, [router]);
 
   const handleSignin = async () => {
     const ok = await signin(email, password);
