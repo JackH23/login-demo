@@ -7,6 +7,7 @@ import { io, Socket } from "socket.io-client";
 // Basic representation of a user stored in the context
 interface User {
   username: string;
+  email?: string;
 }
 
 // Shape of the authentication context value shared with components
@@ -18,13 +19,13 @@ interface AuthContextValue {
   // Creates a new account; resolves to true on success
   signup: (
     username: string,
+    email: string,
     password: string,
-    position: string,
     age: number,
     image: string | null
   ) => Promise<{ success: true } | { success: false; message: string }>;
   // Logs an existing user in; resolves to true on success
-  signin: (username: string, password: string) => Promise<boolean>;
+  signin: (email: string, password: string) => Promise<boolean>;
   // Clears user information from state and storage
   logout: () => void;
   // Socket connection for real-time updates
@@ -154,8 +155,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signup = async (
     username: string,
+    email: string,
     password: string,
-    position: string,
     age: number,
     image: string | null
   ) => {
@@ -163,7 +164,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const res = await fetch("/api/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password, position, age, image }),
+      body: JSON.stringify({ username, email, password, age, image }),
     });
 
     if (res.ok) {
@@ -183,18 +184,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { success: false as const, message };
   };
 
-  const signin = async (username: string, password: string) => {
+  const signin = async (email: string, password: string) => {
     // Request API route to sign in and store the returned user
     const res = await fetch("/api/auth/signin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ email, password }),
     });
     if (res.ok) {
       const data = await res.json();
-      // Persist the username in local storage so the session survives reloads
-      localStorage.setItem("user", JSON.stringify({ username: data.username }));
-      setUser({ username: data.username });
+      const normalizedEmail = email.trim().toLowerCase();
+      // Persist the username and email in local storage so the session survives reloads
+      localStorage.setItem(
+        "user",
+        JSON.stringify({ username: data.username, email: normalizedEmail })
+      );
+      setUser({ username: data.username, email: normalizedEmail });
       // Mark user as online after successful sign in
       if (socket) socket.emit("user-online", data.username);
       void updateOnlineStatus(data.username, true);
@@ -219,8 +224,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser((prev) => {
       if (!prev) return prev;
       const next = { ...prev, ...updates };
-      if (typeof updates.username === "string") {
-        localStorage.setItem("user", JSON.stringify({ username: updates.username }));
+      if (typeof updates.username === "string" || typeof updates.email === "string") {
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            username: updates.username ?? next.username,
+            email: updates.email ?? next.email,
+          })
+        );
       }
       return next;
     });
