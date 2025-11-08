@@ -10,10 +10,14 @@ import bcrypt from 'bcrypt';
 // Handle POST /api/auth/signup to create a new user account
 export async function POST(req: Request) {
   // Get all provided fields from the request body
-  const { username, password, position, age, image } = await req.json();
+  const { username, email, password, position, age, image } = await req.json();
 
   if (typeof username !== 'string' || !username.trim()) {
     return NextResponse.json({ error: 'Username is required' }, { status: 400 });
+  }
+
+  if (typeof email !== 'string' || !email.trim()) {
+    return NextResponse.json({ error: 'Email is required' }, { status: 400 });
   }
 
   if (typeof password !== 'string' || !password) {
@@ -23,9 +27,17 @@ export async function POST(req: Request) {
   // Connect to the database before creating the user
   await dbConnect();
 
-  const existingUser = await User.findOne({ username: username.trim() });
-  if (existingUser) {
+  const [existingUsername, existingEmail] = await Promise.all([
+    User.findOne({ username: username.trim() }),
+    User.findOne({ email: email.trim().toLowerCase() }),
+  ]);
+
+  if (existingUsername) {
     return NextResponse.json({ error: 'Username already exists' }, { status: 409 });
+  }
+
+  if (existingEmail) {
+    return NextResponse.json({ error: 'Email already exists' }, { status: 409 });
   }
 
   try {
@@ -34,6 +46,7 @@ export async function POST(req: Request) {
 
     const userDoc: Record<string, unknown> = {
       username: username.trim(),
+      email: email.trim().toLowerCase(),
       password: hashed,
     };
 

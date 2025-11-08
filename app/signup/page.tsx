@@ -8,7 +8,7 @@ import { useTheme } from "../context/ThemeContext";
 export default function SignupPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [position, setPosition] = useState("");
+  const [email, setEmail] = useState("");
   const [age, setAge] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [error, setError] = useState("");
@@ -17,8 +17,8 @@ export default function SignupPage() {
   const router = useRouter();
 
   const handleSignup = async () => {
-    if (!username || !password) {
-      setError("Username and password are required.");
+    if (!username || !email || !password) {
+      setError("Username, email, and password are required.");
       return;
     }
 
@@ -33,13 +33,7 @@ export default function SignupPage() {
       });
     }
 
-    const result = await signup(
-      username,
-      password,
-      position,
-      Number(age),
-      imageData
-    );
+    const result = await signup(username, email, password, Number(age), imageData);
     if (result.success) {
       router.push("/signin");
     } else {
@@ -86,18 +80,14 @@ export default function SignupPage() {
           </div>
 
           <div className="mb-3">
-            <label className="form-label">Position</label>
-            <select
-              className="form-select"
-              value={position}
-              onChange={(e) => setPosition(e.target.value)}
-              required
-            >
-              <option value="">Select position</option>
-              <option value="A">AM</option>
-              <option value="STAFF">STAFF</option>
-              <option value="MANAGER">MANAGER</option>
-            </select>
+            <label className="form-label">Email</label>
+            <input
+              type="email"
+              className="form-control"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter email"
+            />
           </div>
 
           <div className="mb-3">

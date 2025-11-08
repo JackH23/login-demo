@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 
 export default function SigninPage() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const { signin } = useAuth();
@@ -14,11 +14,11 @@ export default function SigninPage() {
   const router = useRouter();
 
   const handleSignin = async () => {
-    const ok = await signin(username, password);
+    const ok = await signin(email, password);
     if (ok) {
       router.push("/home");
     } else {
-      setError("Invalid username or password.");
+      setError("Invalid email or password.");
     }
   };
 
@@ -39,13 +39,13 @@ export default function SigninPage() {
           )}
 
           <div className="mb-3">
-            <label className="form-label">Username</label>
+            <label className="form-label">Email</label>
             <input
-              type="text"
+              type="email"
               className="form-control"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter username"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter email"
             />
           </div>
 
