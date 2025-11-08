@@ -109,7 +109,24 @@ export default function SigninPage() {
             onClick={handleSignin}
             disabled={submitting}
           >
-            {submitting ? "Signing In..." : "Log In"}
+            {submitting ? (
+              <>
+                <span className="visually-hidden">Signing In...</span>
+                <span
+                  aria-hidden="true"
+                  className="d-inline-flex align-items-center gap-1"
+                >
+                  <span>Signing In</span>
+                  <span className="animated-ellipsis">
+                    <span className="dot" />
+                    <span className="dot" />
+                    <span className="dot" />
+                  </span>
+                </span>
+              </>
+            ) : (
+              "Log In"
+            )}
           </button>
 
           <p className="text-center mt-3 mb-0">
@@ -118,6 +135,46 @@ export default function SigninPage() {
           </p>
         </div>
       </div>
+      <style jsx>{`
+        .animated-ellipsis {
+          display: inline-flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          width: 1.5rem;
+        }
+
+        .animated-ellipsis .dot {
+          display: inline-block;
+          width: 0.25rem;
+          height: 0.25rem;
+          border-radius: 50%;
+          background-color: currentColor;
+          opacity: 0.35;
+          animation: signing-ellipsis 0.9s infinite ease-in-out;
+        }
+
+        .animated-ellipsis .dot:nth-child(2) {
+          animation-delay: 0.15s;
+        }
+
+        .animated-ellipsis .dot:nth-child(3) {
+          animation-delay: 0.3s;
+        }
+
+        @keyframes signing-ellipsis {
+          0%,
+          80%,
+          100% {
+            transform: translateY(0);
+            opacity: 0.35;
+          }
+
+          40% {
+            transform: translateY(-0.25rem);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </div>
   );
 }
