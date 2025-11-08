@@ -27,6 +27,7 @@ import { useAuth } from "../context/AuthContext";
 
 interface UserData {
   username: string;
+  email?: string;
   image?: string;
 }
 

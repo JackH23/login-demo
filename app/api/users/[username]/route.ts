@@ -28,7 +28,7 @@ export async function GET(
   await dbConnect();
   const user = await User.findOne(
     { username },
-    'username position age image friends online -_id'
+    'username email position age image friends online -_id'
   ).lean();
   if (!user) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -67,7 +67,7 @@ export async function PUT(
   const user = await User.findOneAndUpdate(
     { username: target },
     update,
-    { new: true, fields: 'username position age image friends online -_id' }
+    { new: true, fields: 'username email position age image friends online -_id' }
   ).lean();
 
   if (user && prev && online !== undefined && prev.online !== online) {

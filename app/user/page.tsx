@@ -19,6 +19,7 @@ export default function UserPage() {
 
   interface User {
     username: string;
+    email?: string;
     position?: string;
     age?: number;
     image: string;

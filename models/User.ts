@@ -6,7 +6,7 @@ const UserSchema = new Schema({
   // Unique username used for login
   username: { type: String, required: true, unique: true },
   // Primary email address used for authentication
-  email: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true, trim: true, lowercase: true },
   // Hashed password value
   password: { type: String, required: true },
   // Position or title of the user

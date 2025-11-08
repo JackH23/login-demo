@@ -19,6 +19,7 @@ interface BlogPost {
 
 interface AuthorData {
   username: string;
+  email?: string;
   image?: string;
   online?: boolean;
 }

@@ -6,7 +6,7 @@ export async function GET() {
   await dbConnect();
   const users = await User.find(
     {},
-    'username position age image friends online -_id'
+    'username email position age image friends online -_id'
   )
     .sort({ username: 1 })
     .lean();

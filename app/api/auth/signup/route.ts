@@ -29,12 +29,15 @@ export async function POST(req: Request) {
   // Connect to the database before creating the user
   await dbConnect();
 
-  const existingUser = await User.findOne({ username: username.trim() });
+  const sanitizedUsername = username.trim();
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const existingUser = await User.findOne({ username: sanitizedUsername });
   if (existingUser) {
     return NextResponse.json({ error: 'Username already exists' }, { status: 409 });
   }
 
-  const existingEmail = await User.findOne({ email: email.trim().toLowerCase() });
+  const existingEmail = await User.findOne({ email: normalizedEmail });
   if (existingEmail) {
     return NextResponse.json({ error: 'Email already exists' }, { status: 409 });
   }
@@ -44,8 +47,8 @@ export async function POST(req: Request) {
     const hashed = await bcrypt.hash(sanitizedPassword, 10);
 
     const userDoc: Record<string, unknown> = {
-      username: username.trim(),
-      email: email.trim().toLowerCase(),
+      username: sanitizedUsername,
+      email: normalizedEmail,
       password: hashed,
     };
 
