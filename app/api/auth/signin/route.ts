@@ -10,17 +10,27 @@ import bcrypt from 'bcrypt';
 // Handle POST /api/auth/signin to verify a user's credentials
 export async function POST(req: Request) {
   // Extract the submitted username and password from the request body
-  const { username, password } = await req.json();
+  const { email, password } = await req.json();
 
   // Ensure database connection is established
   await dbConnect();
 
-  // Look up the user by username
-  const user = await User.findOne({ username });
+  if (typeof email !== 'string' || !email.trim()) {
+    return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+
+  // Look up the user by email
+  const user = await User.findOne({ email: normalizedEmail });
 
   if (user && (await bcrypt.compare(password, user.password))) {
-    // Credentials are valid; respond with the username
-    return NextResponse.json({ success: true, username: user.username });
+    // Credentials are valid; respond with identifiers for the session
+    return NextResponse.json({
+      success: true,
+      username: user.username,
+      email: user.email,
+    });
   }
 
   // Authentication failed

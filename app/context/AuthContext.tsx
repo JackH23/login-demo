@@ -7,6 +7,7 @@ import { io, Socket } from "socket.io-client";
 // Basic representation of a user stored in the context
 interface User {
   username: string;
+  email: string;
 }
 
 // Shape of the authentication context value shared with components
@@ -17,14 +18,13 @@ interface AuthContextValue {
   loading: boolean;
   // Creates a new account; resolves to true on success
   signup: (
-    username: string,
+    email: string,
     password: string,
-    position: string,
     age: number,
     image: string | null
   ) => Promise<{ success: true } | { success: false; message: string }>;
   // Logs an existing user in; resolves to true on success
-  signin: (username: string, password: string) => Promise<boolean>;
+  signin: (email: string, password: string) => Promise<boolean>;
   // Clears user information from state and storage
   logout: () => void;
   // Socket connection for real-time updates
@@ -114,12 +114,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      const parsed = JSON.parse(storedUser);
-      setUser(parsed);
-      if (socket) {
-        socket.emit("user-online", parsed.username);
+      try {
+        const parsed = JSON.parse(storedUser);
+        if (parsed && typeof parsed.username === "string") {
+          const hydrated: User = {
+            username: parsed.username,
+            email:
+              typeof parsed.email === "string"
+                ? parsed.email
+                : parsed.username,
+          };
+          setUser(hydrated);
+          if (socket) {
+            socket.emit("user-online", hydrated.username);
+          }
+          void updateOnlineStatus(hydrated.username, true);
+        }
+      } catch (error) {
+        console.error("Failed to parse stored user", error);
+        localStorage.removeItem("user");
       }
-      void updateOnlineStatus(parsed.username, true);
     }
     // Loading complete after attempting to read from storage
     setLoading(false);
@@ -153,9 +167,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user, socket, updateOnlineStatus]);
 
   const signup = async (
-    username: string,
+    email: string,
     password: string,
-    position: string,
     age: number,
     image: string | null
   ) => {
@@ -163,7 +176,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const res = await fetch("/api/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password, position, age, image }),
+      body: JSON.stringify({ email, password, age, image }),
     });
 
     if (res.ok) {
@@ -183,18 +196,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { success: false as const, message };
   };
 
-  const signin = async (username: string, password: string) => {
+  const signin = async (email: string, password: string) => {
     // Request API route to sign in and store the returned user
     const res = await fetch("/api/auth/signin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ email, password }),
     });
     if (res.ok) {
       const data = await res.json();
+      const responseEmail =
+        typeof data.email === "string" ? data.email : email;
       // Persist the username in local storage so the session survives reloads
-      localStorage.setItem("user", JSON.stringify({ username: data.username }));
-      setUser({ username: data.username });
+      localStorage.setItem(
+        "user",
+        JSON.stringify({ username: data.username, email: responseEmail })
+      );
+      setUser({ username: data.username, email: responseEmail });
       // Mark user as online after successful sign in
       if (socket) socket.emit("user-online", data.username);
       void updateOnlineStatus(data.username, true);
@@ -218,10 +236,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const updateUser = useCallback((updates: Partial<User>) => {
     setUser((prev) => {
       if (!prev) return prev;
-      const next = { ...prev, ...updates };
-      if (typeof updates.username === "string") {
-        localStorage.setItem("user", JSON.stringify({ username: updates.username }));
-      }
+      const next: User = {
+        ...prev,
+        ...updates,
+        email:
+          typeof updates.email === "string" ? updates.email : prev.email,
+        username:
+          typeof updates.username === "string"
+            ? updates.username
+            : prev.username,
+      };
+      localStorage.setItem("user", JSON.stringify(next));
       return next;
     });
   }, []);

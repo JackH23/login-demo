@@ -1,24 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 
 export default function SigninPage() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const { signin } = useAuth();
   const { theme } = useTheme();
   const router = useRouter();
 
+  useEffect(() => {
+    void router.prefetch("/home");
+  }, [router]);
+
   const handleSignin = async () => {
-    const ok = await signin(username, password);
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      setError("Please enter your email address.");
+      return;
+    }
+
+    const ok = await signin(trimmedEmail, password);
     if (ok) {
-      router.push("/home");
+      router.replace("/home");
     } else {
-      setError("Invalid username or password.");
+      setError("Invalid email or password.");
     }
   };
 
@@ -39,13 +49,13 @@ export default function SigninPage() {
           )}
 
           <div className="mb-3">
-            <label className="form-label">Username</label>
+            <label className="form-label">Email</label>
             <input
-              type="text"
+              type="email"
               className="form-control"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter username"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter email"
             />
           </div>
 

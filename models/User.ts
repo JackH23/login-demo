@@ -3,8 +3,10 @@ import { Schema, model, models } from 'mongoose';
 
 // Schema describing the shape of a user document
 const UserSchema = new Schema({
-  // Unique username used for login
+  // Unique username used for login (mirrors the email)
   username: { type: String, required: true, unique: true },
+  // Unique email address for contact/login
+  email: { type: String, required: true, unique: true },
   // Hashed password value
   password: { type: String, required: true },
   // Position or title of the user
@@ -20,6 +22,7 @@ const UserSchema = new Schema({
 });
 
 UserSchema.index({ username: 1 });
+UserSchema.index({ email: 1 });
 UserSchema.index({ online: 1, username: 1 });
 
 // Reuse the model if it has already been compiled
