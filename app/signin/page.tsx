@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 
 export default function SigninPage() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const { signin } = useAuth();
@@ -14,7 +14,7 @@ export default function SigninPage() {
   const router = useRouter();
 
   const handleSignin = async () => {
-    const ok = await signin(username, password);
+    const ok = await signin(email, password);
     if (ok) {
       router.push("/home");
     } else {
@@ -43,8 +43,8 @@ export default function SigninPage() {
             <input
               type="text"
               className="form-control"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter email"
             />
           </div>

@@ -9,14 +9,14 @@ import bcrypt from 'bcrypt';
 
 // Handle POST /api/auth/signin to verify a user's credentials
 export async function POST(req: Request) {
-  // Extract the submitted username and password from the request body
-  const { username, password } = await req.json();
+  // Extract the submitted email and password from the request body
+  const { email, password } = await req.json();
 
   // Ensure database connection is established
   await dbConnect();
 
-  // Look up the user by username
-  const user = await User.findOne({ username });
+  // Look up the user by email
+  const user = await User.findOne({ email });
 
   if (user && (await bcrypt.compare(password, user.password))) {
     // Credentials are valid; respond with the username

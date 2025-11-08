@@ -25,7 +25,7 @@ interface AuthContextValue {
     image: string | null
   ) => Promise<{ success: true } | { success: false; message: string }>;
   // Logs an existing user in; resolves to true on success
-  signin: (username: string, password: string) => Promise<boolean>;
+  signin: (email: string, password: string) => Promise<boolean>;
   // Clears user information from state and storage
   logout: () => void;
   // Socket connection for real-time updates
@@ -185,12 +185,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { success: false as const, message };
   };
 
-  const signin = async (username: string, password: string) => {
+  const signin = async (email: string, password: string) => {
     // Request API route to sign in and store the returned user
     const res = await fetch("/api/auth/signin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ email, password }),
     });
     if (res.ok) {
       const data = await res.json();
