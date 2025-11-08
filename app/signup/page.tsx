@@ -7,6 +7,7 @@ import { useTheme } from "../context/ThemeContext";
 
 export default function SignupPage() {
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [position, setPosition] = useState("");
   const [age, setAge] = useState("");
@@ -17,8 +18,8 @@ export default function SignupPage() {
   const router = useRouter();
 
   const handleSignup = async () => {
-    if (!username || !password) {
-      setError("Username and password are required.");
+    if (!username.trim() || !email.trim() || !password) {
+      setError("Username, email, and password are required.");
       return;
     }
 
@@ -33,8 +34,11 @@ export default function SignupPage() {
       });
     }
 
+    setError("");
+
     const result = await signup(
-      username,
+      username.trim(),
+      email.trim(),
       password,
       position,
       Number(age),
@@ -71,6 +75,17 @@ export default function SignupPage() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Enter username"
+            />
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Email</label>
+            <input
+              type="email"
+              className="form-control"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter email address"
             />
           </div>
 
