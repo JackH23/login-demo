@@ -103,6 +103,12 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
     setOptimisticActive(active);
   }, [active]);
 
+  useEffect(() => {
+    navItems.forEach((item) => {
+      router.prefetch(item.href);
+    });
+  }, [navItems, router]);
+
   const prefetchRoute = useCallback(
     (href: string) => {
       router.prefetch(href);
