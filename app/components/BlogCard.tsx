@@ -801,44 +801,49 @@ export default function BlogCard({
                         isNight ? "bg-dark bg-opacity-75 text-white" : "bg-white"
                       }`}
                     >
-                      <div className="d-flex justify-content-between align-items-start gap-3">
-                        <div className="d-flex align-items-start gap-3">
-                          {comment.authorImage ? (
-                            <img
-                              src={comment.authorImage}
-                              alt={comment.author}
-                              className="rounded-circle"
-                              style={{
-                                width: "36px",
-                                height: "36px",
-                                objectFit: "cover",
-                              }}
-                            />
-                          ) : (
-                            <div
-                              className={`rounded-circle d-flex align-items-center justify-content-center fw-semibold ${
-                                isNight
-                                  ? "bg-secondary text-white"
-                                  : "bg-primary bg-opacity-10 text-primary"
+                      <div className="conversation-comment">
+                        <div className="conversation-comment__main">
+                          <div className="conversation-comment__avatar">
+                            {comment.authorImage ? (
+                              <img
+                                src={comment.authorImage}
+                                alt={`${comment.author}'s avatar`}
+                                className="conversation-comment__avatar-image"
+                              />
+                            ) : (
+                              <span
+                                className={`conversation-comment__avatar-fallback ${
+                                  isNight
+                                    ? "bg-secondary text-white"
+                                    : "bg-primary bg-opacity-10 text-primary"
+                                }`}
+                              >
+                                {comment.author?.charAt(0)?.toUpperCase() || "?"}
+                              </span>
+                            )}
+                          </div>
+                          <div className="conversation-comment__meta">
+                            <span
+                              className={`conversation-comment__author text-uppercase ${
+                                isNight ? "text-primary text-opacity-75" : "text-primary"
                               }`}
-                              style={{ width: "36px", height: "36px" }}
                             >
-                              {comment.author?.charAt(0)?.toUpperCase() || "?"}
-                            </div>
-                          )}
-                          <div>
-                            <div className="fw-semibold small text-uppercase text-primary">
                               {comment.author}
-                            </div>
-                            <div className={`small ${isNight ? "text-light" : "text-body"}`}>
+                            </span>
+                            <p
+                              className={`conversation-comment__text ${
+                                isNight ? "text-light" : "text-body"
+                              }`}
+                            >
                               {comment.text}
-                            </div>
+                            </p>
                           </div>
                         </div>
 
-                        <div className="btn-group btn-group-sm">
+                        <div className="conversation-comment__actions">
                           <button
-                            className="btn btn-outline-success"
+                            type="button"
+                            className="btn btn-sm btn-outline-success"
                             onClick={() => handleLikeComment(idx)}
                             disabled={
                               user
@@ -850,7 +855,8 @@ export default function BlogCard({
                             👍 {comment.likes}
                           </button>
                           <button
-                            className="btn btn-outline-danger"
+                            type="button"
+                            className="btn btn-sm btn-outline-danger"
                             onClick={() => handleDislikeComment(idx)}
                             disabled={
                               user
@@ -862,7 +868,8 @@ export default function BlogCard({
                             👎 {comment.dislikes}
                           </button>
                           <button
-                            className="btn btn-outline-primary"
+                            type="button"
+                            className="btn btn-sm btn-outline-primary"
                             onClick={() => toggleReplyInput(idx)}
                           >
                             💬 Reply
@@ -1052,30 +1059,50 @@ export default function BlogCard({
                         theme === "night" ? "bg-dark text-white" : "bg-white"
                       }`}
                     >
-                      <div className="d-flex justify-content-between align-items-center">
-                        <div className="d-flex align-items-center gap-2">
-                          {comment.authorImage && (
-                            <img
-                              src={comment.authorImage}
-                              alt={comment.author}
-                              className="rounded-circle"
-                              style={{
-                                width: "30px",
-                                height: "30px",
-                                objectFit: "cover",
-                              }}
-                            />
-                          )}
-                          <div>
-                            <div className="fw-semibold small">
+                      <div className="conversation-comment">
+                        <div className="conversation-comment__main">
+                          <div className="conversation-comment__avatar">
+                            {comment.authorImage ? (
+                              <img
+                                src={comment.authorImage}
+                                alt={`${comment.author}'s avatar`}
+                                className="conversation-comment__avatar-image"
+                              />
+                            ) : (
+                              <span
+                                className={`conversation-comment__avatar-fallback ${
+                                  theme === "night"
+                                    ? "bg-secondary text-white"
+                                    : "bg-primary bg-opacity-10 text-primary"
+                                }`}
+                              >
+                                {comment.author?.charAt(0)?.toUpperCase() || "?"}
+                              </span>
+                            )}
+                          </div>
+                          <div className="conversation-comment__meta">
+                            <span
+                              className={`conversation-comment__author text-uppercase ${
+                                theme === "night"
+                                  ? "text-primary text-opacity-75"
+                                  : "text-primary"
+                              }`}
+                            >
                               {comment.author}
-                            </div>
-                            <div>{comment.text}</div>
+                            </span>
+                            <p
+                              className={`conversation-comment__text ${
+                                theme === "night" ? "text-light" : "text-body"
+                              }`}
+                            >
+                              {comment.text}
+                            </p>
                           </div>
                         </div>
-                        <div className="btn-group btn-group-sm">
+                        <div className="conversation-comment__actions">
                           <button
-                            className="btn btn-outline-success"
+                            type="button"
+                            className="btn btn-sm btn-outline-success"
                             onClick={() => handleLikeComment(idx)}
                             disabled={
                               user
@@ -1087,7 +1114,8 @@ export default function BlogCard({
                             👍 {comment.likes}
                           </button>
                           <button
-                            className="btn btn-outline-danger"
+                            type="button"
+                            className="btn btn-sm btn-outline-danger"
                             onClick={() => handleDislikeComment(idx)}
                             disabled={
                               user
@@ -1099,7 +1127,8 @@ export default function BlogCard({
                             👎 {comment.dislikes}
                           </button>
                           <button
-                            className="btn btn-outline-primary"
+                            type="button"
+                            className="btn btn-sm btn-outline-primary"
                             onClick={() => toggleReplyInput(idx)}
                           >
                             💬 Reply
