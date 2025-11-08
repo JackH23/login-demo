@@ -9,10 +9,6 @@ const UserSchema = new Schema({
   email: { type: String, required: true, unique: true },
   // Hashed password value
   password: { type: String, required: true },
-  // Position or title of the user
-  position: { type: String },
-  // Numeric age of the user
-  age: { type: Number },
   // Base64 encoded image string
   image: { type: String },
   // List of usernames that this user has added as friends

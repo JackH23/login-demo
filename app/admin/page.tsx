@@ -11,8 +11,6 @@ import { useCachedApi } from "../hooks/useCachedApi";
 
 interface User {
   username: string;
-  position: string;
-  age: number;
   image: string;
   online?: boolean;
 }
@@ -244,11 +242,6 @@ export default function AdminPage() {
                                     </span>
                                   )}
                                 </div>
-                                <p
-                                  className={`mb-1 small ${mutedTextClass}`}
-                                >
-                                  {u.position} • {u.age} yrs
-                                </p>
                                 <span className="badge bg-primary-subtle text-primary fw-semibold">
                                   {postCount}{" "}
                                   {postCount === 1 ? "post" : "posts"}

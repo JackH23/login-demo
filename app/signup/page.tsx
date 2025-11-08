@@ -9,8 +9,6 @@ export default function SignupPage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [position, setPosition] = useState("");
-  const [age, setAge] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [error, setError] = useState("");
   const { signup } = useAuth();
@@ -40,8 +38,6 @@ export default function SignupPage() {
       username.trim(),
       email.trim(),
       password,
-      position,
-      Number(age),
       imageData
     );
     if (result.success) {
@@ -97,32 +93,6 @@ export default function SignupPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter password"
-            />
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label">Position</label>
-            <select
-              className="form-select"
-              value={position}
-              onChange={(e) => setPosition(e.target.value)}
-              required
-            >
-              <option value="">Select position</option>
-              <option value="A">AM</option>
-              <option value="STAFF">STAFF</option>
-              <option value="MANAGER">MANAGER</option>
-            </select>
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label">Age</label>
-            <input
-              type="number"
-              className="form-control"
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
-              placeholder="Enter age"
             />
           </div>
 

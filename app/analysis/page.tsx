@@ -10,8 +10,6 @@ import { useCachedApi } from "../hooks/useCachedApi";
 
 interface User {
   username: string;
-  position: string;
-  age: number;
   image: string;
   online?: boolean;
 }

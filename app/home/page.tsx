@@ -13,8 +13,6 @@ import { usePostRealtimeUpdates } from "../hooks/usePostRealtimeUpdates";
 
 interface User {
   username: string;
-  position: string;
-  age: number;
   image: string;
   online?: boolean;
 }

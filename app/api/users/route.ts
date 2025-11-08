@@ -4,10 +4,7 @@ import User from '@/models/User';
 
 export async function GET() {
   await dbConnect();
-  const users = await User.find(
-    {},
-    'username position age image friends online -_id'
-  )
+  const users = await User.find({}, 'username image friends online -_id')
     .sort({ username: 1 })
     .lean();
   return NextResponse.json({ users });
