@@ -176,11 +176,6 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
             </p>
             <h2 className="mb-0 d-flex align-items-center gap-2">
               {title}
-              <span
-                className="badge rounded-pill bg-primary bg-opacity-10 text-primary fw-semibold"
-              >
-                Dashboard
-              </span>
             </h2>
           </div>
           <div className="d-flex align-items-center gap-3 flex-wrap justify-content-end">
