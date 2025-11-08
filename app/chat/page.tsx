@@ -1,7 +1,6 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -34,7 +33,7 @@ export default function ChatPage() {
   const searchParams = useSearchParams();
   const chatUser = searchParams.get("user") ?? "";
   const { user, socket } = useAuth();
-  const { theme } = useTheme();
+  const { theme, setTheme } = useTheme();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -58,6 +57,10 @@ export default function ChatPage() {
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const toggleTheme = () => {
+    setTheme(theme === "night" ? "brightness" : "night");
   };
 
   // Request browser notification permission on mount
@@ -399,9 +402,14 @@ export default function ChatPage() {
           >
             🔔
           </button>
-          <Link href="/setting" className="chat-header-action" aria-label="Open settings">
-            ⚙️
-          </Link>
+          <button
+            type="button"
+            className="chat-header-action"
+            onClick={toggleTheme}
+            aria-label={`Switch to ${theme === "night" ? "Light" : "Dark"} Mode`}
+          >
+            {theme === "night" ? "🌞" : "🌙"}
+          </button>
           <a href="/user" className="chat-header-action" aria-label="Back to home">
             🏠
           </a>
