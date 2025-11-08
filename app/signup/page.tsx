@@ -11,6 +11,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const { signup } = useAuth();
   const { theme } = useTheme();
   const router = useRouter();
@@ -21,29 +22,38 @@ export default function SignupPage() {
       return;
     }
 
-    // Prepare optional base64 encoded image string
-    let imageData: string | null = null;
-    if (image) {
-      imageData = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = () => reject(new Error("Failed to read image"));
-        reader.readAsDataURL(image);
-      });
-    }
+    setSubmitting(true);
 
     setError("");
 
-    const result = await signup(
-      username.trim(),
-      email.trim(),
-      password,
-      imageData
-    );
-    if (result.success) {
-      router.push("/signin");
-    } else {
-      setError(result.message);
+    try {
+      // Prepare optional base64 encoded image string
+      let imageData: string | null = null;
+      if (image) {
+        imageData = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => reject(new Error("Failed to read image"));
+          reader.readAsDataURL(image);
+        });
+      }
+
+      const result = await signup(
+        username.trim(),
+        email.trim(),
+        password,
+        imageData
+      );
+      if (result.success) {
+        router.push("/signin");
+      } else {
+        setError(result.message);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -106,8 +116,29 @@ export default function SignupPage() {
             />
           </div>
 
-          <button className="btn btn-primary w-100" onClick={handleSignup}>
-            Create Account
+          <button
+            className="btn btn-primary w-100"
+            onClick={handleSignup}
+            disabled={submitting}
+          >
+            {submitting ? (
+              <>
+                <span className="visually-hidden">Signing Up...</span>
+                <span
+                  aria-hidden="true"
+                  className="d-inline-flex align-items-center gap-1"
+                >
+                  <span>Signing Up</span>
+                  <span className="animated-ellipsis">
+                    <span className="dot" />
+                    <span className="dot" />
+                    <span className="dot" />
+                  </span>
+                </span>
+              </>
+            ) : (
+              "Create Account"
+            )}
           </button>
 
           <p className="text-center mt-3 mb-0">
@@ -115,6 +146,46 @@ export default function SignupPage() {
           </p>
         </div>
       </div>
+      <style jsx>{`
+        .animated-ellipsis {
+          display: inline-flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          width: 1.5rem;
+        }
+
+        .animated-ellipsis .dot {
+          display: inline-block;
+          width: 0.25rem;
+          height: 0.25rem;
+          border-radius: 50%;
+          background-color: currentColor;
+          opacity: 0.35;
+          animation: signing-ellipsis 0.9s infinite ease-in-out;
+        }
+
+        .animated-ellipsis .dot:nth-child(2) {
+          animation-delay: 0.15s;
+        }
+
+        .animated-ellipsis .dot:nth-child(3) {
+          animation-delay: 0.3s;
+        }
+
+        @keyframes signing-ellipsis {
+          0%,
+          80%,
+          100% {
+            transform: translateY(0);
+            opacity: 0.35;
+          }
+
+          40% {
+            transform: translateY(-0.25rem);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </div>
   );
 }
