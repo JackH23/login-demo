@@ -11,8 +11,6 @@ import { useCachedApi } from "../hooks/useCachedApi";
 
 interface User {
   username: string;
-  position: string;
-  age: number;
   image: string;
   online?: boolean;
 }
@@ -32,7 +30,6 @@ export default function SettingPage() {
   });
 
   const [newUsername, setNewUsername] = useState("");
-  const [newAge, setNewAge] = useState<number>(0);
   const [profileImage, setProfileImage] = useState<string>("");
   const { theme, setTheme } = useTheme();
   const isNight = theme === "night";
@@ -66,7 +63,6 @@ export default function SettingPage() {
 
   const currentUserData = users.find((u) => u.username === user?.username);
   const username = newUsername || currentUserData?.username || "";
-  const age = newAge || currentUserData?.age || 0;
   const image = profileImage || currentUserData?.image || "";
 
   if (loading || loadingUsers || !user || !currentUserData) {
@@ -92,7 +88,6 @@ export default function SettingPage() {
     const updates: Record<string, unknown> = {};
     if (newUsername && newUsername !== currentUserData.username)
       updates.username = newUsername;
-    if (newAge && newAge !== currentUserData.age) updates.age = newAge;
     if (profileImage && profileImage !== currentUserData.image)
       updates.image = profileImage;
 
@@ -104,8 +99,8 @@ export default function SettingPage() {
           <div className="text-start">
             <p className="mb-2">Your profile already matches these details.</p>
             <p className="mb-0 text-body-secondary">
-              Update your username, age, or add a fresh profile photo to save
-              new changes.
+              Update your username or add a fresh profile photo to save new
+              changes.
             </p>
           </div>
         ),
@@ -123,12 +118,6 @@ export default function SettingPage() {
         label: "Username",
         from: describeValue(currentUserData.username),
         to: describeValue(updates.username),
-      });
-    if (updates.age)
-      changeSummary.push({
-        label: "Age",
-        from: describeValue(currentUserData.age),
-        to: describeValue(updates.age),
       });
     if (updates.image)
       changeSummary.push({
@@ -191,7 +180,6 @@ export default function SettingPage() {
             updateUser({ username: updates.username });
           }
           setNewUsername("");
-          setNewAge(0);
           setProfileImage("");
         } else {
           const retry = await showConfirm({
@@ -430,16 +418,6 @@ export default function SettingPage() {
                   className={inputClassName}
                   value={username}
                   onChange={(e) => setNewUsername(e.target.value)}
-                />
-              </div>
-
-              <div className="col-12">
-                <label className="form-label fw-semibold">Age</label>
-                <input
-                  type="number"
-                  className={inputClassName}
-                  value={age}
-                  onChange={(e) => setNewAge(Number(e.target.value))}
                 />
               </div>
 

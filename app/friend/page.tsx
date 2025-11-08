@@ -10,8 +10,6 @@ import { useCachedApi } from "../hooks/useCachedApi";
 
 interface User {
   username: string;
-  position: string;
-  age: number;
   image: string;
   friends?: string[];
   online?: boolean;
@@ -215,9 +213,6 @@ export default function FriendPage() {
                             {f.online ? "Online" : "Offline"}
                           </span>
                         </div>
-                        {f.position && (
-                          <p className="user-card-subtext mb-1">{f.position}</p>
-                        )}
                         {preview && (
                           <p className="user-card-preview mb-0" title={preview}>
                             {preview}

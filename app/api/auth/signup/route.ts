@@ -10,7 +10,7 @@ import bcrypt from 'bcrypt';
 // Handle POST /api/auth/signup to create a new user account
 export async function POST(req: Request) {
   // Get all provided fields from the request body
-  const { username, email, password, position, age, image } = await req.json();
+  const { username, email, password, image } = await req.json();
 
   if (typeof username !== 'string' || !username.trim()) {
     return NextResponse.json({ error: 'Username is required' }, { status: 400 });
@@ -54,15 +54,6 @@ export async function POST(req: Request) {
       email: normalizedEmail,
       password: hashed,
     };
-
-    if (typeof position === 'string' && position.trim()) {
-      userDoc.position = position.trim();
-    }
-
-    const parsedAge = Number(age);
-    if (!Number.isNaN(parsedAge) && parsedAge > 0) {
-      userDoc.age = parsedAge;
-    }
 
     if (typeof image === 'string' && image.trim()) {
       userDoc.image = image;

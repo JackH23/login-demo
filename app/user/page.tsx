@@ -19,8 +19,6 @@ export default function UserPage() {
 
   interface User {
     username: string;
-    position?: string;
-    age?: number;
     image: string;
     friends?: string[];
     online?: boolean;
@@ -188,20 +186,6 @@ export default function UserPage() {
           autoFocus: true,
           helperText: "Visible to everyone across the platform.",
         },
-        {
-          name: "position",
-          label: "Role or focus",
-          defaultValue: u.position ?? "",
-          placeholder: "e.g. Product Designer",
-          helperText: "Give teammates a hint about what you do.",
-        },
-        {
-          name: "age",
-          label: "Age",
-          type: "number",
-          defaultValue: typeof u.age === "number" ? u.age.toString() : "",
-          helperText: "Optional — numbers only.",
-        },
       ],
     });
 
@@ -209,13 +193,6 @@ export default function UserPage() {
 
     const username = result.username?.trim();
     if (!username) return;
-    const position = result.position?.trim() ?? "";
-    const ageInput = result.age?.trim() ?? "";
-    const parsedAge = ageInput === "" ? null : Number(ageInput);
-    if (parsedAge !== null && Number.isNaN(parsedAge)) {
-      alert("Please enter a valid number for age.");
-      return;
-    }
 
     const changes: { label: string; from: ReactNode; to: ReactNode }[] = [];
     if (username !== u.username)
@@ -223,19 +200,6 @@ export default function UserPage() {
         label: "Username",
         from: formatValue(u.username),
         to: formatValue(username),
-      });
-    if ((position ?? "") !== (u.position ?? ""))
-      changes.push({
-        label: "Position",
-        from: formatValue(u.position ?? ""),
-        to: formatValue(position ?? ""),
-      });
-    const currentAge = typeof u.age === "number" ? u.age : null;
-    if (parsedAge !== currentAge)
-      changes.push({
-        label: "Age",
-        from: formatValue(u.age),
-        to: formatValue(parsedAge),
       });
 
     if (changes.length === 0) {
@@ -308,8 +272,6 @@ export default function UserPage() {
       },
       body: JSON.stringify({
         username,
-        position,
-        age: parsedAge,
       }),
     });
     if (res.ok) {
@@ -343,14 +305,6 @@ export default function UserPage() {
               <>We’ll let them know you’d like to stay in touch.</>
             )}
           </p>
-          {friendUser?.position && (
-            <div className="confirm-dialog-summary">
-              <div className="confirm-dialog-summary-item">
-                <div className="confirm-dialog-diff-label">Role snapshot</div>
-                <div className="fw-semibold">{friendUser.position}</div>
-              </div>
-            </div>
-          )}
           <ul className="confirm-dialog-highlight mb-0">
             <li>They’ll see your invite instantly.</li>
             <li>Chat unlocks as soon as they accept.</li>
@@ -505,13 +459,7 @@ export default function UserPage() {
                               {u.online ? "Online" : "Offline"}
                             </span>
                           </div>
-                          {u.position && (
-                            <p className="user-card-subtext mb-1">{u.position}</p>
-                          )}
                           <div className="user-card-meta">
-                            {typeof u.age === "number" && (
-                              <span className="user-card-chip">Age {u.age}</span>
-                            )}
                             {isFriend && (
                               <span className="user-card-chip user-card-chip--success">
                                 Friend
