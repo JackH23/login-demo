@@ -5,6 +5,8 @@ import { Schema, model, models } from 'mongoose';
 const UserSchema = new Schema({
   // Unique username used for login
   username: { type: String, required: true, unique: true },
+  // Contact email for the user
+  email: { type: String, required: true, unique: true },
   // Hashed password value
   password: { type: String, required: true },
   // Position or title of the user
@@ -20,6 +22,7 @@ const UserSchema = new Schema({
 });
 
 UserSchema.index({ username: 1 });
+UserSchema.index({ email: 1 });
 UserSchema.index({ online: 1, username: 1 });
 
 // Reuse the model if it has already been compiled

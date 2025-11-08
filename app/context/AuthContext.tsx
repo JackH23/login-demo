@@ -18,6 +18,7 @@ interface AuthContextValue {
   // Creates a new account; resolves to true on success
   signup: (
     username: string,
+    email: string,
     password: string,
     position: string,
     age: number,
@@ -154,6 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signup = async (
     username: string,
+    email: string,
     password: string,
     position: string,
     age: number,
@@ -163,7 +165,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const res = await fetch("/api/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password, position, age, image }),
+      body: JSON.stringify({ username, email, password, position, age, image }),
     });
 
     if (res.ok) {
