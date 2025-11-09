@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { Socket } from "socket.io-client";
@@ -29,7 +29,7 @@ interface ChatEmoji {
   hasSkinTones?: boolean;
 }
 
-export default function ChatPage() {
+function ChatPageContent() {
   const searchParams = useSearchParams();
   const chatUser = searchParams.get("user") ?? "";
   const { user, socket } = useAuth();
@@ -592,5 +592,13 @@ export default function ChatPage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function ChatPage() {
+  return (
+    <Suspense fallback={<div className="p-4">Loading chat…</div>}>
+      <ChatPageContent />
+    </Suspense>
   );
 }

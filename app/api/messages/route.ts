@@ -22,7 +22,7 @@ export async function GET(req: Request) {
       { from: user1, to: user2 },
       { from: user2, to: user1 },
     ],
-  } as const;
+  };
 
   const boundedLimit =
     typeof limit === 'number' && Number.isFinite(limit) && limit > 0

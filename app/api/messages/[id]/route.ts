@@ -4,7 +4,7 @@ import Message from '@/models/Message';
 
 export async function DELETE(
   req: Request,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
   await dbConnect();
@@ -17,7 +17,7 @@ export async function DELETE(
 
 export async function PUT(
   req: Request,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
   const { content } = await req.json();

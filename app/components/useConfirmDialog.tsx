@@ -17,7 +17,7 @@ interface ConfirmDialogOptions {
 export function useConfirmDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [options, setOptions] = useState<ConfirmDialogOptions>({ message: "" });
-  const resolverRef = useRef<(value: boolean) => void>();
+  const resolverRef = useRef<((value: boolean) => void) | undefined>(undefined);
 
   const confirm = useCallback((opts: ConfirmDialogOptions) => {
     return new Promise<boolean>((resolve) => {

@@ -4,7 +4,7 @@ import Comment from '@/models/Comment';
 
 export async function POST(
   req: Request,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
   const { author, text } = await req.json();
@@ -22,7 +22,7 @@ export async function POST(
 
 export async function PATCH(
   req: Request,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
   const { action, username } = await req.json();
@@ -30,7 +30,14 @@ export async function PATCH(
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   }
   await dbConnect();
-  const existing = await Comment.findById(id).lean();
+  type LeanComment = {
+    _id: string;
+    likes: number;
+    dislikes: number;
+    likedBy?: string[];
+    dislikedBy?: string[];
+  };
+  const existing = await Comment.findById(id).lean<LeanComment | null>();
   if (!existing) {
     return NextResponse.json({ error: 'Comment not found' }, { status: 404 });
   }
@@ -53,7 +60,9 @@ export async function PATCH(
       ? { $addToSet: { likedBy: username }, $inc: { likes: 1 } }
       : { $addToSet: { dislikedBy: username }, $inc: { dislikes: 1 } };
 
-  const comment = await Comment.findByIdAndUpdate(id, update, { new: true }).lean();
+  const comment = await Comment.findByIdAndUpdate(id, update, {
+    new: true,
+  }).lean<LeanComment | null>();
 
   return NextResponse.json({
     comment: {

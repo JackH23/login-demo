@@ -150,7 +150,7 @@ export default function UserPage() {
     }
   };
 
-  const formatValue = (value: unknown): ReactNode => {
+  const formatValue = (value: string | null | undefined): ReactNode => {
     if (value === undefined || value === null || value === "") {
       return <span className="text-muted fst-italic">Not set</span>;
     }

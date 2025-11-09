@@ -75,7 +75,7 @@ export default function SettingPage() {
     );
   }
 
-  const describeValue = (value: unknown): ReactNode => {
+  const describeValue = (value: string | null | undefined): ReactNode => {
     if (value === undefined || value === null || value === "") {
       return <span className="text-muted fst-italic">Not set</span>;
     }
@@ -85,7 +85,7 @@ export default function SettingPage() {
   const handleSave = async () => {
     if (!user) return;
 
-    const updates: Record<string, unknown> = {};
+    const updates: Partial<{ username: string; image: string }> = {};
     if (newUsername && newUsername !== currentUserData.username)
       updates.username = newUsername;
     if (profileImage && profileImage !== currentUserData.image)
