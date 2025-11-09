@@ -11,7 +11,6 @@ const EmojiSchema = new Schema(
   { versionKey: false }
 );
 
-EmojiSchema.index({ shortcode: 1 });
 EmojiSchema.index({ category: 1, sortOrder: 1 });
 
 export default models.Emoji || model('Emoji', EmojiSchema);

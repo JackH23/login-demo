@@ -17,8 +17,6 @@ const UserSchema = new Schema({
   online: { type: Boolean, default: false },
 });
 
-UserSchema.index({ username: 1 });
-UserSchema.index({ email: 1 });
 UserSchema.index({ online: 1, username: 1 });
 
 // Reuse the model if it has already been compiled
