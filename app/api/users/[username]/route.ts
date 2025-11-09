@@ -22,7 +22,7 @@ function getRequester(req: Request): string | null {
 
 export async function GET(
   req: Request,
-  context: { params: { username: string } }
+  context: { params: Promise<{ username: string }> }
 ) {
   const { username } = await context.params;
   await dbConnect();
@@ -38,7 +38,7 @@ export async function GET(
 
 export async function PUT(
   req: Request,
-  context: { params: { username: string } }
+  context: { params: Promise<{ username: string }> }
 ) {
   const { username: target } = await context.params;
   const requester = getRequester(req);
@@ -54,7 +54,16 @@ export async function PUT(
 
   await dbConnect();
 
-  const prev = await User.findOne({ username: target }, 'online').lean();
+  type LeanUser = {
+    username: string;
+    image?: string;
+    friends?: string[];
+    online?: boolean;
+  };
+
+  const prev = await User.findOne({ username: target }, 'online').lean<
+    Pick<LeanUser, 'online'> | null
+  >();
 
   // Only include fields that were provided in the update payload
   const update: Record<string, unknown> = {};
@@ -66,7 +75,7 @@ export async function PUT(
     { username: target },
     update,
     { new: true, fields: 'username image friends online -_id' }
-  ).lean();
+  ).lean<LeanUser | null>();
 
   if (user && prev && online !== undefined && prev.online !== online) {
     if (user.online) emitUserOnline(user.username);
@@ -82,7 +91,7 @@ export async function PUT(
 
 export async function DELETE(
   req: Request,
-  context: { params: { username: string } }
+  context: { params: Promise<{ username: string }> }
 ) {
   const { username: target } = await context.params;
   const requester = getRequester(req);

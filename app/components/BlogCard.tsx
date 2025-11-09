@@ -9,7 +9,7 @@ interface BlogPost {
   _id?: string;
   title: string;
   content: string;
-  image: string | null;
+  image?: string | null;
   author: string;
   likes: number;
   dislikes: number;

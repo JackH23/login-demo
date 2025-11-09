@@ -22,7 +22,9 @@ export function usePromptDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [options, setOptions] = useState<PromptDialogOptions | null>(null);
   const [values, setValues] = useState<Record<string, string>>({});
-  const resolverRef = useRef<(value: PromptDialogResult) => void>();
+  const resolverRef = useRef<
+    ((value: PromptDialogResult) => void) | undefined
+  >(undefined);
 
   const prompt = useCallback((opts: PromptDialogOptions) => {
     return new Promise<Record<string, string> | null>((resolve) => {

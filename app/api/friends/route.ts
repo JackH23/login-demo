@@ -42,7 +42,9 @@ export async function GET(req: Request) {
   }
 
   await dbConnect();
-  const user = await User.findOne({ username }, 'friends -_id').lean();
+  const user = await User.findOne({ username }, 'friends -_id').lean<
+    { friends?: string[] } | null
+  >();
   if (!user) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }

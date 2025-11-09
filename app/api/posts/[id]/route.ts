@@ -6,7 +6,7 @@ import { emitPostDeleted } from '@/lib/socketServer';
 
 export async function PATCH(
   req: Request,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
   const { action, username } = await req.json();
@@ -16,7 +16,14 @@ export async function PATCH(
 
   await dbConnect();
 
-  const existing = await Post.findById(id).lean();
+  type LeanPost = {
+    _id: string;
+    likes: number;
+    dislikes: number;
+    likedBy?: string[];
+    dislikedBy?: string[];
+  };
+  const existing = await Post.findById(id).lean<LeanPost | null>();
   if (!existing) {
     return NextResponse.json({ error: 'Post not found' }, { status: 404 });
   }
@@ -39,7 +46,9 @@ export async function PATCH(
       ? { $addToSet: { likedBy: username }, $inc: { likes: 1 } }
       : { $addToSet: { dislikedBy: username }, $inc: { dislikes: 1 } };
 
-  const post = await Post.findByIdAndUpdate(id, update, { new: true }).lean();
+  const post = await Post.findByIdAndUpdate(id, update, { new: true }).lean<
+    LeanPost | null
+  >();
 
   return NextResponse.json({
     post: {
@@ -52,7 +61,7 @@ export async function PATCH(
 
 export async function DELETE(
   req: Request,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
   await dbConnect();

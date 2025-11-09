@@ -2,11 +2,11 @@ import { Server } from 'socket.io';
 import { createServer } from 'http';
 
 // Global type to avoid recreating the server on hot reloads
-interface GlobalWithIo extends NodeJS.Global {
+interface GlobalWithIo {
   _io?: Server;
 }
 
-const g = global as GlobalWithIo;
+const g = globalThis as typeof globalThis & GlobalWithIo;
 
 // Initialize the Socket.IO server if it hasn't been created yet
 export function initSocketServer(port: number = Number(process.env.SOCKET_PORT) || 3001) {
@@ -26,7 +26,11 @@ export function initSocketServer(port: number = Number(process.env.SOCKET_PORT) 
 // as soon as the module is imported so client connections do not immediately
 // fail while waiting for the first API handler to emit an event. Guard the
 // call so it does not run in edge runtimes or during client-side bundling.
-if (typeof process !== 'undefined' && process.release?.name === 'node') {
+if (
+  typeof process !== 'undefined' &&
+  process.release?.name === 'node' &&
+  process.env.NODE_ENV !== 'production'
+) {
   initSocketServer();
 }
 
