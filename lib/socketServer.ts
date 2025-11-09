@@ -4,36 +4,35 @@ import { createServer } from 'http';
 // Global type to avoid recreating the server on hot reloads
 interface GlobalWithIo {
   _io?: Server;
+  _httpServer?: ReturnType<typeof createServer>;
 }
 
 const g = globalThis as typeof globalThis & GlobalWithIo;
 
-// Initialize the Socket.IO server if it hasn't been created yet
-export function initSocketServer(port: number = Number(process.env.SOCKET_PORT) || 3001) {
+export function initSocketServer(port?: number) {
+  // Render provides process.env.PORT — fall back to 3001 locally
+  const resolvedPort =
+    port ?? Number(process.env.PORT || process.env.SOCKET_PORT || 3001);
+
+  // Create server only once
   if (!g._io) {
     const httpServer = createServer();
-    g._io = new Server(httpServer, {
+    const io = new Server(httpServer, {
       cors: { origin: '*' },
     });
-    httpServer.listen(port, () => {
-      console.log(`Socket.IO server running on port ${port}`);
+
+    httpServer.listen(resolvedPort, '0.0.0.0', () => {
+      console.log(`✅ Socket.IO server running on port ${resolvedPort}`);
     });
+
+    g._io = io;
+    g._httpServer = httpServer;
   }
+
   return g._io!;
 }
 
-// In a traditional Node.js runtime we want the Socket.IO server to be ready
-// as soon as the module is imported so client connections do not immediately
-// fail while waiting for the first API handler to emit an event. Guard the
-// call so it does not run in edge runtimes or during client-side bundling.
-if (
-  typeof process !== 'undefined' &&
-  process.release?.name === 'node' &&
-  process.env.NODE_ENV !== 'production'
-) {
-  initSocketServer();
-}
-
+// Utility functions to emit events
 export function emitUserOnline(username: string) {
   const io = initSocketServer();
   io.emit('user-online', username);
@@ -54,7 +53,7 @@ export function emitPostCreated(post: Record<string, unknown>) {
   io.emit('post-created', { post });
 }
 
-// Start the server automatically when executed directly
+// Only start automatically when executed directly (not imported)
 if (require.main === module) {
   initSocketServer();
 }
