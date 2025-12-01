@@ -25,7 +25,10 @@ interface AuthContextValue {
     image: string | null
   ) => Promise<{ success: true } | { success: false; message: string }>;
   // Logs an existing user in; resolves to true on success
-  signin: (email: string, password: string) => Promise<boolean>;
+  signin: (
+    email: string,
+    password: string
+  ) => Promise<{ success: true } | { success: false; message: string }>;
   // Clears user information from state and storage
   logout: () => void;
   // Socket connection for real-time updates
@@ -134,12 +137,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     password: string,
     image: string | null
   ) => {
+    const sanitizedUsername = username.trim();
+    const sanitizedEmail = email.trim().toLowerCase();
+    const sanitizedPassword = password;
+
     // Call the API route to create a new user with extra information
     try {
       const res = await fetch(apiUrl("/api/auth/signup"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password, image }),
+        body: JSON.stringify({
+          username: sanitizedUsername,
+          email: sanitizedEmail,
+          password: sanitizedPassword,
+          image,
+        }),
       });
 
       if (res.ok) {
@@ -173,11 +185,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signin = async (email: string, password: string) => {
     // Request API route to sign in and store the returned user
+    const sanitizedEmail = email.trim().toLowerCase();
+    const sanitizedPassword = password;
+
     try {
       const res = await fetch(apiUrl("/api/auth/signin"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: sanitizedEmail, password: sanitizedPassword }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -187,12 +202,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Mark user as online after successful sign in
         if (socket) socket.emit("user-online", data.username);
         void updateOnlineStatus(data.username, true);
-        return true;
+        return { success: true } as const;
       }
+
+      let message = "Invalid email or password.";
+      try {
+        const bodyText = await res.text();
+        try {
+          const data = JSON.parse(bodyText);
+          if (typeof data?.error === "string" && data.error.trim()) {
+            message = data.error;
+          }
+        } catch {
+          if (bodyText.trim()) message = bodyText;
+        }
+      } catch (error) {
+        console.error("Unable to read signin error response", error);
+      }
+
+      return { success: false as const, message };
     } catch (error) {
       console.error("Signin request failed", error);
+      return {
+        success: false as const,
+        message: "Unable to reach the server. Please try again shortly.",
+      };
     }
-    return false;
   };
 
   const logout = () => {

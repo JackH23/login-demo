@@ -13,28 +13,35 @@ router.post(
   asyncHandler(async (req, res) => {
     const { username, email, password, image } = req.body ?? {};
 
-    if (!username || !email || !password) {
-      return res.status(400).json({ error: "Username, email, and password are required" });
+    const normalizedUsername = typeof username === "string" ? username.trim() : "";
+    const normalizedEmail =
+      typeof email === "string" ? email.trim().toLowerCase() : "";
+    const normalizedPassword = typeof password === "string" ? password : "";
+
+    if (!normalizedUsername || !normalizedEmail || !normalizedPassword) {
+      return res
+        .status(400)
+        .json({ error: "Username, email, and password are required" });
     }
 
     const existingUser = await User.findOne({
-      $or: [{ username }, { email }],
+      $or: [{ username: normalizedUsername }, { email: normalizedEmail }],
     }).lean();
 
     if (existingUser) {
       return res.status(409).json({ error: "Username or email already in use" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(normalizedPassword, 10);
 
     await User.create({
-      username,
-      email,
+      username: normalizedUsername,
+      email: normalizedEmail,
       password: hashedPassword,
       image: typeof image === "string" && image.trim() ? image : undefined,
     });
 
-    return res.status(201).json({ username });
+    return res.status(201).json({ username: normalizedUsername });
   })
 );
 
@@ -43,17 +50,24 @@ router.post(
   asyncHandler(async (req, res) => {
     const { email, password } = req.body ?? {};
 
-    if (!email || !password) {
+    const normalizedEmail =
+      typeof email === "string" ? email.trim().toLowerCase() : "";
+    const normalizedPassword = typeof password === "string" ? password : "";
+
+    if (!normalizedEmail || !normalizedPassword) {
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    const user = await User.findOne({ email }).lean();
+    const user = await User.findOne({ email: normalizedEmail }).lean();
 
     if (!user) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    const passwordMatches = await bcrypt.compare(password, user.password);
+    const passwordMatches = await bcrypt.compare(
+      normalizedPassword,
+      user.password
+    );
 
     if (!passwordMatches) {
       return res.status(401).json({ error: "Invalid credentials" });
