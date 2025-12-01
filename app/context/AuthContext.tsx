@@ -148,12 +148,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       let message = "Account creation failed.";
       try {
-        const data = await res.json();
-        if (typeof data?.error === "string" && data.error.trim()) {
-          message = data.error;
+        const bodyText = await res.text();
+        try {
+          const data = JSON.parse(bodyText);
+          if (typeof data?.error === "string" && data.error.trim()) {
+            message = data.error;
+          }
+        } catch {
+          if (bodyText.trim()) message = bodyText;
         }
       } catch (error) {
-        console.error("Unable to parse signup error response", error);
+        console.error("Unable to read signup error response", error);
       }
 
       return { success: false as const, message };

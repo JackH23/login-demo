@@ -3,11 +3,17 @@ function normalizeUrl(value: string) {
 }
 
 function resolveBaseUrl() {
-  const envBase = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const envBase = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
   if (envBase) return normalizeUrl(envBase);
 
-  // No guessing. Default for backend in dev mode:
-  return "http://localhost:3001"; // <- change to your backend port
+  // In development, talk to the locally running Express backend.
+  if (process.env.NODE_ENV === "development") {
+    return "http://localhost:3001"; // <- change to your backend port
+  }
+
+  // In production, rely on the same-origin Next.js server and let rewrites
+  // forward /api requests to the backend.
+  return "";
 }
 
 export const API_BASE_URL = resolveBaseUrl();
