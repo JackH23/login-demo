@@ -43,17 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    const urlFromEnv = process.env.NEXT_PUBLIC_SOCKET_URL;
-    const portFromEnv =
-      process.env.NEXT_PUBLIC_SOCKET_PORT || process.env.SOCKET_PORT || "3001";
-
-    const resolvedUrl =
-      urlFromEnv ||
-      (typeof window !== "undefined"
-        ? `${window.location.protocol}//${window.location.hostname}:${portFromEnv}`
-        : undefined);
-
-    if (!resolvedUrl) return;
+    const resolvedUrl = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001";
 
     const s = io(resolvedUrl);
     const handleConnectError = (error: Error) => {
