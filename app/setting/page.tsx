@@ -8,6 +8,7 @@ import TopBar from "../components/TopBar";
 import LoadingState from "../components/LoadingState";
 import { useConfirmDialog } from "../components/useConfirmDialog";
 import { useCachedApi } from "../hooks/useCachedApi";
+import { apiUrl } from "@/lib/api";
 
 interface User {
   username: string;
@@ -163,7 +164,7 @@ export default function SettingPage() {
 
     const performUpdate = async (): Promise<void> => {
       try {
-        const res = await fetch(`/api/users/${user.username}`, {
+        const res = await fetch(apiUrl(`/api/users/${user.username}`), {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -255,7 +256,7 @@ export default function SettingPage() {
     if (!confirmed) return;
 
     try {
-      const res = await fetch(`/api/users/${user.username}`, {
+      const res = await fetch(apiUrl(`/api/users/${user.username}`), {
         method: "DELETE",
         headers: { Authorization: user.username },
       });

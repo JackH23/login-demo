@@ -7,6 +7,7 @@ import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 import LoadingState from "../components/LoadingState";
 import { useCachedApi } from "../hooks/useCachedApi";
+import { apiUrl } from "@/lib/api";
 
 interface User {
   username: string;
@@ -51,8 +52,8 @@ export default function FriendPage() {
     const fetchData = async () => {
       try {
         const [usersRes, friendsRes] = await Promise.all([
-          fetch("/api/users"),
-          fetch(`/api/friends?username=${user.username}`),
+          fetch(apiUrl("/api/users")),
+          fetch(apiUrl(`/api/friends?username=${user.username}`)),
         ]);
         const usersData = await usersRes.json();
         const friendsData = await friendsRes.json();
@@ -103,7 +104,7 @@ export default function FriendPage() {
         const results = await Promise.all(
           friends.map(async (friend) => {
             const res = await fetch(
-              `/api/messages?user1=${user.username}&user2=${friend}&limit=1`
+              apiUrl(`/api/messages?user1=${user.username}&user2=${friend}&limit=1`)
             );
             const data = await res.json();
             const msgs = data.messages ?? [];

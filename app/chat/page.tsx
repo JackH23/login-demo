@@ -5,6 +5,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { Socket } from "socket.io-client";
+import { apiUrl } from "@/lib/api";
 
 interface Message {
   _id: string;
@@ -117,7 +118,7 @@ function ChatPageContent() {
           user2: chatUser,
           limit: "200",
         });
-        const res = await fetch(`/api/messages?${params.toString()}`);
+        const res = await fetch(apiUrl(`/api/messages?${params.toString()}`));
         if (!res.ok) {
           throw new Error(`Failed to fetch messages: ${res.status}`);
         }
@@ -236,7 +237,7 @@ function ChatPageContent() {
     scrollToBottom();
 
     try {
-      const res = await fetch("/api/messages", {
+      const res = await fetch(apiUrl("/api/messages"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -302,7 +303,7 @@ function ChatPageContent() {
   };
 
   const handleDelete = async (id: string) => {
-    const res = await fetch(`/api/messages/${id}`, { method: "DELETE" });
+    const res = await fetch(apiUrl(`/api/messages/${id}`), { method: "DELETE" });
     if (res.ok) {
       setMessages((prev) => prev.filter((m) => m._id !== id));
     }
@@ -311,7 +312,7 @@ function ChatPageContent() {
   const handleEdit = async (msg: Message) => {
     const newContent = prompt("Edit message", msg.content);
     if (newContent === null || newContent.trim() === "") return;
-    const res = await fetch(`/api/messages/${msg._id}`, {
+    const res = await fetch(apiUrl(`/api/messages/${msg._id}`), {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content: newContent }),

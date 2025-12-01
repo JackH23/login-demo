@@ -10,6 +10,7 @@ import LoadingState from "../components/LoadingState";
 import { useConfirmDialog } from "../components/useConfirmDialog";
 import { useCachedApi } from "../hooks/useCachedApi";
 import { usePostRealtimeUpdates } from "../hooks/usePostRealtimeUpdates";
+import { apiUrl } from "@/lib/api";
 
 interface User {
   username: string;
@@ -78,7 +79,7 @@ export default function PostsPage() {
       confirmVariant: "danger",
     });
     if (!confirmed) return;
-    const res = await fetch(`/api/posts/${id}`, { method: "DELETE" });
+    const res = await fetch(apiUrl(`/api/posts/${id}`), { method: "DELETE" });
     if (res.ok) {
       setPosts((prev) => prev.filter((p) => p._id !== id));
     }

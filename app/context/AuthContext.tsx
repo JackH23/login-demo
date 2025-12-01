@@ -3,6 +3,7 @@
 // React hooks for managing context state on the client
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
+import { apiUrl } from "@/lib/api";
 
 // Basic representation of a user stored in the context
 interface User {
@@ -45,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const resolvedUrl = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001";
 
-    const s = io(resolvedUrl);
+    const s = io(resolvedUrl, { transports: ["websocket"] });
     const handleConnectError = (error: Error) => {
       console.error("Socket connection error:", error);
     };
@@ -60,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const updateOnlineStatus = useCallback(
     async (username: string, online: boolean) => {
       try {
-        const res = await fetch(`/api/users/${encodeURIComponent(username)}`, {
+        const res = await fetch(apiUrl(`/api/users/${encodeURIComponent(username)}`), {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -148,7 +149,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     image: string | null
   ) => {
     // Call the API route to create a new user with extra information
-    const res = await fetch("/api/auth/signup", {
+    const res = await fetch(apiUrl("/api/auth/signup"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, email, password, image }),
@@ -173,7 +174,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signin = async (email: string, password: string) => {
     // Request API route to sign in and store the returned user
-    const res = await fetch("/api/auth/signin", {
+    const res = await fetch(apiUrl("/api/auth/signin"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),

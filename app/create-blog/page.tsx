@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { apiUrl } from "@/lib/api";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 
@@ -47,7 +48,7 @@ export default function CreateBlogPage() {
     e.preventDefault();
     if (!user) return;
 
-    const res = await fetch("/api/posts", {
+    const res = await fetch(apiUrl("/api/posts"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
