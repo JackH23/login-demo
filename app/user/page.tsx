@@ -45,25 +45,7 @@ export default function UserPage() {
   }, [loading, user, router]);
 
   useEffect(() => {
-    if (!socket) return;
-    const handleOnline = (username: string) => {
-      setUsers((prev) =>
-        prev.map((u) => (u.username === username ? { ...u, online: true } : u))
-      );
-    };
-    const handleOffline = (username: string) => {
-      setUsers((prev) =>
-        prev.map((u) =>
-          u.username === username ? { ...u, online: false } : u
-        )
-      );
-    };
-    socket.on("user-online", handleOnline);
-    socket.on("user-offline", handleOffline);
-    return () => {
-      socket.off("user-online", handleOnline);
-      socket.off("user-offline", handleOffline);
-    };
+    // Socket listeners disabled; rely on API data
   }, [setUsers, socket]);
 
   if (loading || usersLoading || !user) {

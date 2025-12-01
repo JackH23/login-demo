@@ -39,41 +39,8 @@ export function usePostRealtimeUpdates<T extends IdentifiablePost>(
   const { socket } = useAuth();
 
   useEffect(() => {
-    if (!socket) return;
-
-    const handlePostDeleted = (payload: PostDeletedPayload | string) => {
-      const postId = typeof payload === "string" ? payload : payload?.postId;
-      if (!postId) return;
-      setPosts((prev) => prev.filter((post) => post._id !== postId));
-    };
-
-    const handlePostCreated = (payload: PostCreatedPayload<T> | T) => {
-      const post = normalizePost(
-        (typeof payload === "object" && payload !== null && "post" in payload
-          ? (payload as PostCreatedPayload<T>).post
-          : (payload as T)) as T
-      );
-
-      if (!post || !post._id) return;
-
-      setPosts((prev) => {
-        const index = prev.findIndex((existing) => existing._id === post._id);
-        if (index !== -1) {
-          const next = [...prev];
-          next[index] = { ...next[index], ...post };
-          return next;
-        }
-        return [post, ...prev];
-      });
-    };
-
-    socket.on("post-deleted", handlePostDeleted);
-    socket.on("post-created", handlePostCreated);
-
-    return () => {
-      socket.off("post-deleted", handlePostDeleted);
-      socket.off("post-created", handlePostCreated);
-    };
+    // Realtime post updates disabled
+    return undefined;
   }, [setPosts, socket]);
 
 }
