@@ -42,9 +42,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   // Indicates whether the provider has finished restoring a session
   const [loading, setLoading] = useState(true);
-  const socket: Socket = socketClient;
+  const socket: Socket | null = socketClient;
 
   useEffect(() => {
+    if (!socket) return undefined;
+
     const handleConnectError = (error: Error) => {
       console.error("Socket connection error:", error);
     };
