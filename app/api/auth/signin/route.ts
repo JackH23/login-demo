@@ -1,9 +1,9 @@
 // Next.js helper for creating API route responses
 import { NextResponse } from 'next/server';
 // Utility to connect to MongoDB
-import dbConnect from '@/lib/mongodb';
+import dbConnect from '@/backend/mongodb';
 // Mongoose User model used to query the database
-import User from '@/models/User';
+import User from '@/backend/models/User';
 // Library used to compare hashed passwords
 import bcrypt from 'bcrypt';
 

@@ -1,4 +1,4 @@
-import { Schema, model, models } from 'mongoose';
+const { Schema, model, models } = require('mongoose');
 
 const ReplySchema = new Schema(
   {
@@ -24,5 +24,4 @@ const CommentSchema = new Schema(
 
 CommentSchema.index({ postId: 1, createdAt: 1 });
 
-export default models.Comment || model('Comment', CommentSchema);
-
+module.exports = models.Comment || model('Comment', CommentSchema);

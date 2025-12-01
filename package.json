@@ -5,8 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "prestart": "next build",
-    "start": "next start -p $PORT",
+    "start": "next start",
     "socket": "node backend/server.js",
     "lint": "next lint"
   },

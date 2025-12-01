@@ -1,4 +1,4 @@
-import { Schema, model, models } from 'mongoose';
+const { Schema, model, models } = require('mongoose');
 
 const MessageSchema = new Schema({
   from: { type: String, required: true },
@@ -11,5 +11,4 @@ const MessageSchema = new Schema({
 
 MessageSchema.index({ from: 1, to: 1, createdAt: -1 });
 
-export default models.Message || model('Message', MessageSchema);
-
+module.exports = models.Message || model('Message', MessageSchema);
