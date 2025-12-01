@@ -6,9 +6,12 @@ function resolveBaseUrl() {
   const envBase = process.env.NEXT_PUBLIC_API_BASE_URL;
   if (envBase) return normalizeUrl(envBase);
 
-  // In the browser, fallback to the current origin so fetch requests stay same-host
+  // In the browser, prefer the backend during local development instead of the
+  // Next.js dev server (which does not expose these API routes).
   if (typeof window !== "undefined" && window.location?.origin) {
-    return normalizeUrl(window.location.origin);
+    if (!window.location.origin.includes("localhost:3000")) {
+      return normalizeUrl(window.location.origin);
+    }
   }
 
   // Local development default
