@@ -2,8 +2,9 @@
 
 // React hooks for managing context state on the client
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { io, Socket } from "socket.io-client";
+import { Socket } from "socket.io-client";
 import { apiUrl } from "@/lib/api";
+import socketClient from "@/lib/socketClient";
 
 // Basic representation of a user stored in the context
 interface User {
@@ -41,22 +42,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   // Indicates whether the provider has finished restoring a session
   const [loading, setLoading] = useState(true);
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const socket: Socket = socketClient;
 
   useEffect(() => {
-    const resolvedUrl = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001";
-
-    const s = io(resolvedUrl, { transports: ["websocket"] });
     const handleConnectError = (error: Error) => {
       console.error("Socket connection error:", error);
     };
-    s.on("connect_error", handleConnectError);
-    setSocket(s);
+    socket.on("connect_error", handleConnectError);
     return () => {
-      s.off("connect_error", handleConnectError);
-      s.disconnect();
+      socket.off("connect_error", handleConnectError);
     };
-  }, []);
+  }, [socket]);
 
   const updateOnlineStatus = useCallback(
     async (username: string, online: boolean) => {
