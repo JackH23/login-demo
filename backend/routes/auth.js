@@ -1,21 +1,17 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
-const multer = require("multer");
 
 const User = require("../models/User");
 
 const router = express.Router();
-const upload = multer({ dest: "uploads/" });
 
 const asyncHandler = (handler) =>
   (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
 
 router.post(
   "/signup",
-  upload.single("image"),
   asyncHandler(async (req, res) => {
-    const { username, email, password } = req.body ?? {};
-    const imageFile = req.file;
+    const { username, email, password, image } = req.body ?? {};
 
     if (!username || !email || !password) {
       return res.status(400).json({ error: "Username, email, and password are required" });
@@ -35,7 +31,7 @@ router.post(
       username,
       email,
       password: hashedPassword,
-      image: imageFile?.filename,
+      image: typeof image === "string" && image.trim() ? image : undefined,
     });
 
     return res.status(201).json({ username });
