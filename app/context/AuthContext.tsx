@@ -145,45 +145,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     image: string | null
   ) => {
     // Call the API route to create a new user with extra information
-    const res = await fetch(apiUrl("/api/auth/signup"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, password, image }),
-    });
-
-    if (res.ok) {
-      return { success: true } as const;
-    }
-
-    let message = "Account creation failed.";
     try {
-      const data = await res.json();
-      if (typeof data?.error === "string" && data.error.trim()) {
-        message = data.error;
-      }
-    } catch (error) {
-      console.error("Unable to parse signup error response", error);
-    }
+      const res = await fetch(apiUrl("/api/auth/signup"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, email, password, image }),
+      });
 
-    return { success: false as const, message };
+      if (res.ok) {
+        return { success: true } as const;
+      }
+
+      let message = "Account creation failed.";
+      try {
+        const data = await res.json();
+        if (typeof data?.error === "string" && data.error.trim()) {
+          message = data.error;
+        }
+      } catch (error) {
+        console.error("Unable to parse signup error response", error);
+      }
+
+      return { success: false as const, message };
+    } catch (error) {
+      console.error("Signup request failed", error);
+      return {
+        success: false as const,
+        message: "Unable to reach the server. Please try again shortly.",
+      };
+    }
   };
 
   const signin = async (email: string, password: string) => {
     // Request API route to sign in and store the returned user
-    const res = await fetch(apiUrl("/api/auth/signin"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      // Persist the username in local storage so the session survives reloads
-      localStorage.setItem("user", JSON.stringify({ username: data.username }));
-      setUser({ username: data.username });
-      // Mark user as online after successful sign in
-      if (socket) socket.emit("user-online", data.username);
-      void updateOnlineStatus(data.username, true);
-      return true;
+    try {
+      const res = await fetch(apiUrl("/api/auth/signin"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Persist the username in local storage so the session survives reloads
+        localStorage.setItem("user", JSON.stringify({ username: data.username }));
+        setUser({ username: data.username });
+        // Mark user as online after successful sign in
+        if (socket) socket.emit("user-online", data.username);
+        void updateOnlineStatus(data.username, true);
+        return true;
+      }
+    } catch (error) {
+      console.error("Signin request failed", error);
     }
     return false;
   };
