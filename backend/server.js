@@ -25,7 +25,10 @@ app.use(async (_req, _res, next) => {
   }
 });
 
+// Expose authentication routes under both /api/auth (existing frontend usage)
+// and /auth (in case clients omit the /api prefix).
 app.use("/api/auth", authRoutes);
+app.use("/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/comments", commentRoutes);
