@@ -68,8 +68,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (!res.ok) {
           let message = "Failed to update user";
-          if (!res.ok) {
-          let message = "Failed to update user";
           const bodyText = await res.text();
           try {
             const data = JSON.parse(bodyText);
