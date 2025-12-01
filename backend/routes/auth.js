@@ -8,6 +8,7 @@ const router = express.Router();
 const asyncHandler = (handler) =>
   (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
 
+// SIGN UP
 const signupController = async (req, res) => {
   const { username, email, password, image } = req.body;
 
@@ -66,6 +67,7 @@ const signupController = async (req, res) => {
   }
 };
 
+// SIGN IN
 const signinController = async (req, res) => {
   const { email, password } = req.body;
 
