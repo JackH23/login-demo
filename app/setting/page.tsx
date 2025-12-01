@@ -8,7 +8,7 @@ import TopBar from "../components/TopBar";
 import LoadingState from "../components/LoadingState";
 import { useConfirmDialog } from "../components/useConfirmDialog";
 import { useCachedApi } from "../hooks/useCachedApi";
-import { apiUrl } from "@/lib/api";
+import { apiUrl } from "@/app/lib/api";
 
 interface User {
   username: string;

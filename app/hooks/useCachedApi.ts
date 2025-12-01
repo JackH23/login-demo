@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { resolveApiUrl } from "@/lib/api";
+import { resolveApiUrl } from "@/app/lib/api";
 
 type CacheEntry<T> = {
   data: T | null;

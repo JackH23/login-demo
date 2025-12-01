@@ -5,7 +5,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { Socket } from "socket.io-client";
-import { apiUrl } from "@/lib/api";
+import { apiUrl } from "@/app/lib/api";
 
 interface Message {
   _id: string;

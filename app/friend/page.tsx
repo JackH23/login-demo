@@ -7,7 +7,7 @@ import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 import LoadingState from "../components/LoadingState";
 import { useCachedApi } from "../hooks/useCachedApi";
-import { apiUrl } from "@/lib/api";
+import { apiUrl } from "@/app/lib/api";
 
 interface User {
   username: string;

@@ -196,7 +196,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
               </span>
             </button>
             <Link
-              href="/create-blog"
+              href="/posts/create"
               className="btn btn-sm btn-primary d-flex align-items-center gap-2"
             >
               <FileText size={18} />

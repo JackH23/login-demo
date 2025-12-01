@@ -3,7 +3,7 @@
 // React hooks for managing context state on the client
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
-import { apiUrl } from "@/lib/api";
+import { apiUrl } from "@/app/lib/api";
 import socketClient from "@/lib/socketClient";
 
 // Basic representation of a user stored in the context
