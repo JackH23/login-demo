@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import Message from '@/models/Message';
+import dbConnect from '@/backend/mongodb';
+import Message from '@/backend/models/Message';
 
 export async function DELETE(
   req: Request,

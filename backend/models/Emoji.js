@@ -1,4 +1,4 @@
-import { Schema, model, models } from 'mongoose';
+const { Schema, model, models } = require('mongoose');
 
 const EmojiSchema = new Schema(
   {
@@ -13,4 +13,4 @@ const EmojiSchema = new Schema(
 
 EmojiSchema.index({ category: 1, sortOrder: 1 });
 
-export default models.Emoji || model('Emoji', EmojiSchema);
+module.exports = models.Emoji || model('Emoji', EmojiSchema);

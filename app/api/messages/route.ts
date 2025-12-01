@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import Message from '@/models/Message';
-import User from '@/models/User';
-import Emoji from '@/models/Emoji';
+import dbConnect from '@/backend/mongodb';
+import Message from '@/backend/models/Message';
+import User from '@/backend/models/User';
+import Emoji from '@/backend/models/Emoji';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);

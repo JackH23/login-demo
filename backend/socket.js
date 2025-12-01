@@ -1,13 +1,9 @@
-import { io, Socket } from 'socket.io-client';
+const { io } = require('socket.io-client');
 
-interface GlobalWithServerSocket {
-  _serverSocket?: Socket;
-}
-
-const g = globalThis as typeof globalThis & GlobalWithServerSocket;
+const globalSocket = globalThis;
 
 function getServerSocket() {
-  if (!g._serverSocket) {
+  if (!globalSocket._serverSocket) {
     const serverUrl =
       process.env.SOCKET_SERVER_URL ||
       process.env.NEXT_PUBLIC_SOCKET_URL ||
@@ -19,28 +15,35 @@ function getServerSocket() {
       console.error('Socket server connection error:', error);
     });
 
-    g._serverSocket = socket;
+    globalSocket._serverSocket = socket;
   }
 
-  return g._serverSocket;
+  return globalSocket._serverSocket;
 }
 
-export function emitUserOnline(username: string) {
+function emitUserOnline(username) {
   const socket = getServerSocket();
   socket?.emit('user-online', username);
 }
 
-export function emitUserOffline(username: string) {
+function emitUserOffline(username) {
   const socket = getServerSocket();
   socket?.emit('user-offline', username);
 }
 
-export function emitPostDeleted(postId: string) {
+function emitPostDeleted(postId) {
   const socket = getServerSocket();
   socket?.emit('post-deleted', { postId });
 }
 
-export function emitPostCreated(post: Record<string, unknown>) {
+function emitPostCreated(post) {
   const socket = getServerSocket();
   socket?.emit('post-created', { post });
 }
+
+module.exports = {
+  emitUserOnline,
+  emitUserOffline,
+  emitPostDeleted,
+  emitPostCreated,
+};

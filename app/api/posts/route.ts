@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import Post from '@/models/Post';
-import { emitPostCreated } from '@/lib/socketServer';
+import dbConnect from '@/backend/mongodb';
+import Post from '@/backend/models/Post';
+import { emitPostCreated } from '@/backend/socket';
 
 export async function POST(req: Request) {
   const { title, content, image, author } = await req.json();

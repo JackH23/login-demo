@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import Post from '@/models/Post';
-import Comment from '@/models/Comment';
-import { emitPostDeleted } from '@/lib/socketServer';
+import dbConnect from '@/backend/mongodb';
+import Post from '@/backend/models/Post';
+import Comment from '@/backend/models/Comment';
+import { emitPostDeleted } from '@/backend/socket';
 
 export async function PATCH(
   req: Request,

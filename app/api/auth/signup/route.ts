@@ -1,9 +1,9 @@
 // Next.js helper for sending responses
 import { NextResponse } from 'next/server';
 // Database connection utility
-import dbConnect from '@/lib/mongodb';
+import dbConnect from '@/backend/mongodb';
 // Mongoose model for persisting users
-import User from '@/models/User';
+import User from '@/backend/models/User';
 // Library for hashing passwords
 import bcrypt from 'bcrypt';
 

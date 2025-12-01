@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import User from '@/models/User';
-import Message from '@/models/Message';
-import Post from '@/models/Post';
-import Comment from '@/models/Comment';
+import dbConnect from '@/backend/mongodb';
+import User from '@/backend/models/User';
+import Message from '@/backend/models/Message';
+import Post from '@/backend/models/Post';
+import Comment from '@/backend/models/Comment';
 import { ADMIN_USERNAME } from '@/lib/constants';
-import { emitUserOnline, emitUserOffline } from '@/lib/socketServer';
+import { emitUserOnline, emitUserOffline } from '@/backend/socket';
 
 // Helper to get the username of the requester from headers/cookies
 function getRequester(req: Request): string | null {
