@@ -44,18 +44,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const socket: Socket | null = socketClient;
 
-  useEffect(() => {
-    if (!socket) return undefined;
-
-    const handleConnectError = (error: Error) => {
-      console.error("Socket connection error:", error);
-    };
-    socket.on("connect_error", handleConnectError);
-    return () => {
-      socket.off("connect_error", handleConnectError);
-    };
-  }, [socket]);
-
   const updateOnlineStatus = useCallback(
     async (username: string, online: boolean) => {
       try {
