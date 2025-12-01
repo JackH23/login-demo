@@ -8,7 +8,7 @@ const router = express.Router();
 const asyncHandler = (handler) =>
   (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
 
-router.post('/signup', asyncHandler(async (req, res) => {
+const signupController = async (req, res) => {
   const { username, email, password, image } = req.body;
 
   if (typeof username !== 'string' || !username.trim()) {
@@ -64,9 +64,9 @@ router.post('/signup', asyncHandler(async (req, res) => {
       .status(500)
       .json({ error: 'User creation failed. Please try again later.' });
   }
-}));
+};
 
-router.post('/signin', asyncHandler(async (req, res) => {
+const signinController = async (req, res) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
@@ -76,6 +76,9 @@ router.post('/signin', asyncHandler(async (req, res) => {
   }
 
   return res.status(401).json({ error: 'Invalid credentials' });
-}));
+};
+
+router.post('/signup', asyncHandler(signupController));
+router.post('/signin', asyncHandler(signinController));
 
 module.exports = router;
