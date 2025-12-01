@@ -10,7 +10,7 @@ import LoadingState from "../components/LoadingState";
 import { useConfirmDialog } from "../components/useConfirmDialog";
 import { useCachedApi } from "../hooks/useCachedApi";
 import { usePostRealtimeUpdates } from "../hooks/usePostRealtimeUpdates";
-import { apiUrl } from "@/lib/api";
+import { apiUrl } from "@/app/lib/api";
 
 interface User {
   username: string;
