@@ -7,7 +7,7 @@
     "build": "next build",
     "prestart": "next build",
     "start": "next start -p $PORT",
-    "socket": "node server.js",
+    "socket": "node backend/server.js",
     "lint": "next lint"
   },
   "dependencies": {
