@@ -17,11 +17,22 @@ async function dbConnect() {
       .connect(MONGODB_URI, {
         bufferCommands: false,
       })
-      .then((m) => m);
+      .then((m) => m)
+      .catch((error) => {
+        // Allow retries if the initial connection fails instead of caching the rejection.
+        cached.promise = null;
+        throw error;
+      });
   }
 
-  cached.conn = await cached.promise;
-  return cached.conn;
+  try {
+    cached.conn = await cached.promise;
+    return cached.conn;
+  } catch (error) {
+    // Clear the cached promise so future requests can attempt to reconnect.
+    cached.promise = null;
+    throw error;
+  }
 }
 
 module.exports = dbConnect;
