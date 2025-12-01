@@ -6,16 +6,8 @@ function resolveBaseUrl() {
   const envBase = process.env.NEXT_PUBLIC_API_BASE_URL;
   if (envBase) return normalizeUrl(envBase);
 
-  // In the browser, prefer the backend during local development instead of the
-  // Next.js dev server (which does not expose these API routes).
-  if (typeof window !== "undefined" && window.location?.origin) {
-    if (!window.location.origin.includes("localhost:3000")) {
-      return normalizeUrl(window.location.origin);
-    }
-  }
-
-  // Local development default
-  return "http://localhost:3001";
+  // No guessing. Default for backend in dev mode:
+  return "http://localhost:3001"; // <- change to your backend port
 }
 
 export const API_BASE_URL = resolveBaseUrl();
