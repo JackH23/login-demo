@@ -11,6 +11,7 @@ import { ADMIN_USERNAME } from "@/lib/constants";
 import { useConfirmDialog } from "../components/useConfirmDialog";
 import { usePromptDialog } from "../components/usePromptDialog";
 import { useCachedApi } from "../hooks/useCachedApi";
+import { apiUrl } from "@/lib/api";
 
 export default function UserPage() {
   const { user, loading, socket, updateUser } = useAuth();
@@ -109,7 +110,7 @@ export default function UserPage() {
       confirmVariant: "danger",
     });
     if (!confirmed) return;
-    const res = await fetch(`/api/users/${username}`, {
+    const res = await fetch(apiUrl(`/api/users/${username}`), {
       method: "DELETE",
       headers: { Authorization: user.username },
     });
@@ -134,7 +135,7 @@ export default function UserPage() {
       input.click();
     });
     if (!newImage) return;
-    const res = await fetch(`/api/users/${u.username}`, {
+    const res = await fetch(apiUrl(`/api/users/${u.username}`), {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -264,7 +265,7 @@ export default function UserPage() {
     });
     if (!confirmed) return;
 
-    const res = await fetch(`/api/users/${u.username}`, {
+    const res = await fetch(apiUrl(`/api/users/${u.username}`), {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -318,7 +319,7 @@ export default function UserPage() {
     });
     if (!confirmed) return;
 
-    const res = await fetch('/api/friends', {
+    const res = await fetch(apiUrl('/api/friends'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user: user.username, friend }),

@@ -4,6 +4,7 @@ import { useState, useEffect, CSSProperties } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { useCachedApi } from "../hooks/useCachedApi";
+import { apiUrl } from "@/lib/api";
 
 interface BlogPost {
   _id?: string;
@@ -160,7 +161,7 @@ export default function BlogCard({
 
     const fetchComments = async () => {
       try {
-        const res = await fetch(`/api/comments?postId=${blog._id}`);
+        const res = await fetch(apiUrl(`/api/comments?postId=${blog._id}`));
         const data = await res.json();
         if (!isMounted) return;
         const list = (data.comments ?? []).map(
@@ -228,7 +229,7 @@ export default function BlogCard({
     setNewComment("");
 
     if (blog._id && user) {
-      const res = await fetch("/api/comments", {
+      const res = await fetch(apiUrl("/api/comments"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -300,7 +301,7 @@ export default function BlogCard({
     );
     if (comment._id) {
       try {
-        const res = await fetch(`/api/comments/${comment._id}`, {
+        const res = await fetch(apiUrl(`/api/comments/${comment._id}`), {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "like", username: user.username }),
@@ -356,7 +357,7 @@ export default function BlogCard({
     );
     if (comment._id) {
       try {
-        const res = await fetch(`/api/comments/${comment._id}`, {
+        const res = await fetch(apiUrl(`/api/comments/${comment._id}`), {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "dislike", username: user.username }),
@@ -411,7 +412,7 @@ export default function BlogCard({
     if (!text) return;
 
     if (comment._id && user) {
-      const res = await fetch(`/api/comments/${comment._id}`, {
+      const res = await fetch(apiUrl(`/api/comments/${comment._id}`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ author: user.username, text }),
@@ -470,7 +471,7 @@ export default function BlogCard({
     setHasLikedPost(true);
 
     try {
-      const res = await fetch(`/api/posts/${blog._id}`, {
+      const res = await fetch(apiUrl(`/api/posts/${blog._id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "like", username: user.username }),
@@ -494,7 +495,7 @@ export default function BlogCard({
     setHasDislikedPost(true);
     if (blog._id) {
       try {
-        const res = await fetch(`/api/posts/${blog._id}`, {
+        const res = await fetch(apiUrl(`/api/posts/${blog._id}`), {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "dislike", username: user.username }),
@@ -520,7 +521,7 @@ export default function BlogCard({
     setIsDeleting(true);
 
     try {
-      const res = await fetch(`/api/posts/${blog._id}`, { method: "DELETE" });
+      const res = await fetch(apiUrl(`/api/posts/${blog._id}`), { method: "DELETE" });
       if (res.ok) {
         onDelete?.(blog._id);
       } else {

@@ -1,49 +1,50 @@
-const { io } = require('socket.io-client');
+const { Server } = require('socket.io');
 
-const globalSocket = globalThis;
+let ioInstance = null;
 
-function getServerSocket() {
-  if (!globalSocket._serverSocket) {
-    const serverUrl =
-      process.env.SOCKET_SERVER_URL ||
-      process.env.NEXT_PUBLIC_SOCKET_URL ||
-      'http://localhost:3001';
+function createSocketServer(server) {
+  ioInstance = new Server(server, {
+    cors: {
+      origin: 'http://localhost:3000',
+      methods: ['GET', 'POST'],
+    },
+  });
 
-    const socket = io(serverUrl);
+  ioInstance.on('connection', (socket) => {
+    console.log('Client connected:', socket.id);
 
-    socket.on('connect_error', (error) => {
-      console.error('Socket server connection error:', error);
+    socket.on('user-online', (username) => {
+      socket.broadcast.emit('user-online', username);
     });
 
-    globalSocket._serverSocket = socket;
-  }
+    socket.on('user-offline', (username) => {
+      socket.broadcast.emit('user-offline', username);
+    });
+  });
 
-  return globalSocket._serverSocket;
+  return ioInstance;
 }
 
 function emitUserOnline(username) {
-  const socket = getServerSocket();
-  socket?.emit('user-online', username);
+  ioInstance?.emit('user-online', username);
 }
 
 function emitUserOffline(username) {
-  const socket = getServerSocket();
-  socket?.emit('user-offline', username);
-}
-
-function emitPostDeleted(postId) {
-  const socket = getServerSocket();
-  socket?.emit('post-deleted', { postId });
+  ioInstance?.emit('user-offline', username);
 }
 
 function emitPostCreated(post) {
-  const socket = getServerSocket();
-  socket?.emit('post-created', { post });
+  ioInstance?.emit('post-created', { post });
+}
+
+function emitPostDeleted(postId) {
+  ioInstance?.emit('post-deleted', { postId });
 }
 
 module.exports = {
+  createSocketServer,
   emitUserOnline,
   emitUserOffline,
-  emitPostDeleted,
   emitPostCreated,
+  emitPostDeleted,
 };

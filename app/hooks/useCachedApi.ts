@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { resolveApiUrl } from "@/lib/api";
 
 type CacheEntry<T> = {
   data: T | null;
@@ -52,7 +53,7 @@ export function prefetchCachedApi<T>(
     return entry.promise;
   }
 
-  const request = fetch(url, { cache: "no-store" })
+  const request = fetch(resolveApiUrl(url), { cache: "no-store" })
     .then((res) => {
       if (!res.ok) {
         throw new Error(`Request failed with status ${res.status}`);
@@ -153,7 +154,7 @@ export function useCachedApi<T>(
     if (!url) {
       return (fallbackRef.current ?? (undefined as T)) as T;
     }
-    const res = await fetch(url, { cache: "no-store" });
+    const res = await fetch(resolveApiUrl(url), { cache: "no-store" });
     if (!res.ok) {
       throw new Error(`Request failed with status ${res.status}`);
     }
