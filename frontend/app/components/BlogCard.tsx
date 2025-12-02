@@ -550,7 +550,7 @@ export default function BlogCard({
     >
       {/* Header section with background gradient and author info */}
       <div
-        className="position-relative p-4 text-white"
+        className="position-relative p-3 p-sm-4 text-white"
         style={{
           background: headerGradient, // Dynamic background based on theme
         }}
@@ -611,7 +611,7 @@ export default function BlogCard({
             className="card-img-top"
             style={{
               objectFit: "cover",
-              maxHeight: "420px",
+              maxHeight: "clamp(220px, 45vh, 420px)",
               width: "100%",
               filter: isNight
                 ? "brightness(0.9)"
@@ -644,7 +644,7 @@ export default function BlogCard({
         </div>
       )}
 
-      <div className="card-body p-4">
+      <div className="card-body p-3 p-md-4">
         <p
           className="card-text fs-6 mb-2"
           style={contentStyle}

@@ -168,7 +168,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
       }`}
       style={containerStyle}
     >
-      <div className="px-4 pt-3 pb-2">
+      <div className="px-3 px-md-4 pt-3 pb-2">
         <div className="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center">
           <div>
             <p className="text-uppercase fw-semibold small mb-1 text-secondary-emphasis opacity-75">
@@ -178,7 +178,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
               {title}
             </h2>
           </div>
-          <div className="d-flex align-items-center gap-3 flex-wrap justify-content-end">
+          <div className="topbar-actions d-flex align-items-center gap-3 flex-wrap justify-content-end">
             <button
               type="button"
               className="btn btn-sm btn-outline-primary d-flex align-items-center gap-2"
@@ -217,15 +217,15 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
                 className="btn btn-sm btn-outline-danger d-flex align-items-center gap-2"
               >
                 <LogOut size={18} />
-                <span>Log out</span>
+                <span className="d-none d-sm-inline">Log out</span>
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="px-4 pb-3">
-        <div className="d-flex flex-wrap gap-2">
+      <div className="px-3 px-md-4 pb-3">
+        <div className="d-flex gap-2 flex-nowrap flex-lg-wrap topbar-nav" role="navigation" aria-label="Primary">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = optimisticActive === item.key;
