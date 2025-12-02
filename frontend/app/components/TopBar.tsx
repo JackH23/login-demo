@@ -2,13 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  useTransition,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import {
   BarChart3,
   FileText,
@@ -98,6 +92,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
 
   const [optimisticActive, setOptimisticActive] = useState<ActivePage>(active);
   const [isNavigating, startTransition] = useTransition();
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   useEffect(() => {
     setOptimisticActive(active);
@@ -162,126 +157,147 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
     theme === "night" ? "Switch to light mode" : "Switch to dark mode";
 
   return (
-    <div
-      className={`position-sticky top-0 z-3 ${
-        theme === "night" ? "text-white" : "text-dark"
-      }`}
-      style={containerStyle}
-    >
-      <div className="px-4 pt-3 pb-2">
-        <div className="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center">
-          <div>
-            <p className="text-uppercase fw-semibold small mb-1 text-secondary-emphasis opacity-75">
-              {greeting}, {currentUser.username}
-            </p>
-            <h2 className="mb-0 d-flex align-items-center gap-2">
-              {title}
-            </h2>
-          </div>
-          <div className="d-flex align-items-center gap-3 flex-wrap justify-content-lg-end topbar-actions">
+    <>
+      <div
+        className={`position-sticky top-0 z-3 ${
+          theme === "night" ? "text-white" : "text-dark"
+        }`}
+        style={containerStyle}
+      >
+        <div className="px-3 py-2 d-flex align-items-center justify-content-between gap-2">
+          <div className="d-flex align-items-center gap-2">
             <button
               type="button"
-              className="btn btn-sm btn-outline-primary d-flex align-items-center gap-2"
+              className="btn btn-sm btn-outline-primary rounded-circle d-flex align-items-center justify-content-center p-2"
               onClick={() => setTheme(theme === "night" ? "brightness" : "night")}
               aria-label={themeToggleLabel}
               title={themeToggleLabel}
+              style={{ minWidth: 40, minHeight: 40 }}
             >
               {theme === "night" ? (
                 <SunMedium size={18} />
               ) : (
                 <MoonStar size={18} />
               )}
-              <span className="d-none d-sm-inline">
-                {theme === "night" ? "Light mode" : "Dark mode"}
-              </span>
             </button>
+            <div className="d-none d-sm-block">
+              <p className="text-uppercase fw-semibold text-secondary-emphasis opacity-75 mb-0" style={{ fontSize: "0.7rem" }}>
+                {greeting}
+              </p>
+              <h5 className="mb-0 lh-1">{title}</h5>
+            </div>
+            <div className="d-sm-none">
+              <h6 className="mb-0">{title}</h6>
+            </div>
+          </div>
+          <div className="d-flex align-items-center gap-2 position-relative">
             <Link
               href="/posts/create"
-              className="btn btn-sm btn-primary d-flex align-items-center gap-2"
+              className="btn btn-sm btn-primary rounded-circle d-flex align-items-center justify-content-center p-2"
+              aria-label="Create new post"
+              title="Create new post"
+              style={{ minWidth: 40, minHeight: 40 }}
             >
               <FileText size={18} />
-              <span>New Post</span>
             </Link>
-            <div className="d-flex align-items-center gap-2">
-              {currentUser.image && (
-                <img
-                  src={currentUser.image}
-                  alt="Your profile"
-                  className="rounded-circle border border-2 border-primary-subtle shadow-sm"
-                  style={{ width: "42px", height: "42px", objectFit: "cover" }}
-                />
-              )}
+            <div className="dropdown">
               <button
                 type="button"
-                onClick={handleLogout}
-                className="btn btn-sm btn-outline-danger d-flex align-items-center gap-2"
+                className="btn btn-sm btn-outline-secondary rounded-circle p-0 d-flex align-items-center justify-content-center"
+                style={{ width: 40, height: 40 }}
+                aria-expanded={isProfileMenuOpen}
+                aria-label="Profile menu"
+                onClick={() => setIsProfileMenuOpen((prev) => !prev)}
               >
-                <LogOut size={18} />
-                <span>Log out</span>
+                {currentUser.image ? (
+                  <img
+                    src={currentUser.image}
+                    alt="Your profile"
+                    className="rounded-circle"
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                ) : (
+                  <UserCircle2 size={22} />
+                )}
               </button>
+              {isProfileMenuOpen && (
+                <div
+                  className={`dropdown-menu dropdown-menu-end mt-2 show ${theme === "night" ? "bg-dark text-white" : ""}`}
+                  style={{ minWidth: "12rem" }}
+                >
+                  <h6 className="dropdown-header text-muted text-uppercase" style={{ fontSize: "0.7rem" }}>
+                    {currentUser.username}
+                  </h6>
+                  <Link
+                    className="dropdown-item d-flex align-items-center gap-2"
+                    style={{ fontSize: "0.9rem" }}
+                    href="/user"
+                  >
+                    <UserCircle2 size={16} /> My Profile
+                  </Link>
+                  <Link
+                    className="dropdown-item d-flex align-items-center gap-2"
+                    style={{ fontSize: "0.9rem" }}
+                    href="/setting"
+                  >
+                    <Settings2 size={16} /> Settings
+                  </Link>
+                  <button
+                    type="button"
+                    className="dropdown-item d-flex align-items-center gap-2 text-danger"
+                    onClick={handleLogout}
+                  >
+                    <LogOut size={16} /> Log out
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="px-4 pb-3">
-        <div className="d-flex gap-2 flex-nowrap flex-lg-wrap topbar-nav">
+      <nav
+        className={`fixed-bottom py-2 px-3 ${theme === "night" ? "bg-dark text-white border-top border-secondary" : "bg-white border-top"}`}
+      >
+        <div className="d-flex justify-content-around align-items-center gap-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = optimisticActive === item.key;
             const isPendingSelection =
               isNavigating && active !== item.key && optimisticActive === item.key;
-            const baseClass =
-              "nav-link d-flex align-items-center gap-2 px-3 py-2 rounded-pill border-0 fw-semibold topbar-nav-link";
             const visualState = isActive
-              ? "active text-white shadow-sm"
+              ? theme === "night"
+                ? "text-white"
+                : "text-primary"
               : theme === "night"
-              ? "text-white-50 bg-transparent"
-              : "text-secondary bg-white bg-opacity-75";
-
-            const baseStyle: React.CSSProperties = isActive
-              ? {
-                  background:
-                    theme === "night"
-                      ? "linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(99, 102, 241, 0.35))"
-                      : "linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(14, 165, 233, 0.3))",
-                  color: "#fff",
-                  boxShadow:
-                    theme === "night"
-                      ? "0 12px 30px -12px rgba(59, 130, 246, 0.55)"
-                      : "0 12px 30px -12px rgba(14, 165, 233, 0.55)",
-                }
-              : {
-                  background:
-                    theme === "night"
-                      ? "rgba(148, 163, 184, 0.12)"
-                      : "rgba(226, 232, 240, 0.65)",
-                  transition: "all 0.2s ease",
-                };
-
-            const style =
-              isPendingSelection && !isActive
-                ? { ...baseStyle, opacity: 0.8 }
-                : baseStyle;
+                ? "text-white-50"
+                : "text-secondary";
 
             return (
               <Link
                 key={item.key}
                 href={item.href}
-                className={`${baseClass} ${visualState}`}
-                style={style}
+                className={`text-decoration-none d-flex flex-column align-items-center justify-content-center px-2 py-1 ${visualState}`}
+                style={{ fontSize: "0.85rem", minWidth: 64 }}
                 aria-current={isActive ? "page" : undefined}
                 onPointerEnter={() => prefetchRoute(item.href)}
                 onFocus={() => prefetchRoute(item.href)}
                 onClick={(event) => handleNavClick(event, item)}
               >
                 <Icon size={18} />
-                <span>{item.label}</span>
+                <span className="mt-1" style={{ lineHeight: 1 }}>
+                  {item.label.split(" ")[0]}
+                </span>
+                {isPendingSelection && !isActive && (
+                  <small className="text-muted" style={{ fontSize: "0.7rem" }}>
+                    ...
+                  </small>
+                )}
               </Link>
             );
           })}
         </div>
-      </div>
-    </div>
+      </nav>
+    </>
   );
 }
