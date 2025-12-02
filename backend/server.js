@@ -16,25 +16,23 @@ const friendRoutes = require("./routes/friends");
 const { createSocketServer } = require("./socket");
 
 const app = express();
+
+// Middlewares
 app.use(cors());
-// Allow slightly larger JSON bodies so profile images encoded as base64 can be processed
-// without triggering a 413 Payload Too Large error during signup.
 app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 
+// Uploads folder
 const uploadsDir = path.join(__dirname, "uploads");
 fs.mkdirSync(uploadsDir, { recursive: true });
 app.use("/uploads", express.static(uploadsDir));
-app.use(async (_req, _res, next) => {
-  try {
-    await dbConnect();
-    next();
-  } catch (error) {
-    next(error);
-  }
+
+// Health check route
+app.get("/", (req, res) => {
+  res.send("API is running — Connected to MongoDB");
 });
 
-// Expose authentication routes under /api/auth to align with frontend calls.
+// REST API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
@@ -42,11 +40,13 @@ app.use("/api/comments", commentRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/friends", friendRoutes);
 
+// Global error handler
 app.use((error, _req, res, _next) => {
   console.error("Unexpected server error", error);
   res.status(500).json({ error: "Internal server error" });
 });
 
+// Start server only after connecting to DB
 const server = http.createServer(app);
 const io = createSocketServer(server);
 app.set("io", io);
