@@ -85,51 +85,48 @@ router.post(
   })
 );
 
-router.post(
-  "/signin",
-  asyncHandler(async (req, res) => {
-    await dbConnect();
+const handleSignin = asyncHandler(async (req, res) => {
+  await dbConnect();
 
-    const { email, password } = req.body ?? {};
+  const { email, password } = req.body ?? {};
 
-    const normalizedEmail =
-      typeof email === "string" ? email.trim().toLowerCase() : "";
-    const normalizedPassword = typeof password === "string" ? password : "";
+  const normalizedEmail =
+    typeof email === "string" ? email.trim().toLowerCase() : "";
+  const normalizedPassword = typeof password === "string" ? password : "";
 
-    if (!normalizedEmail || !normalizedPassword) {
-      return res.status(400).json({ error: "Email and password are required" });
-    }
+  if (!normalizedEmail || !normalizedPassword) {
+    return res.status(400).json({ error: "Email and password are required" });
+  }
 
-    const user = await User.findOne({ email: normalizedEmail }).lean();
+  const user = await User.findOne({ email: normalizedEmail }).lean();
 
-    if (!user) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
+  if (!user) {
+    return res.status(401).json({ error: "Invalid credentials" });
+  }
 
-    const passwordMatches = await bcrypt.compare(
-      normalizedPassword,
-      user.password
-    );
+  const passwordMatches = await bcrypt.compare(normalizedPassword, user.password);
 
-    if (!passwordMatches) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
+  if (!passwordMatches) {
+    return res.status(401).json({ error: "Invalid credentials" });
+  }
 
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET || "secretkey123",
-      { expiresIn: "7d" }
-    );
+  const token = jwt.sign(
+    { id: user._id },
+    process.env.JWT_SECRET || "secretkey123",
+    { expiresIn: "7d" }
+  );
 
-    return res.json({
-      user: {
-        username: user.username,
-        email: user.email,
-        image: user.image ?? null,
-      },
-      token,
-    });
-  })
-);
+  return res.json({
+    user: {
+      username: user.username,
+      email: user.email,
+      image: user.image ?? null,
+    },
+    token,
+  });
+});
+
+router.post("/signin", handleSignin);
+router.post("/login", handleSignin);
 
 module.exports = router;
