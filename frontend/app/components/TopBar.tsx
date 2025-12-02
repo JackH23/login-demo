@@ -226,7 +226,11 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
       </div>
 
       <div className="topbar-nav-wrapper px-3 px-md-4 pb-3">
-        <div className="d-flex gap-2 flex-nowrap flex-lg-wrap topbar-nav" role="navigation" aria-label="Primary">
+        <div
+          className="d-flex gap-2 flex-wrap flex-md-nowrap flex-lg-wrap topbar-nav"
+          role="navigation"
+          aria-label="Primary"
+        >
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = optimisticActive === item.key;
