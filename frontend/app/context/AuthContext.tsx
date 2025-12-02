@@ -4,7 +4,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
 import { apiUrl } from "@/app/lib/api";
-import socketClient from "@/frontend/lib/socketClient";
+import socketClient from "@/lib/socketClient";
 
 // Basic representation of a user stored in the context
 interface User {

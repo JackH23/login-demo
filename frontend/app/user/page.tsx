@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 import LoadingState from "../components/LoadingState";
-import { ADMIN_USERNAME } from "@/frontend/lib/constants";
+import { ADMIN_USERNAME } from "@/lib/constants";
 import { useConfirmDialog } from "../components/useConfirmDialog";
 import { usePromptDialog } from "../components/usePromptDialog";
 import { useCachedApi } from "../hooks/useCachedApi";
