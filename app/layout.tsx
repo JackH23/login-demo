@@ -1,5 +1,7 @@
 // Global CSS applied to every page
 import "./globals.css";
+// Global icon set used across the application
+import "bootstrap-icons/font/bootstrap-icons.css";
 // Context provider that manages authentication state
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";

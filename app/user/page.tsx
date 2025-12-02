@@ -3,7 +3,6 @@
 import { ReactNode, useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
-import "bootstrap-icons/font/bootstrap-icons.css";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 import LoadingState from "../components/LoadingState";
