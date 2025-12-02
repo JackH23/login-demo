@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiUrl } from "@/frontend/app/lib/api";
+import { apiUrl } from "@/app/lib/api";
 import { useAuth } from "@/frontend/app/context/AuthContext";
 import { useTheme } from "@/frontend/app/context/ThemeContext";
 
