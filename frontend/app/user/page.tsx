@@ -10,7 +10,7 @@ import { ADMIN_USERNAME } from "@/lib/constants";
 import { useConfirmDialog } from "../components/useConfirmDialog";
 import { usePromptDialog } from "../components/usePromptDialog";
 import { useCachedApi } from "../hooks/useCachedApi";
-import { apiUrl } from "@/frontend/app/lib/api";
+import { apiUrl } from "@/app/lib/api";
 
 export default function UserPage() {
   const { user, loading, socket, updateUser } = useAuth();

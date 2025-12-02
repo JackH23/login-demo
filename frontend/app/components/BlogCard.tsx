@@ -4,7 +4,7 @@ import { useState, useEffect, CSSProperties } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { useCachedApi } from "../hooks/useCachedApi";
-import { apiUrl } from "@/frontend/app/lib/api";
+import { apiUrl } from "@/app/lib/api";
 
 interface BlogPost {
   _id?: string;
