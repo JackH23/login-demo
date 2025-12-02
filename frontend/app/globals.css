@@ -1290,6 +1290,14 @@
   height: 1rem;
 }
 
+.topbar-profile-avatar {
+  transition: transform 0.2s ease;
+}
+
+.topbar-profile-avatar:hover {
+  transform: scale(1.03);
+}
+
 @media (max-width: 576px) {
   .topbar-header p {
     margin-bottom: 0.35rem !important;
@@ -1304,14 +1312,21 @@
     padding: 0.6rem 0.9rem 0.4rem;
   }
 
+  .topbar-header {
+    width: 100%;
+  }
+
   .topbar-nav-wrapper {
     padding: 0.35rem 0.85rem 0.8rem;
   }
 
   .topbar-actions {
     width: 100%;
-    justify-content: space-between !important;
-    gap: 0.4rem;
+    justify-content: flex-start !important;
+    gap: 0.6rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
   }
 
   .topbar-actions img {
@@ -1326,6 +1341,23 @@
     padding: 0.45rem 0.55rem;
     min-height: 30px;
     font-size: 0.9rem;
+  }
+
+  .topbar-profile {
+    grid-column: span 2;
+    width: 100%;
+    justify-content: space-between;
+    padding-block: 0.15rem;
+  }
+
+  .topbar-profile .topbar-action-btn {
+    max-width: 160px;
+    justify-content: center;
+  }
+
+  .topbar-profile-avatar {
+    width: 32px !important;
+    height: 32px !important;
   }
 
   .topbar-action-label {

@@ -179,7 +179,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
               {title}
             </h2>
           </div>
-          <div className="topbar-actions d-flex align-items-center gap-3 flex-wrap justify-content-end">
+          <div className="topbar-actions d-flex align-items-center gap-3 flex-wrap justify-content-end w-100 w-lg-auto">
             <button
               type="button"
               className="btn btn-sm btn-outline-primary d-flex align-items-center gap-2 topbar-action-btn"
@@ -203,12 +203,12 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
               <FileText size={iconSize} className="topbar-icon" />
               <span className="topbar-action-label">New Post</span>
             </Link>
-            <div className="d-flex align-items-center gap-2">
+            <div className="topbar-profile d-flex align-items-center gap-2">
               {currentUser.image && (
                 <img
                   src={currentUser.image}
                   alt="Your profile"
-                  className="rounded-circle border border-2 border-primary-subtle shadow-sm"
+                  className="topbar-profile-avatar rounded-circle border border-2 border-primary-subtle shadow-sm"
                   style={{ width: "42px", height: "42px", objectFit: "cover" }}
                 />
               )}
