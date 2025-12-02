@@ -1246,6 +1246,13 @@
   --topbar-horizontal-padding: 1rem;
 }
 
+.topbar-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: start;
+  gap: 0.85rem;
+}
+
 .topbar-inner,
 .topbar-nav-wrapper {
   padding-inline: var(--topbar-horizontal-padding);
@@ -1280,6 +1287,29 @@
   font-size: clamp(1.35rem, 2vw + 1rem, 2.25rem);
 }
 
+.topbar-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  align-items: stretch;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.topbar-actions .topbar-action-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.topbar-profile {
+  width: 100%;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.topbar-profile .topbar-action-btn {
+  width: 100%;
+}
+
 .topbar-action-btn {
   min-height: 32px;
   padding: 0.55rem 0.65rem;
@@ -1299,14 +1329,45 @@
   transform: scale(1.03);
 }
 
+@media (min-width: 992px) {
+  .topbar-layout {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 1.1rem;
+  }
+
+  .topbar-actions {
+    display: inline-flex;
+    width: auto;
+    gap: 0.85rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .topbar-actions .topbar-action-btn {
+    width: auto;
+    justify-content: flex-start;
+  }
+
+  .topbar-profile {
+    width: auto;
+    justify-content: flex-start;
+  }
+}
+
 @media (max-width: 768px) {
   .topbar {
     --topbar-horizontal-padding: 0.85rem;
   }
 
   .topbar-inner {
-    gap: 0.75rem;
+    gap: 0.6rem;
     padding-top: 0.75rem;
+  }
+
+  .topbar-layout {
+    gap: 0.65rem;
   }
 
   .topbar-nav-wrapper {
@@ -1326,6 +1387,10 @@
   .topbar-action-btn {
     min-height: 34px;
   }
+
+  .topbar-actions {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
 }
 
 @media (max-width: 576px) {
@@ -1340,7 +1405,7 @@
 
   .topbar-inner {
     padding: 0.6rem 0.9rem 0.4rem;
-    gap: 0.5rem;
+    gap: 0.4rem;
   }
 
   .topbar-header {
@@ -1352,10 +1417,7 @@
   }
 
   .topbar-actions {
-    width: 100%;
-    justify-content: flex-start !important;
-    gap: 0.6rem;
-    display: grid;
+    gap: 0.55rem;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: center;
   }
@@ -1366,8 +1428,6 @@
   }
 
   .topbar-actions .topbar-action-btn {
-    flex: 1 1 calc(50% - 0.5rem);
-    justify-content: center;
     min-width: 0;
     padding: 0.45rem 0.55rem;
     min-height: 30px;
@@ -1376,14 +1436,11 @@
 
   .topbar-profile {
     grid-column: span 2;
-    width: 100%;
-    justify-content: space-between;
     padding-block: 0.15rem;
   }
 
   .topbar-profile .topbar-action-btn {
-    max-width: 160px;
-    justify-content: center;
+    max-width: 180px;
   }
 
   .topbar-profile-avatar {

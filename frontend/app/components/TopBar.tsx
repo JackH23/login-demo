@@ -68,7 +68,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
   const { logout } = useAuth();
   const router = useRouter();
   const greeting = getGreeting();
-  const iconSize = 15;
+  const iconSize = 16;
 
   const handleLogout = useCallback(() => {
     logout();
@@ -170,7 +170,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
       style={containerStyle}
     >
       <div className="topbar-inner px-3 px-md-4 pt-3 pb-2">
-        <div className="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center">
+        <div className="topbar-layout">
           <div className="topbar-header">
             <p className="text-uppercase fw-semibold small mb-1 text-secondary-emphasis opacity-75">
               {greeting}, {currentUser.username}
@@ -179,10 +179,10 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
               {title}
             </h2>
           </div>
-          <div className="topbar-actions d-flex align-items-center gap-3 flex-wrap justify-content-end w-100 w-lg-auto">
+          <div className="topbar-actions">
             <button
               type="button"
-              className="btn btn-sm btn-outline-primary d-flex align-items-center gap-2 topbar-action-btn"
+              className="btn btn-sm btn-outline-primary d-flex align-items-center gap-2 justify-content-center justify-content-lg-start topbar-action-btn"
               onClick={() => setTheme(theme === "night" ? "brightness" : "night")}
               aria-label={themeToggleLabel}
               title={themeToggleLabel}
@@ -198,7 +198,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
             </button>
             <Link
               href="/posts/create"
-              className="btn btn-sm btn-primary d-flex align-items-center gap-2 topbar-action-btn"
+              className="btn btn-sm btn-primary d-flex align-items-center gap-2 justify-content-center justify-content-lg-start topbar-action-btn"
             >
               <FileText size={iconSize} className="topbar-icon" />
               <span className="topbar-action-label">New Post</span>
@@ -215,7 +215,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="btn btn-sm btn-outline-danger d-flex align-items-center gap-2 topbar-action-btn"
+                className="btn btn-sm btn-outline-danger d-flex align-items-center gap-2 justify-content-center justify-content-lg-start topbar-action-btn"
               >
                 <LogOut size={iconSize} className="topbar-icon" />
                 <span className="d-none d-sm-inline topbar-action-label">Log out</span>
