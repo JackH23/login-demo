@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 import LoadingState from "../components/LoadingState";
-import { ADMIN_USERNAME } from "@/lib/constants";
 import { useConfirmDialog } from "../components/useConfirmDialog";
 import { usePromptDialog } from "../components/usePromptDialog";
 import { useCachedApi } from "../hooks/useCachedApi";
@@ -57,7 +56,7 @@ export default function UserPage() {
     );
   }
 
-  const isAdmin = user.username === ADMIN_USERNAME;
+  const isAdmin = user.isAdmin;
 
   const currentUserData = users.find((u) => u.username === user.username);
   if (!currentUserData) {
@@ -335,6 +334,7 @@ export default function UserPage() {
         currentUser={{
           username: currentUserData.username,
           image: currentUserData.image,
+          isAdmin: user.isAdmin,
         }}
       />
 

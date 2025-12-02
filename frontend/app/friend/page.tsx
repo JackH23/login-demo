@@ -142,7 +142,11 @@ export default function FriendPage() {
       <TopBar
         title="Friend"
         active="friend"
-        currentUser={{ username: currentUserData.username, image: currentUserData.image }}
+        currentUser={{
+          username: currentUserData.username,
+          image: currentUserData.image,
+          isAdmin: user.isAdmin,
+        }}
       />
 
       {/* Content */}

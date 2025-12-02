@@ -127,7 +127,11 @@ export default function HomePage() {
       <TopBar
         title="Home"
         active="home"
-        currentUser={{ username: currentUserData.username, image: currentUserData.image }}
+        currentUser={{
+          username: currentUserData.username,
+          image: currentUserData.image,
+          isAdmin: user.isAdmin,
+        }}
       />
 
       {/* Blog Section */}

@@ -6,7 +6,6 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 import LoadingState from "../components/LoadingState";
-import { ADMIN_USERNAME } from "@/lib/constants";
 import { useCachedApi } from "../hooks/useCachedApi";
 
 interface User {
@@ -26,7 +25,7 @@ export default function AdminPage() {
   const { theme } = useTheme();
   const router = useRouter();
 
-  const shouldFetch = user?.username === ADMIN_USERNAME;
+  const shouldFetch = user?.isAdmin;
 
   const {
     data: users,
@@ -88,7 +87,7 @@ export default function AdminPage() {
     );
   }
 
-  if (user.username !== ADMIN_USERNAME) {
+  if (!user.isAdmin) {
     router.push("/home");
     return null;
   }
@@ -105,6 +104,7 @@ export default function AdminPage() {
         currentUser={{
           username: user.username,
           image: currentUserData?.image,
+          isAdmin: user.isAdmin,
         }}
       />
 

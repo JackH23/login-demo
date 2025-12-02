@@ -9,6 +9,7 @@ import socketClient from "@/lib/socketClient";
 // Basic representation of a user stored in the context
 interface User {
   username: string;
+  isAdmin: boolean;
 }
 
 // Shape of the authentication context value shared with components
@@ -93,12 +94,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      const parsed = JSON.parse(storedUser);
-      setUser(parsed);
-      if (socket) {
-        socket.emit("user-online", parsed.username);
+      const parsed = JSON.parse(storedUser) as Partial<User>;
+      const restoredUser: User = {
+        username: parsed.username ?? "",
+        isAdmin: Boolean(parsed.isAdmin),
+      };
+
+      if (restoredUser.username) {
+        setUser(restoredUser);
+        if (socket) {
+          socket.emit("user-online", restoredUser.username);
+        }
+        void updateOnlineStatus(restoredUser.username, true);
+      } else {
+        localStorage.removeItem("user");
       }
-      void updateOnlineStatus(parsed.username, true);
     }
     // Loading complete after attempting to read from storage
     setLoading(false);
@@ -211,6 +221,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (res.ok) {
         const data = await res.json();
         const username = data?.user?.username ?? data?.username;
+        const isAdmin = Boolean(data?.user?.isAdmin);
+
         if (!username || typeof username !== "string") {
           return {
             success: false as const,
@@ -218,8 +230,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           };
         }
         // Persist the username in local storage so the session survives reloads
-        localStorage.setItem("user", JSON.stringify({ username }));
-        setUser({ username });
+        localStorage.setItem("user", JSON.stringify({ username, isAdmin }));
+        setUser({ username, isAdmin });
         // Mark user as online after successful sign in
         if (socket) socket.emit("user-online", username);
         void updateOnlineStatus(username, true);
@@ -267,9 +279,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser((prev) => {
       if (!prev) return prev;
       const next = { ...prev, ...updates };
-      if (typeof updates.username === "string") {
-        localStorage.setItem("user", JSON.stringify({ username: updates.username }));
-      }
+      localStorage.setItem("user", JSON.stringify(next));
       return next;
     });
   }, []);

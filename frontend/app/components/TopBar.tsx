@@ -21,13 +21,13 @@ import {
   UserCircle2,
   Users,
 } from "lucide-react";
-import { ADMIN_USERNAME } from "@/lib/constants";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 
 interface UserData {
   username: string;
   image?: string;
+  isAdmin?: boolean;
 }
 
 type ActivePage =
@@ -84,7 +84,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
       { key: "setting", label: "Settings", href: "/setting", icon: Settings2 },
     ];
 
-    if (currentUser.username === ADMIN_USERNAME) {
+    if (currentUser.isAdmin) {
       baseItems.splice(5, 0, {
         key: "admin",
         label: "Admin",

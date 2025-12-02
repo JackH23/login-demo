@@ -10,6 +10,9 @@ const User = require("../models/User");
 
 const router = express.Router();
 
+const ADMIN_USERNAME =
+  process.env.ADMIN_USERNAME || process.env.NEXT_PUBLIC_ADMIN_USERNAME || "Jackie";
+
 const uploadsDir = path.join(__dirname, "..", "uploads");
 fs.mkdirSync(uploadsDir, { recursive: true });
 
@@ -72,6 +75,7 @@ router.post(
           username: user.username,
           email: user.email,
           image: user.image ?? null,
+          isAdmin: user.username === ADMIN_USERNAME,
         },
       });
     } catch (error) {
@@ -116,11 +120,14 @@ const handleSignin = asyncHandler(async (req, res) => {
     { expiresIn: "7d" }
   );
 
+  const isAdmin = user.username === ADMIN_USERNAME;
+
   return res.json({
     user: {
       username: user.username,
       email: user.email,
       image: user.image ?? null,
+      isAdmin,
     },
     token,
   });
