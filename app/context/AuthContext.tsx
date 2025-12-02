@@ -25,7 +25,10 @@ interface AuthContextValue {
     image: string | null
   ) => Promise<{ success: true } | { success: false; message: string }>;
   // Logs an existing user in; resolves to true on success
-  signin: (email: string, password: string) => Promise<boolean>;
+  signin: (
+    email: string,
+    password: string
+  ) => Promise<{ success: true } | { success: false; message: string }>;
   // Clears user information from state and storage
   logout: () => void;
   // Socket connection for real-time updates
@@ -42,17 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   // Indicates whether the provider has finished restoring a session
   const [loading, setLoading] = useState(true);
-  const socket: Socket = socketClient;
-
-  useEffect(() => {
-    const handleConnectError = (error: Error) => {
-      console.error("Socket connection error:", error);
-    };
-    socket.on("connect_error", handleConnectError);
-    return () => {
-      socket.off("connect_error", handleConnectError);
-    };
-  }, [socket]);
+  const socket: Socket | null = socketClient;
 
   const updateOnlineStatus = useCallback(
     async (username: string, online: boolean) => {
@@ -68,14 +61,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (!res.ok) {
           let message = "Failed to update user";
+          const bodyText = await res.text();
           try {
-            const data = await res.json();
+            const data = JSON.parse(bodyText);
             if (typeof data?.error === "string" && data.error.trim()) {
               message = data.error;
             }
           } catch {
-            const fallback = await res.text();
-            if (fallback.trim()) message = fallback;
+            if (bodyText.trim()) message = bodyText;
           }
 
           if (res.status === 404) {
@@ -144,48 +137,118 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     password: string,
     image: string | null
   ) => {
+    const sanitizedUsername = username.trim();
+    const sanitizedEmail = email.trim().toLowerCase();
+    const sanitizedPassword = password;
+
+    if (!sanitizedUsername || !sanitizedEmail || !sanitizedPassword) {
+      return {
+        success: false as const,
+        message: "Username, email, and password are required.",
+      };
+    }
+
     // Call the API route to create a new user with extra information
-    const res = await fetch(apiUrl("/api/auth/signup"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, password, image }),
-    });
-
-    if (res.ok) {
-      return { success: true } as const;
-    }
-
-    let message = "Account creation failed.";
     try {
-      const data = await res.json();
-      if (typeof data?.error === "string" && data.error.trim()) {
-        message = data.error;
-      }
-    } catch (error) {
-      console.error("Unable to parse signup error response", error);
-    }
+      const res = await fetch(apiUrl("/api/auth/signup"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: sanitizedUsername,
+          email: sanitizedEmail,
+          password: sanitizedPassword,
+          image,
+        }),
+      });
 
-    return { success: false as const, message };
+      if (res.ok) {
+        return { success: true } as const;
+      }
+
+      let message = "Account creation failed.";
+      try {
+        const bodyText = await res.text();
+        try {
+          const data = JSON.parse(bodyText);
+          if (typeof data?.error === "string" && data.error.trim()) {
+            message = data.error;
+          }
+        } catch {
+          if (bodyText.trim()) message = bodyText;
+        }
+      } catch (error) {
+        console.error("Unable to read signup error response", error);
+      }
+
+      return { success: false as const, message };
+    } catch (error) {
+      console.error("Signup request failed", error);
+      return {
+        success: false as const,
+        message: "Unable to reach the server. Please try again shortly.",
+      };
+    }
   };
 
   const signin = async (email: string, password: string) => {
     // Request API route to sign in and store the returned user
-    const res = await fetch(apiUrl("/api/auth/signin"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      // Persist the username in local storage so the session survives reloads
-      localStorage.setItem("user", JSON.stringify({ username: data.username }));
-      setUser({ username: data.username });
-      // Mark user as online after successful sign in
-      if (socket) socket.emit("user-online", data.username);
-      void updateOnlineStatus(data.username, true);
-      return true;
+    const sanitizedEmail = email.trim().toLowerCase();
+    const sanitizedPassword = password;
+
+    if (!sanitizedEmail || !sanitizedPassword) {
+      return {
+        success: false as const,
+        message: "Email and password are required.",
+      };
     }
-    return false;
+
+    try {
+      const res = await fetch(apiUrl("/api/auth/login"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: sanitizedEmail, password: sanitizedPassword }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const username = data?.user?.username ?? data?.username;
+        if (!username || typeof username !== "string") {
+          return {
+            success: false as const,
+            message: "Unexpected response from the server.",
+          };
+        }
+        // Persist the username in local storage so the session survives reloads
+        localStorage.setItem("user", JSON.stringify({ username }));
+        setUser({ username });
+        // Mark user as online after successful sign in
+        if (socket) socket.emit("user-online", username);
+        void updateOnlineStatus(username, true);
+        return { success: true } as const;
+      }
+
+      let message = "Invalid email or password.";
+      try {
+        const bodyText = await res.text();
+        try {
+          const data = JSON.parse(bodyText);
+          if (typeof data?.error === "string" && data.error.trim()) {
+            message = data.error;
+          }
+        } catch {
+          if (bodyText.trim()) message = bodyText;
+        }
+      } catch (error) {
+        console.error("Unable to read signin error response", error);
+      }
+
+      return { success: false as const, message };
+    } catch (error) {
+      console.error("Signin request failed", error);
+      return {
+        success: false as const,
+        message: "Unable to reach the server. Please try again shortly.",
+      };
+    }
   };
 
   const logout = () => {

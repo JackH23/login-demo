@@ -77,33 +77,6 @@ function ChatPageContent() {
     socketRef.current = socket || null;
   }, [socket]);
 
-  // Listen for incoming messages from the server
-  useEffect(() => {
-    const sock = socketRef.current;
-    if (!sock) return;
-
-    const handleReceive = (message: Message) => {
-      if (message.from === chatUser && message.to === user?.username) {
-        setMessages((prev) => [...prev, message]);
-        if (
-          typeof window !== "undefined" &&
-          "Notification" in window &&
-          Notification.permission === "granted"
-        ) {
-          const body =
-            message.type === "text"
-              ? message.content
-              : `sent a ${message.type}`;
-          new Notification(`Message from ${message.from}`, { body });
-        }
-      }
-    };
-
-    sock.on("receive-message", handleReceive);
-    return () => {
-      sock.off("receive-message", handleReceive);
-    };
-  }, [chatUser, user, socket]);
 
   // Fetch messages
   useEffect(() => {
@@ -181,21 +154,9 @@ function ChatPageContent() {
     return () => window.removeEventListener("click", clearSelection);
   }, []);
 
-  // Listen for online/offline status of the chat partner
+  // Socket real-time listeners disabled
   useEffect(() => {
-    if (!socket || !chatUser) return;
-    const handleOnline = (username: string) => {
-      if (username === chatUser) setChatOnline(true);
-    };
-    const handleOffline = (username: string) => {
-      if (username === chatUser) setChatOnline(false);
-    };
-    socket.on("user-online", handleOnline);
-    socket.on("user-offline", handleOffline);
-    return () => {
-      socket.off("user-online", handleOnline);
-      socket.off("user-offline", handleOffline);
-    };
+    setChatOnline(false);
   }, [socket, chatUser]);
 
   const chatPartner = participants.find((p) => p.username === chatUser);

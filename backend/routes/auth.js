@@ -1,81 +1,132 @@
-const express = require('express');
-const bcrypt = require('bcrypt');
+const express = require("express");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 
-const User = require('../models/User');
+const dbConnect = require("../mongodb");
+const User = require("../models/User");
 
 const router = express.Router();
+
+const uploadsDir = path.join(__dirname, "..", "uploads");
+fs.mkdirSync(uploadsDir, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, uploadsDir),
+  filename: (_req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
+});
+
+const upload = multer({ storage });
 
 const asyncHandler = (handler) =>
   (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
 
-router.post('/signup', asyncHandler(async (req, res) => {
-  const { username, email, password, image } = req.body;
+router.post(
+  "/signup",
+  upload.single("image"),
+  asyncHandler(async (req, res) => {
+    await dbConnect();
 
-  if (typeof username !== 'string' || !username.trim()) {
-    return res.status(400).json({ error: 'Username is required' });
-  }
+    const { username, email, password } = req.body ?? {};
 
-  if (typeof email !== 'string' || !email.trim()) {
-    return res.status(400).json({ error: 'Email is required' });
-  }
+    const normalizedUsername = typeof username === "string" ? username.trim() : "";
+    const normalizedEmail =
+      typeof email === "string" ? email.trim().toLowerCase() : "";
+    const normalizedPassword = typeof password === "string" ? password : "";
+    const imagePath = req.file
+      ? path.relative(path.join(__dirname, ".."), req.file.path).replace(/\\+/g, "/")
+      : undefined;
 
-  if (typeof password !== 'string' || !password) {
-    return res.status(400).json({ error: 'Password is required' });
-  }
-
-  const trimmedUsername = username.trim();
-  const normalizedEmail = email.trim().toLowerCase();
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  if (!emailRegex.test(normalizedEmail)) {
-    return res.status(400).json({ error: 'A valid email is required' });
-  }
-
-  const [existingUser, existingEmail] = await Promise.all([
-    User.findOne({ username: trimmedUsername }),
-    User.findOne({ email: normalizedEmail }),
-  ]);
-
-  if (existingUser) {
-    return res.status(409).json({ error: 'Username already exists' });
-  }
-
-  if (existingEmail) {
-    return res.status(409).json({ error: 'Email already in use' });
-  }
-
-  try {
-    const hashed = await bcrypt.hash(password, 10);
-    const userDoc = {
-      username: trimmedUsername,
-      email: normalizedEmail,
-      password: hashed,
-    };
-
-    if (typeof image === 'string' && image.trim()) {
-      userDoc.image = image;
+    if (!normalizedUsername || !normalizedEmail || !normalizedPassword) {
+      return res
+        .status(400)
+        .json({ error: "Username, email, and password are required" });
     }
 
-    await User.create(userDoc);
-    return res.json({ success: true });
-  } catch (error) {
-    console.error('Failed to create user', error);
-    return res
-      .status(500)
-      .json({ error: 'User creation failed. Please try again later.' });
+    const existingUser = await User.findOne({
+      $or: [
+        { username: normalizedUsername },
+        { email: normalizedEmail },
+      ],
+    }).lean();
+
+    if (existingUser) {
+      return res.status(409).json({ error: "Username or email already in use" });
+    }
+
+    const hashedPassword = await bcrypt.hash(normalizedPassword, 10);
+
+    try {
+      const user = await User.create({
+        username: normalizedUsername,
+        email: normalizedEmail,
+        password: hashedPassword,
+        image: imagePath,
+      });
+
+      return res.status(201).json({
+        message: "User created successfully",
+        user: {
+          username: user.username,
+          email: user.email,
+          image: user.image ?? null,
+        },
+      });
+    } catch (error) {
+      if (error?.code === 11000) {
+        return res
+          .status(409)
+          .json({ error: "Username or email already in use" });
+      }
+      throw error;
+    }
+  })
+);
+
+const handleSignin = asyncHandler(async (req, res) => {
+  await dbConnect();
+
+  const { email, password } = req.body ?? {};
+
+  const normalizedEmail =
+    typeof email === "string" ? email.trim().toLowerCase() : "";
+  const normalizedPassword = typeof password === "string" ? password : "";
+
+  if (!normalizedEmail || !normalizedPassword) {
+    return res.status(400).json({ error: "Email and password are required" });
   }
-}));
 
-router.post('/signin', asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+  const user = await User.findOne({ email: normalizedEmail }).lean();
 
-  const user = await User.findOne({ email });
-
-  if (user && (await bcrypt.compare(password, user.password))) {
-    return res.json({ success: true, username: user.username });
+  if (!user) {
+    return res.status(401).json({ error: "Invalid credentials" });
   }
 
-  return res.status(401).json({ error: 'Invalid credentials' });
-}));
+  const passwordMatches = await bcrypt.compare(normalizedPassword, user.password);
+
+  if (!passwordMatches) {
+    return res.status(401).json({ error: "Invalid credentials" });
+  }
+
+  const token = jwt.sign(
+    { id: user._id },
+    process.env.JWT_SECRET || "secretkey123",
+    { expiresIn: "7d" }
+  );
+
+  return res.json({
+    user: {
+      username: user.username,
+      email: user.email,
+      image: user.image ?? null,
+    },
+    token,
+  });
+});
+
+router.post("/signin", handleSignin);
+router.post("/login", handleSignin);
 
 module.exports = router;

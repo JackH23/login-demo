@@ -41,8 +41,8 @@ export default function SigninPage() {
     setError("");
     setSubmitting(true);
     try {
-      const ok = await signin(email, password);
-      if (ok) {
+      const result = await signin(email, password);
+      if (result.success) {
         const warmUsers = prefetchCachedApi<PrefetchUser[]>("/api/users", {
           transform: (payload) =>
             (payload as { users?: PrefetchUser[] | null })?.users ?? [],
@@ -56,7 +56,7 @@ export default function SigninPage() {
           console.error("Failed to prefetch home data", prefetchError);
         });
       } else {
-        setError("Invalid email or password.");
+        setError(result.message);
       }
     } catch (err) {
       console.error("Signin failed", err);
