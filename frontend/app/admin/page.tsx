@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 import LoadingState from "../components/LoadingState";
-import { ADMIN_USERNAME } from "@/lib/constants";
+import { ADMIN_USERNAME } from "@/frontend/lib/constants";
 import { useCachedApi } from "../hooks/useCachedApi";
 
 interface User {

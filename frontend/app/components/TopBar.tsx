@@ -21,7 +21,7 @@ import {
   UserCircle2,
   Users,
 } from "lucide-react";
-import { ADMIN_USERNAME } from "@/lib/constants";
+import { ADMIN_USERNAME } from "@/frontend/lib/constants";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 

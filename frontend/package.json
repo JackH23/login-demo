@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev frontend",
-    "build": "next build frontend",
-    "start": "next start frontend",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "socket": "node backend/server.js",
-    "lint": "next lint frontend"
+    "lint": "next lint"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
