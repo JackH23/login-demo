@@ -178,7 +178,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
               {title}
             </h2>
           </div>
-          <div className="d-flex align-items-center gap-3 flex-wrap justify-content-end">
+          <div className="d-flex align-items-center gap-3 flex-wrap justify-content-lg-end topbar-actions">
             <button
               type="button"
               className="btn btn-sm btn-outline-primary d-flex align-items-center gap-2"
@@ -225,14 +225,14 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
       </div>
 
       <div className="px-4 pb-3">
-        <div className="d-flex flex-wrap gap-2">
+        <div className="d-flex gap-2 flex-nowrap flex-lg-wrap topbar-nav">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = optimisticActive === item.key;
             const isPendingSelection =
               isNavigating && active !== item.key && optimisticActive === item.key;
             const baseClass =
-              "nav-link d-flex align-items-center gap-2 px-3 py-2 rounded-pill border-0 fw-semibold";
+              "nav-link d-flex align-items-center gap-2 px-3 py-2 rounded-pill border-0 fw-semibold topbar-nav-link";
             const visualState = isActive
               ? "active text-white shadow-sm"
               : theme === "night"
