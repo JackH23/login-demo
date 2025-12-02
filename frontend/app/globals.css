@@ -1287,33 +1287,29 @@
   font-size: clamp(1.35rem, 2vw + 1rem, 2.25rem);
 }
 
-.topbar-actions {
+
+.topbar-quick-actions {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
   align-items: stretch;
-  gap: 0.75rem;
-  width: 100%;
-}
-
-.topbar-actions .topbar-action-btn {
-  width: 100%;
-  justify-content: center;
-}
-
-.topbar-profile {
-  width: 100%;
-  justify-content: space-between;
-  gap: 0.65rem;
-}
-
-.topbar-profile .topbar-action-btn {
   width: 100%;
 }
 
 .topbar-action-btn {
-  min-height: 32px;
-  padding: 0.55rem 0.65rem;
+  min-height: 42px;
+  padding: 0.45rem 0.75rem;
   border-radius: 0.75rem;
+  width: 100%;
+}
+
+.topbar-profile-btn {
+  justify-content: flex-start;
+}
+
+.topbar-icon-only {
+  padding-inline: 0.5rem;
+  min-width: 0;
 }
 
 .topbar-icon {
@@ -1336,21 +1332,15 @@
     gap: 1.1rem;
   }
 
-  .topbar-actions {
-    display: inline-flex;
-    width: auto;
-    gap: 0.85rem;
+  .topbar-quick-actions {
+    grid-template-columns: repeat(4, auto);
+    justify-content: end;
     align-items: center;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-  }
-
-  .topbar-actions .topbar-action-btn {
+    gap: 0.65rem;
     width: auto;
-    justify-content: flex-start;
   }
 
-  .topbar-profile {
+  .topbar-action-btn {
     width: auto;
     justify-content: flex-start;
   }
@@ -1387,10 +1377,6 @@
   .topbar-action-btn {
     min-height: 34px;
   }
-
-  .topbar-actions {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  }
 }
 
 @media (max-width: 576px) {
@@ -1416,31 +1402,21 @@
     padding: 0.35rem 0.85rem 0.8rem;
   }
 
-  .topbar-actions {
-    gap: 0.55rem;
+  .topbar-quick-actions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: center;
+    gap: 0.5rem;
   }
 
-  .topbar-actions img {
+  .topbar-quick-actions img {
     width: 28px !important;
     height: 28px !important;
   }
 
-  .topbar-actions .topbar-action-btn {
+  .topbar-action-btn {
     min-width: 0;
-    padding: 0.45rem 0.55rem;
-    min-height: 30px;
+    padding: 0.4rem 0.5rem;
+    min-height: 38px;
     font-size: 0.9rem;
-  }
-
-  .topbar-profile {
-    grid-column: span 2;
-    padding-block: 0.15rem;
-  }
-
-  .topbar-profile .topbar-action-btn {
-    max-width: 180px;
   }
 
   .topbar-profile-avatar {
@@ -1487,13 +1463,9 @@
     font-size: clamp(1rem, 4.25vw + 0.45rem, 1.35rem);
   }
 
-  .topbar-actions {
-    grid-template-columns: 1fr;
-  }
-
-  .topbar-profile {
-    grid-column: span 1;
-    gap: 0.7rem;
+  .topbar-quick-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.4rem;
   }
 
   .topbar-nav {
