@@ -179,7 +179,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
               {title}
             </h2>
           </div>
-          <div className="topbar-actions">
+          <div className="topbar-quick-actions" aria-label="Quick actions">
             <button
               type="button"
               className="btn btn-sm btn-outline-primary d-flex align-items-center gap-2 justify-content-center justify-content-lg-start topbar-action-btn"
@@ -198,12 +198,17 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
             </button>
             <Link
               href="/posts/create"
+              aria-label="Create a new post"
               className="btn btn-sm btn-primary d-flex align-items-center gap-2 justify-content-center justify-content-lg-start topbar-action-btn"
             >
               <FileText size={iconSize} className="topbar-icon" />
-              <span className="topbar-action-label">New Post</span>
+              <span className="d-none d-sm-inline topbar-action-label">New Post</span>
             </Link>
-            <div className="topbar-profile d-flex align-items-center gap-2">
+            <Link
+              href="/user"
+              aria-label="View your profile"
+              className="btn btn-sm btn-outline-secondary topbar-profile-btn d-flex align-items-center gap-2 topbar-action-btn"
+            >
               {currentUser.image && (
                 <img
                   src={currentUser.image}
@@ -212,15 +217,17 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
                   style={{ width: "42px", height: "42px", objectFit: "cover" }}
                 />
               )}
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="btn btn-sm btn-outline-danger d-flex align-items-center gap-2 justify-content-center justify-content-lg-start topbar-action-btn"
-              >
-                <LogOut size={iconSize} className="topbar-icon" />
-                <span className="d-none d-sm-inline topbar-action-label">Log out</span>
-              </button>
-            </div>
+              <span className="d-none d-md-inline topbar-action-label">Profile</span>
+            </Link>
+            <button
+              type="button"
+              onClick={handleLogout}
+              aria-label="Log out"
+              className="btn btn-sm btn-outline-danger d-flex align-items-center justify-content-center topbar-action-btn topbar-icon-only"
+            >
+              <LogOut size={iconSize} className="topbar-icon" />
+              <span className="visually-hidden">Log out</span>
+            </button>
           </div>
         </div>
       </div>
