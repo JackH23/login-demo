@@ -170,18 +170,18 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
     >
       <div className="px-3 px-md-4 pt-3 pb-2">
         <div className="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center">
-          <div>
+          <div className="topbar-header">
             <p className="text-uppercase fw-semibold small mb-1 text-secondary-emphasis opacity-75">
               {greeting}, {currentUser.username}
             </p>
-            <h2 className="mb-0 d-flex align-items-center gap-2">
+            <h2 className="mb-0 d-flex align-items-center gap-2 topbar-title">
               {title}
             </h2>
           </div>
           <div className="topbar-actions d-flex align-items-center gap-3 flex-wrap justify-content-end">
             <button
               type="button"
-              className="btn btn-sm btn-outline-primary d-flex align-items-center gap-2"
+              className="btn btn-sm btn-outline-primary d-flex align-items-center gap-2 topbar-action-btn"
               onClick={() => setTheme(theme === "night" ? "brightness" : "night")}
               aria-label={themeToggleLabel}
               title={themeToggleLabel}
@@ -191,16 +191,16 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
               ) : (
                 <MoonStar size={18} />
               )}
-              <span className="d-none d-sm-inline">
+              <span className="d-none d-sm-inline topbar-action-label">
                 {theme === "night" ? "Light mode" : "Dark mode"}
               </span>
             </button>
             <Link
               href="/posts/create"
-              className="btn btn-sm btn-primary d-flex align-items-center gap-2"
+              className="btn btn-sm btn-primary d-flex align-items-center gap-2 topbar-action-btn"
             >
               <FileText size={18} />
-              <span>New Post</span>
+              <span className="topbar-action-label">New Post</span>
             </Link>
             <div className="d-flex align-items-center gap-2">
               {currentUser.image && (
@@ -214,10 +214,10 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="btn btn-sm btn-outline-danger d-flex align-items-center gap-2"
+                className="btn btn-sm btn-outline-danger d-flex align-items-center gap-2 topbar-action-btn"
               >
                 <LogOut size={18} />
-                <span className="d-none d-sm-inline">Log out</span>
+                <span className="d-none d-sm-inline topbar-action-label">Log out</span>
               </button>
             </div>
           </div>
