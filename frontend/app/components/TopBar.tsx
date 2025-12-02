@@ -6,7 +6,6 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
   useTransition,
 } from "react";
@@ -16,7 +15,6 @@ import {
   Home,
   LogOut,
   MoonStar,
-  Plus,
   Settings2,
   ShieldCheck,
   SunMedium,
@@ -70,7 +68,6 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
   const { logout } = useAuth();
   const router = useRouter();
   const greeting = getGreeting();
-  const profileMenuRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = useCallback(() => {
     logout();
@@ -101,7 +98,6 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
 
   const [optimisticActive, setOptimisticActive] = useState<ActivePage>(active);
   const [isNavigating, startTransition] = useTransition();
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   useEffect(() => {
     setOptimisticActive(active);
@@ -119,32 +115,6 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
     },
     [router],
   );
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        profileMenuRef.current &&
-        !profileMenuRef.current.contains(event.target as Node)
-      ) {
-        setIsProfileMenuOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  useEffect(() => {
-    const safeBottomSpace = 96;
-    const previousPadding = document.body.style.paddingBottom;
-    document.body.style.paddingBottom = `${safeBottomSpace}px`;
-
-    return () => {
-      document.body.style.paddingBottom = previousPadding;
-    };
-  }, []);
 
   const handleNavClick = useCallback(
     (event: React.MouseEvent<HTMLAnchorElement>, item: NavItem) => {
@@ -191,182 +161,127 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
   const themeToggleLabel =
     theme === "night" ? "Switch to light mode" : "Switch to dark mode";
 
-  const bottomBarStyle: React.CSSProperties = {
-    background:
-      theme === "night"
-        ? "rgba(15, 23, 42, 0.9)"
-        : "rgba(248, 250, 252, 0.95)",
-    borderTop:
-      theme === "night"
-        ? "1px solid rgba(148, 163, 184, 0.15)"
-        : "1px solid rgba(15, 23, 42, 0.08)",
-    backdropFilter: "blur(12px)",
-    WebkitBackdropFilter: "blur(12px)",
-    boxShadow:
-      theme === "night"
-        ? "0 -10px 30px -20px rgba(15, 23, 42, 0.9)"
-        : "0 -10px 30px -20px rgba(100, 116, 139, 0.35)",
-  };
-
-  const fabStyle: React.CSSProperties = {
-    position: "fixed",
-    bottom: "82px",
-    right: "22px",
-    zIndex: 1060,
-    boxShadow:
-      theme === "night"
-        ? "0 15px 30px -10px rgba(59, 130, 246, 0.6)"
-        : "0 15px 30px -10px rgba(14, 165, 233, 0.55)",
-  };
-
   return (
-    <>
-      <div
-        className={`position-sticky top-0 z-3 ${
-          theme === "night" ? "text-white" : "text-dark"
-        }`}
-        style={containerStyle}
-      >
-        <div className="px-3 py-3">
-          <div className="d-flex align-items-center gap-3">
+    <div
+      className={`position-sticky top-0 z-3 ${
+        theme === "night" ? "text-white" : "text-dark"
+      }`}
+      style={containerStyle}
+    >
+      <div className="px-4 pt-3 pb-2">
+        <div className="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center">
+          <div>
+            <p className="text-uppercase fw-semibold small mb-1 text-secondary-emphasis opacity-75">
+              {greeting}, {currentUser.username}
+            </p>
+            <h2 className="mb-0 d-flex align-items-center gap-2">
+              {title}
+            </h2>
+          </div>
+          <div className="d-flex align-items-center gap-3 flex-wrap justify-content-end">
             <button
               type="button"
-              className="btn btn-outline-primary rounded-circle p-2 d-flex align-items-center justify-content-center"
+              className="btn btn-sm btn-outline-primary d-flex align-items-center gap-2"
               onClick={() => setTheme(theme === "night" ? "brightness" : "night")}
               aria-label={themeToggleLabel}
               title={themeToggleLabel}
             >
-              {theme === "night" ? <SunMedium size={18} /> : <MoonStar size={18} />}
+              {theme === "night" ? (
+                <SunMedium size={18} />
+              ) : (
+                <MoonStar size={18} />
+              )}
+              <span className="d-none d-sm-inline">
+                {theme === "night" ? "Light mode" : "Dark mode"}
+              </span>
             </button>
-
-            <div className="flex-grow-1 text-center">
-              <p className="text-uppercase fw-semibold small mb-1 text-secondary-emphasis opacity-75">
-                {greeting}, {currentUser.username}
-              </p>
-              <h2 className="h5 mb-0 text-truncate">{title}</h2>
-            </div>
-
+            <Link
+              href="/posts/create"
+              className="btn btn-sm btn-primary d-flex align-items-center gap-2"
+            >
+              <FileText size={18} />
+              <span>New Post</span>
+            </Link>
             <div className="d-flex align-items-center gap-2">
-              <Link
-                href="/posts/create"
-                className="btn btn-primary rounded-circle p-2 d-flex align-items-center justify-content-center"
-                aria-label="Create a new post"
+              {currentUser.image && (
+                <img
+                  src={currentUser.image}
+                  alt="Your profile"
+                  className="rounded-circle border border-2 border-primary-subtle shadow-sm"
+                  style={{ width: "42px", height: "42px", objectFit: "cover" }}
+                />
+              )}
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="btn btn-sm btn-outline-danger d-flex align-items-center gap-2"
               >
-                <Plus size={18} />
-              </Link>
-
-              <div className="position-relative" ref={profileMenuRef}>
-                <button
-                  type="button"
-                  className="btn btn-outline-secondary rounded-circle p-1 d-flex align-items-center justify-content-center"
-                  aria-label="Profile menu"
-                  onClick={() => setIsProfileMenuOpen((prev) => !prev)}
-                >
-                  {currentUser.image ? (
-                    <img
-                      src={currentUser.image}
-                      alt="Your profile"
-                      className="rounded-circle border border-2 border-primary-subtle shadow-sm"
-                      style={{ width: "38px", height: "38px", objectFit: "cover" }}
-                    />
-                  ) : (
-                    <UserCircle2 size={24} />
-                  )}
-                </button>
-
-                {isProfileMenuOpen && (
-                  <div
-                    className={`position-absolute end-0 mt-2 rounded-4 shadow-lg py-2 ${
-                      theme === "night" ? "bg-dark text-white" : "bg-white text-dark"
-                    }`}
-                    style={{ minWidth: "180px", zIndex: 1060 }}
-                  >
-                    <Link
-                      href="/user"
-                      className="dropdown-item d-flex align-items-center gap-2"
-                      onClick={() => setIsProfileMenuOpen(false)}
-                    >
-                      <UserCircle2 size={18} />
-                      <span>View profile</span>
-                    </Link>
-                    <button
-                      type="button"
-                      className="dropdown-item d-flex align-items-center gap-2 text-danger"
-                      onClick={() => {
-                        setIsProfileMenuOpen(false);
-                        handleLogout();
-                      }}
-                    >
-                      <LogOut size={18} />
-                      <span>Log out</span>
-                    </button>
-                  </div>
-                )}
-              </div>
+                <LogOut size={18} />
+                <span>Log out</span>
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      <div
-        className="position-fixed bottom-0 start-0 end-0 px-3 pb-3 z-3"
-        style={bottomBarStyle}
-      >
-        <div className="d-flex justify-content-between align-items-center gap-2">
+      <div className="px-4 pb-3">
+        <div className="d-flex flex-wrap gap-2">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = optimisticActive === item.key;
             const isPendingSelection =
               isNavigating && active !== item.key && optimisticActive === item.key;
+            const baseClass =
+              "nav-link d-flex align-items-center gap-2 px-3 py-2 rounded-pill border-0 fw-semibold";
             const visualState = isActive
-              ? "bg-primary text-white"
+              ? "active text-white shadow-sm"
               : theme === "night"
-              ? "text-white-50"
-              : "text-secondary";
+              ? "text-white-50 bg-transparent"
+              : "text-secondary bg-white bg-opacity-75";
 
-            const itemStyle: React.CSSProperties = {
-              flex: 1,
-              borderRadius: "14px",
-              padding: "10px 8px",
-              transition: "all 0.2s ease",
-              opacity: isPendingSelection && !isActive ? 0.8 : 1,
-              background:
-                isActive && theme === "night"
-                  ? "linear-gradient(135deg, rgba(59, 130, 246, 0.35), rgba(99, 102, 241, 0.4))"
-                  : isActive
-                  ? "linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(14, 165, 233, 0.25))"
-                  : "transparent",
-            };
+            const baseStyle: React.CSSProperties = isActive
+              ? {
+                  background:
+                    theme === "night"
+                      ? "linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(99, 102, 241, 0.35))"
+                      : "linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(14, 165, 233, 0.3))",
+                  color: "#fff",
+                  boxShadow:
+                    theme === "night"
+                      ? "0 12px 30px -12px rgba(59, 130, 246, 0.55)"
+                      : "0 12px 30px -12px rgba(14, 165, 233, 0.55)",
+                }
+              : {
+                  background:
+                    theme === "night"
+                      ? "rgba(148, 163, 184, 0.12)"
+                      : "rgba(226, 232, 240, 0.65)",
+                  transition: "all 0.2s ease",
+                };
+
+            const style =
+              isPendingSelection && !isActive
+                ? { ...baseStyle, opacity: 0.8 }
+                : baseStyle;
 
             return (
               <Link
                 key={item.key}
                 href={item.href}
-                className={`text-decoration-none text-center fw-semibold small d-flex flex-column align-items-center ${visualState}`}
-                style={itemStyle}
+                className={`${baseClass} ${visualState}`}
+                style={style}
                 aria-current={isActive ? "page" : undefined}
                 onPointerEnter={() => prefetchRoute(item.href)}
                 onFocus={() => prefetchRoute(item.href)}
                 onClick={(event) => handleNavClick(event, item)}
               >
-                <Icon size={20} />
-                <span className="mt-1 text-truncate" style={{ maxWidth: "80px" }}>
-                  {item.label}
-                </span>
+                <Icon size={18} />
+                <span>{item.label}</span>
               </Link>
             );
           })}
         </div>
       </div>
-
-      <Link
-        href="/posts/create"
-        className="btn btn-primary rounded-circle p-3 d-flex align-items-center justify-content-center"
-        aria-label="Create a new post"
-        style={fabStyle}
-      >
-        <Plus size={22} />
-      </Link>
-    </>
+    </div>
   );
 }
