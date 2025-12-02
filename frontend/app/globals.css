@@ -1241,6 +1241,40 @@
   gap: 0.85rem;
 }
 
+/* Responsive navigation in the top bar */
+.topbar-nav {
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scroll-snap-type: x proximity;
+}
+
+.topbar-nav::-webkit-scrollbar {
+  height: 6px;
+}
+
+.topbar-nav::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.5);
+  border-radius: 999px;
+}
+
+.topbar-nav .nav-link {
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+
+@media (max-width: 576px) {
+  .topbar-actions {
+    width: 100%;
+    justify-content: flex-start !important;
+    gap: 0.75rem;
+  }
+
+  .topbar-actions img {
+    width: 36px !important;
+    height: 36px !important;
+  }
+}
+
 .prompt-dialog-field {
   display: flex;
   flex-direction: column;
