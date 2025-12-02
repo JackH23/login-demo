@@ -150,7 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Call the API route to create a new user with extra information
     try {
-      const res = await fetch(apiUrl("/api/auth/signup"), {
+      const res = await fetch("http://localhost:3001/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -203,7 +203,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const res = await fetch(apiUrl("/api/auth/signin"), {
+      const res = await fetch("http://localhost:3001/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: sanitizedEmail, password: sanitizedPassword }),
