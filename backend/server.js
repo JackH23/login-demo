@@ -15,7 +15,10 @@ const { createSocketServer } = require("./socket");
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+// Allow slightly larger JSON bodies so profile images encoded as base64 can be processed
+// without triggering a 413 Payload Too Large error during signup.
+app.use(express.json({ limit: "5mb" }));
+app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 app.use(async (_req, _res, next) => {
   try {
     await dbConnect();

@@ -141,6 +141,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const sanitizedEmail = email.trim().toLowerCase();
     const sanitizedPassword = password;
 
+    if (!sanitizedUsername || !sanitizedEmail || !sanitizedPassword) {
+      return {
+        success: false as const,
+        message: "Username, email, and password are required.",
+      };
+    }
+
     // Call the API route to create a new user with extra information
     try {
       const res = await fetch(apiUrl("/api/auth/signup"), {
@@ -188,6 +195,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const sanitizedEmail = email.trim().toLowerCase();
     const sanitizedPassword = password;
 
+    if (!sanitizedEmail || !sanitizedPassword) {
+      return {
+        success: false as const,
+        message: "Email and password are required.",
+      };
+    }
+
     try {
       const res = await fetch(apiUrl("/api/auth/signin"), {
         method: "POST",
@@ -196,12 +210,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       if (res.ok) {
         const data = await res.json();
+        const username = data?.user?.username ?? data?.username;
+        if (!username || typeof username !== "string") {
+          return {
+            success: false as const,
+            message: "Unexpected response from the server.",
+          };
+        }
         // Persist the username in local storage so the session survives reloads
-        localStorage.setItem("user", JSON.stringify({ username: data.username }));
-        setUser({ username: data.username });
+        localStorage.setItem("user", JSON.stringify({ username }));
+        setUser({ username });
         // Mark user as online after successful sign in
-        if (socket) socket.emit("user-online", data.username);
-        void updateOnlineStatus(data.username, true);
+        if (socket) socket.emit("user-online", username);
+        void updateOnlineStatus(username, true);
         return { success: true } as const;
       }
 
