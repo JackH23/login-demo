@@ -68,6 +68,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
   const { logout } = useAuth();
   const router = useRouter();
   const greeting = getGreeting();
+  const iconSize = 16;
 
   const handleLogout = useCallback(() => {
     logout();
@@ -187,9 +188,9 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
               title={themeToggleLabel}
             >
               {theme === "night" ? (
-                <SunMedium size={18} />
+                <SunMedium size={iconSize} />
               ) : (
-                <MoonStar size={18} />
+                <MoonStar size={iconSize} />
               )}
               <span className="d-none d-sm-inline topbar-action-label">
                 {theme === "night" ? "Light mode" : "Dark mode"}
@@ -199,7 +200,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
               href="/posts/create"
               className="btn btn-sm btn-primary d-flex align-items-center gap-2 topbar-action-btn"
             >
-              <FileText size={18} />
+              <FileText size={iconSize} />
               <span className="topbar-action-label">New Post</span>
             </Link>
             <div className="d-flex align-items-center gap-2">
@@ -216,7 +217,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
                 onClick={handleLogout}
                 className="btn btn-sm btn-outline-danger d-flex align-items-center gap-2 topbar-action-btn"
               >
-                <LogOut size={18} />
+                <LogOut size={iconSize} />
                 <span className="d-none d-sm-inline topbar-action-label">Log out</span>
               </button>
             </div>
@@ -275,7 +276,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
                 onFocus={() => prefetchRoute(item.href)}
                 onClick={(event) => handleNavClick(event, item)}
               >
-                <Icon size={18} />
+                <Icon size={iconSize} />
                 <span>{item.label}</span>
               </Link>
             );
