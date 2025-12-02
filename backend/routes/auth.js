@@ -1,6 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 
+const dbConnect = require("../mongodb");
 const User = require("../models/User");
 
 const router = express.Router();
@@ -11,12 +12,16 @@ const asyncHandler = (handler) =>
 router.post(
   "/signup",
   asyncHandler(async (req, res) => {
+    await dbConnect();
+
     const { username, email, password, image } = req.body ?? {};
 
     const normalizedUsername = typeof username === "string" ? username.trim() : "";
     const normalizedEmail =
       typeof email === "string" ? email.trim().toLowerCase() : "";
     const normalizedPassword = typeof password === "string" ? password : "";
+    const normalizedImage =
+      typeof image === "string" && image.trim() ? image.trim() : undefined;
 
     if (!normalizedUsername || !normalizedEmail || !normalizedPassword) {
       return res
@@ -25,7 +30,10 @@ router.post(
     }
 
     const existingUser = await User.findOne({
-      $or: [{ username: normalizedUsername }, { email: normalizedEmail }],
+      $or: [
+        { username: normalizedUsername },
+        { email: normalizedEmail },
+      ],
     }).lean();
 
     if (existingUser) {
@@ -34,20 +42,37 @@ router.post(
 
     const hashedPassword = await bcrypt.hash(normalizedPassword, 10);
 
-    await User.create({
-      username: normalizedUsername,
-      email: normalizedEmail,
-      password: hashedPassword,
-      image: typeof image === "string" && image.trim() ? image : undefined,
-    });
+    try {
+      const user = await User.create({
+        username: normalizedUsername,
+        email: normalizedEmail,
+        password: hashedPassword,
+        image: normalizedImage,
+      });
 
-    return res.status(201).json({ username: normalizedUsername });
+      return res.status(201).json({
+        user: {
+          username: user.username,
+          email: user.email,
+          image: user.image ?? null,
+        },
+      });
+    } catch (error) {
+      if (error?.code === 11000) {
+        return res
+          .status(409)
+          .json({ error: "Username or email already in use" });
+      }
+      throw error;
+    }
   })
 );
 
 router.post(
   "/signin",
   asyncHandler(async (req, res) => {
+    await dbConnect();
+
     const { email, password } = req.body ?? {};
 
     const normalizedEmail =
@@ -73,7 +98,13 @@ router.post(
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    return res.json({ username: user.username });
+    return res.json({
+      user: {
+        username: user.username,
+        email: user.email,
+        image: user.image ?? null,
+      },
+    });
   })
 );
 
