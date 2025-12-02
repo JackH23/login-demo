@@ -3,12 +3,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@media (max-width: 991.98px) {
-  body {
-    padding-bottom: 96px;
-  }
-}
-
 /* Chat layout enhancements */
 .chat-canvas {
   padding: 2rem clamp(1rem, 3vw, 2rem);

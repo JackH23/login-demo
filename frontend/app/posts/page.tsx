@@ -116,7 +116,7 @@ export default function PostsPage() {
 
   return (
     <div
-      className={`container-fluid min-vh-100 p-3 p-md-4 pb-5 ${
+      className={`container-fluid min-vh-100 py-4 ${
         theme === "night" ? "bg-dark text-white" : "bg-light"
       }`}
     >

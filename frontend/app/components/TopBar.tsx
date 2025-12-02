@@ -20,7 +20,6 @@ import {
   SunMedium,
   UserCircle2,
   Users,
-  Plus,
 } from "lucide-react";
 import { ADMIN_USERNAME } from "@/lib/constants";
 import { useTheme } from "../context/ThemeContext";
@@ -162,13 +161,6 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
   const themeToggleLabel =
     theme === "night" ? "Switch to light mode" : "Switch to dark mode";
 
-  const buttonBaseStyle: React.CSSProperties = {
-    minHeight: 42,
-    minWidth: 42,
-    padding: "0.35rem 0.65rem",
-    borderRadius: 12,
-  };
-
   return (
     <div
       className={`position-sticky top-0 z-3 ${
@@ -176,24 +168,20 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
       }`}
       style={containerStyle}
     >
-      <div className="px-3 py-2">
-        <div className="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-start align-items-lg-center">
-          <div className="d-flex flex-column gap-1">
-            <p className="text-uppercase fw-semibold small mb-0 text-secondary-emphasis opacity-75">
+      <div className="px-4 pt-3 pb-2">
+        <div className="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center">
+          <div>
+            <p className="text-uppercase fw-semibold small mb-1 text-secondary-emphasis opacity-75">
               {greeting}, {currentUser.username}
             </p>
-            <h4 className="mb-0 d-flex align-items-center gap-2 fw-semibold" style={{ letterSpacing: "-0.01em" }}>
+            <h2 className="mb-0 d-flex align-items-center gap-2">
               {title}
-            </h4>
+            </h2>
           </div>
-          <div
-            className="d-grid d-lg-flex gap-2 flex-grow-1 flex-lg-grow-0 align-items-center justify-content-lg-end"
-            style={{ gridTemplateColumns: "repeat(2, minmax(0, 1fr))" }}
-          >
+          <div className="d-flex align-items-center gap-3 flex-wrap justify-content-end">
             <button
               type="button"
-              className="btn btn-outline-primary d-flex align-items-center justify-content-center gap-2"
-              style={buttonBaseStyle}
+              className="btn btn-sm btn-outline-primary d-flex align-items-center gap-2"
               onClick={() => setTheme(theme === "night" ? "brightness" : "night")}
               aria-label={themeToggleLabel}
               title={themeToggleLabel}
@@ -203,45 +191,40 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
               ) : (
                 <MoonStar size={18} />
               )}
-              <span className="d-none d-md-inline fw-semibold small">
-                {theme === "night" ? "Light" : "Dark"}
+              <span className="d-none d-sm-inline">
+                {theme === "night" ? "Light mode" : "Dark mode"}
               </span>
             </button>
-
             <Link
               href="/posts/create"
-              className="btn btn-primary d-flex align-items-center justify-content-center gap-2"
-              style={buttonBaseStyle}
+              className="btn btn-sm btn-primary d-flex align-items-center gap-2"
             >
-              <Plus size={18} />
-              <span className="d-none d-md-inline fw-semibold small">New</span>
+              <FileText size={18} />
+              <span>New Post</span>
             </Link>
-
-            <div className="d-flex align-items-center gap-2 justify-content-center">
+            <div className="d-flex align-items-center gap-2">
               {currentUser.image && (
                 <img
                   src={currentUser.image}
                   alt="Your profile"
-                  className="rounded-3 border border-2 border-primary-subtle shadow-sm"
+                  className="rounded-circle border border-2 border-primary-subtle shadow-sm"
                   style={{ width: "42px", height: "42px", objectFit: "cover" }}
                 />
               )}
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="btn btn-sm btn-outline-danger d-flex align-items-center gap-2"
+              >
+                <LogOut size={18} />
+                <span>Log out</span>
+              </button>
             </div>
-
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="btn btn-outline-danger d-flex align-items-center justify-content-center gap-2"
-              style={buttonBaseStyle}
-            >
-              <LogOut size={18} />
-              <span className="d-none d-md-inline fw-semibold small">Logout</span>
-            </button>
           </div>
         </div>
       </div>
 
-      <div className="px-3 pb-2 d-none d-lg-block">
+      <div className="px-4 pb-3">
         <div className="d-flex flex-wrap gap-2">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -249,7 +232,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
             const isPendingSelection =
               isNavigating && active !== item.key && optimisticActive === item.key;
             const baseClass =
-              "nav-link d-flex align-items-center gap-2 px-3 py-2 rounded-2 border-0 fw-semibold";
+              "nav-link d-flex align-items-center gap-2 px-3 py-2 rounded-pill border-0 fw-semibold";
             const visualState = isActive
               ? "active text-white shadow-sm"
               : theme === "night"
@@ -267,7 +250,6 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
                     theme === "night"
                       ? "0 12px 30px -12px rgba(59, 130, 246, 0.55)"
                       : "0 12px 30px -12px rgba(14, 165, 233, 0.55)",
-                  fontSize: "0.95rem",
                 }
               : {
                   background:
@@ -275,7 +257,6 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
                       ? "rgba(148, 163, 184, 0.12)"
                       : "rgba(226, 232, 240, 0.65)",
                   transition: "all 0.2s ease",
-                  fontSize: "0.95rem",
                 };
 
             const style =
@@ -295,65 +276,12 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
                 onClick={(event) => handleNavClick(event, item)}
               >
                 <Icon size={18} />
-                <span className="small fw-semibold">{item.label}</span>
+                <span>{item.label}</span>
               </Link>
             );
           })}
         </div>
       </div>
-
-      <div
-        className="d-lg-none position-fixed bottom-0 start-0 end-0 px-3 pb-3"
-        style={{ pointerEvents: "none" }}
-      >
-        <div
-          className={`d-flex justify-content-between align-items-center rounded-3 shadow-sm px-3 py-2 ${
-            theme === "night" ? "bg-dark bg-opacity-95" : "bg-white"
-          }`}
-          style={{ pointerEvents: "auto", border: "1px solid rgba(148, 163, 184, 0.18)" }}
-        >
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = optimisticActive === item.key;
-
-            return (
-              <Link
-                key={item.key}
-                href={item.href}
-                className={`d-flex flex-column align-items-center text-decoration-none gap-1 px-2 ${
-                  isActive
-                    ? "text-primary"
-                    : theme === "night"
-                    ? "text-white-50"
-                    : "text-secondary"
-                }`}
-                onClick={(event) => handleNavClick(event, item)}
-                aria-current={isActive ? "page" : undefined}
-              >
-                <Icon size={20} />
-                <span className="small fw-semibold">{item.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-
-      <Link
-        href="/posts/create"
-        className={`position-fixed d-flex align-items-center justify-content-center rounded-circle shadow-lg ${
-          theme === "night" ? "bg-primary text-white" : "bg-primary text-white"
-        }`}
-        style={{
-          width: 56,
-          height: 56,
-          bottom: 88,
-          right: 20,
-          zIndex: 1030,
-        }}
-        aria-label="Create a new post"
-      >
-        <Plus size={24} />
-      </Link>
     </div>
   );
 }
