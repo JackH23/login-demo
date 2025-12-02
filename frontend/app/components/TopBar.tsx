@@ -68,7 +68,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
   const { logout } = useAuth();
   const router = useRouter();
   const greeting = getGreeting();
-  const iconSize = 16;
+  const iconSize = 15;
 
   const handleLogout = useCallback(() => {
     logout();
@@ -164,12 +164,12 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
 
   return (
     <div
-      className={`position-sticky top-0 z-3 ${
+      className={`topbar position-sticky top-0 z-3 ${
         theme === "night" ? "text-white" : "text-dark"
       }`}
       style={containerStyle}
     >
-      <div className="px-3 px-md-4 pt-3 pb-2">
+      <div className="topbar-inner px-3 px-md-4 pt-3 pb-2">
         <div className="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center">
           <div className="topbar-header">
             <p className="text-uppercase fw-semibold small mb-1 text-secondary-emphasis opacity-75">
@@ -188,9 +188,9 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
               title={themeToggleLabel}
             >
               {theme === "night" ? (
-                <SunMedium size={iconSize} />
+                <SunMedium size={iconSize} className="topbar-icon" />
               ) : (
-                <MoonStar size={iconSize} />
+                <MoonStar size={iconSize} className="topbar-icon" />
               )}
               <span className="d-none d-sm-inline topbar-action-label">
                 {theme === "night" ? "Light mode" : "Dark mode"}
@@ -200,7 +200,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
               href="/posts/create"
               className="btn btn-sm btn-primary d-flex align-items-center gap-2 topbar-action-btn"
             >
-              <FileText size={iconSize} />
+              <FileText size={iconSize} className="topbar-icon" />
               <span className="topbar-action-label">New Post</span>
             </Link>
             <div className="d-flex align-items-center gap-2">
@@ -217,7 +217,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
                 onClick={handleLogout}
                 className="btn btn-sm btn-outline-danger d-flex align-items-center gap-2 topbar-action-btn"
               >
-                <LogOut size={iconSize} />
+                <LogOut size={iconSize} className="topbar-icon" />
                 <span className="d-none d-sm-inline topbar-action-label">Log out</span>
               </button>
             </div>
@@ -225,7 +225,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
         </div>
       </div>
 
-      <div className="px-3 px-md-4 pb-3">
+      <div className="topbar-nav-wrapper px-3 px-md-4 pb-3">
         <div className="d-flex gap-2 flex-nowrap flex-lg-wrap topbar-nav" role="navigation" aria-label="Primary">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -276,7 +276,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
                 onFocus={() => prefetchRoute(item.href)}
                 onClick={(event) => handleNavClick(event, item)}
               >
-                <Icon size={iconSize} />
+                <Icon size={iconSize} className="topbar-icon" />
                 <span>{item.label}</span>
               </Link>
             );
