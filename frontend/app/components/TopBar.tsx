@@ -6,6 +6,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useTransition,
 } from "react";
@@ -68,8 +69,10 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
   const { logout } = useAuth();
   const router = useRouter();
   const greeting = getGreeting();
+  const profileMenuRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = useCallback(() => {
+    setProfileMenuOpen(false);
     logout();
     router.push("/signin");
   }, [logout, router]);
@@ -98,10 +101,25 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
 
   const [optimisticActive, setOptimisticActive] = useState<ActivePage>(active);
   const [isNavigating, startTransition] = useTransition();
+  const [isProfileMenuOpen, setProfileMenuOpen] = useState(false);
 
   useEffect(() => {
     setOptimisticActive(active);
   }, [active]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target as Node)
+      ) {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     navItems.forEach((item) => {
@@ -168,63 +186,94 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
       }`}
       style={containerStyle}
     >
-      <div className="px-4 pt-3 pb-2">
-        <div className="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center">
-          <div>
-            <p className="text-uppercase fw-semibold small mb-1 text-secondary-emphasis opacity-75">
-              {greeting}, {currentUser.username}
-            </p>
-            <h2 className="mb-0 d-flex align-items-center gap-2">
-              {title}
-            </h2>
-          </div>
-          <div className="d-flex align-items-center gap-3 flex-wrap justify-content-lg-end topbar-actions">
+      <div className="px-3 px-sm-4 pt-2 pb-2">
+        <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap topbar-compact">
+          <div className="d-flex align-items-center gap-2 flex-grow-1 min-w-0">
             <button
               type="button"
-              className="btn btn-sm btn-outline-primary d-flex align-items-center gap-2"
+              className="btn btn-icon topbar-icon"
               onClick={() => setTheme(theme === "night" ? "brightness" : "night")}
               aria-label={themeToggleLabel}
               title={themeToggleLabel}
             >
-              {theme === "night" ? (
-                <SunMedium size={18} />
-              ) : (
-                <MoonStar size={18} />
-              )}
-              <span className="d-none d-sm-inline">
-                {theme === "night" ? "Light mode" : "Dark mode"}
-              </span>
+              {theme === "night" ? <SunMedium size={18} /> : <MoonStar size={18} />}
             </button>
+            <div className="d-flex flex-column flex-sm-row align-items-sm-center gap-1 w-100 min-w-0">
+              <p className="text-uppercase fw-semibold small mb-0 text-secondary-emphasis opacity-75 d-none d-sm-inline">
+                {greeting}
+              </p>
+              <h2 className="mb-0 d-flex align-items-center gap-2 fs-5 flex-grow-1 text-truncate">
+                {title}
+              </h2>
+            </div>
+          </div>
+          <div className="d-flex align-items-center gap-2 flex-shrink-0 topbar-actions">
             <Link
               href="/posts/create"
-              className="btn btn-sm btn-primary d-flex align-items-center gap-2"
+              className="btn btn-icon topbar-icon"
+              aria-label="Create new post"
             >
               <FileText size={18} />
-              <span>New Post</span>
             </Link>
-            <div className="d-flex align-items-center gap-2">
-              {currentUser.image && (
-                <img
-                  src={currentUser.image}
-                  alt="Your profile"
-                  className="rounded-circle border border-2 border-primary-subtle shadow-sm"
-                  style={{ width: "42px", height: "42px", objectFit: "cover" }}
-                />
-              )}
+            <div className="position-relative" ref={profileMenuRef}>
               <button
                 type="button"
-                onClick={handleLogout}
-                className="btn btn-sm btn-outline-danger d-flex align-items-center gap-2"
+                className="btn p-1 d-flex align-items-center gap-2 rounded-pill topbar-profile"
+                onClick={() => setProfileMenuOpen((open) => !open)}
+                aria-expanded={isProfileMenuOpen}
+                aria-label="Open profile menu"
               >
-                <LogOut size={18} />
-                <span>Log out</span>
+                <div className="rounded-circle overflow-hidden topbar-avatar">
+                  {currentUser.image ? (
+                    <img
+                      src={currentUser.image}
+                      alt="Your profile"
+                      className="w-100 h-100 object-fit-cover"
+                    />
+                  ) : (
+                    <span className="fw-bold text-uppercase">
+                      {currentUser.username.charAt(0)}
+                    </span>
+                  )}
+                </div>
+                <span className="d-none d-md-inline fw-semibold small text-secondary-emphasis">
+                  {currentUser.username}
+                </span>
               </button>
+              {isProfileMenuOpen && (
+                <div
+                  className={`dropdown-menu dropdown-menu-end show shadow-sm mt-2 ${
+                    theme === "night" ? "bg-dark text-white" : "bg-white"
+                  }`}
+                >
+                  <div className="px-3 py-2">
+                    <p className="mb-0 fw-semibold">{currentUser.username}</p>
+                    <small className="text-secondary-emphasis">{greeting}</small>
+                  </div>
+                  {currentUser.username === ADMIN_USERNAME && (
+                    <>
+                      <div className="dropdown-divider" />
+                      <Link className="dropdown-item d-flex align-items-center gap-2" href="/admin">
+                        <ShieldCheck size={16} /> Admin panel
+                      </Link>
+                    </>
+                  )}
+                  <div className="dropdown-divider" />
+                  <button
+                    type="button"
+                    className="dropdown-item d-flex align-items-center gap-2 text-danger"
+                    onClick={handleLogout}
+                  >
+                    <LogOut size={16} /> Log out
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="px-4 pb-3">
+      <div className="px-3 px-sm-4 pb-3 d-none d-md-block">
         <div className="d-flex gap-2 flex-nowrap flex-lg-wrap topbar-nav">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -282,6 +331,39 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
           })}
         </div>
       </div>
+
+      <div className="mobile-bottom-nav d-md-none">
+        {navItems
+          .filter((item) =>
+            ["home", "posts", "user", "friend", "setting"].includes(item.key),
+          )
+          .map((item) => {
+            const Icon = item.icon;
+            const isActive = optimisticActive === item.key;
+            return (
+              <Link
+                key={item.key}
+                href={item.href}
+                className={`mobile-bottom-nav__item ${
+                  isActive ? "is-active" : ""
+                }`}
+                aria-current={isActive ? "page" : undefined}
+                onClick={(event) => handleNavClick(event, item)}
+              >
+                <Icon size={18} />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+      </div>
+
+      <Link
+        href="/posts/create"
+        className="btn btn-primary mobile-fab d-md-none"
+        aria-label="Create a new post"
+      >
+        <span className="mobile-fab__icon">+</span>
+      </Link>
     </div>
   );
 }
