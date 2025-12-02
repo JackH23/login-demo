@@ -1,6 +1,8 @@
 const express = require("express");
 const http = require("http");
 const cors = require("cors");
+const path = require("path");
+const fs = require("fs");
 
 require("dotenv").config();
 
@@ -19,6 +21,10 @@ app.use(cors());
 // without triggering a 413 Payload Too Large error during signup.
 app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ extended: true, limit: "5mb" }));
+
+const uploadsDir = path.join(__dirname, "uploads");
+fs.mkdirSync(uploadsDir, { recursive: true });
+app.use("/uploads", express.static(uploadsDir));
 app.use(async (_req, _res, next) => {
   try {
     await dbConnect();
