@@ -8,7 +8,7 @@ function resolveBaseUrl() {
 
   // In development, talk to the locally running Express backend.
   if (process.env.NODE_ENV === "development") {
-    return "http://localhost:3001"; // <- change to your backend port
+    return "http://localhost:8000"; // <- change to your backend port
   }
 
   // In production, rely on the same-origin Next.js server and let rewrites
