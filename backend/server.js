@@ -29,7 +29,7 @@ app.use("/uploads", express.static(uploadsDir));
 
 // Health check route
 app.get("/", (req, res) => {
-  res.send("API is running — Connected to MongoDB");
+  res.send("API is running — Connected to MongoDB.");
 });
 
 // REST API routes
@@ -51,13 +51,14 @@ const server = http.createServer(app);
 const io = createSocketServer(server);
 app.set("io", io);
 
-const PORT = process.env.PORT || 3001;
+const isProduction =
+  process.env.NODE_ENV === "production" || process.env.npm_lifecycle_event === "start";
+const PORT = process.env.PORT || (isProduction ? 3000 : 8000);
 
 dbConnect()
   .then(() => {
-    console.log("Connected to MongoDB");
     server.listen(PORT, () => {
-      console.log(`API is running at http://localhost:${PORT}`);
+      console.log(`Connected to MongoDB and API is running at http://localhost:${PORT}.`);
     });
   })
   .catch((error) => {
