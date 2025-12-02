@@ -322,7 +322,7 @@ export default function UserPage() {
 
   return (
     <div
-      className={`container-fluid min-vh-100 p-4 ${
+      className={`container-fluid min-vh-100 p-3 p-md-4 pb-5 ${
         theme === "night" ? "bg-dark text-white" : "bg-light"
       }`}
     >
