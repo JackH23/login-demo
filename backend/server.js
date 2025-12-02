@@ -51,10 +51,15 @@ const server = http.createServer(app);
 const io = createSocketServer(server);
 app.set("io", io);
 
-dbConnect().catch((error) => {
-  console.error("Failed to connect to MongoDB", error);
-});
+const PORT = process.env.PORT || 3001;
 
-server.listen(3001, () => {
-  console.log("Backend running at http://localhost:3001");
-});
+dbConnect()
+  .then(() => {
+    console.log("Connected to MongoDB");
+    server.listen(PORT, () => {
+      console.log(`API is running at http://localhost:${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error("Failed to connect to MongoDB", error);
+  });
