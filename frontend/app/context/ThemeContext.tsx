@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useLayoutEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 export type Theme = "brightness" | "night";
 
@@ -41,11 +41,16 @@ const applyThemeToDom = (value: Theme) => {
 };
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Initialize the theme from storage (or system preference) on the client.
-  const [theme, setThemeState] = useState<Theme>(() => readStoredTheme());
+  // Default to brightness during SSR to avoid hydration mismatch, then sync with
+  // the client preference once mounted.
+  const [theme, setThemeState] = useState<Theme>("brightness");
+
+  useEffect(() => {
+    setThemeState(readStoredTheme());
+  }, []);
 
   // Keep DOM attributes and classes in sync whenever the theme changes.
-  useLayoutEffect(() => {
+  useEffect(() => {
     applyThemeToDom(theme);
   }, [theme]);
 
