@@ -48,12 +48,12 @@ export default function SignupPage() {
 
   return (
     <div
-      className={`d-flex align-items-center justify-content-center min-vh-100 ${
+      className={`auth-wrapper d-flex align-items-center justify-content-center min-vh-100 ${
         theme === "night" ? "bg-dark text-white" : "bg-light"
       }`}
     >
-      <div className="card shadow" style={{ maxWidth: "28rem", width: "100%" }}>
-        <div className="card-body">
+      <div className="card shadow auth-card border-0">
+        <div className="card-body p-4 p-md-5">
           <h2 className="card-title h3 text-center mb-4">Sign Up</h2>
 
           {error && (
@@ -130,12 +130,42 @@ export default function SignupPage() {
             )}
           </button>
 
-          <p className="text-center mt-3 mb-0">
+          <p className="text-center mt-4 mb-0 small text-body-secondary">
             Already have an account? <a href="/signin">Sign in</a>
           </p>
         </div>
       </div>
       <style jsx>{`
+      .auth-wrapper {
+          width: 100%;
+          padding: 2rem 1.25rem;
+        }
+
+        @media (min-width: 576px) {
+          .auth-wrapper {
+            padding: 3rem 1.5rem;
+          }
+        }
+
+        .auth-card {
+          width: min(100%, 30rem);
+          margin: 0 auto;
+          border-radius: 0.75rem;
+        }
+
+        .card-title {
+          letter-spacing: 0.01em;
+        }
+
+        .form-control {
+          min-height: 3rem;
+        }
+
+        .btn-primary {
+          min-height: 3rem;
+          font-weight: 600;
+        }
+          
         .animated-ellipsis {
           display: inline-flex;
           justify-content: space-between;
