@@ -11,6 +11,8 @@ const asyncHandler = (handler) =>
 const normalizeImagePath = (value) => {
   if (!value) return undefined;
 
+  if (/^(data:|https?:|blob:)/i.test(value)) return value;
+
   const normalized = value.replace(/\\+/g, '/');
   return normalized.startsWith('/') ? normalized : `/${normalized}`;
 };

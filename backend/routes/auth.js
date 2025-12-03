@@ -2,32 +2,25 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
 
 const dbConnect = require("../mongodb");
 const User = require("../models/User");
 
 const router = express.Router();
 
-const uploadsDir = path.join(__dirname, "..", "uploads");
-fs.mkdirSync(uploadsDir, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, uploadsDir),
-  filename: (_req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
 });
-
-const upload = multer({ storage });
 
 const asyncHandler = (handler) =>
   (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
 
-const normalizeImagePath = (value) => {
-  if (!value) return value;
-
-  const normalized = value.replace(/\\+/g, "/");
-  return normalized.startsWith("/") ? normalized : `/${normalized}`;
+const toDataUrl = (file) => {
+  if (!file) return undefined;
+  const mimeType = file.mimetype || "application/octet-stream";
+  const base64 = file.buffer.toString("base64");
+  return `data:${mimeType};base64,${base64}`;
 };
 
 router.post(
@@ -42,9 +35,7 @@ router.post(
     const normalizedEmail =
       typeof email === "string" ? email.trim().toLowerCase() : "";
     const normalizedPassword = typeof password === "string" ? password : "";
-    const imagePath = req.file
-      ? normalizeImagePath(path.posix.join("uploads", req.file.filename))
-      : undefined;
+    const imageDataUrl = toDataUrl(req.file);
 
     if (!normalizedUsername || !normalizedEmail || !normalizedPassword) {
       return res
@@ -70,7 +61,7 @@ router.post(
         username: normalizedUsername,
         email: normalizedEmail,
         password: hashedPassword,
-        image: imagePath,
+        image: imageDataUrl,
       });
 
       return res.status(201).json({
@@ -78,7 +69,7 @@ router.post(
         user: {
           username: user.username,
           email: user.email,
-          image: normalizeImagePath(user.image ?? null),
+          image: imageDataUrl ?? null,
         },
       });
     } catch (error) {
@@ -127,7 +118,7 @@ const handleSignin = asyncHandler(async (req, res) => {
     user: {
       username: user.username,
       email: user.email,
-      image: normalizeImagePath(user.image ?? null),
+      image: user.image ?? null,
     },
     token,
   });
