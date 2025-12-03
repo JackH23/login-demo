@@ -1,5 +1,11 @@
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
+function encodeImageToDataUrl(buffer, contentType = "application/octet-stream") {
+  if (!buffer?.length) return null;
+  const base64 = buffer.toString("base64");
+  return `data:${contentType};base64,${base64}`;
+}
+
 function buildUserImagePath(username) {
   return `/api/users/${encodeURIComponent(username)}/image`;
 }
@@ -46,4 +52,5 @@ module.exports = {
   MAX_IMAGE_BYTES,
   buildUserImagePath,
   extractImagePayload,
+  encodeImageToDataUrl,
 };

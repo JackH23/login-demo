@@ -7,8 +7,8 @@ const dbConnect = require("../mongodb");
 const User = require("../models/User");
 const {
   MAX_IMAGE_BYTES,
-  buildUserImagePath,
   extractImagePayload,
+  encodeImageToDataUrl,
 } = require("./utils/image");
 
 const router = express.Router();
@@ -66,12 +66,17 @@ router.post(
     const hashedPassword = await bcrypt.hash(normalizedPassword, 10);
 
     try {
+      const imageDataUrl =
+        imagePayload && imagePayload.buffer
+          ? encodeImageToDataUrl(imagePayload.buffer, imagePayload.contentType)
+          : null;
+
       const imageFields =
         imagePayload && !imagePayload.remove && !imagePayload.error
           ? {
               imageData: imagePayload.buffer,
               imageContentType: imagePayload.contentType,
-              image: buildUserImagePath(normalizedUsername),
+              image: imageDataUrl,
             }
           : {};
 
@@ -133,7 +138,7 @@ const handleSignin = asyncHandler(async (req, res) => {
   );
 
   const image = user.imageData
-    ? buildUserImagePath(user.username)
+    ? encodeImageToDataUrl(user.imageData, user.imageContentType)
     : user.image ?? null;
 
   return res.json({
