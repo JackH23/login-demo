@@ -117,6 +117,11 @@ export default function BlogCard({
     router.push(`/user/${encodeURIComponent(displayAuthor)}`);
   };
 
+  const openUserProfile = (username?: string) => {
+    if (!username) return;
+    router.push(`/user/${encodeURIComponent(username)}`);
+  };
+
   // Count total number of comments for the blog post
   const totalComments = comments.length;
 
@@ -842,29 +847,45 @@ export default function BlogCard({
                       <div className="conversation-comment">
                         <div className="conversation-comment__main">
                           <div className="conversation-comment__avatar">
-                            {comment.authorImage ? (
-                              <img
-                                src={comment.authorImage}
-                                alt={`${comment.author}'s avatar`}
-                                className="conversation-comment__avatar-image"
-                              />
-                            ) : (
-                              <span
-                                className={`conversation-comment__avatar-fallback ${
-                                  isNight
-                                    ? "bg-secondary text-white"
-                                    : "bg-primary bg-opacity-10 text-primary"
-                                }`}
-                              >
-                                {comment.author?.charAt(0)?.toUpperCase() || "?"}
-                              </span>
-                            )}
+                            <button
+                              type="button"
+                              className="p-0 border-0 bg-transparent"
+                              onClick={() => openUserProfile(comment.author)}
+                              aria-label={`View ${comment.author}'s profile`}
+                            >
+                              {comment.authorImage ? (
+                                <img
+                                  src={comment.authorImage}
+                                  alt={`${comment.author}'s avatar`}
+                                  className="conversation-comment__avatar-image"
+                                />
+                              ) : (
+                                <span
+                                  className={`conversation-comment__avatar-fallback ${
+                                    isNight
+                                      ? "bg-secondary text-white"
+                                      : "bg-primary bg-opacity-10 text-primary"
+                                  }`}
+                                >
+                                  {comment.author?.charAt(0)?.toUpperCase() || "?"}
+                                </span>
+                              )}
+                            </button>
                           </div>
                           <div className="conversation-comment__meta">
                             <span
                               className={`conversation-comment__author text-uppercase ${
                                 isNight ? "text-primary text-opacity-75" : "text-primary"
                               }`}
+                              role="button"
+                              tabIndex={0}
+                              onClick={() => openUserProfile(comment.author)}
+                              onKeyDown={(event) => {
+                                if (event.key === "Enter" || event.key === " ") {
+                                  event.preventDefault();
+                                  openUserProfile(comment.author);
+                                }
+                              }}
                             >
                               {comment.author}
                             </span>
@@ -926,19 +947,38 @@ export default function BlogCard({
                               } small mb-2`}
                             >
                               {reply.authorImage && (
-                                <img
-                                  src={reply.authorImage}
-                                  alt={reply.author}
-                                  className="rounded-circle"
-                                  style={{
-                                    width: "28px",
-                                    height: "28px",
-                                    objectFit: "cover",
-                                  }}
-                                />
+                                <button
+                                  type="button"
+                                  className="p-0 border-0 bg-transparent"
+                                  onClick={() => openUserProfile(reply.author)}
+                                  aria-label={`View ${reply.author}'s profile`}
+                                >
+                                  <img
+                                    src={reply.authorImage}
+                                    alt={reply.author}
+                                    className="rounded-circle"
+                                    style={{
+                                      width: "28px",
+                                      height: "28px",
+                                      objectFit: "cover",
+                                    }}
+                                  />
+                                </button>
                               )}
                               ↪{" "}
-                              <span className="fw-semibold">{reply.author}</span>
+                              <button
+                                type="button"
+                                className="fw-semibold p-0 border-0 bg-transparent text-start"
+                                onClick={() => openUserProfile(reply.author)}
+                                onKeyDown={(event) => {
+                                  if (event.key === "Enter" || event.key === " ") {
+                                    event.preventDefault();
+                                    openUserProfile(reply.author);
+                                  }
+                                }}
+                              >
+                                {reply.author}
+                              </button>
                               : {reply.text}
                             </li>
                           ))}
@@ -1100,23 +1140,30 @@ export default function BlogCard({
                       <div className="conversation-comment">
                         <div className="conversation-comment__main">
                           <div className="conversation-comment__avatar">
-                            {comment.authorImage ? (
-                              <img
-                                src={comment.authorImage}
-                                alt={`${comment.author}'s avatar`}
-                                className="conversation-comment__avatar-image"
-                              />
-                            ) : (
-                              <span
-                                className={`conversation-comment__avatar-fallback ${
-                                  theme === "night"
-                                    ? "bg-secondary text-white"
-                                    : "bg-primary bg-opacity-10 text-primary"
-                                }`}
-                              >
-                                {comment.author?.charAt(0)?.toUpperCase() || "?"}
-                              </span>
-                            )}
+                            <button
+                              type="button"
+                              className="p-0 border-0 bg-transparent"
+                              onClick={() => openUserProfile(comment.author)}
+                              aria-label={`View ${comment.author}'s profile`}
+                            >
+                              {comment.authorImage ? (
+                                <img
+                                  src={comment.authorImage}
+                                  alt={`${comment.author}'s avatar`}
+                                  className="conversation-comment__avatar-image"
+                                />
+                              ) : (
+                                <span
+                                  className={`conversation-comment__avatar-fallback ${
+                                    theme === "night"
+                                      ? "bg-secondary text-white"
+                                      : "bg-primary bg-opacity-10 text-primary"
+                                  }`}
+                                >
+                                  {comment.author?.charAt(0)?.toUpperCase() || "?"}
+                                </span>
+                              )}
+                            </button>
                           </div>
                           <div className="conversation-comment__meta">
                             <span
@@ -1125,6 +1172,15 @@ export default function BlogCard({
                                   ? "text-primary text-opacity-75"
                                   : "text-primary"
                               }`}
+                              role="button"
+                              tabIndex={0}
+                              onClick={() => openUserProfile(comment.author)}
+                              onKeyDown={(event) => {
+                                if (event.key === "Enter" || event.key === " ") {
+                                  event.preventDefault();
+                                  openUserProfile(comment.author);
+                                }
+                              }}
                             >
                               {comment.author}
                             </span>
@@ -1185,21 +1241,38 @@ export default function BlogCard({
                               } small mb-2`}
                             >
                               {reply.authorImage && (
-                                <img
-                                  src={reply.authorImage}
-                                  alt={reply.author}
-                                  className="rounded-circle"
-                                  style={{
-                                    width: "24px",
-                                    height: "24px",
-                                    objectFit: "cover",
-                                  }}
-                                />
+                                <button
+                                  type="button"
+                                  className="p-0 border-0 bg-transparent"
+                                  onClick={() => openUserProfile(reply.author)}
+                                  aria-label={`View ${reply.author}'s profile`}
+                                >
+                                  <img
+                                    src={reply.authorImage}
+                                    alt={reply.author}
+                                    className="rounded-circle"
+                                    style={{
+                                      width: "24px",
+                                      height: "24px",
+                                      objectFit: "cover",
+                                    }}
+                                  />
+                                </button>
                               )}
                               ↪{" "}
-                              <span className="fw-semibold">
+                              <button
+                                type="button"
+                                className="fw-semibold p-0 border-0 bg-transparent text-start"
+                                onClick={() => openUserProfile(reply.author)}
+                                onKeyDown={(event) => {
+                                  if (event.key === "Enter" || event.key === " ") {
+                                    event.preventDefault();
+                                    openUserProfile(reply.author);
+                                  }
+                                }}
+                              >
                                 {reply.author}
-                              </span>
+                              </button>
                               : {reply.text}
                             </li>
                           ))}
