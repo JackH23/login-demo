@@ -14,6 +14,7 @@ import {
   FileText,
   Home,
   LogOut,
+  Menu,
   MoonStar,
   Settings2,
   ShieldCheck,
@@ -46,10 +47,17 @@ type NavItem = {
   icon: React.ComponentType<{ size?: number; className?: string }>;
 };
 
+type TopBarLayoutVariant = "floating" | "segmented" | "toolbar";
+
 interface TopBarProps {
   title: string;
   active: ActivePage;
   currentUser: UserData;
+  /**
+   * Change the presentation of the navigation chips to showcase different looks
+   * that still match the rounded, blue-accent design language.
+   */
+  layoutVariant?: TopBarLayoutVariant;
 }
 
 function getGreeting() {
@@ -63,11 +71,17 @@ function getGreeting() {
   return "Good evening";
 }
 
-export default function TopBar({ title, active, currentUser }: TopBarProps) {
+export default function TopBar({
+  title,
+  active,
+  currentUser,
+  layoutVariant = "floating",
+}: TopBarProps) {
   const { theme, setTheme } = useTheme();
   const { logout } = useAuth();
   const router = useRouter();
   const greeting = getGreeting();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const handleLogout = useCallback(() => {
     logout();
@@ -108,6 +122,51 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
       router.prefetch(item.href);
     });
   }, [navItems, router]);
+
+  const navVariantStyles = useMemo(() => {
+    const sharedWrapper =
+      "rounded-4 p-2 gap-2 w-100" +
+      (theme === "night"
+        ? " bg-dark border border-primary border-opacity-25"
+        : " bg-light border border-primary-subtle");
+
+    switch (layoutVariant) {
+      case "segmented":
+        return {
+          wrapperClassName: `${sharedWrapper} shadow-sm`,
+          inactiveStyle:
+            theme === "night"
+              ? {
+                  background: "rgba(148, 163, 184, 0.1)",
+                  border: "1px solid rgba(148, 163, 184, 0.2)",
+                }
+              : {
+                  background: "rgba(148, 163, 184, 0.1)",
+                  border: "1px solid rgba(148, 163, 184, 0.15)",
+                },
+        };
+      case "toolbar":
+        return {
+          wrapperClassName: `${sharedWrapper} bg-transparent border-0 px-0`,
+          inactiveStyle:
+            theme === "night"
+              ? { background: "rgba(255, 255, 255, 0.05)" }
+              : { background: "rgba(148, 163, 184, 0.15)" },
+        };
+      default:
+        return {
+          wrapperClassName:
+            `${sharedWrapper} shadow-lg` +
+            (theme === "night"
+              ? " bg-opacity-75"
+              : " bg-white bg-opacity-75"),
+          inactiveStyle:
+            theme === "night"
+              ? { background: "rgba(148, 163, 184, 0.12)" }
+              : { background: "rgba(226, 232, 240, 0.65)" },
+        };
+    }
+  }, [layoutVariant, theme]);
 
   const prefetchRoute = useCallback(
     (href: string) => {
@@ -169,14 +228,12 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
       style={containerStyle}
     >
       <div className="px-4 pt-3 pb-2">
-        <div className="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center">
+        <div className="d-none d-lg-flex justify-content-between gap-3 align-items-center">
           <div>
             <p className="text-uppercase fw-semibold small mb-1 text-secondary-emphasis opacity-75">
               {greeting}, {currentUser.username}
             </p>
-            <h2 className="mb-0 d-flex align-items-center gap-2">
-              {title}
-            </h2>
+            <h2 className="mb-0 d-flex align-items-center gap-2">{title}</h2>
           </div>
           <div className="d-flex align-items-center gap-3 flex-wrap justify-content-end">
             <button
@@ -186,19 +243,12 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
               aria-label={themeToggleLabel}
               title={themeToggleLabel}
             >
-              {theme === "night" ? (
-                <SunMedium size={18} />
-              ) : (
-                <MoonStar size={18} />
-              )}
+              {theme === "night" ? <SunMedium size={18} /> : <MoonStar size={18} />}
               <span className="d-none d-sm-inline">
                 {theme === "night" ? "Light mode" : "Dark mode"}
               </span>
             </button>
-            <Link
-              href="/posts/create"
-              className="btn btn-sm btn-primary d-flex align-items-center gap-2"
-            >
+            <Link href="/posts/create" className="btn btn-sm btn-primary d-flex align-items-center gap-2">
               <FileText size={18} />
               <span>New Post</span>
             </Link>
@@ -222,10 +272,82 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
             </div>
           </div>
         </div>
+
+        <div className="d-lg-none">
+          <div className="d-flex align-items-center justify-content-between gap-3 rounded-4 px-3 py-2 border border-primary border-opacity-25 bg-dark bg-opacity-50">
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-primary d-flex align-items-center gap-2 rounded-pill"
+              aria-label="Open navigation"
+              aria-expanded={mobileNavOpen}
+              onClick={() => setMobileNavOpen((open) => !open)}
+            >
+              <Menu size={18} />
+            </button>
+            <div className="flex-grow-1 text-center">
+              <p className="text-uppercase fw-semibold small mb-0 text-secondary-emphasis opacity-75">
+                {greeting}
+              </p>
+              <h6 className="mb-0 text-white">{title}</h6>
+            </div>
+            <div className="d-flex align-items-center gap-2">
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-primary rounded-circle p-2 d-flex align-items-center justify-content-center"
+                onClick={() => setTheme(theme === "night" ? "brightness" : "night")}
+                aria-label={themeToggleLabel}
+                title={themeToggleLabel}
+              >
+                {theme === "night" ? <SunMedium size={16} /> : <MoonStar size={16} />}
+              </button>
+              <Link
+                href="/posts/create"
+                className="btn btn-sm btn-primary rounded-circle p-2 d-flex align-items-center justify-content-center"
+                aria-label="Create new post"
+              >
+                <FileText size={16} />
+              </Link>
+              <div
+                className="rounded-circle border border-primary-subtle bg-primary bg-opacity-25 d-flex align-items-center justify-content-center"
+                style={{ width: "36px", height: "36px" }}
+                aria-label="Profile"
+              >
+                {currentUser.image ? (
+                  <img
+                    src={currentUser.image}
+                    alt="Your profile"
+                    className="rounded-circle"
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                ) : (
+                  <UserCircle2 size={18} />
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="mt-2 d-flex justify-content-between align-items-center gap-2">
+            <span className="badge bg-primary bg-opacity-10 text-primary-emphasis px-3 py-2 rounded-pill">
+              Minimal stack
+            </span>
+            <div className="d-flex gap-2">
+              <span className="badge bg-primary bg-opacity-25 text-white rounded-pill">{layoutVariant}</span>
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-light rounded-pill"
+                onClick={() => setMobileNavOpen(true)}
+                aria-label="Expand navigation"
+              >
+                Show links
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="px-4 pb-3">
-        <div className="d-flex flex-wrap gap-2">
+        <div
+          className={`${navVariantStyles.wrapperClassName} d-${mobileNavOpen ? "flex" : "none"} d-lg-flex flex-wrap align-items-center`}
+        >
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = optimisticActive === item.key;
@@ -252,10 +374,7 @@ export default function TopBar({ title, active, currentUser }: TopBarProps) {
                       : "0 12px 30px -12px rgba(14, 165, 233, 0.55)",
                 }
               : {
-                  background:
-                    theme === "night"
-                      ? "rgba(148, 163, 184, 0.12)"
-                      : "rgba(226, 232, 240, 0.65)",
+                  ...navVariantStyles.inactiveStyle,
                   transition: "all 0.2s ease",
                 };
 
