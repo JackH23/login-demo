@@ -82,6 +82,8 @@ export default function TopBar({
   const router = useRouter();
   const greeting = getGreeting();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [navVariant, setNavVariant] = useState<TopBarLayoutVariant>(layoutVariant);
+  const [isCompactMobile, setIsCompactMobile] = useState(false);
 
   const handleLogout = useCallback(() => {
     logout();
@@ -123,6 +125,20 @@ export default function TopBar({
     });
   }, [navItems, router]);
 
+  useEffect(() => {
+    setNavVariant(layoutVariant);
+  }, [layoutVariant]);
+
+  useEffect(() => {
+    const updateViewportState = () => {
+      setIsCompactMobile(typeof window !== "undefined" && window.innerWidth <= 480);
+    };
+
+    updateViewportState();
+    window.addEventListener("resize", updateViewportState);
+    return () => window.removeEventListener("resize", updateViewportState);
+  }, []);
+
   const navVariantStyles = useMemo(() => {
     const sharedWrapper =
       "rounded-4 p-2 gap-2 w-100" +
@@ -130,7 +146,7 @@ export default function TopBar({
         ? " bg-dark border border-primary border-opacity-25"
         : " bg-light border border-primary-subtle");
 
-    switch (layoutVariant) {
+    switch (navVariant) {
       case "segmented":
         return {
           wrapperClassName: `${sharedWrapper} shadow-sm`,
@@ -166,7 +182,7 @@ export default function TopBar({
               : { background: "rgba(226, 232, 240, 0.65)" },
         };
     }
-  }, [layoutVariant, theme]);
+  }, [navVariant, theme]);
 
   const prefetchRoute = useCallback(
     (href: string) => {
@@ -220,14 +236,73 @@ export default function TopBar({
   const themeToggleLabel =
     theme === "night" ? "Switch to light mode" : "Switch to dark mode";
 
+  const avatarNode = (
+    <div
+      className="rounded-circle border border-primary-subtle bg-primary bg-opacity-25 d-flex align-items-center justify-content-center shadow-sm"
+      style={{ width: isCompactMobile ? "32px" : "36px", height: isCompactMobile ? "32px" : "36px" }}
+      aria-label="Profile"
+    >
+      {currentUser.image ? (
+        <img
+          src={currentUser.image}
+          alt="Your profile"
+          className="rounded-circle"
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
+      ) : (
+        <UserCircle2 size={18} />
+      )}
+    </div>
+  );
+
+  const secondaryActions = (
+    <div className="d-flex flex-column gap-2 mt-3">
+      <button
+        type="button"
+        className="btn btn-sm btn-outline-primary d-flex align-items-center gap-2"
+        onClick={() => setTheme(theme === "night" ? "brightness" : "night")}
+        aria-label={themeToggleLabel}
+        title={themeToggleLabel}
+      >
+        {theme === "night" ? <SunMedium size={16} /> : <MoonStar size={16} />}
+        <span>{theme === "night" ? "Light mode" : "Dark mode"}</span>
+      </button>
+      <Link
+        href="/posts/create"
+        className="btn btn-sm btn-primary d-flex align-items-center gap-2"
+        aria-label="Create new post"
+        onClick={() => setMobileNavOpen(false)}
+      >
+        <FileText size={16} />
+        <span>New Post</span>
+      </Link>
+      <div className="d-flex flex-wrap gap-2">
+        <button
+          type="button"
+          className={`btn btn-sm ${navVariant === "toolbar" ? "btn-primary" : "btn-outline-primary"}`}
+          onClick={() => setNavVariant("toolbar")}
+        >
+          Minimal mode
+        </button>
+        <button
+          type="button"
+          className={`btn btn-sm ${navVariant === "floating" ? "btn-primary" : "btn-outline-primary"}`}
+          onClick={() => setNavVariant("floating")}
+        >
+          Floating mode
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div
       className={`position-sticky top-0 z-3 ${
         theme === "night" ? "text-white" : "text-dark"
-      }`}
-      style={containerStyle}
+      } topbar-root ${isCompactMobile ? "topbar-root--plain" : ""}`}
+      style={isCompactMobile ? undefined : containerStyle}
     >
-      <div className="px-4 pt-3 pb-2">
+      <div className="topbar-shell">
         <div className="d-none d-lg-flex justify-content-between gap-3 align-items-center">
           <div>
             <p className="text-uppercase fw-semibold small mb-1 text-secondary-emphasis opacity-75">
@@ -274,80 +349,102 @@ export default function TopBar({
         </div>
 
         <div className="d-lg-none">
-          <div className="d-flex align-items-center justify-content-between gap-3 rounded-4 px-3 py-2 border border-primary border-opacity-25 bg-dark bg-opacity-50">
+          <div className="mobile-topbar d-flex align-items-center justify-content-between gap-3">
             <button
               type="button"
-              className="btn btn-sm btn-outline-primary d-flex align-items-center gap-2 rounded-pill"
+              className="btn btn-link text-decoration-none text-reset p-0 d-flex align-items-center"
               aria-label="Open navigation"
               aria-expanded={mobileNavOpen}
               onClick={() => setMobileNavOpen((open) => !open)}
             >
-              <Menu size={18} />
+              <Menu size={22} />
             </button>
-            <div className="flex-grow-1 text-center">
-              <p className="text-uppercase fw-semibold small mb-0 text-secondary-emphasis opacity-75">
-                {greeting}
-              </p>
-              <h6 className="mb-0 text-white">{title}</h6>
-            </div>
-            <div className="d-flex align-items-center gap-2">
-              <button
-                type="button"
-                className="btn btn-sm btn-outline-primary rounded-circle p-2 d-flex align-items-center justify-content-center"
-                onClick={() => setTheme(theme === "night" ? "brightness" : "night")}
-                aria-label={themeToggleLabel}
-                title={themeToggleLabel}
-              >
-                {theme === "night" ? <SunMedium size={16} /> : <MoonStar size={16} />}
-              </button>
-              <Link
-                href="/posts/create"
-                className="btn btn-sm btn-primary rounded-circle p-2 d-flex align-items-center justify-content-center"
-                aria-label="Create new post"
-              >
-                <FileText size={16} />
-              </Link>
-              <div
-                className="rounded-circle border border-primary-subtle bg-primary bg-opacity-25 d-flex align-items-center justify-content-center"
-                style={{ width: "36px", height: "36px" }}
-                aria-label="Profile"
-              >
-                {currentUser.image ? (
-                  <img
-                    src={currentUser.image}
-                    alt="Your profile"
-                    className="rounded-circle"
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
-                ) : (
-                  <UserCircle2 size={18} />
-                )}
-              </div>
-            </div>
+            <h1 className="mb-0 flex-grow-1 text-center h6 text-truncate">{title}</h1>
+            {avatarNode}
           </div>
-          <div className="mt-2 d-flex justify-content-between align-items-center gap-2">
-            <span className="badge bg-primary bg-opacity-10 text-primary-emphasis px-3 py-2 rounded-pill">
-              Minimal stack
-            </span>
-            <div className="d-flex gap-2">
-              <span className="badge bg-primary bg-opacity-25 text-white rounded-pill">{layoutVariant}</span>
+
+          <div
+            className={`offcanvas-backdrop fade ${mobileNavOpen ? "show" : "d-none"}`}
+            style={{ opacity: 0.4, zIndex: 1054 }}
+            onClick={() => setMobileNavOpen(false)}
+            aria-hidden={!mobileNavOpen}
+          />
+
+          <div
+            className={`position-fixed top-0 start-0 h-100 w-80 w-sm-60 w-md-50 bg-dark text-white d-lg-none transition shadow-lg ${
+              mobileNavOpen ? "translate-none" : "translate-n100"
+            }`}
+            style={{
+              transform: mobileNavOpen ? "translateX(0)" : "translateX(-100%)",
+              transition: "transform 0.25s ease",
+              zIndex: 1055,
+              background:
+                theme === "night"
+                  ? "linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.96))"
+                  : "linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(226, 232, 240, 0.98))",
+            }}
+          >
+            <div className="p-3 d-flex align-items-center justify-content-between">
+              <div className="d-flex align-items-center gap-2">
+                {avatarNode}
+                <div>
+                  <p className="mb-0 small text-secondary-emphasis">{greeting}</p>
+                  <strong>{currentUser.username}</strong>
+                </div>
+              </div>
               <button
                 type="button"
                 className="btn btn-sm btn-outline-light rounded-pill"
-                onClick={() => setMobileNavOpen(true)}
-                aria-label="Expand navigation"
+                onClick={() => setMobileNavOpen(false)}
+                aria-label="Close navigation"
               >
-                Show links
+                Close
+              </button>
+            </div>
+
+            <div className="px-3">
+              <nav className="d-flex flex-column gap-2" aria-label="Mobile navigation">
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = optimisticActive === item.key;
+                  return (
+                    <Link
+                      key={item.key}
+                      href={item.href}
+                      className={`d-flex align-items-center gap-3 rounded-3 px-3 py-2 text-decoration-none ${
+                        isActive ? "bg-primary text-white" : "bg-white bg-opacity-10 text-white"
+                      }`}
+                      onClick={(event) => {
+                        handleNavClick(event, item);
+                        setMobileNavOpen(false);
+                      }}
+                    >
+                      <Icon size={18} />
+                      <span className="flex-grow-1">{item.label}</span>
+                      {isActive && <span className="badge bg-primary-subtle text-primary">Active</span>}
+                    </Link>
+                  );
+                })}
+              </nav>
+              {secondaryActions}
+            </div>
+
+            <div className="mt-auto p-3">
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="btn btn-sm btn-outline-danger w-100 d-flex align-items-center gap-2 justify-content-center"
+              >
+                <LogOut size={18} />
+                <span>Log out</span>
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="px-4 pb-3">
-        <div
-          className={`${navVariantStyles.wrapperClassName} d-${mobileNavOpen ? "flex" : "none"} d-lg-flex flex-wrap align-items-center`}
-        >
+      <div className="px-4 pb-3 d-none d-lg-flex">
+        <div className={`${navVariantStyles.wrapperClassName} d-flex flex-wrap align-items-center`}>
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = optimisticActive === item.key;
@@ -401,6 +498,35 @@ export default function TopBar({
           })}
         </div>
       </div>
+      <style jsx>{`
+        .topbar-shell {
+          padding: 1rem 1.5rem 0.75rem;
+        }
+
+        .mobile-topbar {
+          padding: 0.25rem 0;
+        }
+
+        .topbar-root--plain {
+          background: transparent !important;
+          border-bottom: none !important;
+          box-shadow: none !important;
+          backdrop-filter: none !important;
+        }
+
+        @media (max-width: 480px) {
+          .topbar-shell {
+            padding: 0.5rem 0.75rem;
+          }
+
+          .mobile-topbar {
+            background: transparent;
+            border: 0;
+            border-radius: 0;
+            padding: 0.25rem 0;
+          }
+        }
+      `}</style>
     </div>
   );
 }
