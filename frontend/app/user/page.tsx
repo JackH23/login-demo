@@ -37,6 +37,10 @@ export default function UserPage() {
   const { confirm: showConfirm, dialog: confirmDialog } = useConfirmDialog();
   const { prompt: showPrompt, dialog: promptDialog } = usePromptDialog();
 
+  const navigateToProfile = (username: string) => {
+    router.push(`/user/${encodeURIComponent(username)}`);
+  };
+
   useEffect(() => {
     if (!loading && !user) {
       router.push("/signin");
@@ -380,17 +384,32 @@ export default function UserPage() {
                   return (
                     <li key={u.username} className="user-card" role="listitem">
                       <div className="user-card-main">
-                        <div className="user-card-avatar">
-                          {u.image ? (
-                            isAdmin ? (
-                              <button
-                                type="button"
-                                className="user-card-avatar-button"
-                                onClick={() => handleImageChange(u)}
-                                title={`Update ${u.username}'s profile picture`}
-                                aria-label={`Update ${u.username}'s profile picture`}
-                              >
-                                <img
+                          <div
+                            className="user-card-avatar"
+                            role="presentation"
+                            onClick={() => navigateToProfile(u.username)}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                navigateToProfile(u.username);
+                              }
+                            }}
+                            tabIndex={0}
+                            style={{ cursor: "pointer" }}
+                          >
+                            {u.image ? (
+                              isAdmin ? (
+                                <button
+                                  type="button"
+                                  className="user-card-avatar-button"
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    handleImageChange(u);
+                                  }}
+                                  title={`Update ${u.username}'s profile picture`}
+                                  aria-label={`Update ${u.username}'s profile picture`}
+                                >
+                                  <img
                                   src={u.image}
                                   alt={`${u.username} profile`}
                                   className="user-card-avatar-img"
@@ -430,11 +449,22 @@ export default function UserPage() {
                             className={presenceClass}
                             aria-hidden="true"
                           ></span>
-                          <span className="visually-hidden">
-                            {u.online ? "Online" : "Offline"}
-                          </span>
-                        </div>
-                        <div className="user-card-body">
+                            <span className="visually-hidden">
+                              {u.online ? "Online" : "Offline"}
+                            </span>
+                          </div>
+                        <div
+                          className="user-card-body"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => navigateToProfile(u.username)}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault();
+                              navigateToProfile(u.username);
+                            }
+                          }}
+                        >
                           <div className="user-card-header">
                             <span className="user-card-name">{u.username}</span>
                             <span className={presenceClass} data-variant="label">
@@ -451,6 +481,14 @@ export default function UserPage() {
                         </div>
                       </div>
                       <div className="user-card-actions" role="group" aria-label={`Actions for ${u.username}`}>
+                        <button
+                          type="button"
+                          className="user-card-action user-card-action--secondary"
+                          onClick={() => navigateToProfile(u.username)}
+                        >
+                          <i className="bi bi-person" aria-hidden="true"></i>
+                          View profile
+                        </button>
                         <button
                           type="button"
                           className={`user-card-action user-card-action--friend${
