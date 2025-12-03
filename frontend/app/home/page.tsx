@@ -2,14 +2,14 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
-import TopBar from "../components/TopBar";
-import BlogCard from "../components/BlogCard";
-import LoadingState from "../components/LoadingState";
-import { useConfirmDialog } from "../components/useConfirmDialog";
-import { useCachedApi } from "../hooks/useCachedApi";
-import { usePostRealtimeUpdates } from "../hooks/usePostRealtimeUpdates";
+import { useAuth } from "@/app/context/AuthContext";
+import { useTheme } from "@/app/context/ThemeContext";
+import BlogCard from "@/app/components/BlogCard";
+import LoadingState from "@/app/components/LoadingState";
+import TopBar from "@/app/components/TopBar";
+import { useConfirmDialog } from "@/app/components/useConfirmDialog";
+import { useCachedApi } from "@/app/hooks/useCachedApi";
+import { usePostRealtimeUpdates } from "@/app/hooks/usePostRealtimeUpdates";
 import { apiUrl } from "@/app/lib/api";
 import { normalizeUsersResponse } from "@/app/lib/users";
 
