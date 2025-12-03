@@ -9,6 +9,7 @@ import LoadingState from "../components/LoadingState";
 import { useConfirmDialog } from "../components/useConfirmDialog";
 import { useCachedApi } from "../hooks/useCachedApi";
 import { apiUrl } from "@/app/lib/api";
+import { UserCircle2 } from "lucide-react";
 
 interface User {
   username: string;
@@ -64,7 +65,8 @@ export default function SettingPage() {
 
   const currentUserData = users.find((u) => u.username === user?.username);
   const username = newUsername || currentUserData?.username || "";
-  const image = profileImage || currentUserData?.image || "";
+  const image: string | undefined =
+    profileImage || currentUserData?.image || undefined;
 
   if (loading || loadingUsers || !user || !currentUserData) {
     return (
@@ -396,12 +398,20 @@ export default function SettingPage() {
                   background: isNight ? "rgba(15,23,42,0.6)" : "rgba(59,130,246,0.08)",
                 }}
               >
-                <img
-                  src={image}
-                  alt="Profile"
-                  className="rounded-circle"
-                  style={{ width: "84px", height: "84px", objectFit: "cover" }}
-                />
+                {image ? (
+                  <img
+                    src={image}
+                    alt="Profile"
+                    className="rounded-circle"
+                    style={{ width: "84px", height: "84px", objectFit: "cover" }}
+                  />
+                ) : (
+                  <UserCircle2
+                    aria-hidden="true"
+                    size={42}
+                    className={isNight ? "text-light" : "text-primary"}
+                  />
+                )}
               </div>
               <div className={`${mutedTextClass} text-center text-sm-start`}>
                 <div className="fw-semibold text-reset">Profile preview</div>
