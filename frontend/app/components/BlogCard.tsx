@@ -183,25 +183,26 @@ export default function BlogCard({
             _id: string;
             text: string;
             author: string;
+            authorImage?: string;
             likes: number;
             dislikes: number;
             likedBy?: string[];
             dislikedBy?: string[];
-            replies?: { text: string; author: string }[];
+            replies?: { text: string; author: string; authorImage?: string }[];
           }) => ({
             _id: c._id as string,
             text: c.text as string,
             author: c.author as string,
-            authorImage: undefined,
+            authorImage: c.authorImage,
             likes: c.likes ?? 0,
             dislikes: c.dislikes ?? 0,
             likedBy: c.likedBy ?? [],
             dislikedBy: c.dislikedBy ?? [],
             replies: (c.replies ?? []).map(
-              (r: { text: string; author: string }) => ({
+              (r: { text: string; author: string; authorImage?: string }) => ({
                 text: r.text as string,
                 author: r.author as string,
-                authorImage: undefined,
+                authorImage: r.authorImage,
               })
             ),
             showReplyInput: false,
@@ -226,10 +227,10 @@ export default function BlogCard({
     setComments((prev) =>
       prev.map((comment) => ({
         ...comment,
-        authorImage: userImages[comment.author],
+        authorImage: comment.authorImage ?? userImages[comment.author],
         replies: comment.replies.map((reply) => ({
           ...reply,
-          authorImage: userImages[reply.author],
+          authorImage: reply.authorImage ?? userImages[reply.author],
         })),
       }))
     );
@@ -253,18 +254,18 @@ export default function BlogCard({
         }),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        setComments((prev) => [
-          ...prev,
-          {
-            _id: data.comment._id as string,
-            text: data.comment.text,
-            author: data.comment.author,
-            authorImage: userImages[data.comment.author],
-            likes: data.comment.likes,
-            dislikes: data.comment.dislikes,
-            likedBy: [],
+        if (res.ok) {
+          const data = await res.json();
+          setComments((prev) => [
+            ...prev,
+            {
+              _id: data.comment._id as string,
+              text: data.comment.text,
+              author: data.comment.author,
+              authorImage: data.comment.authorImage ?? userImages[data.comment.author],
+              likes: data.comment.likes,
+              dislikes: data.comment.dislikes,
+              likedBy: [],
             dislikedBy: [],
             replies: [],
             showReplyInput: false,
@@ -444,7 +445,9 @@ export default function BlogCard({
                     {
                       text: last.text as string,
                       author: last.author as string,
-                      authorImage: userImages[last.author as string],
+                      authorImage:
+                        (last.authorImage as string | undefined) ??
+                        userImages[last.author as string],
                     },
                   ],
                   newReply: "",

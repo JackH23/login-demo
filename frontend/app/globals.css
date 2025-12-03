@@ -482,12 +482,15 @@
   overflow: hidden;
   display: grid;
   place-items: center;
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+  border: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 .conversation-comment__avatar-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .conversation-comment__avatar-fallback {
@@ -500,6 +503,8 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   border-radius: 999px;
+  background: #0f172a;
+  color: #e2e8f0;
 }
 
 .conversation-comment__meta {
