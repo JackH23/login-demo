@@ -8,8 +8,8 @@ const Comment = require('../models/Comment');
 const { emitUserOnline, emitUserOffline } = require('../socket');
 const {
   MAX_IMAGE_BYTES,
-  buildUserImagePath,
   extractImagePayload,
+  encodeImageToDataUrl,
 } = require('./utils/image');
 
 const ADMIN_USERNAME =
@@ -26,10 +26,12 @@ const upload = multer({
 });
 
 function serializeUser(user) {
-  const imagePath =
-    (user?.imageData ? buildUserImagePath(user.username) : null) ||
-    user?.image ||
-    null;
+  const imageDataUrl =
+    user?.imageData?.length
+      ? encodeImageToDataUrl(user.imageData, user.imageContentType)
+      : null;
+
+  const imagePath = imageDataUrl || user?.image || null;
 
   return {
     username: user.username,
@@ -148,12 +150,13 @@ router.put('/:username', upload.single('image'), asyncHandler(async (req, res) =
       update.imageData = null;
       update.imageContentType = null;
     } else if (imagePayload.buffer) {
-      update.image = buildUserImagePath(nextUsername);
+      update.image = encodeImageToDataUrl(
+        imagePayload.buffer,
+        imagePayload.contentType,
+      );
       update.imageData = imagePayload.buffer;
       update.imageContentType = imagePayload.contentType;
     }
-  } else if (username !== undefined && prev.imageData?.length) {
-    update.image = buildUserImagePath(nextUsername);
   }
 
   const user = await User.findOneAndUpdate({ username: target }, update, {
