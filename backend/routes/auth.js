@@ -5,23 +5,21 @@ const multer = require("multer");
 
 const dbConnect = require("../mongodb");
 const User = require("../models/User");
+const {
+  MAX_IMAGE_BYTES,
+  buildUserImagePath,
+  extractImagePayload,
+} = require("./utils/image");
 
 const router = express.Router();
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: MAX_IMAGE_BYTES },
 });
 
 const asyncHandler = (handler) =>
   (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
-
-const toDataUrl = (file) => {
-  if (!file) return undefined;
-  const mimeType = file.mimetype || "application/octet-stream";
-  const base64 = file.buffer.toString("base64");
-  return `data:${mimeType};base64,${base64}`;
-};
 
 router.post(
   "/signup",
@@ -35,7 +33,18 @@ router.post(
     const normalizedEmail =
       typeof email === "string" ? email.trim().toLowerCase() : "";
     const normalizedPassword = typeof password === "string" ? password : "";
-    const imageDataUrl = toDataUrl(req.file);
+    const imagePayload = extractImagePayload({
+      file: req.file,
+      imageString: req.body?.image,
+    });
+
+    if (imagePayload?.error === "too_large") {
+      return res.status(400).json({ error: "Profile image must be 5MB or smaller" });
+    }
+
+    if (imagePayload?.error === "invalid") {
+      return res.status(400).json({ error: "Invalid profile image data" });
+    }
 
     if (!normalizedUsername || !normalizedEmail || !normalizedPassword) {
       return res
@@ -57,11 +66,20 @@ router.post(
     const hashedPassword = await bcrypt.hash(normalizedPassword, 10);
 
     try {
+      const imageFields =
+        imagePayload && !imagePayload.remove && !imagePayload.error
+          ? {
+              imageData: imagePayload.buffer,
+              imageContentType: imagePayload.contentType,
+              image: buildUserImagePath(normalizedUsername),
+            }
+          : {};
+
       const user = await User.create({
         username: normalizedUsername,
         email: normalizedEmail,
         password: hashedPassword,
-        image: imageDataUrl,
+        ...imageFields,
       });
 
       return res.status(201).json({
@@ -69,7 +87,7 @@ router.post(
         user: {
           username: user.username,
           email: user.email,
-          image: imageDataUrl ?? null,
+          image: imageFields.image ?? null,
         },
       });
     } catch (error) {
@@ -114,11 +132,15 @@ const handleSignin = asyncHandler(async (req, res) => {
     { expiresIn: "7d" }
   );
 
+  const image = user.imageData
+    ? buildUserImagePath(user.username)
+    : user.image ?? null;
+
   return res.json({
     user: {
       username: user.username,
       email: user.email,
-      image: user.image ?? null,
+      image: image ?? null,
     },
     token,
   });
