@@ -11,16 +11,20 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("brightness");
+const getInitialTheme = (): Theme => {
+  if (typeof window === "undefined") return "brightness";
 
-  // load theme from localStorage on mount
-  useEffect(() => {
-    const stored = localStorage.getItem("theme") as Theme | null;
-    if (stored === "night" || stored === "brightness") {
-      setThemeState(stored);
-    }
-  }, []);
+  const stored = window.localStorage.getItem("theme") as Theme | null;
+  if (stored === "night" || stored === "brightness") {
+    return stored;
+  }
+
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  return prefersDark ? "night" : "brightness";
+};
+
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [theme, setThemeState] = useState<Theme>(getInitialTheme);
 
   // apply theme classes and persist changes
   useEffect(() => {
