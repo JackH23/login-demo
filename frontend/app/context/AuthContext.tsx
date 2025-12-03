@@ -3,12 +3,13 @@
 // React hooks for managing context state on the client
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
-import { apiUrl } from "@/app/lib/api";
+import { apiUrl, resolveImageUrl } from "@/app/lib/api";
 import socketClient from "@/lib/socketClient";
 
 // Basic representation of a user stored in the context
 interface User {
   username: string;
+  image?: string | null;
 }
 
 // Shape of the authentication context value shared with components
@@ -211,6 +212,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (res.ok) {
         const data = await res.json();
         const username = data?.user?.username ?? data?.username;
+        const image = resolveImageUrl(data?.user?.image ?? data?.image ?? null);
         if (!username || typeof username !== "string") {
           return {
             success: false as const,
@@ -218,8 +220,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           };
         }
         // Persist the username in local storage so the session survives reloads
-        localStorage.setItem("user", JSON.stringify({ username }));
-        setUser({ username });
+        localStorage.setItem(
+          "user",
+          JSON.stringify({ username, image: image ?? null })
+        );
+        setUser({ username, image: image ?? null });
         // Mark user as online after successful sign in
         if (socket) socket.emit("user-online", username);
         void updateOnlineStatus(username, true);
@@ -267,8 +272,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser((prev) => {
       if (!prev) return prev;
       const next = { ...prev, ...updates };
-      if (typeof updates.username === "string") {
-        localStorage.setItem("user", JSON.stringify({ username: updates.username }));
+      if (typeof updates.username === "string" || "image" in updates) {
+        localStorage.setItem(
+          "user",
+          JSON.stringify({ username: next.username, image: next.image ?? null })
+        );
       }
       return next;
     });

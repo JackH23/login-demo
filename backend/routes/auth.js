@@ -43,7 +43,7 @@ router.post(
       typeof email === "string" ? email.trim().toLowerCase() : "";
     const normalizedPassword = typeof password === "string" ? password : "";
     const imagePath = req.file
-      ? normalizeImagePath(path.relative(path.join(__dirname, ".."), req.file.path))
+      ? normalizeImagePath(path.posix.join("uploads", req.file.filename))
       : undefined;
 
     if (!normalizedUsername || !normalizedEmail || !normalizedPassword) {
@@ -78,7 +78,7 @@ router.post(
         user: {
           username: user.username,
           email: user.email,
-          image: user.image ?? null,
+          image: normalizeImagePath(user.image ?? null),
         },
       });
     } catch (error) {
@@ -127,7 +127,7 @@ const handleSignin = asyncHandler(async (req, res) => {
     user: {
       username: user.username,
       email: user.email,
-      image: user.image ?? null,
+      image: normalizeImagePath(user.image ?? null),
     },
     token,
   });
