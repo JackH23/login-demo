@@ -82,6 +82,8 @@ export default function TopBar({
   const router = useRouter();
   const greeting = getGreeting();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [navVariant, setNavVariant] = useState<TopBarLayoutVariant>(layoutVariant);
+  const [isCompactMobile, setIsCompactMobile] = useState(false);
 
   const handleLogout = useCallback(() => {
     logout();
@@ -220,27 +222,10 @@ export default function TopBar({
   const themeToggleLabel =
     theme === "night" ? "Switch to light mode" : "Switch to dark mode";
 
-  const mobileShellClasses = useMemo(() => {
-    const base =
-      "d-flex align-items-center justify-content-between gap-3 rounded-4 px-3 py-2" +
-      (theme === "night"
-        ? " border border-primary border-opacity-25 bg-dark bg-opacity-60"
-        : " border border-primary-subtle bg-white bg-opacity-80");
-
-    switch (layoutVariant) {
-      case "segmented":
-        return `${base} shadow-sm`;
-      case "toolbar":
-        return `${base} rounded-3 px-2`; // slimmer for toolbar look
-      default:
-        return `${base} shadow`;
-    }
-  }, [layoutVariant, theme]);
-
   const avatarNode = (
     <div
       className="rounded-circle border border-primary-subtle bg-primary bg-opacity-25 d-flex align-items-center justify-content-center shadow-sm"
-      style={{ width: "36px", height: "36px" }}
+      style={{ width: isCompactMobile ? "32px" : "36px", height: isCompactMobile ? "32px" : "36px" }}
       aria-label="Profile"
     >
       {currentUser.image ? (
@@ -278,12 +263,20 @@ export default function TopBar({
         <span>New Post</span>
       </Link>
       <div className="d-flex flex-wrap gap-2">
-        <span className="badge bg-primary bg-opacity-10 text-primary-emphasis px-3 py-2 rounded-pill">
-          Minimal stack
-        </span>
-        <span className="badge bg-primary bg-opacity-20 text-white px-3 py-2 rounded-pill text-capitalize">
-          {layoutVariant}
-        </span>
+        <button
+          type="button"
+          className={`btn btn-sm ${navVariant === "toolbar" ? "btn-primary" : "btn-outline-primary"}`}
+          onClick={() => setNavVariant("toolbar")}
+        >
+          Minimal mode
+        </button>
+        <button
+          type="button"
+          className={`btn btn-sm ${navVariant === "floating" ? "btn-primary" : "btn-outline-primary"}`}
+          onClick={() => setNavVariant("floating")}
+        >
+          Floating mode
+        </button>
       </div>
     </div>
   );
@@ -342,7 +335,7 @@ export default function TopBar({
         </div>
 
         <div className="d-lg-none">
-          <div className={mobileShellClasses}>
+          <div className="mobile-topbar d-flex align-items-center justify-content-between gap-3">
             <button
               type="button"
               className="btn btn-sm btn-outline-primary d-flex align-items-center gap-2 rounded-pill"
@@ -352,21 +345,19 @@ export default function TopBar({
             >
               <Menu size={18} />
             </button>
-            <div className="flex-grow-1 text-center">
-              <h6 className="mb-0 text-white text-truncate">{title}</h6>
-            </div>
+            <h1 className="mb-0 flex-grow-1 text-center h6 text-truncate">{title}</h1>
             {avatarNode}
           </div>
 
           <div
             className={`offcanvas-backdrop fade ${mobileNavOpen ? "show" : "d-none"}`}
-            style={{ opacity: 0.4 }}
+            style={{ opacity: 0.4, zIndex: 1054 }}
             onClick={() => setMobileNavOpen(false)}
             aria-hidden={!mobileNavOpen}
           />
 
           <div
-            className={`position-fixed top-0 start-0 h-100 w-75 w-sm-50 w-md-40 w-lg-25 bg-dark text-white border-end border-primary border-opacity-25 d-lg-none transition ${
+            className={`position-fixed top-0 start-0 h-100 w-80 w-sm-60 w-md-50 bg-dark text-white d-lg-none transition shadow-lg ${
               mobileNavOpen ? "translate-none" : "translate-n100"
             }`}
             style={{
