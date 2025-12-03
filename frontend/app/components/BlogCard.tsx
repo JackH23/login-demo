@@ -603,19 +603,29 @@ export default function BlogCard({
       </div>
 
       {blog.image && (
-      <div className="position-relative" style={{ cursor: "pointer" }}>
+      <div
+          className="position-relative overflow-hidden"
+          style={{
+            cursor: "pointer",
+            aspectRatio: "16 / 9", // Keeps a predictable viewport without forcing the image to stretch
+            maxHeight: "520px",
+            backgroundColor: isNight ? "#0f172a" : "#f8fafc",
+            borderBottomLeftRadius: "0px",
+            borderBottomRightRadius: "0px",
+          }}
+        >
           {/* Image container section with clickable behavior */}
           <img
             src={blog.image}
             alt="Blog Visual"
             className="card-img-top"
             style={{
-              objectFit: "cover",
-              maxHeight: "420px",
               width: "100%",
-              filter: isNight
-                ? "brightness(0.9)"
-                : "saturate(1.05)",
+              height: "100%",
+              display: "block", // Removes inline-gap artifacts so the image fills the wrapper cleanly
+              objectFit: "cover", // Preserves aspect ratio without distortion while filling the frame
+              objectPosition: "center",
+              filter: isNight ? "brightness(0.9)" : "saturate(1.05)",
             }}
             onClick={() => setShowImageModal(true)}
           />
@@ -624,6 +634,7 @@ export default function BlogCard({
           <div
             className="position-absolute top-0 start-0 w-100 h-100"
             style={{
+              pointerEvents: "none",
               background:
                 "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.35) 100%)",
             }}
