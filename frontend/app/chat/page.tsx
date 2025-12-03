@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -33,6 +33,7 @@ interface ChatEmoji {
 function ChatPageContent() {
   const searchParams = useSearchParams();
   const chatUser = searchParams.get("user") ?? "";
+  const router = useRouter();
   const { user, socket } = useAuth();
   const { theme, setTheme } = useTheme();
 
@@ -163,6 +164,11 @@ function ChatPageContent() {
   const emojiButtonTitle = emojiList.length
     ? `Insert emoji (${emojiList.length} available)`
     : "Add emoji";
+    
+  const openProfile = () => {
+    if (!chatUser) return;
+    router.push(`/user/${encodeURIComponent(chatUser)}`);
+  };
 
   // Show the scroll-to-bottom button when the user scrolls away from the bottom
   // or when new messages arrive while not at the bottom
@@ -330,7 +336,18 @@ function ChatPageContent() {
 
         {chatUser && (
           <div className="chat-user-status d-flex align-items-center gap-3 flex-wrap">
-            <div className="d-flex align-items-center gap-2">
+            <div
+              className="d-flex align-items-center gap-2"
+              role="button"
+              tabIndex={0}
+              onClick={openProfile}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  openProfile();
+                }
+              }}
+            >
               {chatPartner?.image ? (
                 <img
                   src={chatPartner.image}

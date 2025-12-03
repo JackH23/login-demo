@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useEffect, CSSProperties } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -53,6 +54,7 @@ export default function BlogCard({
   author?: AuthorData;
   onDelete?: (id: string) => void;
 }) {
+  const router = useRouter();
   const [likes, setLikes] = useState<number>(blog.likes ?? 0);
   const [dislikes, setDislikes] = useState<number>(blog.dislikes ?? 0);
   const [hasLikedPost, setHasLikedPost] = useState<boolean>(false);
@@ -107,6 +109,11 @@ export default function BlogCard({
 
   // Extract the first character from author name (used as fallback avatar initial)
   const authorInitial = displayAuthor.charAt(0).toUpperCase() || "?";
+
+  const openAuthorProfile = () => {
+    if (!displayAuthor) return;
+    router.push(`/user/${encodeURIComponent(displayAuthor)}`);
+  };
 
   // Count total number of comments for the blog post
   const totalComments = comments.length;
@@ -586,7 +593,15 @@ export default function BlogCard({
 
             {/* Author name line */}
             <p className="mb-0 small text-white-50">
-              By <span className="fw-semibold text-white">{displayAuthor}</span>
+              By
+              <button
+                type="button"
+                className="btn btn-link p-0 ps-1 align-baseline fw-semibold text-white"
+                onClick={openAuthorProfile}
+                disabled={!displayAuthor}
+              >
+                {displayAuthor || "Unknown"}
+              </button>
             </p>
           </div>
         </div>

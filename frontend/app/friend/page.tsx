@@ -132,6 +132,10 @@ export default function FriendPage() {
 
   const friendUsers = users.filter((u) => friends.includes(u.username));
 
+  const openProfile = (username: string) => {
+    router.push(`/user/${encodeURIComponent(username)}`);
+  };
+
   return (
     <div
       className={`container-fluid min-vh-100 p-4 ${
@@ -168,7 +172,18 @@ export default function FriendPage() {
                     className="user-card user-card--friend"
                     role="listitem"
                   >
-                    <div className="user-card-main">
+                    <div
+                      className="user-card-main"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => openProfile(f.username)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          openProfile(f.username);
+                        }
+                      }}
+                    >
                       <div className="user-card-avatar">
                         {f.image ? (
                           <img
