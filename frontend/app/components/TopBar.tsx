@@ -443,7 +443,6 @@ export default function TopBar({
             </div>
           </div>
         </div>
-        </div>
       </div>
 
       <div className="px-4 pb-3 d-none d-lg-block">
