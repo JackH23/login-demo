@@ -491,6 +491,7 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  border-radius: 999px;
 }
 
 .conversation-comment__avatar-fallback {
