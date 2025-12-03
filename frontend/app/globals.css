@@ -194,6 +194,43 @@
   box-shadow: 0 10px 22px rgba(248, 113, 113, 0.25);
 }
 
+/* Mobile topbar and sidebar tweaks */
+.topbar-wrapper {
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mobile-topbar h1 {
+  line-height: 1.25;
+}
+
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 75%;
+  z-index: 9999;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+}
+
+@media (min-width: 576px) {
+  .sidebar {
+    width: 60%;
+  }
+}
+
+@media (min-width: 768px) {
+  .sidebar {
+    width: 50%;
+  }
+}
+
+.sidebar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 /* Enhanced user directory cards */
 .user-directory {
   display: grid;
