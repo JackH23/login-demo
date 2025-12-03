@@ -2,7 +2,6 @@ const express = require("express");
 const http = require("http");
 const cors = require("cors");
 const path = require("path");
-const fs = require("fs");
 
 require("dotenv").config({ path: path.join(__dirname, ".env") });
 
@@ -21,11 +20,6 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ extended: true, limit: "5mb" }));
-
-// Uploads folder
-const uploadsDir = path.join(__dirname, "uploads");
-fs.mkdirSync(uploadsDir, { recursive: true });
-app.use("/uploads", express.static(uploadsDir));
 
 // Health check route
 app.get("/", (req, res) => {
