@@ -368,8 +368,7 @@ export default function TopBar({
           </div>
 
           <div
-            className={`offcanvas-backdrop fade ${mobileNavOpen ? "show" : "d-none"}`}
-            style={{ opacity: 0.4, zIndex: 1054 }}
+            className={`sidebar-backdrop ${mobileNavOpen ? "" : "d-none"}`}
             onClick={() => setMobileNavOpen(false)}
             aria-hidden={!mobileNavOpen}
           />
@@ -387,10 +386,10 @@ export default function TopBar({
                   : "linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(226, 232, 240, 0.98))",
             }}
           >
-            <div className="p-3 d-flex align-items-center justify-content-between">
+            <div className="sidebar-header d-flex align-items-center justify-content-between">
               <div className="d-flex align-items-center gap-2">
                 {avatarNode}
-                <div>
+                <div className="d-none d-sm-block">
                   <p className="mb-0 small text-secondary-emphasis">{greeting}</p>
                   <strong>{currentUser.username}</strong>
                 </div>
