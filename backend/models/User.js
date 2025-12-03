@@ -5,6 +5,8 @@ const UserSchema = new Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   image: { type: String },
+  imageData: { type: Buffer },
+  imageContentType: { type: String },
   friends: { type: [String], default: [] },
   online: { type: Boolean, default: false },
 });
