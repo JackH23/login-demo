@@ -23,6 +23,13 @@ const upload = multer({ storage });
 const asyncHandler = (handler) =>
   (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
 
+const normalizeImagePath = (value) => {
+  if (!value) return value;
+
+  const normalized = value.replace(/\\+/g, "/");
+  return normalized.startsWith("/") ? normalized : `/${normalized}`;
+};
+
 router.post(
   "/signup",
   upload.single("image"),
@@ -36,7 +43,7 @@ router.post(
       typeof email === "string" ? email.trim().toLowerCase() : "";
     const normalizedPassword = typeof password === "string" ? password : "";
     const imagePath = req.file
-      ? path.relative(path.join(__dirname, ".."), req.file.path).replace(/\\+/g, "/")
+      ? normalizeImagePath(path.relative(path.join(__dirname, ".."), req.file.path))
       : undefined;
 
     if (!normalizedUsername || !normalizedEmail || !normalizedPassword) {
