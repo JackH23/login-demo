@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { prefetchCachedApi } from "../hooks/useCachedApi";
+import { normalizeUsersResponse } from "../lib/users";
 
 interface PrefetchUser {
   username: string;
@@ -44,8 +45,7 @@ export default function SigninPage() {
       const result = await signin(email, password);
       if (result.success) {
         const warmUsers = prefetchCachedApi<PrefetchUser[]>("/api/users", {
-          transform: (payload) =>
-            (payload as { users?: PrefetchUser[] | null })?.users ?? [],
+          transform: normalizeUsersResponse,
         });
         const warmPosts = prefetchCachedApi<PrefetchPost[]>("/api/posts", {
           transform: (payload) =>

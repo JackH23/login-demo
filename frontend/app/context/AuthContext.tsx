@@ -22,7 +22,7 @@ interface AuthContextValue {
     username: string,
     email: string,
     password: string,
-    image: string | null
+    image: File | null
   ) => Promise<{ success: true } | { success: false; message: string }>;
   // Logs an existing user in; resolves to true on success
   signin: (
@@ -135,7 +135,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     username: string,
     email: string,
     password: string,
-    image: string | null
+    image: File | null
   ) => {
     const sanitizedUsername = username.trim();
     const sanitizedEmail = email.trim().toLowerCase();
@@ -150,15 +150,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Call the API route to create a new user with extra information
     try {
+      const body = new FormData();
+      body.append("username", sanitizedUsername);
+      body.append("email", sanitizedEmail);
+      body.append("password", sanitizedPassword);
+      if (image) body.append("image", image);
+
       const res = await fetch(apiUrl("/api/auth/signup"), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: sanitizedUsername,
-          email: sanitizedEmail,
-          password: sanitizedPassword,
-          image,
-        }),
+        body,
       });
 
       if (res.ok) {

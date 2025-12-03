@@ -11,6 +11,7 @@ import { useConfirmDialog } from "../components/useConfirmDialog";
 import { usePromptDialog } from "../components/usePromptDialog";
 import { useCachedApi } from "../hooks/useCachedApi";
 import { apiUrl } from "@/app/lib/api";
+import { normalizeUserImage, normalizeUsersResponse } from "@/app/lib/users";
 
 export default function UserPage() {
   const { user, loading, socket, updateUser } = useAuth();
@@ -19,7 +20,7 @@ export default function UserPage() {
 
   interface User {
     username: string;
-    image: string;
+    image?: string;
     friends?: string[];
     online?: boolean;
   }
@@ -30,8 +31,7 @@ export default function UserPage() {
     loading: usersLoading,
   } = useCachedApi<User[]>(user ? "/api/users" : null, {
     fallback: [],
-    transform: (payload) =>
-      (payload as { users?: User[] | null })?.users ?? [],
+    transform: normalizeUsersResponse,
   });
   const [searchTerm, setSearchTerm] = useState("");
   const { confirm: showConfirm, dialog: confirmDialog } = useConfirmDialog();
@@ -130,8 +130,9 @@ export default function UserPage() {
     });
     if (res.ok) {
       const data = await res.json();
+      const normalized = normalizeUserImage(data.user);
       setUsers((prev) =>
-        prev.map((item) => (item.username === u.username ? data.user : item))
+        prev.map((item) => (item.username === u.username ? normalized : item))
       );
     }
   };
@@ -262,8 +263,9 @@ export default function UserPage() {
     });
     if (res.ok) {
       const data = await res.json();
+      const normalized = normalizeUserImage(data.user);
       setUsers((prev) =>
-        prev.map((item) => (item.username === u.username ? data.user : item))
+        prev.map((item) => (item.username === u.username ? normalized : item))
       );
 
       if (user.username === u.username && username !== u.username) {

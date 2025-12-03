@@ -9,6 +9,7 @@ import TopBar from "@/app/components/TopBar";
 import { useAuth } from "@/app/context/AuthContext";
 import { useTheme } from "@/app/context/ThemeContext";
 import { useCachedApi } from "@/app/hooks/useCachedApi";
+import { normalizeUserResponse, normalizeUsersResponse } from "@/app/lib/users";
 
 interface UserProfile {
   username: string;
@@ -45,8 +46,7 @@ export default function UserProfilePage() {
     loading: loadingUsers,
   } = useCachedApi<UserProfile[]>(user ? "/api/users" : null, {
     fallback: [],
-    transform: (payload) =>
-      (payload as { users?: UserProfile[] | null })?.users ?? [],
+    transform: normalizeUsersResponse,
   });
 
   const {
@@ -56,7 +56,7 @@ export default function UserProfilePage() {
     user && profileUsername ? `/api/users/${encodeURIComponent(profileUsername)}` : null,
     {
       fallback: null,
-      transform: (payload) => (payload as { user?: UserProfile | null })?.user ?? null,
+      transform: normalizeUserResponse,
     },
   );
 

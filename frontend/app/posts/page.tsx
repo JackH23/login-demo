@@ -11,10 +11,11 @@ import { useConfirmDialog } from "../components/useConfirmDialog";
 import { useCachedApi } from "../hooks/useCachedApi";
 import { usePostRealtimeUpdates } from "../hooks/usePostRealtimeUpdates";
 import { apiUrl } from "@/app/lib/api";
+import { normalizeUsersResponse } from "@/app/lib/users";
 
 interface User {
   username: string;
-  image: string;
+  image?: string;
   online?: boolean;
 }
 
@@ -40,8 +41,7 @@ export default function PostsPage() {
     loading: loadingUsers,
   } = useCachedApi<User[]>(user ? "/api/users" : null, {
     fallback: [],
-    transform: (payload) =>
-      (payload as { users?: User[] | null })?.users ?? [],
+    transform: normalizeUsersResponse,
   });
 
   const {
