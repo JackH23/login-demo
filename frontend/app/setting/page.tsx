@@ -10,10 +10,11 @@ import { useConfirmDialog } from "../components/useConfirmDialog";
 import { useCachedApi } from "../hooks/useCachedApi";
 import { apiUrl } from "@/app/lib/api";
 import { UserCircle2 } from "lucide-react";
+import { normalizeUserImage, normalizeUsersResponse } from "@/app/lib/users";
 
 interface User {
   username: string;
-  image: string;
+  image?: string;
   online?: boolean;
 }
 
@@ -27,8 +28,7 @@ export default function SettingPage() {
     loading: loadingUsers,
   } = useCachedApi<User[]>(user ? "/api/users" : null, {
     fallback: [],
-    transform: (payload) =>
-      (payload as { users?: User[] | null })?.users ?? [],
+    transform: normalizeUsersResponse,
   });
 
   const [newUsername, setNewUsername] = useState("");
@@ -176,8 +176,9 @@ export default function SettingPage() {
         });
         if (res.ok) {
           const data = await res.json();
+          const normalized = normalizeUserImage(data.user);
           setUsers((prev) =>
-            prev.map((u) => (u.username === user.username ? data.user : u))
+            prev.map((u) => (u.username === user.username ? normalized : u))
           );
           if (typeof updates.username === "string") {
             updateUser({ username: updates.username });

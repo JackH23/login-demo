@@ -26,3 +26,11 @@ export function resolveApiUrl(path: string) {
   if (/^https?:\/\//.test(path)) return path;
   return apiUrl(path);
 }
+
+export function resolveImageUrl(value?: string | null) {
+  if (!value) return null;
+
+  if (/^(data:|https?:|blob:)/i.test(value)) return value;
+
+  return apiUrl(value.startsWith("/") ? value : `/${value}`);
+}

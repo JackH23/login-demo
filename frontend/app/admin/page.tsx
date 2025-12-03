@@ -8,10 +8,11 @@ import TopBar from "../components/TopBar";
 import LoadingState from "../components/LoadingState";
 import { ADMIN_USERNAME } from "@/lib/constants";
 import { useCachedApi } from "../hooks/useCachedApi";
+import { normalizeUsersResponse } from "@/app/lib/users";
 
 interface User {
   username: string;
-  image: string;
+  image?: string;
   online?: boolean;
 }
 
@@ -33,8 +34,7 @@ export default function AdminPage() {
     loading: loadingUsers,
   } = useCachedApi<User[]>(shouldFetch ? "/api/users" : null, {
     fallback: [],
-    transform: (payload) =>
-      (payload as { users?: User[] | null })?.users ?? [],
+    transform: normalizeUsersResponse,
   });
 
   const { data: posts, loading: loadingPosts } = useCachedApi<Post[]>(

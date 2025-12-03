@@ -7,10 +7,11 @@ import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 import LoadingState from "../components/LoadingState";
 import { useCachedApi } from "../hooks/useCachedApi";
+import { normalizeUsersResponse } from "@/app/lib/users";
 
 interface User {
   username: string;
-  image: string;
+  image?: string;
   online?: boolean;
 }
 
@@ -33,8 +34,7 @@ export default function AnalysisPage() {
     loading: loadingUsers,
   } = useCachedApi<User[]>(user ? "/api/users" : null, {
     fallback: [],
-    transform: (payload) =>
-      (payload as { users?: User[] | null })?.users ?? [],
+    transform: normalizeUsersResponse,
   });
 
   const { data: posts, loading: loadingPosts } = useCachedApi<Post[]>(

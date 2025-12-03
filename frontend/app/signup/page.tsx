@@ -27,22 +27,11 @@ export default function SignupPage() {
     setError("");
 
     try {
-      // Prepare optional base64 encoded image string
-      let imageData: string | null = null;
-      if (image) {
-        imageData = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = () => reject(new Error("Failed to read image"));
-          reader.readAsDataURL(image);
-        });
-      }
-
       const result = await signup(
         username.trim(),
         email.trim(),
         password,
-        imageData
+        image
       );
       if (result.success) {
         router.push("/signin");

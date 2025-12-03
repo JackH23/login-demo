@@ -8,10 +8,11 @@ import TopBar from "../components/TopBar";
 import LoadingState from "../components/LoadingState";
 import { useCachedApi } from "../hooks/useCachedApi";
 import { apiUrl } from "@/app/lib/api";
+import { normalizeUsersResponse } from "@/app/lib/users";
 
 interface User {
   username: string;
-  image: string;
+  image?: string;
   friends?: string[];
   online?: boolean;
 }
@@ -32,8 +33,7 @@ export default function FriendPage() {
     loading: loadingUsers,
   } = useCachedApi<User[]>(user ? "/api/users" : null, {
     fallback: [],
-    transform: (payload) =>
-      (payload as { users?: User[] | null })?.users ?? [],
+    transform: normalizeUsersResponse,
   });
   const [friends, setFriends] = useState<string[]>([]);
   const [isFetching, setIsFetching] = useState(true);
@@ -57,7 +57,7 @@ export default function FriendPage() {
         ]);
         const usersData = await usersRes.json();
         const friendsData = await friendsRes.json();
-        setUsers(usersData.users ?? []);
+        setUsers(normalizeUsersResponse(usersData));
         setFriends(friendsData.friends ?? []);
       } catch {
         setUsers([]);

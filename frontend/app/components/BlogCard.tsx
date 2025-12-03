@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { useCachedApi } from "../hooks/useCachedApi";
 import { apiUrl } from "@/app/lib/api";
+import { normalizeUsersResponse } from "@/app/lib/users";
 
 interface BlogPost {
   _id?: string;
@@ -76,8 +77,7 @@ export default function BlogCard({
     user ? "/api/users" : null,
     {
       fallback: [],
-      transform: (payload) =>
-        (payload as { users?: AuthorData[] | null })?.users ?? [],
+      transform: normalizeUsersResponse,
     }
   );
   // Check if the current theme is "night"
