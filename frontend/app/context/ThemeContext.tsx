@@ -24,7 +24,12 @@ const getInitialTheme = (): Theme => {
 };
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(getInitialTheme);
+  const [theme, setThemeState] = useState<Theme>("brightness");
+
+  // Load the preferred theme after hydration to avoid SSR/client mismatches
+  useEffect(() => {
+    setThemeState(getInitialTheme());
+  }, []);
 
   // apply theme classes and persist changes
   useEffect(() => {
