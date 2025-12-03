@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useLayoutEffect, useRef, useState } from "react";
+import { createContext, useContext, useLayoutEffect, useState } from "react";
 
 export type Theme = "brightness" | "night";
 
@@ -41,21 +41,11 @@ const applyThemeToDom = (value: Theme) => {
 };
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Start with a safe default to match SSR while we determine the preferred theme on the client
-  const [theme, setThemeState] = useState<Theme>("brightness");
-  const hasInitialized = useRef(false);
+  // Initialize the theme from storage (or system preference) on the client.
+  const [theme, setThemeState] = useState<Theme>(() => readStoredTheme());
 
-  // Load and apply the initial theme as early as possible to avoid flicker.
+  // Keep DOM attributes and classes in sync whenever the theme changes.
   useLayoutEffect(() => {
-    const initialTheme = readStoredTheme();
-    setThemeState(initialTheme);
-    applyThemeToDom(initialTheme);
-    hasInitialized.current = true;
-  }, []);
-
-  // Keep DOM attributes and classes in sync when the theme changes after initialization.
-  useLayoutEffect(() => {
-    if (!hasInitialized.current) return;
     applyThemeToDom(theme);
   }, [theme]);
 
