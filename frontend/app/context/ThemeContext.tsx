@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useLayoutEffect, useRef, useState } from "react";
 
 export type Theme = "brightness" | "night";
 
@@ -11,10 +11,12 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
-const getInitialTheme = (): Theme => {
+const THEME_STORAGE_KEY = "theme";
+
+const readStoredTheme = (): Theme => {
   if (typeof window === "undefined") return "brightness";
 
-  const stored = window.localStorage.getItem("theme") as Theme | null;
+  const stored = window.localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
   if (stored === "night" || stored === "brightness") {
     return stored;
   }
@@ -23,40 +25,49 @@ const getInitialTheme = (): Theme => {
   return prefersDark ? "night" : "brightness";
 };
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("brightness");
+const applyThemeToDom = (value: Theme) => {
+  if (typeof document === "undefined") return;
 
-  // Load the preferred theme after hydration to avoid SSR/client mismatches
-  useEffect(() => {
-    setThemeState(getInitialTheme());
+  const isDark = value === "night";
+  document.documentElement.setAttribute("data-bs-theme", isDark ? "dark" : "light");
+
+  if (isDark) {
+    document.body.classList.add("bg-dark", "text-white");
+    document.body.classList.remove("bg-gray-50");
+  } else {
+    document.body.classList.remove("bg-dark", "text-white");
+    document.body.classList.add("bg-gray-50");
+  }
+};
+
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  // Start with a safe default to match SSR while we determine the preferred theme on the client
+  const [theme, setThemeState] = useState<Theme>("brightness");
+  const hasInitialized = useRef(false);
+
+  // Load and apply the initial theme as early as possible to avoid flicker.
+  useLayoutEffect(() => {
+    const initialTheme = readStoredTheme();
+    setThemeState(initialTheme);
+    applyThemeToDom(initialTheme);
+    hasInitialized.current = true;
   }, []);
 
-  // apply theme classes and persist changes
-  useEffect(() => {
-    localStorage.setItem("theme", theme);
-    const isDark = theme === "night";
-    document.documentElement.setAttribute(
-      "data-bs-theme",
-      isDark ? "dark" : "light"
-    );
-    if (isDark) {
-      document.body.classList.add("bg-dark", "text-white");
-      document.body.classList.remove("bg-gray-50");
-    } else {
-      document.body.classList.remove("bg-dark", "text-white");
-      document.body.classList.add("bg-gray-50");
-    }
+  // Keep DOM attributes and classes in sync when the theme changes after initialization.
+  useLayoutEffect(() => {
+    if (!hasInitialized.current) return;
+    applyThemeToDom(theme);
   }, [theme]);
 
   const setTheme = (value: Theme) => {
     setThemeState(value);
+
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(THEME_STORAGE_KEY, value);
+    }
   };
 
-  return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme() {
