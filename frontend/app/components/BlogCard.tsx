@@ -110,6 +110,8 @@ export default function BlogCard({
   // Extract the first character from author name (used as fallback avatar initial)
   const authorInitial = displayAuthor.charAt(0).toUpperCase() || "?";
 
+  const isProfileNavigable = Boolean(displayAuthor);
+
   const openAuthorProfile = () => {
     if (!displayAuthor) return;
     router.push(`/user/${encodeURIComponent(displayAuthor)}`);
@@ -565,25 +567,34 @@ export default function BlogCard({
         {/* Row: author avatar + title + author name */}
         <div className="d-flex align-items-center gap-3">
           {/* If author has an image, display it */}
-          {author?.image ? (
-            <img
-              src={author.image}
-              alt={author.username}
-              className="rounded-circle border border-3 border-white"
-              style={{
-                width: "56px",                      // Avatar width
-                height: "56px",                     // Avatar height
-                objectFit: "cover",                 // Ensures image fills the circle without distortion
-              }}
-            />
-          ) : (
-            <div
-              className="rounded-circle bg-white text-primary fw-semibold d-flex align-items-center justify-content-center"
-              style={{ width: "56px", height: "56px" }}
-            >
-              {authorInitial}
-            </div>
-          )}
+          <button
+            type="button"
+            className="p-0 border-0 bg-transparent"
+            aria-label={isProfileNavigable ? `View ${displayAuthor}'s profile` : undefined}
+            onClick={isProfileNavigable ? openAuthorProfile : undefined}
+            disabled={!isProfileNavigable}
+            style={{ cursor: isProfileNavigable ? "pointer" : "default" }}
+          >
+            {author?.image ? (
+              <img
+                src={author.image}
+                alt={author.username}
+                className="rounded-circle border border-3 border-white"
+                style={{
+                  width: "56px",                      // Avatar width
+                  height: "56px",                     // Avatar height
+                  objectFit: "cover",                 // Ensures image fills the circle without distortion
+                }}
+              />
+            ) : (
+              <div
+                className="rounded-circle bg-white text-primary fw-semibold d-flex align-items-center justify-content-center"
+                style={{ width: "56px", height: "56px" }}
+              >
+                {authorInitial}
+              </div>
+            )}
+          </button>
 
           {/* Blog title and author name section */}
           <div className="flex-grow-1">
