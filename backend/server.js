@@ -40,7 +40,7 @@ app.use((error, _req, res, _next) => {
   res.status(500).json({ error: "Internal server error" });
 });
 
-// Start server only after connecting to DB
+// Start server and attempt initial DB connection without blocking startup
 const server = http.createServer(app);
 const io = createSocketServer(server);
 app.set("io", io);
@@ -49,12 +49,20 @@ const isProduction =
   process.env.NODE_ENV === "production" || process.env.npm_lifecycle_event === "start";
 const PORT = process.env.PORT || (isProduction ? 3000 : 8000);
 
-dbConnect()
-  .then(() => {
-    server.listen(PORT, () => {
-      console.log(`Connected to MongoDB and API is running at http://localhost:${PORT}.`);
-    });
-  })
-  .catch((error) => {
+const startServer = async () => {
+  try {
+    await dbConnect();
+    console.log("Connected to MongoDB.");
+  } catch (error) {
     console.error("Failed to connect to MongoDB", error);
+    console.warn(
+      "Starting server without an active MongoDB connection. Incoming requests will retry the connection and may fail until the database is reachable."
+    );
+  }
+
+  server.listen(PORT, () => {
+    console.log(`API is running at http://localhost:${PORT}.`);
   });
+};
+
+void startServer();

@@ -1,9 +1,13 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const MONGODB_URI = process.env.MONGODB_URI;
+const DEFAULT_LOCAL_URI = "mongodb://127.0.0.1:27017/login-demo";
+const MONGODB_URI = process.env.MONGODB_URI ?? DEFAULT_LOCAL_URI;
 
-if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable');
+if (!process.env.MONGODB_URI) {
+  console.warn(
+    `MONGODB_URI is not set. Falling back to local MongoDB at ${DEFAULT_LOCAL_URI}. ` +
+      "Set MONGODB_URI to your database connection string to silence this warning."
+  );
 }
 
 const cached = global.mongoose || { conn: null, promise: null };
