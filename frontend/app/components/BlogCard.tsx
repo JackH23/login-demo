@@ -5,7 +5,7 @@ import { useState, useEffect, CSSProperties } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { useCachedApi } from "../hooks/useCachedApi";
-import { apiUrl } from "@/app/lib/api";
+import { apiUrl, resolveImageUrl } from "@/app/lib/api";
 import { normalizeUsersResponse } from "@/app/lib/users";
 
 interface BlogPost {
@@ -164,7 +164,8 @@ export default function BlogCard({
   useEffect(() => {
     const images: Record<string, string> = {};
     knownUsers.forEach((u) => {
-      if (u.image) images[u.username] = u.image;
+      const resolved = resolveImageUrl(u.image);
+      if (resolved) images[u.username] = resolved;
     });
     setUserImages(images);
   }, [knownUsers]);
@@ -172,6 +173,9 @@ export default function BlogCard({
   useEffect(() => {
     if (!blog._id) return;
     let isMounted = true;
+
+    const resolveAvatar = (raw?: string | null, username?: string) =>
+      resolveImageUrl(raw) ?? (username ? userImages[username] : undefined);
 
     const fetchComments = async () => {
       try {
@@ -193,7 +197,7 @@ export default function BlogCard({
             _id: c._id as string,
             text: c.text as string,
             author: c.author as string,
-            authorImage: c.authorImage,
+            authorImage: resolveAvatar(c.authorImage, c.author),
             likes: c.likes ?? 0,
             dislikes: c.dislikes ?? 0,
             likedBy: c.likedBy ?? [],
@@ -202,7 +206,7 @@ export default function BlogCard({
               (r: { text: string; author: string; authorImage?: string }) => ({
                 text: r.text as string,
                 author: r.author as string,
-                authorImage: r.authorImage,
+                authorImage: resolveAvatar(r.authorImage, r.author),
               })
             ),
             showReplyInput: false,
@@ -227,10 +231,12 @@ export default function BlogCard({
     setComments((prev) =>
       prev.map((comment) => ({
         ...comment,
-        authorImage: comment.authorImage ?? userImages[comment.author],
+        authorImage:
+          comment.authorImage ?? resolveImageUrl(userImages[comment.author]) ?? userImages[comment.author],
         replies: comment.replies.map((reply) => ({
           ...reply,
-          authorImage: reply.authorImage ?? userImages[reply.author],
+          authorImage:
+            reply.authorImage ?? resolveImageUrl(userImages[reply.author]) ?? userImages[reply.author],
         })),
       }))
     );
@@ -262,7 +268,10 @@ export default function BlogCard({
               _id: data.comment._id as string,
               text: data.comment.text,
               author: data.comment.author,
-              authorImage: data.comment.authorImage ?? userImages[data.comment.author],
+              authorImage:
+                resolveImageUrl(data.comment.authorImage) ??
+                resolveImageUrl(userImages[data.comment.author]) ??
+                userImages[data.comment.author],
               likes: data.comment.likes,
               dislikes: data.comment.dislikes,
               likedBy: [],
@@ -283,7 +292,10 @@ export default function BlogCard({
         _id: undefined,
         text,
         author: user?.username ?? "",
-        authorImage: user ? userImages[user.username] : undefined,
+        authorImage:
+          user
+            ? resolveImageUrl(userImages[user.username]) ?? userImages[user.username]
+            : undefined,
         likes: 0,
         dislikes: 0,
         likedBy: [],
@@ -446,7 +458,8 @@ export default function BlogCard({
                       text: last.text as string,
                       author: last.author as string,
                       authorImage:
-                        (last.authorImage as string | undefined) ??
+                        resolveImageUrl(last.authorImage as string | undefined) ??
+                        resolveImageUrl(userImages[last.author as string]) ??
                         userImages[last.author as string],
                     },
                   ],
@@ -471,7 +484,11 @@ export default function BlogCard({
                 {
                   text,
                   author: user?.username ?? "",
-                  authorImage: user ? userImages[user.username] : undefined,
+                  authorImage:
+                    user
+                      ? resolveImageUrl(userImages[user.username]) ??
+                        userImages[user.username]
+                      : undefined,
                 },
               ],
               newReply: "",

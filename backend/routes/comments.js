@@ -8,6 +8,13 @@ const router = express.Router();
 const asyncHandler = (handler) =>
   (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
 
+const normalizeImagePath = (value) => {
+  if (!value) return undefined;
+
+  const normalized = value.replace(/\\+/g, '/');
+  return normalized.startsWith('/') ? normalized : `/${normalized}`;
+};
+
 const buildImageMap = async (comments) => {
   const usernames = new Set();
 
@@ -26,7 +33,7 @@ const buildImageMap = async (comments) => {
   ).lean();
 
   return users.reduce((acc, user) => {
-    acc[user.username] = user.image;
+    acc[user.username] = normalizeImagePath(user.image);
     return acc;
   }, {});
 };
@@ -69,7 +76,7 @@ router.post('/', asyncHandler(async (req, res) => {
     return res.json({
       comment: {
         ...comment.toObject(),
-        authorImage: authorProfile?.image,
+        authorImage: normalizeImagePath(authorProfile?.image),
       },
     });
   } catch (error) {
