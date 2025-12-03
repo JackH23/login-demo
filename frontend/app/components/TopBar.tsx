@@ -84,6 +84,7 @@ export default function TopBar({
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [navVariant, setNavVariant] = useState<TopBarLayoutVariant>(layoutVariant);
   const [isCompactMobile, setIsCompactMobile] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
 
   const handleLogout = useCallback(() => {
     logout();
@@ -124,6 +125,18 @@ export default function TopBar({
       router.prefetch(item.href);
     });
   }, [navItems, router]);
+
+  useEffect(() => {
+    const updateViewportFlags = () => {
+      const isMobile = window.innerWidth < 992;
+      setIsMobileViewport(isMobile);
+      setIsCompactMobile(window.innerWidth < 576);
+    };
+
+    updateViewportFlags();
+    window.addEventListener("resize", updateViewportFlags);
+    return () => window.removeEventListener("resize", updateViewportFlags);
+  }, []);
 
   const navVariantStyles = useMemo(() => {
     const sharedWrapper =
@@ -207,14 +220,19 @@ export default function TopBar({
       theme === "night"
         ? "1px solid rgba(148, 163, 184, 0.15)"
         : "1px solid rgba(15, 23, 42, 0.08)",
-    background:
-      theme === "night"
-        ? "linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.92) 100%)"
-        : "linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(241, 245, 249, 0.95) 100%)",
-    backdropFilter: "blur(12px)",
-    WebkitBackdropFilter: "blur(12px)",
+    background: isMobileViewport
+      ? theme === "night"
+        ? "#0f1116"
+        : "#f8fafc"
+      : theme === "night"
+      ? "linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.92) 100%)"
+      : "linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(241, 245, 249, 0.95) 100%)",
+    backdropFilter: isMobileViewport ? undefined : "blur(12px)",
+    WebkitBackdropFilter: isMobileViewport ? undefined : "blur(12px)",
     boxShadow:
-      theme === "night"
+      isMobileViewport
+        ? "0 1px 0 rgba(0,0,0,0.06)"
+        : theme === "night"
         ? "0 18px 45px -20px rgba(15, 23, 42, 0.9)"
         : "0 18px 45px -20px rgba(100, 116, 139, 0.35)",
   };
@@ -283,12 +301,12 @@ export default function TopBar({
 
   return (
     <div
-      className={`position-sticky top-0 z-3 ${
+      className={`topbar-wrapper position-sticky top-0 z-3 ${
         theme === "night" ? "text-white" : "text-dark"
       }`}
       style={containerStyle}
     >
-      <div className="px-4 pt-3 pb-2">
+      <div className="px-3 px-lg-4 pt-2 pb-2 pt-lg-3">
         <div className="d-none d-lg-flex justify-content-between gap-3 align-items-center">
           <div>
             <p className="text-uppercase fw-semibold small mb-1 text-secondary-emphasis opacity-75">
@@ -335,17 +353,17 @@ export default function TopBar({
         </div>
 
         <div className="d-lg-none">
-          <div className="mobile-topbar d-flex align-items-center justify-content-between gap-3">
+          <div className="mobile-topbar d-flex align-items-center justify-content-between gap-3 py-2">
             <button
               type="button"
-              className="btn btn-sm btn-outline-primary d-flex align-items-center gap-2 rounded-pill"
+              className="btn btn-link text-primary p-0 d-flex align-items-center"
               aria-label="Open navigation"
               aria-expanded={mobileNavOpen}
               onClick={() => setMobileNavOpen((open) => !open)}
             >
               <Menu size={18} />
             </button>
-            <h1 className="mb-0 flex-grow-1 text-center h6 text-truncate">{title}</h1>
+            <h1 className="mb-0 flex-grow-1 text-center h6 fw-semibold text-truncate">{title}</h1>
             {avatarNode}
           </div>
 
@@ -357,13 +375,12 @@ export default function TopBar({
           />
 
           <div
-            className={`position-fixed top-0 start-0 h-100 w-80 w-sm-60 w-md-50 bg-dark text-white d-lg-none transition shadow-lg ${
+            className={`sidebar bg-dark text-white d-lg-none ${
               mobileNavOpen ? "translate-none" : "translate-n100"
             }`}
             style={{
               transform: mobileNavOpen ? "translateX(0)" : "translateX(-100%)",
               transition: "transform 0.25s ease",
-              zIndex: 1055,
               background:
                 theme === "night"
                   ? "linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.96))"
@@ -388,8 +405,8 @@ export default function TopBar({
               </button>
             </div>
 
-            <div className="px-3">
-              <nav className="d-flex flex-column gap-2" aria-label="Mobile navigation">
+            <div className="px-3 pb-4 h-100 d-flex flex-column">
+              <nav className="d-flex flex-column gap-2 flex-grow-1" aria-label="Mobile navigation">
                 {navItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = optimisticActive === item.key;
@@ -412,26 +429,26 @@ export default function TopBar({
                   );
                 })}
               </nav>
-              {secondaryActions}
-            </div>
-
-            <div className="mt-auto p-3">
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="btn btn-sm btn-outline-danger w-100 d-flex align-items-center gap-2 justify-content-center"
-              >
-                <LogOut size={18} />
-                <span>Log out</span>
-              </button>
+              <div className="sidebar-actions mt-3">
+                {secondaryActions}
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="btn btn-sm btn-outline-danger w-100 d-flex align-items-center gap-2 justify-content-center"
+                >
+                  <LogOut size={18} />
+                  <span>Log out</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
+        </div>
       </div>
 
-      <div className="px-4 pb-3">
+      <div className="px-4 pb-3 d-none d-lg-block">
         <div
-          className={`${navVariantStyles.wrapperClassName} d-${mobileNavOpen ? "flex" : "none"} d-lg-flex flex-wrap align-items-center`}
+          className={`${navVariantStyles.wrapperClassName} d-flex flex-wrap align-items-center`}
         >
           {navItems.map((item) => {
             const Icon = item.icon;
