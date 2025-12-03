@@ -1,11 +1,48 @@
 const express = require('express');
 
 const Comment = require('../models/Comment');
+const User = require('../models/User');
 
 const router = express.Router();
 
 const asyncHandler = (handler) =>
   (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
+
+const buildImageMap = async (comments) => {
+  const usernames = new Set();
+
+  comments.forEach((comment) => {
+    if (comment.author) usernames.add(comment.author);
+    (comment.replies || []).forEach((reply) => {
+      if (reply.author) usernames.add(reply.author);
+    });
+  });
+
+  if (!usernames.size) return {};
+
+  const users = await User.find(
+    { username: { $in: Array.from(usernames) } },
+    'username image'
+  ).lean();
+
+  return users.reduce((acc, user) => {
+    acc[user.username] = user.image;
+    return acc;
+  }, {});
+};
+
+const attachAvatars = async (comments) => {
+  const imageMap = await buildImageMap(comments);
+
+  return comments.map((comment) => ({
+    ...comment,
+    authorImage: imageMap[comment.author],
+    replies: (comment.replies || []).map((reply) => ({
+      ...reply,
+      authorImage: imageMap[reply.author],
+    })),
+  }));
+};
 
 router.get('/', asyncHandler(async (req, res) => {
   const { postId } = req.query;
@@ -13,10 +50,12 @@ router.get('/', asyncHandler(async (req, res) => {
     return res.status(400).json({ error: 'Missing postId' });
   }
 
-  const comments = await Comment.find({ postId })
+  const rawComments = await Comment.find({ postId })
     .select('postId author text likes dislikes likedBy dislikedBy replies createdAt updatedAt')
     .sort({ createdAt: 1 })
     .lean();
+
+  const comments = await attachAvatars(rawComments);
 
   return res.json({ comments });
 }));
@@ -25,7 +64,14 @@ router.post('/', asyncHandler(async (req, res) => {
   const { postId, author, text } = req.body;
   try {
     const comment = await Comment.create({ postId, author, text });
-    return res.json({ comment });
+    const authorProfile = await User.findOne({ username: author }, 'image').lean();
+
+    return res.json({
+      comment: {
+        ...comment.toObject(),
+        authorImage: authorProfile?.image,
+      },
+    });
   } catch (error) {
     console.error('Failed to create comment', error);
     return res.status(400).json({ error: 'Failed to create comment' });
@@ -46,7 +92,9 @@ router.post('/:id', asyncHandler(async (req, res) => {
     return res.status(404).json({ error: 'Comment not found' });
   }
 
-  return res.json({ comment });
+  const [withAvatars] = await attachAvatars([comment]);
+
+  return res.json({ comment: withAvatars });
 }));
 
 router.patch('/:id', asyncHandler(async (req, res) => {
