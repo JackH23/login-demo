@@ -220,6 +220,74 @@ export default function TopBar({
   const themeToggleLabel =
     theme === "night" ? "Switch to light mode" : "Switch to dark mode";
 
+  const mobileShellClasses = useMemo(() => {
+    const base =
+      "d-flex align-items-center justify-content-between gap-3 rounded-4 px-3 py-2" +
+      (theme === "night"
+        ? " border border-primary border-opacity-25 bg-dark bg-opacity-60"
+        : " border border-primary-subtle bg-white bg-opacity-80");
+
+    switch (layoutVariant) {
+      case "segmented":
+        return `${base} shadow-sm`;
+      case "toolbar":
+        return `${base} rounded-3 px-2`; // slimmer for toolbar look
+      default:
+        return `${base} shadow`;
+    }
+  }, [layoutVariant, theme]);
+
+  const avatarNode = (
+    <div
+      className="rounded-circle border border-primary-subtle bg-primary bg-opacity-25 d-flex align-items-center justify-content-center shadow-sm"
+      style={{ width: "36px", height: "36px" }}
+      aria-label="Profile"
+    >
+      {currentUser.image ? (
+        <img
+          src={currentUser.image}
+          alt="Your profile"
+          className="rounded-circle"
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
+      ) : (
+        <UserCircle2 size={18} />
+      )}
+    </div>
+  );
+
+  const secondaryActions = (
+    <div className="d-flex flex-column gap-2 mt-3">
+      <button
+        type="button"
+        className="btn btn-sm btn-outline-primary d-flex align-items-center gap-2"
+        onClick={() => setTheme(theme === "night" ? "brightness" : "night")}
+        aria-label={themeToggleLabel}
+        title={themeToggleLabel}
+      >
+        {theme === "night" ? <SunMedium size={16} /> : <MoonStar size={16} />}
+        <span>{theme === "night" ? "Light mode" : "Dark mode"}</span>
+      </button>
+      <Link
+        href="/posts/create"
+        className="btn btn-sm btn-primary d-flex align-items-center gap-2"
+        aria-label="Create new post"
+        onClick={() => setMobileNavOpen(false)}
+      >
+        <FileText size={16} />
+        <span>New Post</span>
+      </Link>
+      <div className="d-flex flex-wrap gap-2">
+        <span className="badge bg-primary bg-opacity-10 text-primary-emphasis px-3 py-2 rounded-pill">
+          Minimal stack
+        </span>
+        <span className="badge bg-primary bg-opacity-20 text-white px-3 py-2 rounded-pill text-capitalize">
+          {layoutVariant}
+        </span>
+      </div>
+    </div>
+  );
+
   return (
     <div
       className={`position-sticky top-0 z-3 ${
@@ -274,7 +342,7 @@ export default function TopBar({
         </div>
 
         <div className="d-lg-none">
-          <div className="d-flex align-items-center justify-content-between gap-3 rounded-4 px-3 py-2 border border-primary border-opacity-25 bg-dark bg-opacity-50">
+          <div className={mobileShellClasses}>
             <button
               type="button"
               className="btn btn-sm btn-outline-primary d-flex align-items-center gap-2 rounded-pill"
@@ -285,59 +353,85 @@ export default function TopBar({
               <Menu size={18} />
             </button>
             <div className="flex-grow-1 text-center">
-              <p className="text-uppercase fw-semibold small mb-0 text-secondary-emphasis opacity-75">
-                {greeting}
-              </p>
-              <h6 className="mb-0 text-white">{title}</h6>
+              <h6 className="mb-0 text-white text-truncate">{title}</h6>
             </div>
-            <div className="d-flex align-items-center gap-2">
-              <button
-                type="button"
-                className="btn btn-sm btn-outline-primary rounded-circle p-2 d-flex align-items-center justify-content-center"
-                onClick={() => setTheme(theme === "night" ? "brightness" : "night")}
-                aria-label={themeToggleLabel}
-                title={themeToggleLabel}
-              >
-                {theme === "night" ? <SunMedium size={16} /> : <MoonStar size={16} />}
-              </button>
-              <Link
-                href="/posts/create"
-                className="btn btn-sm btn-primary rounded-circle p-2 d-flex align-items-center justify-content-center"
-                aria-label="Create new post"
-              >
-                <FileText size={16} />
-              </Link>
-              <div
-                className="rounded-circle border border-primary-subtle bg-primary bg-opacity-25 d-flex align-items-center justify-content-center"
-                style={{ width: "36px", height: "36px" }}
-                aria-label="Profile"
-              >
-                {currentUser.image ? (
-                  <img
-                    src={currentUser.image}
-                    alt="Your profile"
-                    className="rounded-circle"
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
-                ) : (
-                  <UserCircle2 size={18} />
-                )}
-              </div>
-            </div>
+            {avatarNode}
           </div>
-          <div className="mt-2 d-flex justify-content-between align-items-center gap-2">
-            <span className="badge bg-primary bg-opacity-10 text-primary-emphasis px-3 py-2 rounded-pill">
-              Minimal stack
-            </span>
-            <div className="d-flex gap-2">
-              <span className="badge bg-primary bg-opacity-25 text-white rounded-pill">{layoutVariant}</span>
+
+          <div
+            className={`offcanvas-backdrop fade ${mobileNavOpen ? "show" : "d-none"}`}
+            style={{ opacity: 0.4 }}
+            onClick={() => setMobileNavOpen(false)}
+            aria-hidden={!mobileNavOpen}
+          />
+
+          <div
+            className={`position-fixed top-0 start-0 h-100 w-75 w-sm-50 w-md-40 w-lg-25 bg-dark text-white border-end border-primary border-opacity-25 d-lg-none transition ${
+              mobileNavOpen ? "translate-none" : "translate-n100"
+            }`}
+            style={{
+              transform: mobileNavOpen ? "translateX(0)" : "translateX(-100%)",
+              transition: "transform 0.25s ease",
+              zIndex: 1055,
+              background:
+                theme === "night"
+                  ? "linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.96))"
+                  : "linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(226, 232, 240, 0.98))",
+            }}
+          >
+            <div className="p-3 d-flex align-items-center justify-content-between">
+              <div className="d-flex align-items-center gap-2">
+                {avatarNode}
+                <div>
+                  <p className="mb-0 small text-secondary-emphasis">{greeting}</p>
+                  <strong>{currentUser.username}</strong>
+                </div>
+              </div>
               <button
                 type="button"
                 className="btn btn-sm btn-outline-light rounded-pill"
-                onClick={() => setMobileNavOpen(true)}
-                aria-label="Expand navigation"
+                onClick={() => setMobileNavOpen(false)}
+                aria-label="Close navigation"
               >
-                Show links
+                Close
+              </button>
+            </div>
+
+            <div className="px-3">
+              <nav className="d-flex flex-column gap-2" aria-label="Mobile navigation">
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = optimisticActive === item.key;
+                  return (
+                    <Link
+                      key={item.key}
+                      href={item.href}
+                      className={`d-flex align-items-center gap-3 rounded-3 px-3 py-2 text-decoration-none ${
+                        isActive ? "bg-primary text-white" : "bg-white bg-opacity-10 text-white"
+                      }`}
+                      onClick={(event) => {
+                        handleNavClick(event, item);
+                        setMobileNavOpen(false);
+                      }}
+                    >
+                      <Icon size={18} />
+                      <span className="flex-grow-1">{item.label}</span>
+                      {isActive && <span className="badge bg-primary-subtle text-primary">Active</span>}
+                    </Link>
+                  );
+                })}
+              </nav>
+              {secondaryActions}
+            </div>
+
+            <div className="mt-auto p-3">
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="btn btn-sm btn-outline-danger w-100 d-flex align-items-center gap-2 justify-content-center"
+              >
+                <LogOut size={18} />
+                <span>Log out</span>
               </button>
             </div>
           </div>
