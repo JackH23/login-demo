@@ -43,24 +43,36 @@ const applyThemeToDom = (value: Theme) => {
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Default to brightness during SSR to avoid hydration mismatch, then sync with
   // the client preference once mounted.
-  const [theme, setThemeState] = useState<Theme>("brightness");
-
-  useEffect(() => {
-    setThemeState(readStoredTheme());
-  }, []);
-
-  // Keep DOM attributes and classes in sync whenever the theme changes.
-  useEffect(() => {
-    applyThemeToDom(theme);
-  }, [theme]);
+  const [theme, setThemeState] = useState<Theme>(() => readStoredTheme());
 
   const setTheme = (value: Theme) => {
     setThemeState(value);
-
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(THEME_STORAGE_KEY, value);
-    }
   };
+
+  // Keep DOM attributes, classes, and storage in sync whenever the theme
+  // changes so user selections persist across sessions.
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+    }
+
+    applyThemeToDom(theme);
+  }, [theme]);
+
+  // Sync theme changes across tabs so the preference stays consistent.
+  useEffect(() => {
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === THEME_STORAGE_KEY) {
+        const newValue = event.newValue as Theme | null;
+        if (newValue === "night" || newValue === "brightness") {
+          setThemeState(newValue);
+        }
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
 
   return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>;
 }
