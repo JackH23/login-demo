@@ -1469,12 +1469,39 @@ export default function BlogCard({
       <style jsx>{`
         .blog-card__stats span {
           font-size: 0.95rem;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.35rem;
+          min-height: 36px;
         }
 
         @media (max-width: 576px) {
+          .blog-card__hero .blog-card__header {
+            align-items: flex-start;
+            text-align: left;
+          }
+
+          .blog-card__title {
+            width: 100%;
+          }
+
+          .blog-card__title h3 {
+            font-size: 1.05rem;
+            line-height: 1.2;
+          }
+
+          .blog-card__stats {
+            width: 100%;
+            justify-content: space-between;
+            gap: 0.4rem;
+          }
+
           .blog-card__stats span {
             font-size: 0.85rem;
             padding: 0.35rem 0.7rem;
+            flex: 1;
+            min-height: 32px;
           }
 
           .blog-card__footer {
