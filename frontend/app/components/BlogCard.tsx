@@ -849,32 +849,46 @@ export default function BlogCard({
 
         {/* Comments Section */}
         <div
-          className={`conversation-card mt-5 rounded-4 p-md-4 p-0 ${
+          className={`conversation-card mt-5 rounded-4 p-3 p-md-4 ${
             isNight ? "bg-secondary bg-opacity-25" : "bg-light"
           }`}
         >
-          <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-            <div>
-              <h5 className="mb-1 d-flex align-items-center gap-2">
-                <span>💬</span>
-                <span>Conversation</span>
-              </h5>
-              <p className={`mb-0 small ${mutedTextClass}`}>
-                {totalComments === 0
-                  ? "Be the first to start the discussion."
-                  : `Join ${totalComments} ${
-                      totalComments === 1 ? "comment" : "comments"
-                    } from the community.`}
-              </p>
+          <div className="conversation-header d-flex flex-column gap-2 mb-3">
+            <div className="d-flex justify-content-between align-items-start flex-wrap gap-2">
+              <div>
+                <h5 className="mb-1 d-flex align-items-center gap-2">
+                  <span>💬</span>
+                  <span>Conversation</span>
+                </h5>
+                <p className={`mb-0 small ${mutedTextClass}`}>
+                  {totalComments === 0
+                    ? "Be the first to start the discussion."
+                    : `Join ${totalComments} ${
+                        totalComments === 1 ? "comment" : "comments"
+                      } from the community.`}
+                </p>
+              </div>
+              {totalComments > 0 && (
+                <button
+                  className="btn btn-sm btn-outline-primary rounded-pill"
+                  onClick={() => setShowCommentsModal(true)}
+                >
+                  View all
+                </button>
+              )}
             </div>
-            {totalComments > 0 && (
-              <button
-                className="btn btn-sm btn-outline-primary rounded-pill"
-                onClick={() => setShowCommentsModal(true)}
-              >
-                View all
-              </button>
-            )}
+
+            <div className="conversation-meta d-flex flex-wrap align-items-center gap-2">
+              <span className="conversation-chip">
+                <span className="conversation-chip__dot" aria-hidden></span>
+                Friendly space for thoughtful replies
+              </span>
+              <span className="conversation-chip conversation-chip--muted">
+                {totalComments === 0
+                  ? "New thread—share your perspective"
+                  : `${totalComments} ${totalComments === 1 ? "voice" : "voices"} active`}
+              </span>
+            </div>
           </div>
 
           {comments.length === 0 ? (
