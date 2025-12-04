@@ -596,14 +596,14 @@ export default function BlogCard({
         className="blog-card__hero position-relative text-white"
         style={{
           background: headerGradient, // Dynamic background based on theme
-          padding: isMobile ? "0.9rem 1rem" : "1.25rem 1.5rem",
+          padding: isMobile ? "0.65rem 0.9rem" : "1.1rem 1.35rem",
         }}
       >
         {/* Row: author avatar + title + author name */}
         <div
           className="blog-card__header d-flex align-items-center flex-column flex-md-row text-center text-md-start"
           style={{
-            gap: isMobile ? "0.75rem" : "1rem",
+            gap: isMobile ? "0.55rem" : "0.9rem",
           }}
         >
           {/* If author has an image, display it */}
@@ -621,15 +621,15 @@ export default function BlogCard({
                 alt={author.username}
                 className="rounded-circle border border-3 border-white"
                 style={{
-                  width: isMobile ? "44px" : "48px", // Avatar width
-                  height: isMobile ? "44px" : "48px", // Avatar height
+                  width: isMobile ? "40px" : "48px", // Avatar width
+                  height: isMobile ? "40px" : "48px", // Avatar height
                   objectFit: "cover", // Ensures image fills the circle without distortion
                 }}
               />
             ) : (
               <div
                 className="rounded-circle bg-white text-primary fw-semibold d-flex align-items-center justify-content-center"
-                style={{ width: isMobile ? "44px" : "48px", height: isMobile ? "44px" : "48px" }}
+                style={{ width: isMobile ? "40px" : "48px", height: isMobile ? "40px" : "48px" }}
               >
                 {authorInitial}
               </div>
@@ -641,7 +641,7 @@ export default function BlogCard({
             {/* Blog title */}
             <h3
               className="mb-1 fw-bold"
-              style={{ fontSize: isMobile ? "1.35rem" : undefined, lineHeight: 1.2 }}
+              style={{ fontSize: isMobile ? "1.2rem" : undefined, lineHeight: 1.15 }}
             >
               {blog.title}
             </h3>
@@ -677,8 +677,8 @@ export default function BlogCard({
           className="blog-card__media position-relative overflow-hidden"
           style={{
             cursor: "pointer",
-            aspectRatio: "16 / 9", // Keeps a predictable viewport without forcing the image to stretch
-            maxHeight: isMobile ? "240px" : "360px",
+            aspectRatio: isMobile ? "3 / 4" : "16 / 9", // Keeps a predictable viewport without forcing the image to stretch
+            maxHeight: isMobile ? "200px" : "360px",
             backgroundColor: isNight ? "#0f172a" : "#f8fafc",
             borderBottomLeftRadius: "0px",
             borderBottomRightRadius: "0px",
@@ -711,13 +711,31 @@ export default function BlogCard({
           />
 
           {/* Bottom-right floating badge prompting user interaction */}
+          {!isMobile && (
+            <button
+              type="button"
+              className="blog-card__expand position-absolute bottom-0 end-0 m-2 m-md-3 border-0 bg-transparent p-0"
+              onClick={() => setShowImageModal(true)}
+              aria-label="Expand image"
+            >
+              <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-2 py-1 px-md-3 py-md-2 d-flex align-items-center gap-2">
+                <span aria-hidden="true">🔍</span>
+                <span>Tap to expand</span>
+              </span>
+            </button>
+          )}
+        </div>
+      )}
+
+      {blog.image && isMobile && (
+        <div className="px-3 pb-3">
           <button
             type="button"
-            className="blog-card__expand position-absolute bottom-0 end-0 m-2 m-md-3 border-0 bg-transparent p-0"
+            className="blog-card__expand w-100 border-0 bg-transparent p-0"
             onClick={() => setShowImageModal(true)}
             aria-label="Expand image"
           >
-            <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-2 py-1 px-md-3 py-md-2 d-flex align-items-center gap-2">
+            <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-3 py-2 w-100 d-flex align-items-center justify-content-center gap-2">
               <span aria-hidden="true">🔍</span>
               <span>Tap to expand</span>
             </span>
@@ -727,7 +745,7 @@ export default function BlogCard({
 
       <div
         className="blog-card__body card-body p-3"
-        style={{ padding: isMobile ? "0.85rem 1rem" : undefined }}
+        style={{ padding: isMobile ? "0.75rem 0.9rem" : "1rem 1.25rem" }}
       >
         <p
           className="card-text fs-6 mb-2"
@@ -771,7 +789,11 @@ export default function BlogCard({
         )}
 
         <div className="blog-card__footer d-flex flex-column flex-md-row gap-3 mt-4 align-items-start align-items-md-center">
-          <div className="blog-card__actions d-flex flex-wrap gap-2">
+          <div
+            className={`blog-card__actions d-flex flex-wrap gap-2 ${
+              isMobile ? "" : "align-items-center"
+            }`}
+          >
             <button
               className="btn btn-sm btn-success rounded-pill d-flex align-items-center gap-2 px-2 py-1"
               onClick={handleLikePost}
@@ -1421,7 +1443,8 @@ export default function BlogCard({
           .blog-card__actions {
             width: 100%;
             display: grid !important;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            row-gap: 0.5rem;
           }
 
           .blog-card__actions .btn {
