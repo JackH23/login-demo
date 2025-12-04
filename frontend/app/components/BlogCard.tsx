@@ -1021,14 +1021,14 @@ export default function BlogCard({
                           {comment.replies.map((reply, rIdx) => (
                             <li
                               key={reply.tempId ?? rIdx}
-                              className={`d-flex align-items-center gap-2 ${
+                              className={`conversation-reply d-flex align-items-start gap-2 ${
                                 theme === "night" ? "text-light" : "text-muted"
                               } small mb-2`}
                             >
                               {reply.authorImage && (
                                 <button
                                   type="button"
-                                  className="p-0 border-0 bg-transparent"
+                                  className="conversation-reply__avatar p-0 border-0 bg-transparent"
                                   onClick={() => openUserProfile(reply.author)}
                                   aria-label={`View ${reply.author}'s profile`}
                                 >
@@ -1044,21 +1044,31 @@ export default function BlogCard({
                                   />
                                 </button>
                               )}
-                              ↪{" "}
-                              <button
-                                type="button"
-                                className="fw-semibold p-0 border-0 bg-transparent text-start"
-                                onClick={() => openUserProfile(reply.author)}
-                                onKeyDown={(event) => {
-                                  if (event.key === "Enter" || event.key === " ") {
-                                    event.preventDefault();
-                                    openUserProfile(reply.author);
-                                  }
-                                }}
-                              >
-                                {reply.author}
-                              </button>
-                              : {reply.text}
+                              <span className="conversation-reply__arrow" aria-hidden="true">
+                                ↪
+                              </span>
+                              <div className="conversation-reply__body d-flex flex-wrap align-items-center gap-1">
+                                <button
+                                  type="button"
+                                  className="fw-semibold p-0 border-0 bg-transparent text-start"
+                                  onClick={() => openUserProfile(reply.author)}
+                                  onKeyDown={(event) => {
+                                    if (event.key === "Enter" || event.key === " ") {
+                                      event.preventDefault();
+                                      openUserProfile(reply.author);
+                                    }
+                                  }}
+                                  aria-label={`View ${reply.author}'s profile`}
+                                >
+                                  {reply.author}
+                                </button>
+                                <span className="text-muted">{reply.text}</span>
+                                {reply.isPending && (
+                                  <span className="badge bg-secondary bg-opacity-25 text-secondary ms-auto">
+                                    Sending...
+                                  </span>
+                                )}
+                              </div>
                             </li>
                           ))}
                         </ul>
@@ -1332,14 +1342,14 @@ export default function BlogCard({
                           {comment.replies.map((reply, rIdx) => (
                             <li
                               key={reply.tempId ?? rIdx}
-                              className={`d-flex align-items-center gap-2 ${
+                              className={`conversation-reply d-flex align-items-start gap-2 ${
                                 theme === "night" ? "text-light" : "text-muted"
                               } small mb-2`}
                             >
                               {reply.authorImage && (
                                 <button
                                   type="button"
-                                  className="p-0 border-0 bg-transparent"
+                                  className="conversation-reply__avatar p-0 border-0 bg-transparent"
                                   onClick={() => openUserProfile(reply.author)}
                                   aria-label={`View ${reply.author}'s profile`}
                                 >
@@ -1355,21 +1365,31 @@ export default function BlogCard({
                                   />
                                 </button>
                               )}
-                              ↪{" "}
-                              <button
-                                type="button"
-                                className="fw-semibold p-0 border-0 bg-transparent text-start"
-                                onClick={() => openUserProfile(reply.author)}
-                                onKeyDown={(event) => {
-                                  if (event.key === "Enter" || event.key === " ") {
-                                    event.preventDefault();
-                                    openUserProfile(reply.author);
-                                  }
-                                }}
-                              >
-                                {reply.author}
-                              </button>
-                              : {reply.text}
+                              <span className="conversation-reply__arrow" aria-hidden="true">
+                                ↪
+                              </span>
+                              <div className="conversation-reply__body d-flex flex-wrap align-items-center gap-1">
+                                <button
+                                  type="button"
+                                  className="fw-semibold p-0 border-0 bg-transparent text-start"
+                                  onClick={() => openUserProfile(reply.author)}
+                                  onKeyDown={(event) => {
+                                    if (event.key === "Enter" || event.key === " ") {
+                                      event.preventDefault();
+                                      openUserProfile(reply.author);
+                                    }
+                                  }}
+                                  aria-label={`View ${reply.author}'s profile`}
+                                >
+                                  {reply.author}
+                                </button>
+                                <span className="text-muted">{reply.text}</span>
+                                {reply.isPending && (
+                                  <span className="badge bg-secondary bg-opacity-25 text-secondary ms-auto">
+                                    Sending...
+                                  </span>
+                                )}
+                              </div>
                             </li>
                           ))}
                         </ul>
@@ -1476,6 +1496,55 @@ export default function BlogCard({
           min-height: 36px;
         }
 
+        .conversation-comment {
+          display: flex;
+          flex-direction: column;
+          gap: 0.6rem;
+        }
+
+        .conversation-comment__main {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+        }
+
+        .conversation-comment__avatar-image,
+        .conversation-comment__avatar-fallback {
+          width: 44px;
+          height: 44px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+        }
+
+        .conversation-comment__text {
+          margin-bottom: 0.25rem;
+          line-height: 1.55;
+          word-break: break-word;
+        }
+
+        .conversation-comment__actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+        }
+
+        .conversation-reply {
+          flex-wrap: nowrap;
+          word-break: break-word;
+        }
+
+        .conversation-reply__arrow {
+          color: ${isNight ? "#94a3b8" : "#6b7280"};
+          line-height: 1.4;
+        }
+
+        .conversation-reply__body {
+          min-width: 0;
+        }
+
         @media (max-width: 576px) {
           .blog-card__hero .blog-card__header {
             align-items: flex-start;
@@ -1522,6 +1591,36 @@ export default function BlogCard({
 
           .blog-card__body .card-text {
             font-size: 0.95rem;
+          }
+
+          .conversation-comment__main {
+            align-items: flex-start;
+            gap: 0.65rem;
+          }
+
+          .conversation-comment__actions {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.4rem;
+          }
+
+          .conversation-comment__actions .btn {
+            justify-content: center;
+          }
+
+          .conversation-comment__text {
+            font-size: 0.95rem;
+          }
+
+          .conversation-reply {
+            align-items: flex-start !important;
+            gap: 0.35rem;
+          }
+
+          .conversation-reply__body {
+            flex: 1;
+            min-width: 0;
           }
         }
       `}</style>
