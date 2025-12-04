@@ -519,7 +519,9 @@
 .conversation-comment__meta {
   display: grid;
   gap: 0.35rem;
+  flex: 1 1 auto;
   min-width: 0;
+  width: 100%;
 }
 
 .conversation-comment__author {
@@ -540,6 +542,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  align-items: center;
 }
 
 .conversation-comment__actions > .btn {
@@ -572,17 +575,19 @@
   }
 
   .conversation-comment__main {
-    gap: 0.5rem;
+    gap: 0.55rem;
+    align-items: center;
   }
 
   .conversation-comment__avatar {
-    width: 32px;
-    height: 32px;
-    flex-basis: 32px;
+    width: 30px;
+    height: 30px;
+    flex-basis: 30px;
   }
 
   .conversation-comment__meta {
     gap: 0.25rem;
+    align-items: start;
   }
 
   .conversation-comment__text {
@@ -592,12 +597,16 @@
 
   .conversation-comment__actions {
     gap: 0.35rem;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    width: 100%;
   }
 
   .conversation-comment__actions > .btn {
-    flex: 1 1 calc(50% - 0.35rem);
-    padding: 0.35rem 0.5rem;
-    font-size: 0.85rem;
+    flex: 1 1 0;
+    padding: 0.3rem 0.45rem;
+    font-size: 0.82rem;
+    white-space: nowrap;
   }
 
   .conversation-comment-list {
