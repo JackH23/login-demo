@@ -60,6 +60,7 @@ export default function BlogCard({
   const [dislikes, setDislikes] = useState<number>(blog.dislikes ?? 0);
   const [hasLikedPost, setHasLikedPost] = useState<boolean>(false);
   const [hasDislikedPost, setHasDislikedPost] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
@@ -126,11 +127,11 @@ export default function BlogCard({
   const totalComments = comments.length;
 
   const isContentLong = (blog.content ?? "").length > 240;
-  const collapsedLines = 5;
-  const collapsedMaxHeight = `${(1.7 * collapsedLines).toFixed(1)}em`;
+  const collapsedLines = isMobile ? 3 : 5;
+  const collapsedMaxHeight = `${(1.65 * collapsedLines).toFixed(1)}em`;
 
   const contentStyle: CSSProperties = {
-    lineHeight: 1.7,
+    lineHeight: isMobile ? 1.6 : 1.7,
     letterSpacing: "0.01em",
     wordBreak: "break-word",
     transition: "max-height 0.3s ease",
@@ -151,6 +152,13 @@ export default function BlogCard({
     setLikes(blog.likes ?? 0);
     setDislikes(blog.dislikes ?? 0);
   }, [blog.likes, blog.dislikes]);
+
+  useEffect(() => {
+    const updateIsMobile = () => setIsMobile(window.innerWidth <= 576);
+    updateIsMobile();
+    window.addEventListener("resize", updateIsMobile);
+    return () => window.removeEventListener("resize", updateIsMobile);
+  }, []);
 
   useEffect(() => {
     if (!user) {
@@ -578,7 +586,7 @@ export default function BlogCard({
       }`}
       style={{
         maxWidth: "960px", // Keeps the card at a more compact width
-        borderRadius: "20px", // Slightly tighter rounding for a smaller footprint
+        borderRadius: isMobile ? "16px" : "20px", // Slightly tighter rounding for a smaller footprint
         overflow: "hidden", // Prevents content from overflowing outside card edges
         border: `1px solid ${cardBorderColor}`, // Dynamic border color based on theme
       }}
@@ -588,10 +596,16 @@ export default function BlogCard({
         className="blog-card__hero position-relative text-white"
         style={{
           background: headerGradient, // Dynamic background based on theme
+          padding: isMobile ? "0.9rem 1rem" : "1.25rem 1.5rem",
         }}
       >
         {/* Row: author avatar + title + author name */}
-        <div className="blog-card__header d-flex align-items-center gap-3 flex-column flex-md-row text-center text-md-start">
+        <div
+          className="blog-card__header d-flex align-items-center flex-column flex-md-row text-center text-md-start"
+          style={{
+            gap: isMobile ? "0.75rem" : "1rem",
+          }}
+        >
           {/* If author has an image, display it */}
           <button
             type="button"
@@ -607,15 +621,15 @@ export default function BlogCard({
                 alt={author.username}
                 className="rounded-circle border border-3 border-white"
                 style={{
-                  width: "48px", // Avatar width
-                  height: "48px", // Avatar height
+                  width: isMobile ? "44px" : "48px", // Avatar width
+                  height: isMobile ? "44px" : "48px", // Avatar height
                   objectFit: "cover", // Ensures image fills the circle without distortion
                 }}
               />
             ) : (
               <div
                 className="rounded-circle bg-white text-primary fw-semibold d-flex align-items-center justify-content-center"
-                style={{ width: "48px", height: "48px" }}
+                style={{ width: isMobile ? "44px" : "48px", height: isMobile ? "44px" : "48px" }}
               >
                 {authorInitial}
               </div>
@@ -625,7 +639,12 @@ export default function BlogCard({
           {/* Blog title and author name section */}
           <div className="blog-card__title flex-grow-1">
             {/* Blog title */}
-            <h3 className="mb-1 fw-bold">{blog.title}</h3>
+            <h3
+              className="mb-1 fw-bold"
+              style={{ fontSize: isMobile ? "1.35rem" : undefined, lineHeight: 1.2 }}
+            >
+              {blog.title}
+            </h3>
 
             {/* Author name line */}
             <p className="mb-0 small text-white-50 d-flex justify-content-center justify-content-md-start align-items-center gap-1">
@@ -658,8 +677,8 @@ export default function BlogCard({
           className="blog-card__media position-relative overflow-hidden"
           style={{
             cursor: "pointer",
-            aspectRatio: "16 / 10", // Keeps a predictable viewport without forcing the image to stretch
-            maxHeight: "360px",
+            aspectRatio: "16 / 9", // Keeps a predictable viewport without forcing the image to stretch
+            maxHeight: isMobile ? "240px" : "360px",
             backgroundColor: isNight ? "#0f172a" : "#f8fafc",
             borderBottomLeftRadius: "0px",
             borderBottomRightRadius: "0px",
@@ -706,7 +725,10 @@ export default function BlogCard({
         </div>
       )}
 
-      <div className="blog-card__body card-body p-3">
+      <div
+        className="blog-card__body card-body p-3"
+        style={{ padding: isMobile ? "0.85rem 1rem" : undefined }}
+      >
         <p
           className="card-text fs-6 mb-2"
           style={contentStyle}
@@ -751,7 +773,7 @@ export default function BlogCard({
         <div className="blog-card__footer d-flex flex-column flex-md-row gap-3 mt-4 align-items-start align-items-md-center">
           <div className="blog-card__actions d-flex flex-wrap gap-2">
             <button
-              className="btn btn-sm btn-success rounded-pill d-flex align-items-center gap-2 px-3"
+              className="btn btn-sm btn-success rounded-pill d-flex align-items-center gap-2 px-2 py-1"
               onClick={handleLikePost}
               disabled={hasLikedPost || !user}
             >
@@ -761,7 +783,7 @@ export default function BlogCard({
             </button>
 
             <button
-              className="btn btn-sm btn-outline-danger rounded-pill d-flex align-items-center gap-2 px-3"
+              className="btn btn-sm btn-outline-danger rounded-pill d-flex align-items-center gap-2 px-2 py-1"
               onClick={handleDislikePost}
               disabled={hasDislikedPost || !user}
             >
@@ -1383,6 +1405,37 @@ export default function BlogCard({
           </div>
         </div>
       )}
+      <style jsx>{`
+        .blog-card__stats span {
+          font-size: 0.95rem;
+        }
+
+        @media (max-width: 576px) {
+          .blog-card__stats span {
+            font-size: 0.85rem;
+            padding: 0.35rem 0.7rem;
+          }
+
+          .blog-card__footer {
+            gap: 0.75rem !important;
+          }
+
+          .blog-card__actions {
+            width: 100%;
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          .blog-card__actions .btn {
+            width: 100%;
+            justify-content: center;
+          }
+
+          .blog-card__body .card-text {
+            font-size: 0.95rem;
+          }
+        }
+      `}</style>
     </div>
   );
 }
