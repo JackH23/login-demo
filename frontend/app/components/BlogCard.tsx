@@ -908,33 +908,33 @@ export default function BlogCard({
                     >
                       <div className="conversation-comment">
                         <div className="conversation-comment__main">
-                          <div className="conversation-comment__header">
-                            <div className="conversation-comment__avatar">
-                              <button
-                                type="button"
-                                className="p-0 border-0 bg-transparent"
-                                onClick={() => openUserProfile(comment.author)}
-                                aria-label={`View ${comment.author}'s profile`}
-                              >
-                                {comment.authorImage ? (
-                                  <img
-                                    src={comment.authorImage}
-                                    alt={`${comment.author}'s avatar`}
-                                    className="conversation-comment__avatar-image"
-                                  />
-                                ) : (
-                                  <span
-                                    className={`conversation-comment__avatar-fallback ${
-                                      isNight
-                                        ? "bg-secondary text-white"
-                                        : "bg-primary bg-opacity-10 text-primary"
-                                    }`}
-                                  >
-                                    {comment.author?.charAt(0)?.toUpperCase() || "?"}
-                                  </span>
-                                )}
-                              </button>
-                            </div>
+                          <div className="conversation-comment__avatar">
+                            <button
+                              type="button"
+                              className="p-0 border-0 bg-transparent"
+                              onClick={() => openUserProfile(comment.author)}
+                              aria-label={`View ${comment.author}'s profile`}
+                            >
+                              {comment.authorImage ? (
+                                <img
+                                  src={comment.authorImage}
+                                  alt={`${comment.author}'s avatar`}
+                                  className="conversation-comment__avatar-image"
+                                />
+                              ) : (
+                                <span
+                                  className={`conversation-comment__avatar-fallback ${
+                                    isNight
+                                      ? "bg-secondary text-white"
+                                      : "bg-primary bg-opacity-10 text-primary"
+                                  }`}
+                                >
+                                  {comment.author?.charAt(0)?.toUpperCase() || "?"}
+                                </span>
+                              )}
+                            </button>
+                          </div>
+                          <div className="conversation-comment__meta">
                             <span
                               className={`conversation-comment__author text-uppercase ${
                                 isNight ? "text-primary text-opacity-75" : "text-primary"
@@ -951,14 +951,14 @@ export default function BlogCard({
                             >
                               {comment.author}
                             </span>
+                            <p
+                              className={`conversation-comment__text ${
+                                isNight ? "text-light" : "text-body"
+                              }`}
+                            >
+                              {comment.text}
+                            </p>
                           </div>
-                          <p
-                            className={`conversation-comment__text ${
-                              isNight ? "text-light" : "text-body"
-                            }`}
-                          >
-                            {comment.text}
-                          </p>
                         </div>
 
                         <div className="conversation-comment__actions">
@@ -1201,33 +1201,33 @@ export default function BlogCard({
                     >
                       <div className="conversation-comment">
                         <div className="conversation-comment__main">
-                          <div className="conversation-comment__header">
-                            <div className="conversation-comment__avatar">
-                              <button
-                                type="button"
-                                className="p-0 border-0 bg-transparent"
-                                onClick={() => openUserProfile(comment.author)}
-                                aria-label={`View ${comment.author}'s profile`}
-                              >
-                                {comment.authorImage ? (
-                                  <img
-                                    src={comment.authorImage}
-                                    alt={`${comment.author}'s avatar`}
-                                    className="conversation-comment__avatar-image"
-                                  />
-                                ) : (
-                                  <span
-                                    className={`conversation-comment__avatar-fallback ${
-                                      theme === "night"
-                                        ? "bg-secondary text-white"
-                                        : "bg-primary bg-opacity-10 text-primary"
-                                    }`}
-                                  >
-                                    {comment.author?.charAt(0)?.toUpperCase() || "?"}
-                                  </span>
-                                )}
-                              </button>
-                            </div>
+                          <div className="conversation-comment__avatar">
+                            <button
+                              type="button"
+                              className="p-0 border-0 bg-transparent"
+                              onClick={() => openUserProfile(comment.author)}
+                              aria-label={`View ${comment.author}'s profile`}
+                            >
+                              {comment.authorImage ? (
+                                <img
+                                  src={comment.authorImage}
+                                  alt={`${comment.author}'s avatar`}
+                                  className="conversation-comment__avatar-image"
+                                />
+                              ) : (
+                                <span
+                                  className={`conversation-comment__avatar-fallback ${
+                                    theme === "night"
+                                      ? "bg-secondary text-white"
+                                      : "bg-primary bg-opacity-10 text-primary"
+                                  }`}
+                                >
+                                  {comment.author?.charAt(0)?.toUpperCase() || "?"}
+                                </span>
+                              )}
+                            </button>
+                          </div>
+                          <div className="conversation-comment__meta">
                             <span
                               className={`conversation-comment__author text-uppercase ${
                                 theme === "night"
@@ -1246,14 +1246,14 @@ export default function BlogCard({
                             >
                               {comment.author}
                             </span>
+                            <p
+                              className={`conversation-comment__text ${
+                                theme === "night" ? "text-light" : "text-body"
+                              }`}
+                            >
+                              {comment.text}
+                            </p>
                           </div>
-                          <p
-                            className={`conversation-comment__text ${
-                              theme === "night" ? "text-light" : "text-body"
-                            }`}
-                          >
-                            {comment.text}
-                          </p>
                         </div>
                         <div className="conversation-comment__actions">
                           <button
