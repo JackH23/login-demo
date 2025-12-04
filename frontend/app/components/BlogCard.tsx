@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useEffect, CSSProperties } from "react";
+import { useState, useEffect, CSSProperties, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { useCachedApi } from "../hooks/useCachedApi";
@@ -30,6 +30,8 @@ interface Reply {
   text: string;
   author: string;
   authorImage?: string;
+  tempId?: string;
+  isPending?: boolean;
 }
 
 interface Comment {
@@ -44,6 +46,7 @@ interface Comment {
   replies: Reply[];
   showReplyInput: boolean;
   newReply: string;
+  isPending?: boolean;
 }
 
 export default function BlogCard({
@@ -73,6 +76,8 @@ export default function BlogCard({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isContentExpanded, setIsContentExpanded] = useState(false);
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [replySubmittingId, setReplySubmittingId] = useState<string | null>(null);
 
   const { data: knownUsers } = useCachedApi<AuthorData[]>(
     user ? "/api/users" : null,
@@ -112,6 +117,50 @@ export default function BlogCard({
   const authorInitial = displayAuthor.charAt(0).toUpperCase() || "?";
 
   const isProfileNavigable = Boolean(displayAuthor);
+
+  const resolveAvatar = useCallback(
+    (raw?: string | null, username?: string) =>
+      resolveImageUrl(raw) ?? (username ? userImages[username] : undefined),
+    [userImages]
+  );
+
+  const mapReplyFromApi = useCallback(
+    (reply: { text: string; author: string; authorImage?: string }) => ({
+      text: reply.text as string,
+      author: reply.author as string,
+      authorImage: resolveAvatar(reply.authorImage, reply.author),
+    }),
+    [resolveAvatar]
+  );
+
+  const mapCommentFromApi = useCallback(
+    (
+      c: {
+        _id: string;
+        text: string;
+        author: string;
+        authorImage?: string;
+        likes: number;
+        dislikes: number;
+        likedBy?: string[];
+        dislikedBy?: string[];
+        replies?: { text: string; author: string; authorImage?: string }[];
+      }
+    ): Comment => ({
+      _id: c._id as string,
+      text: c.text as string,
+      author: c.author as string,
+      authorImage: resolveAvatar(c.authorImage, c.author),
+      likes: c.likes ?? 0,
+      dislikes: c.dislikes ?? 0,
+      likedBy: c.likedBy ?? [],
+      dislikedBy: c.dislikedBy ?? [],
+      replies: (c.replies ?? []).map(mapReplyFromApi),
+      showReplyInput: false,
+      newReply: "",
+    }),
+    [mapReplyFromApi, resolveAvatar]
+  );
 
   const openAuthorProfile = () => {
     if (!displayAuthor) return;
@@ -183,45 +232,12 @@ export default function BlogCard({
     if (!blog._id) return;
     let isMounted = true;
 
-    const resolveAvatar = (raw?: string | null, username?: string) =>
-      resolveImageUrl(raw) ?? (username ? userImages[username] : undefined);
-
     const fetchComments = async () => {
       try {
         const res = await fetch(apiUrl(`/api/comments?postId=${blog._id}`));
         const data = await res.json();
         if (!isMounted) return;
-        const list = (data.comments ?? []).map(
-          (c: {
-            _id: string;
-            text: string;
-            author: string;
-            authorImage?: string;
-            likes: number;
-            dislikes: number;
-            likedBy?: string[];
-            dislikedBy?: string[];
-            replies?: { text: string; author: string; authorImage?: string }[];
-          }) => ({
-            _id: c._id as string,
-            text: c.text as string,
-            author: c.author as string,
-            authorImage: resolveAvatar(c.authorImage, c.author),
-            likes: c.likes ?? 0,
-            dislikes: c.dislikes ?? 0,
-            likedBy: c.likedBy ?? [],
-            dislikedBy: c.dislikedBy ?? [],
-            replies: (c.replies ?? []).map(
-              (r: { text: string; author: string; authorImage?: string }) => ({
-                text: r.text as string,
-                author: r.author as string,
-                authorImage: resolveAvatar(r.authorImage, r.author),
-              })
-            ),
-            showReplyInput: false,
-            newReply: "",
-          })
-        );
+        const list = (data.comments ?? []).map(mapCommentFromApi);
         setComments(list);
       } catch {
         if (!isMounted) return;
@@ -234,86 +250,81 @@ export default function BlogCard({
     return () => {
       isMounted = false;
     };
-  }, [blog._id]);
+  }, [blog._id, mapCommentFromApi]);
 
   useEffect(() => {
     setComments((prev) =>
       prev.map((comment) => ({
         ...comment,
-        authorImage:
-          comment.authorImage ?? resolveImageUrl(userImages[comment.author]) ?? userImages[comment.author],
+        authorImage: resolveAvatar(comment.authorImage, comment.author),
         replies: comment.replies.map((reply) => ({
           ...reply,
-          authorImage:
-            reply.authorImage ?? resolveImageUrl(userImages[reply.author]) ?? userImages[reply.author],
+          authorImage: resolveAvatar(reply.authorImage, reply.author),
         })),
       }))
     );
-  }, [userImages]);
+  }, [resolveAvatar]);
 
   const handleCommentSubmit = async () => {
     const text = newComment.trim();
-    if (!text) return;
+    if (!text || !user || isSubmittingComment) return;
 
-    // Always update UI immediately
+    const tempId = `temp-${Date.now()}`;
+    const optimisticComment: Comment = {
+      _id: tempId,
+      text,
+      author: user.username,
+      authorImage: resolveAvatar(user.image, user.username),
+      likes: 0,
+      dislikes: 0,
+      likedBy: [],
+      dislikedBy: [],
+      replies: [],
+      showReplyInput: false,
+      newReply: "",
+      isPending: true,
+    };
+
     setNewComment("");
+    setIsSubmittingComment(true);
+    setComments((prev) => [...prev, optimisticComment]);
 
-    if (blog._id && user) {
-      const res = await fetch(apiUrl("/api/comments"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          postId: blog._id,
-          author: user.username,
-          text,
-        }),
-      });
+    let isSaved = false;
 
-        if (res.ok) {
-          const data = await res.json();
-          setComments((prev) => [
-            ...prev,
-            {
-              _id: data.comment._id as string,
-              text: data.comment.text,
-              author: data.comment.author,
-              authorImage:
-                resolveImageUrl(data.comment.authorImage) ??
-                resolveImageUrl(userImages[data.comment.author]) ??
-                userImages[data.comment.author],
-              likes: data.comment.likes,
-              dislikes: data.comment.dislikes,
-              likedBy: [],
-            dislikedBy: [],
-            replies: [],
-            showReplyInput: false,
-            newReply: "",
-          },
-        ]);
-        return;
+    if (blog._id) {
+      try {
+        const res = await fetch(apiUrl("/api/comments"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            postId: blog._id,
+            author: user.username,
+            text,
+          }),
+        });
+
+        if (!res.ok) throw new Error("Failed to submit comment");
+
+        const data = await res.json();
+        setComments((prev) =>
+          prev.map((comment) =>
+            comment._id === tempId
+              ? { ...mapCommentFromApi(data.comment), isPending: false }
+              : comment
+          )
+        );
+        isSaved = true;
+      } catch (error) {
+        console.error("Unable to submit comment", error);
       }
     }
 
-    // Fallback: just add locally if request failed or missing info
-    setComments((prev) => [
-      ...prev,
-      {
-        _id: undefined,
-        text,
-        author: user?.username ?? "",
-        authorImage:
-          user
-            ? resolveImageUrl(userImages[user.username]) ?? userImages[user.username]
-            : undefined,
-        likes: 0,
-        dislikes: 0,
-        likedBy: [],
-        dislikedBy: [],
-        replies: [],
-        showReplyInput: false,
-        newReply: "",
-      },
-    ]);
+    if (!isSaved) {
+      setComments((prev) => prev.filter((comment) => comment._id !== tempId));
+      setNewComment(text);
+    }
+
+    setIsSubmittingComment(false);
   };
 
   const handleLikeComment = async (index: number) => {
@@ -445,67 +456,71 @@ export default function BlogCard({
   const handleReplySubmit = async (index: number) => {
     const comment = comments[index];
     const text = comment.newReply.trim();
-    if (!text) return;
+    if (!text || !user || !comment._id) return;
+    const replyKey = comment._id ?? `local-${index}`;
+    if (replySubmittingId === replyKey) return;
 
-    if (comment._id && user) {
-      const res = await fetch(apiUrl(`/api/comments/${comment._id}`), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ author: user.username, text }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const last = data.comment.replies[data.comment.replies.length - 1];
-        setComments((prev) =>
-          prev.map((c, i) =>
-            i === index
-              ? {
-                  ...c,
-                  replies: [
-                    ...c.replies,
-                    {
-                      text: last.text as string,
-                      author: last.author as string,
-                      authorImage:
-                        resolveImageUrl(last.authorImage as string | undefined) ??
-                        resolveImageUrl(userImages[last.author as string]) ??
-                        userImages[last.author as string],
-                    },
-                  ],
-                  newReply: "",
-                  showReplyInput: false,
-                }
-              : c
-          )
-        );
-        return;
-      }
-    }
+    const tempReplyId = `temp-reply-${Date.now()}`;
+    const optimisticReply: Reply = {
+      text,
+      author: user.username,
+      authorImage: resolveAvatar(user.image, user.username),
+      tempId: tempReplyId,
+      isPending: true,
+    };
 
-    // fallback: update UI only
+    setReplySubmittingId(replyKey);
     setComments((prev) =>
       prev.map((c, i) =>
         i === index
           ? {
               ...c,
-              replies: [
-                ...c.replies,
-                {
-                  text,
-                  author: user?.username ?? "",
-                  authorImage:
-                    user
-                      ? resolveImageUrl(userImages[user.username]) ??
-                        userImages[user.username]
-                      : undefined,
-                },
-              ],
+              replies: [...c.replies, optimisticReply],
               newReply: "",
               showReplyInput: false,
             }
           : c
       )
     );
+
+    try {
+      const res = await fetch(apiUrl(`/api/comments/${comment._id}`), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ author: user.username, text }),
+      });
+
+      if (!res.ok) throw new Error("Failed to submit reply");
+
+      const data = await res.json();
+      setComments((prev) =>
+        prev.map((c, i) =>
+          i === index
+            ? {
+                ...mapCommentFromApi(data.comment),
+                showReplyInput: false,
+                newReply: "",
+              }
+            : c
+        )
+      );
+    } catch (error) {
+      console.error("Unable to submit reply", error);
+      setComments((prev) =>
+        prev.map((c, i) =>
+          i === index
+            ? {
+                ...c,
+                replies: c.replies.filter((reply) => reply.tempId !== tempReplyId),
+                newReply: text,
+                showReplyInput: true,
+              }
+            : c
+        )
+      );
+    } finally {
+      setReplySubmittingId(null);
+    }
   };
 
   const handleLikePost = async () => {
@@ -891,10 +906,17 @@ export default function BlogCard({
           ) : (
             <div className="conversation-comment-wrapper mb-3">
               <ul className="conversation-comment-list list-unstyled mb-0">
-                {(showAllComments ? comments : comments.slice(-3)).map(
-                  (comment, idx) => (
+                {(showAllComments ? comments : comments.slice(-3)).map((comment, idx) => {
+                  const replyKey = comment._id ?? `local-${idx}`;
+                  const isCommentPending = comment.isPending || !comment._id;
+                  const isReplySending = replySubmittingId === replyKey;
+                  const canSendReply = Boolean(
+                    user && comment._id && comment.newReply.trim() && !isReplySending
+                  );
+
+                  return (
                     <li
-                      key={idx}
+                      key={comment._id ?? idx}
                       className={`conversation-comment-item p-3 mb-3 rounded-4 shadow-sm ${
                         isNight ? "bg-dark bg-opacity-75 text-white" : "bg-white"
                       }`}
@@ -961,10 +983,10 @@ export default function BlogCard({
                             className="btn btn-sm btn-outline-success"
                             onClick={() => handleLikeComment(idx)}
                             disabled={
-                              user
-                                ? comment.likedBy?.includes(user.username) ||
-                                  comment.dislikedBy?.includes(user.username)
-                                : true
+                              !user ||
+                              isCommentPending ||
+                              comment.likedBy?.includes(user.username) ||
+                              comment.dislikedBy?.includes(user.username)
                             }
                           >
                             👍 {comment.likes}
@@ -974,10 +996,10 @@ export default function BlogCard({
                             className="btn btn-sm btn-outline-danger"
                             onClick={() => handleDislikeComment(idx)}
                             disabled={
-                              user
-                                ? comment.likedBy?.includes(user.username) ||
-                                  comment.dislikedBy?.includes(user.username)
-                                : true
+                              !user ||
+                              isCommentPending ||
+                              comment.likedBy?.includes(user.username) ||
+                              comment.dislikedBy?.includes(user.username)
                             }
                           >
                             👎 {comment.dislikes}
@@ -986,18 +1008,19 @@ export default function BlogCard({
                             type="button"
                             className="btn btn-sm btn-outline-primary"
                             onClick={() => toggleReplyInput(idx)}
+                            disabled={!user || isCommentPending || isReplySending}
                           >
                             💬 Reply
                           </button>
                         </div>
                       </div>
 
-                        {/* Replies */}
+                      {/* Replies */}
                       {comment.replies.length > 0 && (
                         <ul className="mt-3 ps-4 list-unstyled">
                           {comment.replies.map((reply, rIdx) => (
                             <li
-                              key={rIdx}
+                              key={reply.tempId ?? rIdx}
                               className={`d-flex align-items-center gap-2 ${
                                 theme === "night" ? "text-light" : "text-muted"
                               } small mb-2`}
@@ -1041,27 +1064,31 @@ export default function BlogCard({
                         </ul>
                       )}
 
-              {/* Reply Input */}
+                      {/* Reply Input */}
                       {comment.showReplyInput && (
                         <div className="d-flex gap-2 mt-3">
                           <input
                             type="text"
                             className="form-control form-control-sm rounded-pill"
-                            placeholder="Write a reply..."
+                            placeholder={
+                              user ? "Write a reply..." : "Sign in to reply to this comment"
+                            }
                             value={comment.newReply}
                             onChange={(e) => handleReplyChange(idx, e.target.value)}
+                            disabled={isReplySending || !user}
                           />
                           <button
                             className="btn btn-sm btn-primary rounded-pill px-3"
                             onClick={() => handleReplySubmit(idx)}
+                            disabled={!canSendReply}
                           >
-                            Send
+                            {isReplySending ? "Sending..." : "Send"}
                           </button>
                         </div>
                       )}
                     </li>
-                  )
-                )}
+                  );
+                })}
               </ul>
             </div>
           )}
@@ -1071,15 +1098,19 @@ export default function BlogCard({
             <input
               type="text"
               className="form-control rounded-pill px-4 py-2 flex-grow-1 w-100"
-              placeholder="Share your perspective..."
+              placeholder={
+                user ? "Share your perspective..." : "Sign in to share your perspective"
+              }
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
+              disabled={isSubmittingComment || !user}
             />
             <button
               className="btn btn-primary rounded-pill px-4"
               onClick={handleCommentSubmit}
+              disabled={!newComment.trim() || !user || isSubmittingComment}
             >
-              Send
+              {isSubmittingComment ? "Sending..." : "Send"}
             </button>
           </div>
         </div>
@@ -1186,9 +1217,17 @@ export default function BlogCard({
                 style={{ overflowY: "auto", flexGrow: 1, paddingRight: "10px" }}
               >
                 <ul className="list-group">
-                  {comments.map((comment, idx) => (
-                    <li
-                      key={idx}
+                  {comments.map((comment, idx) => {
+                    const replyKey = comment._id ?? `local-${idx}`;
+                    const isCommentPending = comment.isPending || !comment._id;
+                    const isReplySending = replySubmittingId === replyKey;
+                    const canSendReply = Boolean(
+                      user && comment._id && comment.newReply.trim() && !isReplySending
+                    );
+
+                    return (
+                      <li
+                        key={comment._id ?? idx}
                       className={`list-group-item mb-3 rounded shadow-sm ${
                         theme === "night" ? "bg-dark text-white" : "bg-white"
                       }`}
@@ -1255,10 +1294,10 @@ export default function BlogCard({
                             className="btn btn-sm btn-outline-success"
                             onClick={() => handleLikeComment(idx)}
                             disabled={
-                              user
-                                ? comment.likedBy?.includes(user.username) ||
-                                  comment.dislikedBy?.includes(user.username)
-                                : true
+                              !user ||
+                              isCommentPending ||
+                              comment.likedBy?.includes(user.username) ||
+                              comment.dislikedBy?.includes(user.username)
                             }
                           >
                             👍 {comment.likes}
@@ -1268,10 +1307,10 @@ export default function BlogCard({
                             className="btn btn-sm btn-outline-danger"
                             onClick={() => handleDislikeComment(idx)}
                             disabled={
-                              user
-                                ? comment.likedBy?.includes(user.username) ||
-                                  comment.dislikedBy?.includes(user.username)
-                                : true
+                              !user ||
+                              isCommentPending ||
+                              comment.likedBy?.includes(user.username) ||
+                              comment.dislikedBy?.includes(user.username)
                             }
                           >
                             👎 {comment.dislikes}
@@ -1280,6 +1319,7 @@ export default function BlogCard({
                             type="button"
                             className="btn btn-sm btn-outline-primary"
                             onClick={() => toggleReplyInput(idx)}
+                            disabled={!user || isCommentPending || isReplySending}
                           >
                             💬 Reply
                           </button>
@@ -1291,7 +1331,7 @@ export default function BlogCard({
                         <ul className="mt-2 ps-3 list-unstyled">
                           {comment.replies.map((reply, rIdx) => (
                             <li
-                              key={rIdx}
+                              key={reply.tempId ?? rIdx}
                               className={`d-flex align-items-center gap-2 ${
                                 theme === "night" ? "text-light" : "text-muted"
                               } small mb-2`}
@@ -1341,22 +1381,25 @@ export default function BlogCard({
                           <input
                             type="text"
                             className="form-control form-control-sm"
-                            placeholder="Write a reply..."
-                            value={comment.newReply}
-                            onChange={(e) =>
-                              handleReplyChange(idx, e.target.value)
+                            placeholder={
+                              user ? "Write a reply..." : "Sign in to reply to this comment"
                             }
+                            value={comment.newReply}
+                            onChange={(e) => handleReplyChange(idx, e.target.value)}
+                            disabled={isReplySending || !user}
                           />
                           <button
                             className="btn btn-sm btn-primary"
                             onClick={() => handleReplySubmit(idx)}
+                            disabled={!canSendReply}
                           >
-                            Send
+                            {isReplySending ? "Sending..." : "Send"}
                           </button>
                         </div>
                       )}
                     </li>
-                  ))}
+                  );
+                  })}
                 </ul>
               </div>
 
@@ -1366,15 +1409,19 @@ export default function BlogCard({
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="Write a comment..."
+                    placeholder={
+                      user ? "Write a comment..." : "Sign in to join the conversation"
+                    }
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
+                    disabled={isSubmittingComment || !user}
                   />
                   <button
                     className="btn btn-primary"
                     onClick={handleCommentSubmit}
+                    disabled={!newComment.trim() || !user || isSubmittingComment}
                   >
-                    Send
+                    {isSubmittingComment ? "Sending..." : "Send"}
                   </button>
                 </div>
               </div>
