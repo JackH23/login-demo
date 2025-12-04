@@ -869,16 +869,22 @@
 
 @media (max-width: 576px) {
   .chat-canvas {
-    padding: 1.5rem 1rem 4.5rem 1rem;
+    padding: 1.1rem 0.75rem 4rem 0.75rem;
+    gap: 0.75rem;
   }
 
   .chat-message-bubble {
-    max-width: 88%;
-    padding: 0.9rem 1rem;
+    max-width: 94%;
+    padding: 0.85rem 0.95rem;
   }
 
   .chat-message-meta {
     font-size: 0.7rem;
+  }
+
+  .chat-message-text {
+    font-size: 0.92rem;
+    line-height: 1.6;
   }
 }
 
@@ -913,6 +919,16 @@
 
 .scroll-to-bottom-btn:active {
   transform: scale(0.95);
+}
+
+@media (max-width: 576px) {
+  .scroll-to-bottom-btn {
+    width: 44px;
+    height: 44px;
+    right: 16px;
+    bottom: 76px;
+    font-size: 1.3rem;
+  }
 }
 
 /* Subtle bounce animation when new messages arrive */
@@ -1263,6 +1279,51 @@
 
   .chat-header-actions {
     margin-left: auto;
+  }
+}
+
+@media (max-width: 576px) {
+  .chat-header {
+    padding: 0.7rem 0.85rem;
+    gap: 0.5rem;
+  }
+
+  .brand-badge {
+    width: 40px;
+    height: 40px;
+  }
+
+  .brand-icon {
+    font-size: 1.25rem;
+  }
+
+  .brand-name {
+    font-size: 1rem;
+    letter-spacing: 0.03em;
+  }
+
+  .brand-tagline {
+    font-size: 0.78rem;
+    line-height: 1.3;
+  }
+
+  .chat-user-avatar {
+    width: 38px;
+    height: 38px;
+  }
+
+  .status-username {
+    font-size: 0.95rem;
+  }
+
+  .status-text {
+    font-size: 0.7rem;
+  }
+
+  .chat-header-action {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
   }
 }
 
@@ -1686,15 +1747,19 @@
 
   .chat-composer {
     border-radius: 14px;
-    padding: 0.65rem 0.85rem;
-    gap: 0.5rem;
+    padding: 0.6rem 0.8rem;
+    gap: 0.45rem;
+  }
+
+  .chat-composer__input {
+    font-size: 0.9rem;
   }
 
   .chat-composer__icon-btn,
   .chat-composer__send {
-    width: 2.35rem;
-    height: 2.35rem;
-    font-size: 1.15rem;
+    width: 2.2rem;
+    height: 2.2rem;
+    font-size: 1.05rem;
   }
 }
 /* Application loading experience */
