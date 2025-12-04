@@ -559,7 +559,7 @@
   }
 }
 
-@media (max-width: 575.98px) {
+@media (max-width: 768px) {
   .conversation-card {
     padding: 0.85rem 0.9rem;
     margin-left: -0.15rem;
@@ -567,7 +567,10 @@
   }
 
   .conversation-comment-item {
-    padding: 0.75rem 0.85rem !important;
+    width: 100% !important;
+    padding: 12px !important;
+    border-radius: 12px;
+    margin-bottom: 12px;
   }
 
   .conversation-comment {
@@ -575,30 +578,32 @@
   }
 
   .conversation-comment__main {
-    gap: 0.55rem;
+    gap: 0.6rem;
     align-items: center;
   }
 
   .conversation-comment__avatar {
-    width: 30px;
-    height: 30px;
-    flex-basis: 30px;
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
   }
 
   .conversation-comment__meta {
     gap: 0.25rem;
     align-items: start;
+    width: 100%;
   }
 
   .conversation-comment__text {
-    font-size: 0.92rem;
-    line-height: 1.5;
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
   }
 
   .conversation-comment__actions {
-    gap: 0.35rem;
-    flex-wrap: nowrap;
-    justify-content: space-between;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 10px;
     width: 100%;
   }
 
