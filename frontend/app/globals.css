@@ -584,6 +584,10 @@
     flex: 1 1 100%;
   }
 
+  .conversation-input {
+    width: 100%;
+  }
+
   .conversation-comment-item {
     width: 100% !important;
     padding: 12px !important;
@@ -648,6 +652,8 @@
 
   .conversation-input .form-control {
     padding: 0.6rem 0.9rem;
+    width: 100%;
+    flex: 1 1 100%;
     font-size: 0.95rem;
   }
 
