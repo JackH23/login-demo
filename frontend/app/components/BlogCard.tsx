@@ -572,19 +572,19 @@ export default function BlogCard({
 
   return (
     <div
-      className={`card border-0 shadow-lg w-100 mx-auto mb-5 ${
+      className={`card border-0 shadow-lg w-100 mx-auto mb-4 ${
         isNight ? "bg-dark text-light" : "bg-white"
       }`}
       style={{
-        maxWidth: "100%",                // Ensures the card takes full available width
-        borderRadius: "24px",            // Rounded corners for a smooth, modern look
+        maxWidth: "960px",               // Keeps the card at a more compact width
+        borderRadius: "20px",            // Slightly tighter rounding for a smaller footprint
         overflow: "hidden",              // Prevents content from overflowing outside card edges
         border: `1px solid ${cardBorderColor}`, // Dynamic border color based on theme
       }}
     >
       {/* Header section with background gradient and author info */}
       <div
-        className="position-relative p-4 text-white"
+        className="position-relative p-3 text-white"
         style={{
           background: headerGradient, // Dynamic background based on theme
         }}
@@ -606,15 +606,15 @@ export default function BlogCard({
                 alt={author.username}
                 className="rounded-circle border border-3 border-white"
                 style={{
-                  width: "56px",                      // Avatar width
-                  height: "56px",                     // Avatar height
+                  width: "48px",                      // Avatar width
+                  height: "48px",                     // Avatar height
                   objectFit: "cover",                 // Ensures image fills the circle without distortion
                 }}
               />
             ) : (
               <div
                 className="rounded-circle bg-white text-primary fw-semibold d-flex align-items-center justify-content-center"
-                style={{ width: "56px", height: "56px" }}
+                style={{ width: "48px", height: "48px" }}
               >
                 {authorInitial}
               </div>
@@ -643,7 +643,7 @@ export default function BlogCard({
         </div>
 
         {/* Blog statistics (likes, dislikes, comments) */}
-        <div className="d-flex flex-wrap align-items-center gap-2 mt-4">
+        <div className="d-flex flex-wrap align-items-center gap-2 mt-3">
           {/* Display like count */}
           <span className={statBadgeClass}>❤️ {likes}</span>
           {/* Display dislike count */}
@@ -655,11 +655,11 @@ export default function BlogCard({
 
       {blog.image && (
       <div
-          className="position-relative overflow-hidden"
-          style={{
-            cursor: "pointer",
-            aspectRatio: "16 / 9", // Keeps a predictable viewport without forcing the image to stretch
-            maxHeight: "520px",
+            className="position-relative overflow-hidden"
+            style={{
+              cursor: "pointer",
+            aspectRatio: "16 / 10", // Keeps a predictable viewport without forcing the image to stretch
+            maxHeight: "360px",
             backgroundColor: isNight ? "#0f172a" : "#f8fafc",
             borderBottomLeftRadius: "0px",
             borderBottomRightRadius: "0px",
@@ -706,7 +706,7 @@ export default function BlogCard({
         </div>
       )}
 
-      <div className="card-body p-4">
+      <div className="card-body p-3">
         <p
           className="card-text fs-6 mb-2"
           style={contentStyle}
