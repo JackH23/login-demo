@@ -907,7 +907,7 @@ export default function BlogCard({
                       }`}
                     >
                       <div className="conversation-comment">
-                        <div className="conversation-comment__main">
+                        <div className="conversation-comment__main conversation-comment__header">
                           <div className="conversation-comment__avatar">
                             <button
                               type="button"
@@ -1200,7 +1200,7 @@ export default function BlogCard({
                       }`}
                     >
                       <div className="conversation-comment">
-                        <div className="conversation-comment__main">
+                        <div className="conversation-comment__main conversation-comment__header">
                           <div className="conversation-comment__avatar">
                             <button
                               type="button"

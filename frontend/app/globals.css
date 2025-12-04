@@ -582,6 +582,11 @@
     align-items: center;
   }
 
+  .conversation-comment__header {
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
   .conversation-comment__avatar {
     width: 34px;
     height: 34px;
@@ -592,6 +597,11 @@
     gap: 0.25rem;
     align-items: start;
     width: 100%;
+  }
+
+  .conversation-comment__author {
+    display: block;
+    font-size: 0.72rem;
   }
 
   .conversation-comment__text {
@@ -609,8 +619,8 @@
 
   .conversation-comment__actions > .btn {
     flex: 1 1 0;
-    padding: 0.3rem 0.45rem;
-    font-size: 0.82rem;
+    padding: 0.3rem 0.4rem;
+    font-size: 0.8rem;
     white-space: nowrap;
   }
 
