@@ -178,8 +178,10 @@ export default function BlogCard({
   const isContentLong = (blog.content ?? "").length > 240;
   const collapsedLines = isMobile ? 3 : 5;
   const collapsedMaxHeight = `${(1.65 * collapsedLines).toFixed(1)}em`;
+  const actionButtonPadding = isMobile ? "px-2 py-1" : "px-3 py-2";
 
   const contentStyle: CSSProperties = {
+    fontSize: isMobile ? "0.95rem" : undefined,
     lineHeight: isMobile ? 1.6 : 1.7,
     letterSpacing: "0.01em",
     wordBreak: "break-word",
@@ -656,7 +658,7 @@ export default function BlogCard({
             {/* Blog title */}
             <h3
               className="mb-1 fw-bold"
-              style={{ fontSize: isMobile ? "1.2rem" : undefined, lineHeight: 1.15 }}
+              sstyle={{ fontSize: isMobile ? "1.05rem" : undefined, lineHeight: 1.15 }}
             >
               {blog.title}
             </h3>
@@ -675,15 +677,16 @@ export default function BlogCard({
             </p>
           </div>
 
-          {/* Blog statistics (likes, dislikes, comments) */}
-          <div className="blog-card__stats d-flex flex-wrap align-items-center justify-content-center gap-2 mt-2 mt-md-0">
-            {/* Display like count */}
-            <span className={statBadgeClass}>❤️ {likes}</span>
-            {/* Display dislike count */}
-            <span className={statBadgeClass}>👎 {dislikes}</span>
-            {/* Display comment count */}
-            <span className={statBadgeClass}>💬 {totalComments}</span>
-          </div>
+          {!isMobile && (
+            <div className="blog-card__stats d-flex flex-wrap align-items-center justify-content-center gap-2 mt-2 mt-md-0">
+              {/* Display like count */}
+              <span className={statBadgeClass}>❤️ {likes}</span>
+              {/* Display dislike count */}
+              <span className={statBadgeClass}>👎 {dislikes}</span>
+              {/* Display comment count */}
+              <span className={statBadgeClass}>💬 {totalComments}</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -810,46 +813,51 @@ export default function BlogCard({
             }`}
           >
             <button
-              className="btn btn-sm btn-success rounded-pill d-flex align-items-center gap-2 px-2 py-1"
+              className={`btn btn-sm btn-success rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
               onClick={handleLikePost}
               disabled={hasLikedPost || !user}
+              style={{ fontSize: isMobile ? "0.9rem" : undefined }}
             >
               <span>👍</span>
               <span className="badge bg-white text-success ms-1">{likes}</span>
             </button>
 
             <button
-              className="btn btn-sm btn-outline-danger rounded-pill d-flex align-items-center gap-2 px-2 py-1"
+              className={`btn btn-sm btn-outline-danger rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
               onClick={handleDislikePost}
               disabled={hasDislikedPost || !user}
+              style={{ fontSize: isMobile ? "0.9rem" : undefined }}
             >
               <span>👎</span>
               <span className="badge bg-light text-danger ms-1">{dislikes}</span>
             </button>
-            <button
-              className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 px-3 ${
-                isNight ? "btn-outline-light" : "btn-outline-secondary"
-              }`}
-              onClick={() => {
-                const shareText = `${blog.title}\n\n${blog.content}\n\nShared from Blog App`;
-                const shareUrl = window.location.href;
-                if (navigator.share) {
-                  navigator
-                    .share({
-                      title: blog.title,
-                      text: shareText,
-                      url: shareUrl,
-                    })
-                    .catch((err) => console.error("Share failed", err));
-                } else {
-                  navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
-                  alert("Link copied to clipboard!");
-                }
-              }}
-            >
-              <span>🔗</span>
-              <span>Share</span>
-            </button>
+            {!isMobile && (
+              <button
+                className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
+                  isNight ? "btn-outline-light" : "btn-outline-secondary"
+                }`}
+                onClick={() => {
+                  const shareText = `${blog.title}\n\n${blog.content}\n\nShared from Blog App`;
+                  const shareUrl = window.location.href;
+                  if (navigator.share) {
+                    navigator
+                      .share({
+                        title: blog.title,
+                        text: shareText,
+                        url: shareUrl,
+                      })
+                      .catch((err) => console.error("Share failed", err));
+                  } else {
+                    navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
+                    alert("Link copied to clipboard!");
+                  }
+                }}
+                style={{ fontSize: isMobile ? "0.9rem" : undefined }}
+              >
+                <span>🔗</span>
+                <span>Share</span>
+              </button>
+            )}
           </div>
 
           {user && user.username === blog.author && (
@@ -1587,10 +1595,12 @@ export default function BlogCard({
           .blog-card__actions .btn {
             width: 100%;
             justify-content: center;
+            font-size: 0.9rem;
+            padding: 0.45rem 0.65rem;
           }
 
           .blog-card__body .card-text {
-            font-size: 0.95rem;
+            font-size: 0.92rem;
           }
 
           .conversation-comment__main {
@@ -1607,10 +1617,12 @@ export default function BlogCard({
 
           .conversation-comment__actions .btn {
             justify-content: center;
+            font-size: 0.9rem;
+            padding: 0.45rem 0.65rem;
           }
 
           .conversation-comment__text {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
           }
 
           .conversation-reply {
@@ -1621,6 +1633,15 @@ export default function BlogCard({
           .conversation-reply__body {
             flex: 1;
             min-width: 0;
+          }
+
+          .conversation-card h5 {
+            font-size: 1rem;
+          }
+
+          .conversation-card p,
+          .conversation-card button {
+            font-size: 0.9rem;
           }
         }
       `}</style>
