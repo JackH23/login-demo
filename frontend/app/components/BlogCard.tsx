@@ -951,15 +951,16 @@ export default function BlogCard({
                             >
                               {comment.author}
                             </span>
-                            <p
-                              className={`conversation-comment__text ${
-                                isNight ? "text-light" : "text-body"
-                              }`}
-                            >
-                              {comment.text}
-                            </p>
                           </div>
                         </div>
+
+                        <p
+                          className={`conversation-comment__text ${
+                            isNight ? "text-light" : "text-body"
+                          }`}
+                        >
+                          {comment.text}
+                        </p>
 
                         <div className="conversation-comment__actions">
                           <button
@@ -1246,15 +1247,15 @@ export default function BlogCard({
                             >
                               {comment.author}
                             </span>
-                            <p
-                              className={`conversation-comment__text ${
-                                theme === "night" ? "text-light" : "text-body"
-                              }`}
-                            >
-                              {comment.text}
-                            </p>
                           </div>
                         </div>
+                        <p
+                          className={`conversation-comment__text ${
+                            theme === "night" ? "text-light" : "text-body"
+                          }`}
+                        >
+                          {comment.text}
+                        </p>
                         <div className="conversation-comment__actions">
                           <button
                             type="button"

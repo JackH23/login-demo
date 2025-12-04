@@ -466,6 +466,7 @@
 .conversation-comment {
   display: grid;
   gap: 0.75rem;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 @media (min-width: 576px) {
@@ -473,6 +474,11 @@
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: start;
   }
+}
+
+.conversation-comment__main,
+.conversation-comment__text {
+  grid-column: 1 / 2;
 }
 
 .conversation-comment__main {
@@ -536,6 +542,8 @@
   font-size: 0.95rem;
   line-height: 1.6;
   word-break: break-word;
+  width: 100%;
+  max-width: 70ch;
 }
 
 .conversation-comment__actions {
@@ -556,6 +564,12 @@
 
   .conversation-comment__actions > .btn {
     flex: 0 0 auto;
+  }
+
+  .conversation-comment__actions {
+    grid-column: 2 / 3;
+    grid-row: 1 / span 2;
+    justify-self: end;
   }
 }
 
