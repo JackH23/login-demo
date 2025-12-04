@@ -778,7 +778,6 @@ export default function BlogCard({
               disabled={hasLikedPost || !user}
             >
               <span>👍</span>
-              <span>Appreciate</span>
               <span className="badge bg-white text-success ms-1">{likes}</span>
             </button>
 
@@ -788,7 +787,6 @@ export default function BlogCard({
               disabled={hasDislikedPost || !user}
             >
               <span>👎</span>
-              <span>Not for me</span>
               <span className="badge bg-light text-danger ms-1">{dislikes}</span>
             </button>
             <button
