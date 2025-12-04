@@ -11,13 +11,17 @@ interface AuthLayoutProps {
 
 export default function AuthLayout({ title, children, footer }: AuthLayoutProps) {
   const { theme } = useTheme();
-  const wrapperThemeClass = theme === "night" ? "bg-dark text-white" : "bg-light";
+  const isDark = theme === "night";
+  const wrapperThemeClass = isDark ? "bg-dark text-white" : "bg-light";
 
   return (
     <div
       className={`auth-wrapper d-flex align-items-center justify-content-center min-vh-100 ${wrapperThemeClass}`}
     >
-      <div className="card shadow auth-card border-0 bg-body text-body">
+      <div
+        className="card auth-card bg-body text-body"
+        aria-label={`${title} form container`}
+      >
         <div className="card-body p-4 p-md-5">
           <h2 className="card-title h3 text-center mb-4">{title}</h2>
           <div className="auth-content">{children}</div>
@@ -29,6 +33,11 @@ export default function AuthLayout({ title, children, footer }: AuthLayoutProps)
           width: 100%;
           padding: 2rem 1.25rem;
           transition: background-color 0.2s ease, color 0.2s ease;
+          background: ${
+            isDark
+              ? "linear-gradient(160deg, #0b1220 0%, #0f172a 40%, #111827 100%)"
+              : "linear-gradient(160deg, #f4f7fb 0%, #eef2ff 40%, #e2e8f0 100%)"
+          };
         }
 
         @media (min-width: 576px) {
@@ -40,11 +49,25 @@ export default function AuthLayout({ title, children, footer }: AuthLayoutProps)
         .auth-card {
           width: min(100%, 30rem);
           margin: 0 auto;
-          border-radius: 0.75rem;
+          border-radius: 0.9rem;
+          border: 1px solid ${
+            isDark ? "rgba(148, 163, 184, 0.25)" : "rgba(15, 23, 42, 0.08)"
+          };
+          box-shadow: 0 20px 55px -25px ${
+            isDark ? "rgba(0,0,0,0.8)" : "rgba(15, 23, 42, 0.18)"
+          };
+          transition: background-color 0.2s ease, border-color 0.2s ease,
+            box-shadow 0.2s ease, color 0.2s ease;
         }
 
         .card-title {
           letter-spacing: 0.01em;
+        }
+
+        .auth-content {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
         }
 
         .auth-content :global(.form-control) {
