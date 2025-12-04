@@ -41,13 +41,21 @@ const applyThemeToDom = (value: Theme) => {
 };
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Default to brightness during SSR to avoid hydration mismatch, then sync with
-  // the client preference once mounted.
-  const [theme, setThemeState] = useState<Theme>(() => readStoredTheme());
+  // Default to brightness during SSR to avoid hydration mismatch. Sync with the
+  // stored preference on mount so the client can update once it knows the
+  // user's choice.
+  const [theme, setThemeState] = useState<Theme>("brightness");
 
   const setTheme = (value: Theme) => {
     setThemeState(value);
   };
+
+  // Read the stored theme once we're on the client to avoid SSR/client
+  // mismatches during hydration.
+  useEffect(() => {
+    const storedTheme = readStoredTheme();
+    setThemeState(storedTheme);
+  }, []);
 
   // Keep DOM attributes, classes, and storage in sync whenever the theme
   // changes so user selections persist across sessions.
