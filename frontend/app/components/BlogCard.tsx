@@ -889,14 +889,7 @@ export default function BlogCard({
               <p className="mb-0">No comments yet. Share your thoughts below!</p>
             </div>
           ) : (
-            <div
-              style={{
-                maxHeight: "280px",
-                overflowY: "auto",
-                paddingRight: "10px",
-              }}
-              className="mb-3"
-            >
+            <div className="conversation-comment-wrapper mb-3">
               <ul className="conversation-comment-list list-unstyled mb-0">
                 {(showAllComments ? comments : comments.slice(-3)).map(
                   (comment, idx) => (
