@@ -849,7 +849,7 @@ export default function BlogCard({
 
         {/* Comments Section */}
         <div
-          className={`mt-5 p-4 rounded-4 ${
+          className={`conversation-card mt-5 p-4 rounded-4 ${
             isNight ? "bg-secondary bg-opacity-25" : "bg-light"
           }`}
         >
@@ -897,12 +897,12 @@ export default function BlogCard({
               }}
               className="mb-3"
             >
-              <ul className="list-unstyled mb-0">
+              <ul className="conversation-comment-list list-unstyled mb-0">
                 {(showAllComments ? comments : comments.slice(-3)).map(
                   (comment, idx) => (
                     <li
                       key={idx}
-                      className={`p-3 mb-3 rounded-4 shadow-sm ${
+                      className={`conversation-comment-item p-3 mb-3 rounded-4 shadow-sm ${
                         isNight ? "bg-dark bg-opacity-75 text-white" : "bg-white"
                       }`}
                     >
@@ -1073,7 +1073,7 @@ export default function BlogCard({
           )}
 
           {/* Add Comment Input */}
-          <div className="d-flex flex-column flex-sm-row gap-2 align-items-stretch align-items-sm-center">
+          <div className="conversation-input d-flex flex-column flex-sm-row gap-2 align-items-stretch align-items-sm-center">
             <input
               type="text"
               className="form-control rounded-pill px-4 py-2"
