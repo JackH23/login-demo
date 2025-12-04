@@ -41,12 +41,10 @@ const applyThemeToDom = (value: Theme) => {
 };
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Default to the stored preference when available so client-side navigation
-  // keeps the same theme without a flash of the fallback value.
-  const [theme, setThemeState] = useState<Theme>(() =>
-    typeof window !== "undefined" ? readStoredTheme() : "brightness",
-  );
-  const [hasHydrated, setHasHydrated] = useState(false);
+  // Default to brightness during SSR to avoid hydration mismatch. Sync with the
+  // stored preference on mount so the client can update once it knows the
+  // user's choice.
+  const [theme, setThemeState] = useState<Theme>("brightness");
 
   const setTheme = (value: Theme) => {
     setThemeState(value);
@@ -57,20 +55,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const storedTheme = readStoredTheme();
     setThemeState(storedTheme);
-    setHasHydrated(true);
   }, []);
 
   // Keep DOM attributes, classes, and storage in sync whenever the theme
   // changes so user selections persist across sessions.
   useEffect(() => {
-    if (!hasHydrated) return;
-
     if (typeof window !== "undefined") {
       window.localStorage.setItem(THEME_STORAGE_KEY, theme);
     }
 
     applyThemeToDom(theme);
-  }, [hasHydrated, theme]);
+  }, [theme]);
 
   // Sync theme changes across tabs so the preference stays consistent.
   useEffect(() => {
