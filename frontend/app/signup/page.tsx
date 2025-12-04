@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
+import AuthLayout from "../components/AuthLayout";
 
 export default function SignupPage() {
   const [username, setUsername] = useState("");
@@ -13,7 +13,6 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const { signup } = useAuth();
-  const { theme } = useTheme();
   const router = useRouter();
 
   const handleSignup = async () => {
@@ -47,164 +46,84 @@ export default function SignupPage() {
   };
 
   return (
-    <div
-      className={`auth-wrapper d-flex align-items-center justify-content-center min-vh-100 ${
-        theme === "night" ? "bg-dark text-white" : "bg-light"
-      }`}
+    <AuthLayout
+      title="Sign Up"
+      footer={
+        <p className="small text-body-secondary mb-0">
+          Already have an account? <a href="/signin">Sign in</a>
+        </p>
+      }
     >
-      <div className="card shadow auth-card border-0">
-        <div className="card-body p-4 p-md-5">
-          <h2 className="card-title h3 text-center mb-4">Sign Up</h2>
-
-          {error && (
-            <div className="alert alert-danger text-center py-2" role="alert">
-              {error}
-            </div>
-          )}
-
-          <div className="mb-3">
-            <label className="form-label">Username</label>
-            <input
-              type="text"
-              className="form-control"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter username"
-            />
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label">Email</label>
-            <input
-              type="email"
-              className="form-control"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter email address"
-            />
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label">Password</label>
-            <input
-              type="password"
-              className="form-control"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter password"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="form-label">Upload Image</label>
-            <input
-              type="file"
-              className="form-control"
-              accept="image/*"
-              onChange={(e) => setImage(e.target.files?.[0] || null)}
-            />
-          </div>
-
-          <button
-            className="btn btn-primary w-100"
-            onClick={handleSignup}
-            disabled={submitting}
-          >
-            {submitting ? (
-              <>
-                <span className="visually-hidden">Signing Up...</span>
-                <span
-                  aria-hidden="true"
-                  className="d-inline-flex align-items-center gap-1"
-                >
-                  <span>Signing Up</span>
-                  <span className="animated-ellipsis">
-                    <span className="dot" />
-                    <span className="dot" />
-                    <span className="dot" />
-                  </span>
-                </span>
-              </>
-            ) : (
-              "Create Account"
-            )}
-          </button>
-
-          <p className="text-center mt-4 mb-0 small text-body-secondary">
-            Already have an account? <a href="/signin">Sign in</a>
-          </p>
+      {error && (
+        <div className="alert alert-danger text-center py-2" role="alert">
+          {error}
         </div>
+      )}
+
+      <div className="mb-3">
+        <label className="form-label">Username</label>
+        <input
+          type="text"
+          className="form-control"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="Enter username"
+        />
       </div>
-      <style jsx>{`
-      .auth-wrapper {
-          width: 100%;
-          padding: 2rem 1.25rem;
-        }
 
-        @media (min-width: 576px) {
-          .auth-wrapper {
-            padding: 3rem 1.5rem;
-          }
-        }
+      <div className="mb-3">
+        <label className="form-label">Email</label>
+        <input
+          type="email"
+          className="form-control"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Enter email address"
+        />
+      </div>
 
-        .auth-card {
-          width: min(100%, 30rem);
-          margin: 0 auto;
-          border-radius: 0.75rem;
-        }
+      <div className="mb-3">
+        <label className="form-label">Password</label>
+        <input
+          type="password"
+          className="form-control"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Enter password"
+        />
+      </div>
 
-        .card-title {
-          letter-spacing: 0.01em;
-        }
+      <div className="mb-4">
+        <label className="form-label">Upload Image</label>
+        <input
+          type="file"
+          className="form-control"
+          accept="image/*"
+          onChange={(e) => setImage(e.target.files?.[0] || null)}
+        />
+      </div>
 
-        .form-control {
-          min-height: 3rem;
-        }
-
-        .btn-primary {
-          min-height: 3rem;
-          font-weight: 600;
-        }
-          
-        .animated-ellipsis {
-          display: inline-flex;
-          justify-content: space-between;
-          align-items: flex-end;
-          width: 1.5rem;
-        }
-
-        .animated-ellipsis .dot {
-          display: inline-block;
-          width: 0.25rem;
-          height: 0.25rem;
-          border-radius: 50%;
-          background-color: currentColor;
-          opacity: 0.35;
-          animation: signing-ellipsis 0.9s infinite ease-in-out;
-        }
-
-        .animated-ellipsis .dot:nth-child(2) {
-          animation-delay: 0.15s;
-        }
-
-        .animated-ellipsis .dot:nth-child(3) {
-          animation-delay: 0.3s;
-        }
-
-        @keyframes signing-ellipsis {
-          0%,
-          80%,
-          100% {
-            transform: translateY(0);
-            opacity: 0.35;
-          }
-
-          40% {
-            transform: translateY(-0.25rem);
-            opacity: 1;
-          }
-        }
-      `}</style>
-    </div>
+      <button
+        className="btn btn-primary w-100"
+        onClick={handleSignup}
+        disabled={submitting}
+      >
+        {submitting ? (
+          <>
+            <span className="visually-hidden">Signing Up...</span>
+            <span aria-hidden="true" className="d-inline-flex align-items-center gap-1">
+              <span>Signing Up</span>
+              <span className="animated-ellipsis">
+                <span className="dot" />
+                <span className="dot" />
+                <span className="dot" />
+              </span>
+            </span>
+          </>
+        ) : (
+          "Create Account"
+        )}
+      </button>
+    </AuthLayout>
   );
 }
