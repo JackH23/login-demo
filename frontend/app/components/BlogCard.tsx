@@ -132,6 +132,7 @@ export default function BlogCard({
   const contentStyle: CSSProperties = {
     lineHeight: 1.7,
     letterSpacing: "0.01em",
+    wordBreak: "break-word",
     transition: "max-height 0.3s ease",
     cursor: isContentLong ? "pointer" : "default",
     display: isContentExpanded ? "block" : "-webkit-box",
@@ -572,29 +573,29 @@ export default function BlogCard({
 
   return (
     <div
-      className={`card border-0 shadow-lg w-100 mx-auto mb-4 ${
+      className={`blog-card card border-0 shadow-lg w-100 mx-auto mb-4 ${
         isNight ? "bg-dark text-light" : "bg-white"
       }`}
       style={{
-        maxWidth: "960px",               // Keeps the card at a more compact width
-        borderRadius: "20px",            // Slightly tighter rounding for a smaller footprint
-        overflow: "hidden",              // Prevents content from overflowing outside card edges
+        maxWidth: "960px", // Keeps the card at a more compact width
+        borderRadius: "20px", // Slightly tighter rounding for a smaller footprint
+        overflow: "hidden", // Prevents content from overflowing outside card edges
         border: `1px solid ${cardBorderColor}`, // Dynamic border color based on theme
       }}
     >
       {/* Header section with background gradient and author info */}
       <div
-        className="position-relative p-3 text-white"
+        className="blog-card__hero position-relative text-white"
         style={{
           background: headerGradient, // Dynamic background based on theme
         }}
       >
         {/* Row: author avatar + title + author name */}
-        <div className="d-flex align-items-center gap-3">
+        <div className="blog-card__header d-flex align-items-center gap-3 flex-column flex-md-row text-center text-md-start">
           {/* If author has an image, display it */}
           <button
             type="button"
-            className="p-0 border-0 bg-transparent"
+            className="blog-card__avatar p-0 border-0 bg-transparent"
             aria-label={isProfileNavigable ? `View ${displayAuthor}'s profile` : undefined}
             onClick={isProfileNavigable ? openAuthorProfile : undefined}
             disabled={!isProfileNavigable}
@@ -606,9 +607,9 @@ export default function BlogCard({
                 alt={author.username}
                 className="rounded-circle border border-3 border-white"
                 style={{
-                  width: "48px",                      // Avatar width
-                  height: "48px",                     // Avatar height
-                  objectFit: "cover",                 // Ensures image fills the circle without distortion
+                  width: "48px", // Avatar width
+                  height: "48px", // Avatar height
+                  objectFit: "cover", // Ensures image fills the circle without distortion
                 }}
               />
             ) : (
@@ -622,17 +623,16 @@ export default function BlogCard({
           </button>
 
           {/* Blog title and author name section */}
-          <div className="flex-grow-1">
-
+          <div className="blog-card__title flex-grow-1">
             {/* Blog title */}
             <h3 className="mb-1 fw-bold">{blog.title}</h3>
 
             {/* Author name line */}
-            <p className="mb-0 small text-white-50">
-              By
+            <p className="mb-0 small text-white-50 d-flex justify-content-center justify-content-md-start align-items-center gap-1">
+              <span>By</span>
               <button
                 type="button"
-                className="btn btn-link p-0 ps-1 align-baseline fw-semibold text-white"
+                className="btn btn-link p-0 align-baseline fw-semibold text-white"
                 onClick={openAuthorProfile}
                 disabled={!displayAuthor}
               >
@@ -640,24 +640,24 @@ export default function BlogCard({
               </button>
             </p>
           </div>
-        </div>
 
-        {/* Blog statistics (likes, dislikes, comments) */}
-        <div className="d-flex flex-wrap align-items-center gap-2 mt-3">
-          {/* Display like count */}
-          <span className={statBadgeClass}>❤️ {likes}</span>
-          {/* Display dislike count */}
-          <span className={statBadgeClass}>👎 {dislikes}</span>
-          {/* Display comment count */}
-          <span className={statBadgeClass}>💬 {totalComments}</span>
+          {/* Blog statistics (likes, dislikes, comments) */}
+          <div className="blog-card__stats d-flex flex-wrap align-items-center justify-content-center gap-2 mt-2 mt-md-0">
+            {/* Display like count */}
+            <span className={statBadgeClass}>❤️ {likes}</span>
+            {/* Display dislike count */}
+            <span className={statBadgeClass}>👎 {dislikes}</span>
+            {/* Display comment count */}
+            <span className={statBadgeClass}>💬 {totalComments}</span>
+          </div>
         </div>
       </div>
 
       {blog.image && (
-      <div
-            className="position-relative overflow-hidden"
-            style={{
-              cursor: "pointer",
+        <div
+          className="blog-card__media position-relative overflow-hidden"
+          style={{
+            cursor: "pointer",
             aspectRatio: "16 / 10", // Keeps a predictable viewport without forcing the image to stretch
             maxHeight: "360px",
             backgroundColor: isNight ? "#0f172a" : "#f8fafc",
@@ -694,19 +694,19 @@ export default function BlogCard({
           {/* Bottom-right floating badge prompting user interaction */}
           <button
             type="button"
-            className="position-absolute bottom-0 end-0 m-3 border-0 bg-transparent p-0"
+            className="blog-card__expand position-absolute bottom-0 end-0 m-2 m-md-3 border-0 bg-transparent p-0"
             onClick={() => setShowImageModal(true)}
             aria-label="Expand image"
           >
-            <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-3 py-2 d-flex align-items-center gap-2">
-              <span>🔍</span>
+            <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-2 py-1 px-md-3 py-md-2 d-flex align-items-center gap-2">
+              <span aria-hidden="true">🔍</span>
               <span>Tap to expand</span>
             </span>
           </button>
         </div>
       )}
 
-      <div className="card-body p-3">
+      <div className="blog-card__body card-body p-3">
         <p
           className="card-text fs-6 mb-2"
           style={contentStyle}
@@ -748,8 +748,8 @@ export default function BlogCard({
           </small>
         )}
 
-        <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mt-4">
-          <div className="d-flex flex-wrap gap-2">
+        <div className="blog-card__footer d-flex flex-column flex-md-row gap-3 mt-4 align-items-start align-items-md-center">
+          <div className="blog-card__actions d-flex flex-wrap gap-2">
             <button
               className="btn btn-sm btn-success rounded-pill d-flex align-items-center gap-2 px-3"
               onClick={handleLikePost}
