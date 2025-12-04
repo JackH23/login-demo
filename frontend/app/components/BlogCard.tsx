@@ -849,7 +849,7 @@ export default function BlogCard({
 
         {/* Comments Section */}
         <div
-          className={`conversation-card mt-5 p-4 rounded-4 ${
+          className={`conversation-card mt-5 rounded-4 p-md-4 p-0 ${
             isNight ? "bg-secondary bg-opacity-25" : "bg-light"
           }`}
         >
