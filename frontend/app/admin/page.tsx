@@ -213,6 +213,21 @@ export default function AdminPage() {
                         <div key={u.username} className="col-sm-6">
                           <div
                             className={`card border-0 shadow-sm h-100 ${cardThemeClass}`}
+                            role="button"
+                            tabIndex={0}
+                            onClick={() =>
+                              router.push(
+                                `/admin/users/${encodeURIComponent(u.username)}`
+                              )
+                            }
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                router.push(
+                                  `/admin/users/${encodeURIComponent(u.username)}`
+                                );
+                              }
+                            }}
                           >
                             <div className="card-body d-flex gap-3 align-items-center">
                               <img
