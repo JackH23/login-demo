@@ -176,6 +176,7 @@ export default function BlogCard({
   const totalComments = comments.length;
 
   const isContentLong = (blog.content ?? "").length > 240;
+  const showExpandedSection = isContentExpanded || !isContentLong;
   const collapsedLines = isMobile ? 3 : 5;
   const collapsedMaxHeight = `${(1.65 * collapsedLines).toFixed(1)}em`;
   const actionButtonPadding = isMobile ? "px-2 py-1" : "px-3 py-2";
@@ -658,7 +659,7 @@ export default function BlogCard({
             {/* Blog title */}
             <h3
               className="mb-1 fw-bold"
-              sstyle={{ fontSize: isMobile ? "1.05rem" : undefined, lineHeight: 1.15 }}
+              style={{ fontSize: isMobile ? "1.05rem" : undefined, lineHeight: 1.15 }}
             >
               {blog.title}
             </h3>
@@ -765,6 +766,32 @@ export default function BlogCard({
         className="blog-card__body card-body p-3"
         style={{ padding: isMobile ? "0.75rem 0.9rem" : "1rem 1.25rem" }}
       >
+        <div className="blog-card__body-header d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+          <span
+            className={`badge rounded-pill ${
+              isNight
+                ? "bg-primary bg-opacity-25 text-light border border-primary border-opacity-25"
+                : "bg-primary bg-opacity-10 text-primary"
+            }`}
+          >
+            Story preview
+          </span>
+          {isContentLong && !isContentExpanded && (
+            <button
+              type="button"
+              className={`blog-card__expand-cta btn btn-sm rounded-pill d-flex align-items-center gap-2 ${
+                isNight ? "btn-outline-light" : "btn-outline-primary"
+              }`}
+              onClick={handleToggleContent}
+              aria-expanded={isContentExpanded}
+              aria-label="Expand to read the full article"
+            >
+              <span aria-hidden="true">⬆️</span>
+              <span>Tap to expand</span>
+            </button>
+          )}
+        </div>
+
         <p
           className="card-text fs-6 mb-2"
           style={contentStyle}
@@ -797,78 +824,91 @@ export default function BlogCard({
           {blog.content}
         </p>
         {isContentLong && (
-          <small
-            className={`d-inline-block ${mutedTextClass}`}
-            role="presentation"
-            aria-hidden="true"
-          >
-            {isContentExpanded ? "Show less" : "Show more"}
-          </small>
+          <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <small className={`d-inline-block ${mutedTextClass}`} aria-hidden="true">
+              {isContentExpanded ? "Expanded view" : "Short preview"}
+            </small>
+            <button
+              type="button"
+              className={`btn btn-link p-0 ${isNight ? "text-light" : "text-primary"}`}
+              onClick={handleToggleContent}
+            >
+              {isContentExpanded ? "Show less" : "Tap to expand"}
+            </button>
+          </div>
         )}
 
-        <div className="blog-card__footer d-flex flex-column flex-md-row gap-3 mt-4 align-items-start align-items-md-center">
+        {showExpandedSection && (
           <div
-            className={`blog-card__actions d-flex flex-wrap gap-2 ${
-              isMobile ? "" : "align-items-center"
+            className={`blog-card__expanded rounded-4 mt-4 p-3 ${
+              isNight ? "bg-secondary bg-opacity-25" : "bg-light"
             }`}
           >
-            <button
-              className={`btn btn-sm btn-success rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
-              onClick={handleLikePost}
-              disabled={hasLikedPost || !user}
-              style={{ fontSize: isMobile ? "0.9rem" : undefined }}
-            >
-              <span>👍</span>
-              <span className="badge bg-white text-success ms-1">{likes}</span>
-            </button>
-
-            <button
-              className={`btn btn-sm btn-outline-danger rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
-              onClick={handleDislikePost}
-              disabled={hasDislikedPost || !user}
-              style={{ fontSize: isMobile ? "0.9rem" : undefined }}
-            >
-              <span>👎</span>
-              <span className="badge bg-light text-danger ms-1">{dislikes}</span>
-            </button>
-            {!isMobile && (
-              <button
-                className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
-                  isNight ? "btn-outline-light" : "btn-outline-secondary"
+            <div className="blog-card__footer d-flex flex-column flex-md-row gap-3 align-items-start align-items-md-center">
+              <div
+                className={`blog-card__actions d-flex flex-wrap gap-2 ${
+                  isMobile ? "" : "align-items-center"
                 }`}
-                onClick={() => {
-                  const shareText = `${blog.title}\n\n${blog.content}\n\nShared from Blog App`;
-                  const shareUrl = window.location.href;
-                  if (navigator.share) {
-                    navigator
-                      .share({
-                        title: blog.title,
-                        text: shareText,
-                        url: shareUrl,
-                      })
-                      .catch((err) => console.error("Share failed", err));
-                  } else {
-                    navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
-                    alert("Link copied to clipboard!");
-                  }
-                }}
-                style={{ fontSize: isMobile ? "0.9rem" : undefined }}
               >
-                <span>🔗</span>
-                <span>Share</span>
-              </button>
-            )}
-          </div>
+                <button
+                  className={`btn btn-sm btn-success rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
+                  onClick={handleLikePost}
+                  disabled={hasLikedPost || !user}
+                  style={{ fontSize: isMobile ? "0.9rem" : undefined }}
+                >
+                  <span>👍</span>
+                  <span className="badge bg-white text-success ms-1">{likes}</span>
+                </button>
 
-          {user && user.username === blog.author && (
-            <button
-              className="btn btn-sm btn-outline-danger rounded-pill px-3"
-              onClick={() => setShowDeleteModal(true)}
-            >
-              🗑️ Delete
-            </button>
-          )}
-        </div>
+                <button
+                  className={`btn btn-sm btn-outline-danger rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
+                  onClick={handleDislikePost}
+                  disabled={hasDislikedPost || !user}
+                  style={{ fontSize: isMobile ? "0.9rem" : undefined }}
+                >
+                  <span>👎</span>
+                  <span className="badge bg-light text-danger ms-1">{dislikes}</span>
+                </button>
+                {!isMobile && (
+                  <button
+                    className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
+                      isNight ? "btn-outline-light" : "btn-outline-secondary"
+                    }`}
+                    onClick={() => {
+                      const shareText = `${blog.title}\n\n${blog.content}\n\nShared from Blog App`;
+                      const shareUrl = window.location.href;
+                      if (navigator.share) {
+                        navigator
+                          .share({
+                            title: blog.title,
+                            text: shareText,
+                            url: shareUrl,
+                          })
+                          .catch((err) => console.error("Share failed", err));
+                      } else {
+                        navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
+                        alert("Link copied to clipboard!");
+                      }
+                    }}
+                    style={{ fontSize: isMobile ? "0.9rem" : undefined }}
+                  >
+                    <span>🔗</span>
+                    <span>Share</span>
+                  </button>
+                )}
+              </div>
+
+              {user && user.username === blog.author && (
+                <button
+                  className="btn btn-sm btn-outline-danger rounded-pill px-3"
+                  onClick={() => setShowDeleteModal(true)}
+                >
+                  🗑️ Delete
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Comments Section */}
         <div
@@ -1553,10 +1593,43 @@ export default function BlogCard({
           min-width: 0;
         }
 
+        .blog-card__body-header .badge {
+          font-size: 0.85rem;
+          padding: 0.35rem 0.75rem;
+        }
+
+        .blog-card__expand-cta {
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .blog-card__expand-cta:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .blog-card__expanded {
+          border: 1px solid ${cardBorderColor};
+        }
+
         @media (max-width: 576px) {
           .blog-card__hero .blog-card__header {
             align-items: flex-start;
             text-align: left;
+          }
+
+          .blog-card__body-header {
+            gap: 0.5rem;
+          }
+
+          .blog-card__body-header .badge {
+            width: 100%;
+            justify-content: center;
+            text-align: center;
+          }
+
+          .blog-card__expand-cta {
+            width: 100%;
+            justify-content: center;
           }
 
           .blog-card__title {
