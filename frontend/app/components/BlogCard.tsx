@@ -753,8 +753,8 @@ export default function BlogCard({
               aria-label="Expand image"
             >
               <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-2 py-1 px-md-3 py-md-2 d-flex align-items-center gap-2">
-                <span aria-hidden="true">🔍</span>
-                <span>Tap to expand</span>
+                <span className="tap-to-expand" aria-hidden="true">🔍</span>
+                <span className="tap-to-expand">Tap to expand</span>
               </span>
             </button>
           )}
@@ -770,8 +770,8 @@ export default function BlogCard({
             aria-label="Expand image"
           >
             <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-3 py-2 w-100 d-flex align-items-center justify-content-center gap-2">
-              <span aria-hidden="true">🔍</span>
-              <span>Tap to expand</span>
+              <span className="tap-to-expand" aria-hidden="true">🔍</span>
+              <span className="tap-to-expand">Tap to expand</span>
             </span>
           </button>
         </div>
@@ -1782,14 +1782,87 @@ export default function BlogCard({
           min-width: 0;
         }
 
+        /* 📱 MOBILE STYLES */
         @media (max-width: 576px) {
+
+          /* Reduce space between image and text */
+          .blog-card__media,
+          .blog-card__media img {
+            margin-bottom: 0.25rem !important;
+            padding-bottom: 0 !important;
+            display: block !important;
+          }
+
+          /* Reduce padding inside card body */
+          .blog-card__body {
+            padding-top: 0.10rem !important;
+            padding-bottom: 0.10rem !important;
+          }
+
+          /* Clean spacing + smaller text */
+          .blog-card__body .card-text {
+            margin-top: 0 !important;
+            margin-bottom: 0.15rem !important;
+            font-size: 0.82rem !important;
+            line-height: 1.55 !important;
+          }
+
+          /* Reduce space above "Show more" */
+          .blog-card__body small {
+            margin-top: -4px !important;
+          }
+
+          /* Reduce spacing above buttons */
+          .blog-card__footer {
+            margin-top: 0.20rem !important;
+            gap: 0.40rem !important;
+          }
+
+          /* Reduce gap between each button */
+          .blog-card__actions-mobile {
+            gap: 0.25rem !important;
+            margin-bottom: 0.25rem !important;
+          }
+
+          /* Reduce spacing before comments section */
+          .blog-card__comments-action {
+            margin-top: 0.10rem !important;
+          }
+
+          .conversation-card {
+            margin-top: 0.75rem !important;
+          }
+
+          /* Hide tap-to-expand on mobile */
+          .tap-to-expand {
+            display: none !important;
+          }
+
+          /* Make all action buttons small */
+          .blog-card__footer .btn,
+          .blog-card__actions-mobile .btn,
+          .blog-card__comments-action .btn {
+            padding: 0.25rem 0.55rem !important;
+            font-size: 0.75rem !important;
+            min-height: 32px !important;
+            border-radius: 14px !important;
+          }
+
+          .blog-card__actions-mobile .btn span,
+          .blog-card__footer .btn span {
+            font-size: 0.85rem !important;
+          }
+
+          .blog-card__actions-mobile .badge,
+          .blog-card__footer .badge {
+            font-size: 0.7rem !important;
+            padding: 0.15rem 0.45rem !important;
+          }
+
+          /* Author section tightening */
           .blog-card__hero .blog-card__header {
             align-items: flex-start;
             text-align: left;
-          }
-
-          .blog-card__title {
-            width: 100%;
           }
 
           .blog-card__author-row {
@@ -1806,6 +1879,7 @@ export default function BlogCard({
             line-height: 1.2;
           }
 
+          /* Stats row */
           .blog-card__stats {
             width: 100%;
             justify-content: space-between;
@@ -1819,35 +1893,7 @@ export default function BlogCard({
             min-height: 32px;
           }
 
-          .blog-card__footer {
-            gap: 0.75rem !important;
-          }
-
-          .blog-card__actions-mobile {
-            width: 100%;
-            justify-content: space-between;
-          }
-
-          .blog-card__actions-mobile .btn {
-            flex: 1 1 calc(25% - 0.5rem);
-            min-width: 120px;
-            justify-content: center;
-            font-size: 0.95rem;
-            padding: 0.6rem 0.75rem;
-            min-height: 44px;
-          }
-
-          .blog-card__comments-action .btn {
-            justify-content: center;
-            font-size: 0.95rem;
-            padding: 0.6rem 0.75rem;
-            min-height: 44px;
-          }
-
-          .blog-card__body .card-text {
-            font-size: 0.92rem;
-          }
-
+          /* Conversation section */
           .conversation-comment__main {
             align-items: flex-start;
             gap: 0.65rem;
