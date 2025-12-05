@@ -70,6 +70,7 @@ export default function BlogCard({
   const [showAllComments] = useState(false);
   const [showCommentsModal, setShowCommentsModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [showConversation, setShowConversation] = useState(false);
   const [userImages, setUserImages] = useState<Record<string, string>>({});
   const { user } = useAuth();
   const { theme } = useTheme();
@@ -598,7 +599,7 @@ export default function BlogCard({
 
   return (
     <div
-      className={`blog-card card border-0 shadow-lg w-100 mx-auto mb-4 ${
+      className={`blog-card card border-0 shadow-lg w-100 mx-auto mb-4 position-relative ${
         isNight ? "bg-dark text-light" : "bg-white"
       }`}
       style={{
@@ -870,13 +871,14 @@ export default function BlogCard({
           )}
         </div>
 
-        {/* Comments Section */}
-        <div
-          className={`conversation-card mt-5 rounded-4 p-md-4 p-0 ${
-            isNight ? "bg-secondary bg-opacity-25" : "bg-light"
-          }`}
-        >
-          <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        {showConversation && (
+          /* Comments Section */
+          <div
+            className={`conversation-card mt-5 rounded-4 p-md-4 p-0 ${
+              isNight ? "bg-secondary bg-opacity-25" : "bg-light"
+            }`}
+          >
+            <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
             <div>
               <h5 className="mb-1 d-flex align-items-center gap-2">
                 <span>💬</span>
@@ -1132,6 +1134,7 @@ export default function BlogCard({
             </button>
           </div>
         </div>
+        )}
       </div>
 
       {/* showDeleteModal */}
@@ -1645,6 +1648,31 @@ export default function BlogCard({
           }
         }
       `}</style>
+
+      {/* Floating Chat Icon */}
+      <button
+        type="button"
+        className={`btn btn-sm rounded-circle position-absolute bottom-0 end-0 m-3 shadow ${
+          isNight ? "btn-outline-light bg-dark bg-opacity-50" : "btn-outline-light bg-white bg-opacity-75"
+        }`}
+        onClick={() => setShowConversation((prev) => !prev)}
+        aria-label={`${showConversation ? "Hide" : "Show"} conversation`}
+        aria-pressed={showConversation}
+      >
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+      </button>
     </div>
   );
 }
