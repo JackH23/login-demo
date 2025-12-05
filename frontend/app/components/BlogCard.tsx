@@ -1635,8 +1635,9 @@ export default function BlogCard({
 
         .conversation-comment {
           display: flex;
-          flex-direction: column;
-          gap: 0.6rem;
+          flex-direction: row;
+          align-items: flex-start;
+          gap: 0.75rem;
           min-width: 0;
         }
 
@@ -1645,6 +1646,18 @@ export default function BlogCard({
           align-items: center;
           gap: 0.75rem;
           flex-wrap: wrap;
+          min-width: 0;
+        }
+
+        .conversation-comment__avatar {
+          flex-shrink: 0;
+        }
+
+        .conversation-comment__body {
+          display: flex;
+          flex-direction: column;
+          gap: 0.35rem;
+          flex: 1;
           min-width: 0;
         }
 
