@@ -165,6 +165,19 @@ export default function BlogCard({
     [mapReplyFromApi, resolveAvatar]
   );
 
+  const resolveCommentAvatars = useCallback(
+    (list: Comment[]) =>
+      list.map((comment) => ({
+        ...comment,
+        authorImage: resolveAvatar(comment.authorImage, comment.author),
+        replies: comment.replies.map((reply) => ({
+          ...reply,
+          authorImage: resolveAvatar(reply.authorImage, reply.author),
+        })),
+      })),
+    [resolveAvatar]
+  );
+
   const openAuthorProfile = () => {
     if (!displayAuthor) return;
     router.push(`/user/${encodeURIComponent(displayAuthor)}`);
@@ -242,7 +255,9 @@ export default function BlogCard({
         const res = await fetch(apiUrl(`/api/comments?postId=${blog._id}`));
         const data = await res.json();
         if (!isMounted) return;
-        const list = (data.comments ?? []).map(mapCommentFromApi);
+        const list = resolveCommentAvatars(
+          (data.comments ?? []).map(mapCommentFromApi)
+        );
         setComments(list);
       } catch {
         if (!isMounted) return;
@@ -258,17 +273,8 @@ export default function BlogCard({
   }, [blog._id, mapCommentFromApi]);
 
   useEffect(() => {
-    setComments((prev) =>
-      prev.map((comment) => ({
-        ...comment,
-        authorImage: resolveAvatar(comment.authorImage, comment.author),
-        replies: comment.replies.map((reply) => ({
-          ...reply,
-          authorImage: resolveAvatar(reply.authorImage, reply.author),
-        })),
-      }))
-    );
-  }, [resolveAvatar]);
+    setComments((prev) => resolveCommentAvatars(prev));
+  }, [resolveCommentAvatars]);
 
   const handleCommentSubmit = async () => {
     const text = newComment.trim();
@@ -1022,6 +1028,10 @@ export default function BlogCard({
                 <ul className="conversation-comment-list list-unstyled mb-0">
                   {(showAllComments ? comments : comments.slice(-3)).map(
                     (comment, idx) => {
+                      const commentAvatar = resolveAvatar(
+                        comment.authorImage,
+                        comment.author
+                      );
                       const replyKey = comment._id ?? `local-${idx}`;
                       const isCommentPending =
                         comment.isPending || !comment._id;
@@ -1051,9 +1061,9 @@ export default function BlogCard({
                                   onClick={() => openUserProfile(comment.author)}
                                   aria-label={`View ${comment.author}'s profile`}
                                 >
-                                  {comment.authorImage ? (
+                                  {commentAvatar ? (
                                     <img
-                                      src={comment.authorImage}
+                                      src={commentAvatar}
                                       alt={`${comment.author}'s avatar`}
                                       className="conversation-comment__avatar-image"
                                     />
@@ -1150,82 +1160,89 @@ export default function BlogCard({
                           {/* Replies */}
                           {comment.replies.length > 0 && (
                             <ul className="mt-3 ps-4 list-unstyled">
-                              {comment.replies.map((reply, rIdx) => (
-                                <li
-                                  key={reply.tempId ?? rIdx}
-                                  className={`conversation-reply d-flex align-items-start gap-2 ${
-                                    theme === "night"
-                                      ? "text-light"
-                                      : "text-muted"
-                                  } small mb-2`}
-                                >
-                                  <button
-                                    type="button"
-                                    className="conversation-reply__avatar p-0 border-0 bg-transparent"
-                                    onClick={() => openUserProfile(reply.author)}
-                                    aria-label={`View ${reply.author}'s profile`}
+                              {comment.replies.map((reply, rIdx) => {
+                                const replyAvatar = resolveAvatar(
+                                  reply.authorImage,
+                                  reply.author
+                                );
+
+                                return (
+                                  <li
+                                    key={reply.tempId ?? rIdx}
+                                    className={`conversation-reply d-flex align-items-start gap-2 ${
+                                      theme === "night"
+                                        ? "text-light"
+                                        : "text-muted"
+                                    } small mb-2`}
                                   >
-                                    {reply.authorImage ? (
-                                      <img
-                                        src={reply.authorImage}
-                                        alt={`${reply.author}'s avatar`}
-                                        className="rounded-circle"
-                                        style={{
-                                          width: "28px",
-                                          height: "28px",
-                                          objectFit: "cover",
-                                        }}
-                                      />
-                                    ) : (
-                                      <span
-                                        className={`d-inline-flex align-items-center justify-content-center rounded-circle ${
-                                          isNight
-                                            ? "bg-secondary text-white"
-                                            : "bg-primary bg-opacity-10 text-primary"
-                                        }`}
-                                        style={{ width: "28px", height: "28px" }}
-                                      >
-                                        {reply.author?.charAt(0)?.toUpperCase() || "?"}
-                                      </span>
-                                    )}
-                                  </button>
-                                  <span
-                                    className="conversation-reply__arrow"
-                                    aria-hidden="true"
-                                  >
-                                    ↪
-                                  </span>
-                                  <div className="conversation-reply__body d-flex flex-wrap align-items-center gap-1">
                                     <button
                                       type="button"
-                                      className="fw-semibold p-0 border-0 bg-transparent text-start"
-                                      onClick={() =>
-                                        openUserProfile(reply.author)
-                                      }
-                                      onKeyDown={(event) => {
-                                        if (
-                                          event.key === "Enter" ||
-                                          event.key === " "
-                                        ) {
-                                          event.preventDefault();
-                                          openUserProfile(reply.author);
-                                        }
-                                      }}
+                                      className="conversation-reply__avatar p-0 border-0 bg-transparent"
+                                      onClick={() => openUserProfile(reply.author)}
                                       aria-label={`View ${reply.author}'s profile`}
                                     >
-                                      {reply.author}
+                                      {replyAvatar ? (
+                                        <img
+                                          src={replyAvatar}
+                                          alt={`${reply.author}'s avatar`}
+                                          className="rounded-circle"
+                                          style={{
+                                            width: "28px",
+                                            height: "28px",
+                                            objectFit: "cover",
+                                          }}
+                                        />
+                                      ) : (
+                                        <span
+                                          className={`d-inline-flex align-items-center justify-content-center rounded-circle ${
+                                            isNight
+                                              ? "bg-secondary text-white"
+                                              : "bg-primary bg-opacity-10 text-primary"
+                                          }`}
+                                          style={{ width: "28px", height: "28px" }}
+                                        >
+                                          {reply.author?.charAt(0)?.toUpperCase() || "?"}
+                                        </span>
+                                      )}
                                     </button>
-                                    <span className="text-muted">
-                                      {reply.text}
+                                    <span
+                                      className="conversation-reply__arrow"
+                                      aria-hidden="true"
+                                    >
+                                      ↪
                                     </span>
-                                    {reply.isPending && (
-                                      <span className="badge bg-secondary bg-opacity-25 text-secondary ms-auto">
-                                        Sending...
+                                    <div className="conversation-reply__body d-flex flex-wrap align-items-center gap-1">
+                                      <button
+                                        type="button"
+                                        className="fw-semibold p-0 border-0 bg-transparent text-start"
+                                        onClick={() =>
+                                          openUserProfile(reply.author)
+                                        }
+                                        onKeyDown={(event) => {
+                                          if (
+                                            event.key === "Enter" ||
+                                            event.key === " "
+                                          ) {
+                                            event.preventDefault();
+                                            openUserProfile(reply.author);
+                                          }
+                                        }}
+                                        aria-label={`View ${reply.author}'s profile`}
+                                      >
+                                        {reply.author}
+                                      </button>
+                                      <span className="text-muted">
+                                        {reply.text}
                                       </span>
-                                    )}
-                                  </div>
-                                </li>
-                              ))}
+                                      {reply.isPending && (
+                                        <span className="badge bg-secondary bg-opacity-25 text-secondary ms-auto">
+                                          Sending...
+                                        </span>
+                                      )}
+                                    </div>
+                                  </li>
+                                );
+                              })}
                             </ul>
                           )}
 
@@ -1391,6 +1408,10 @@ export default function BlogCard({
               >
                 <ul className="list-group">
                   {comments.map((comment, idx) => {
+                    const commentAvatar = resolveAvatar(
+                      comment.authorImage,
+                      comment.author
+                    );
                     const replyKey = comment._id ?? `local-${idx}`;
                     const isCommentPending = comment.isPending || !comment._id;
                     const isReplySending = replySubmittingId === replyKey;
@@ -1417,9 +1438,9 @@ export default function BlogCard({
                                 onClick={() => openUserProfile(comment.author)}
                                 aria-label={`View ${comment.author}'s profile`}
                               >
-                                {comment.authorImage ? (
+                                {commentAvatar ? (
                                   <img
-                                    src={comment.authorImage}
+                                    src={commentAvatar}
                                     alt={`${comment.author}'s avatar`}
                                     className="conversation-comment__avatar-image"
                                   />
@@ -1510,82 +1531,89 @@ export default function BlogCard({
                         {/* Replies */}
                         {comment.replies.length > 0 && (
                           <ul className="mt-2 ps-3 list-unstyled">
-                            {comment.replies.map((reply, rIdx) => (
-                              <li
-                                key={reply.tempId ?? rIdx}
-                                className={`conversation-reply d-flex align-items-start gap-2 ${
-                                  theme === "night"
-                                    ? "text-light"
-                                    : "text-muted"
-                                } small mb-2`}
-                              >
-                                <button
-                                  type="button"
-                                  className="conversation-reply__avatar p-0 border-0 bg-transparent"
-                                  onClick={() => openUserProfile(reply.author)}
-                                  aria-label={`View ${reply.author}'s profile`}
+                            {comment.replies.map((reply, rIdx) => {
+                              const replyAvatar = resolveAvatar(
+                                reply.authorImage,
+                                reply.author
+                              );
+
+                              return (
+                                <li
+                                  key={reply.tempId ?? rIdx}
+                                  className={`conversation-reply d-flex align-items-start gap-2 ${
+                                    theme === "night"
+                                      ? "text-light"
+                                      : "text-muted"
+                                  } small mb-2`}
                                 >
-                                  {reply.authorImage ? (
-                                    <img
-                                      src={reply.authorImage}
-                                      alt={`${reply.author}'s avatar`}
-                                      className="rounded-circle"
-                                      style={{
-                                        width: "24px",
-                                        height: "24px",
-                                        objectFit: "cover",
-                                      }}
-                                    />
-                                  ) : (
-                                    <span
-                                      className={`d-inline-flex align-items-center justify-content-center rounded-circle ${
-                                        theme === "night"
-                                          ? "bg-secondary text-white"
-                                          : "bg-primary bg-opacity-10 text-primary"
-                                      }`}
-                                      style={{ width: "24px", height: "24px" }}
-                                    >
-                                      {reply.author?.charAt(0)?.toUpperCase() || "?"}
-                                    </span>
-                                  )}
-                                </button>
-                                <span
-                                  className="conversation-reply__arrow"
-                                  aria-hidden="true"
-                                >
-                                  ↪
-                                </span>
-                                <div className="conversation-reply__body d-flex flex-wrap align-items-center gap-1">
                                   <button
                                     type="button"
-                                    className="fw-semibold p-0 border-0 bg-transparent text-start"
-                                    onClick={() =>
-                                      openUserProfile(reply.author)
-                                    }
-                                    onKeyDown={(event) => {
-                                      if (
-                                        event.key === "Enter" ||
-                                        event.key === " "
-                                      ) {
-                                        event.preventDefault();
-                                        openUserProfile(reply.author);
-                                      }
-                                    }}
+                                    className="conversation-reply__avatar p-0 border-0 bg-transparent"
+                                    onClick={() => openUserProfile(reply.author)}
                                     aria-label={`View ${reply.author}'s profile`}
                                   >
-                                    {reply.author}
+                                    {replyAvatar ? (
+                                      <img
+                                        src={replyAvatar}
+                                        alt={`${reply.author}'s avatar`}
+                                        className="rounded-circle"
+                                        style={{
+                                          width: "24px",
+                                          height: "24px",
+                                          objectFit: "cover",
+                                        }}
+                                      />
+                                    ) : (
+                                      <span
+                                        className={`d-inline-flex align-items-center justify-content-center rounded-circle ${
+                                          theme === "night"
+                                            ? "bg-secondary text-white"
+                                            : "bg-primary bg-opacity-10 text-primary"
+                                        }`}
+                                        style={{ width: "24px", height: "24px" }}
+                                      >
+                                        {reply.author?.charAt(0)?.toUpperCase() || "?"}
+                                      </span>
+                                    )}
                                   </button>
-                                  <span className="text-muted">
-                                    {reply.text}
+                                  <span
+                                    className="conversation-reply__arrow"
+                                    aria-hidden="true"
+                                  >
+                                    ↪
                                   </span>
-                                  {reply.isPending && (
-                                    <span className="badge bg-secondary bg-opacity-25 text-secondary ms-auto">
-                                      Sending...
+                                  <div className="conversation-reply__body d-flex flex-wrap align-items-center gap-1">
+                                    <button
+                                      type="button"
+                                      className="fw-semibold p-0 border-0 bg-transparent text-start"
+                                      onClick={() =>
+                                        openUserProfile(reply.author)
+                                      }
+                                      onKeyDown={(event) => {
+                                        if (
+                                          event.key === "Enter" ||
+                                          event.key === " "
+                                        ) {
+                                          event.preventDefault();
+                                          openUserProfile(reply.author);
+                                        }
+                                      }}
+                                      aria-label={`View ${reply.author}'s profile`}
+                                    >
+                                      {reply.author}
+                                    </button>
+                                    <span className="text-muted">
+                                      {reply.text}
                                     </span>
-                                  )}
-                                </div>
-                              </li>
-                            ))}
+                                    {reply.isPending && (
+                                      <span className="badge bg-secondary bg-opacity-25 text-secondary ms-auto">
+                                        Sending...
+                                      </span>
+                                    )}
+                                  </div>
+                                </li>
+                              );
+                            })}
                           </ul>
                         )}
 
