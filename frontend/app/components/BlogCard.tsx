@@ -1867,30 +1867,28 @@ export default function BlogCard({
 
         /* 📱 MOBILE STYLES */
         @media (max-width: 576px) {
+          /* ----------------------------------
+     Conversation Header
+  -----------------------------------*/
           .conversation-card .conversation-header {
             display: flex !important;
+            justify-content: flex-end !important; /* View all to the right */
             align-items: center !important;
-            padding: 1rem 0.8rem 0 0 !important;
+            padding: 0.8rem 0.8rem 0 0 !important; /* top right bottom left */
+            width: 100%;
           }
 
-          /* Hide both the icon and the Conversation text */
+          /* Hide both Conversation icon + text */
           .conversation-card .conversation-header h5 {
             display: none !important;
           }
 
+          /* Hide "Join comments..." subtitle */
           .conversation-card .community-subtitle {
             display: none !important;
           }
 
-          /* Align Conversation title and View all in one row */
-          .conversation-card .conversation-header {
-            display: flex !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            width: 100%;
-          }
-
-          /* Remove outline/pill/button styling from View all */
+          /* Clean "View all" style */
           .conversation-card .view-all-btn,
           .conversation-card button.btn-outline-primary {
             border: none !important;
@@ -1898,22 +1896,14 @@ export default function BlogCard({
             padding: 0 !important;
             box-shadow: none !important;
             border-radius: 0 !important;
-          }
-
-          /* Make "View all" text cleaner and smaller */
-          .conversation-card .view-all-btn,
-          .conversation-card button.btn-outline-primary {
             font-size: 0.85rem !important;
             font-weight: 500 !important;
-            color: #3b82f6 !important; /* Tailwind blue-500 */
+            color: #3b82f6 !important;
           }
 
-          /* Hide the “Join X comments from the community.” text */
-          .conversation-card .community-subtitle {
-            display: none !important;
-          }
-
-          /* Reduce space between image and text */
+          /* ----------------------------------
+     Blog Card Spacing
+  -----------------------------------*/
           .blog-card__media,
           .blog-card__media img {
             margin-bottom: 0.25rem !important;
@@ -1921,13 +1911,11 @@ export default function BlogCard({
             display: block !important;
           }
 
-          /* Reduce padding inside card body */
           .blog-card__body {
             padding-top: 0.1rem !important;
             padding-bottom: 0.1rem !important;
           }
 
-          /* Clean spacing + smaller text */
           .blog-card__body .card-text {
             margin-top: 0 !important;
             margin-bottom: 0.15rem !important;
@@ -1935,38 +1923,25 @@ export default function BlogCard({
             line-height: 1.55 !important;
           }
 
-          /* Reduce space above "Show more" */
           .blog-card__body small {
             margin-top: -4px !important;
           }
 
-          /* Reduce spacing above buttons */
           .blog-card__footer {
             margin-top: 0.2rem !important;
             gap: 0.4rem !important;
           }
 
-          /* Reduce gap between each button */
           .blog-card__actions-mobile {
             gap: 0.25rem !important;
             margin-bottom: 0.25rem !important;
           }
 
-          /* Reduce spacing before comments section */
           .blog-card__comments-action {
             margin-top: 0.1rem !important;
           }
 
-          .conversation-card {
-            margin-top: 0.75rem !important;
-          }
-
-          /* Hide tap-to-expand on mobile */
-          .tap-to-expand {
-            display: none !important;
-          }
-
-          /* Make all action buttons small */
+          /* Buttons smaller */
           .blog-card__footer .btn,
           .blog-card__actions-mobile .btn,
           .blog-card__comments-action .btn {
@@ -1987,7 +1962,9 @@ export default function BlogCard({
             padding: 0.15rem 0.45rem !important;
           }
 
-          /* Author section tightening */
+          /* ----------------------------------
+     Author + Stats
+  -----------------------------------*/
           .blog-card__hero .blog-card__header {
             align-items: flex-start;
             text-align: left;
@@ -2007,7 +1984,6 @@ export default function BlogCard({
             line-height: 1.2;
           }
 
-          /* Stats row */
           .blog-card__stats {
             width: 100%;
             justify-content: space-between;
@@ -2021,7 +1997,9 @@ export default function BlogCard({
             min-height: 32px;
           }
 
-          /* Conversation section */
+          /* ----------------------------------
+     Conversation Comments Layout
+  -----------------------------------*/
           .conversation-comment-wrapper {
             max-height: 240px;
             overflow-y: auto;
@@ -2029,13 +2007,30 @@ export default function BlogCard({
           }
 
           .conversation-comment {
-            flex-direction: column;
+            display: flex !important;
+            flex-direction: column !important;
+            width: 100%;
           }
 
+          /* NEW FIX: Avatar + name on line 1, text on line 2 */
           .conversation-comment__main {
-            grid-template-columns: auto 1fr;
-            align-items: flex-start;
-            gap: 0.65rem;
+            display: flex !important;
+            flex-direction: column !important;
+            width: 100%;
+            gap: 0.4rem !important;
+          }
+
+          .conversation-comment__meta {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 0.45rem !important;
+          }
+
+          .conversation-comment__text {
+            font-size: 0.82rem !important;
+            line-height: 1.45 !important;
+            margin-left: 0 !important;
             width: 100%;
           }
 
@@ -2050,10 +2045,6 @@ export default function BlogCard({
             justify-content: center;
             font-size: 0.9rem;
             padding: 0.45rem 0.65rem;
-          }
-
-          .conversation-comment__text {
-            font-size: 0.9rem;
           }
 
           .conversation-reply {
@@ -2074,6 +2065,11 @@ export default function BlogCard({
           .conversation-card p,
           .conversation-card button {
             font-size: 0.9rem;
+          }
+
+          /* Hide tap-to-expand */
+          .tap-to-expand {
+            display: none !important;
           }
         }
       `}</style>
