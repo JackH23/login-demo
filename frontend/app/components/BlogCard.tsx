@@ -1799,11 +1799,12 @@ export default function BlogCard({
         }
 
         .conversation-comment__main {
-          display: flex;
-          align-items: center;
+          display: grid;
+          grid-template-columns: auto 1fr;
+          align-items: flex-start;
           gap: 0.75rem;
-          flex-wrap: wrap;
           min-width: 0;
+          width: 100%;
         }
 
         .conversation-comment__avatar {
@@ -2021,6 +2022,7 @@ export default function BlogCard({
           }
 
           .conversation-comment__main {
+            grid-template-columns: auto 1fr;
             align-items: flex-start;
             gap: 0.65rem;
             width: 100%;
