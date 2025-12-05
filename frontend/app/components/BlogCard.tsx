@@ -628,8 +628,8 @@ export default function BlogCard({
           background: headerGradient, // Dynamic background based on theme
           padding: isMobile ? "0.65rem 0.9rem" : "1.1rem 1.35rem",
         }}
-        >
-          {/* Row: author avatar + title + author name */}
+      >
+        {/* Row: author avatar + title + author name */}
         <div
           className="blog-card__header d-flex flex-column gap-2 gap-md-3 align-items-start text-start"
           style={{
@@ -642,7 +642,9 @@ export default function BlogCard({
               type="button"
               className="blog-card__avatar p-0 border-0 bg-transparent"
               aria-label={
-                isProfileNavigable ? `View ${displayAuthor}'s profile` : undefined
+                isProfileNavigable
+                  ? `View ${displayAuthor}'s profile`
+                  : undefined
               }
               onClick={isProfileNavigable ? openAuthorProfile : undefined}
               disabled={!isProfileNavigable}
@@ -759,7 +761,9 @@ export default function BlogCard({
               aria-label="Expand image"
             >
               <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-2 py-1 px-md-3 py-md-2 d-flex align-items-center gap-2">
-                <span className="tap-to-expand" aria-hidden="true">🔍</span>
+                <span className="tap-to-expand" aria-hidden="true">
+                  🔍
+                </span>
                 <span className="tap-to-expand">Tap to expand</span>
               </span>
             </button>
@@ -776,7 +780,9 @@ export default function BlogCard({
             aria-label="Expand image"
           >
             <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-3 py-2 w-100 d-flex align-items-center justify-content-center gap-2">
-              <span className="tap-to-expand" aria-hidden="true">🔍</span>
+              <span className="tap-to-expand" aria-hidden="true">
+                🔍
+              </span>
               <span className="tap-to-expand">Tap to expand</span>
             </span>
           </button>
@@ -839,7 +845,9 @@ export default function BlogCard({
                   style={{ fontSize: "0.95rem" }}
                 >
                   <span>👍</span>
-                  <span className="badge bg-white text-success ms-1">{likes}</span>
+                  <span className="badge bg-white text-success ms-1">
+                    {likes}
+                  </span>
                 </button>
 
                 <button
@@ -849,7 +857,9 @@ export default function BlogCard({
                   style={{ fontSize: "0.95rem" }}
                 >
                   <span>👎</span>
-                  <span className="badge bg-light text-danger ms-1">{dislikes}</span>
+                  <span className="badge bg-light text-danger ms-1">
+                    {dislikes}
+                  </span>
                 </button>
 
                 <button
@@ -868,7 +878,9 @@ export default function BlogCard({
                         })
                         .catch((err) => console.error("Share failed", err));
                     } else {
-                      navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
+                      navigator.clipboard.writeText(
+                        `${shareText}\n\n${shareUrl}`
+                      );
                       alert("Link copied to clipboard!");
                     }
                   }}
@@ -914,7 +926,9 @@ export default function BlogCard({
                   style={{ fontSize: isMobile ? "0.9rem" : undefined }}
                 >
                   <span>👍</span>
-                  <span className="badge bg-white text-success ms-1">{likes}</span>
+                  <span className="badge bg-white text-success ms-1">
+                    {likes}
+                  </span>
                 </button>
 
                 <button
@@ -944,7 +958,9 @@ export default function BlogCard({
                         })
                         .catch((err) => console.error("Share failed", err));
                     } else {
-                      navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
+                      navigator.clipboard.writeText(
+                        `${shareText}\n\n${shareUrl}`
+                      );
                       alert("Link copied to clipboard!");
                     }
                   }}
@@ -986,13 +1002,15 @@ export default function BlogCard({
               isNight ? "bg-secondary bg-opacity-25" : "bg-light"
             }`}
           >
-            <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <div className="conversation-header d-flex justify-content-between align-items-center mb-3">
               <div>
                 <h5 className="mb-1 d-flex align-items-center gap-2">
                   <span>💬</span>
                   <span>Conversation</span>
                 </h5>
-                <p className={`mb-0 small ${mutedTextClass}`}>
+                <p
+                  className={`community-subtitle mb-0 small ${mutedTextClass}`}
+                >
                   {totalComments === 0
                     ? "Be the first to start the discussion."
                     : `Join ${totalComments} ${
@@ -1058,7 +1076,9 @@ export default function BlogCard({
                                 <button
                                   type="button"
                                   className="p-0 border-0 bg-transparent"
-                                  onClick={() => openUserProfile(comment.author)}
+                                  onClick={() =>
+                                    openUserProfile(comment.author)
+                                  }
                                   aria-label={`View ${comment.author}'s profile`}
                                 >
                                   {commentAvatar ? (
@@ -1075,8 +1095,9 @@ export default function BlogCard({
                                           : "bg-primary bg-opacity-10 text-primary"
                                       }`}
                                     >
-                                      {comment.author?.charAt(0)?.toUpperCase() ||
-                                        "?"}
+                                      {comment.author
+                                        ?.charAt(0)
+                                        ?.toUpperCase() || "?"}
                                     </span>
                                   )}
                                 </button>
@@ -1092,7 +1113,9 @@ export default function BlogCard({
                                     }`}
                                     role="button"
                                     tabIndex={0}
-                                    onClick={() => openUserProfile(comment.author)}
+                                    onClick={() =>
+                                      openUserProfile(comment.author)
+                                    }
                                     onKeyDown={(event) => {
                                       if (
                                         event.key === "Enter" ||
@@ -1123,8 +1146,12 @@ export default function BlogCard({
                                     disabled={
                                       !user ||
                                       isCommentPending ||
-                                      comment.likedBy?.includes(user.username) ||
-                                      comment.dislikedBy?.includes(user.username)
+                                      comment.likedBy?.includes(
+                                        user.username
+                                      ) ||
+                                      comment.dislikedBy?.includes(
+                                        user.username
+                                      )
                                     }
                                   >
                                     👍 {comment.likes}
@@ -1136,8 +1163,12 @@ export default function BlogCard({
                                     disabled={
                                       !user ||
                                       isCommentPending ||
-                                      comment.likedBy?.includes(user.username) ||
-                                      comment.dislikedBy?.includes(user.username)
+                                      comment.likedBy?.includes(
+                                        user.username
+                                      ) ||
+                                      comment.dislikedBy?.includes(
+                                        user.username
+                                      )
                                     }
                                   >
                                     👎 {comment.dislikes}
@@ -1147,7 +1178,9 @@ export default function BlogCard({
                                     className="btn btn-sm btn-outline-primary"
                                     onClick={() => toggleReplyInput(idx)}
                                     disabled={
-                                      !user || isCommentPending || isReplySending
+                                      !user ||
+                                      isCommentPending ||
+                                      isReplySending
                                     }
                                   >
                                     💬 Reply
@@ -1178,7 +1211,9 @@ export default function BlogCard({
                                     <button
                                       type="button"
                                       className="conversation-reply__avatar p-0 border-0 bg-transparent"
-                                      onClick={() => openUserProfile(reply.author)}
+                                      onClick={() =>
+                                        openUserProfile(reply.author)
+                                      }
                                       aria-label={`View ${reply.author}'s profile`}
                                     >
                                       {replyAvatar ? (
@@ -1199,9 +1234,14 @@ export default function BlogCard({
                                               ? "bg-secondary text-white"
                                               : "bg-primary bg-opacity-10 text-primary"
                                           }`}
-                                          style={{ width: "28px", height: "28px" }}
+                                          style={{
+                                            width: "28px",
+                                            height: "28px",
+                                          }}
                                         >
-                                          {reply.author?.charAt(0)?.toUpperCase() || "?"}
+                                          {reply.author
+                                            ?.charAt(0)
+                                            ?.toUpperCase() || "?"}
                                         </span>
                                       )}
                                     </button>
@@ -1452,7 +1492,8 @@ export default function BlogCard({
                                         : "bg-primary bg-opacity-10 text-primary"
                                     }`}
                                   >
-                                    {comment.author?.charAt(0)?.toUpperCase() || "?"}
+                                    {comment.author?.charAt(0)?.toUpperCase() ||
+                                      "?"}
                                   </span>
                                 )}
                               </button>
@@ -1467,7 +1508,9 @@ export default function BlogCard({
                                   }`}
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => openUserProfile(comment.author)}
+                                  onClick={() =>
+                                    openUserProfile(comment.author)
+                                  }
                                   onKeyDown={(event) => {
                                     if (
                                       event.key === "Enter" ||
@@ -1519,7 +1562,9 @@ export default function BlogCard({
                                   type="button"
                                   className="btn btn-sm btn-outline-primary"
                                   onClick={() => toggleReplyInput(idx)}
-                                  disabled={!user || isCommentPending || isReplySending}
+                                  disabled={
+                                    !user || isCommentPending || isReplySending
+                                  }
                                 >
                                   💬 Reply
                                 </button>
@@ -1549,7 +1594,9 @@ export default function BlogCard({
                                   <button
                                     type="button"
                                     className="conversation-reply__avatar p-0 border-0 bg-transparent"
-                                    onClick={() => openUserProfile(reply.author)}
+                                    onClick={() =>
+                                      openUserProfile(reply.author)
+                                    }
                                     aria-label={`View ${reply.author}'s profile`}
                                   >
                                     {replyAvatar ? (
@@ -1570,9 +1617,14 @@ export default function BlogCard({
                                             ? "bg-secondary text-white"
                                             : "bg-primary bg-opacity-10 text-primary"
                                         }`}
-                                        style={{ width: "24px", height: "24px" }}
+                                        style={{
+                                          width: "24px",
+                                          height: "24px",
+                                        }}
                                       >
-                                        {reply.author?.charAt(0)?.toUpperCase() || "?"}
+                                        {reply.author
+                                          ?.charAt(0)
+                                          ?.toUpperCase() || "?"}
                                       </span>
                                     )}
                                   </button>
@@ -1814,6 +1866,40 @@ export default function BlogCard({
 
         /* 📱 MOBILE STYLES */
         @media (max-width: 576px) {
+          .conversation-card .community-subtitle {
+            display: none !important;
+          }
+
+          /* Align Conversation title and View all in one row */
+          .conversation-card .conversation-header {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            width: 100%;
+          }
+
+          /* Remove outline/pill/button styling from View all */
+          .conversation-card .view-all-btn,
+          .conversation-card button.btn-outline-primary {
+            border: none !important;
+            background: transparent !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+          }
+
+          /* Make "View all" text cleaner and smaller */
+          .conversation-card .view-all-btn,
+          .conversation-card button.btn-outline-primary {
+            font-size: 0.85rem !important;
+            font-weight: 500 !important;
+            color: #3b82f6 !important; /* Tailwind blue-500 */
+          }
+
+          /* Hide the “Join X comments from the community.” text */
+          .conversation-card .community-subtitle {
+            display: none !important;
+          }
 
           /* Reduce space between image and text */
           .blog-card__media,
@@ -1825,8 +1911,8 @@ export default function BlogCard({
 
           /* Reduce padding inside card body */
           .blog-card__body {
-            padding-top: 0.10rem !important;
-            padding-bottom: 0.10rem !important;
+            padding-top: 0.1rem !important;
+            padding-bottom: 0.1rem !important;
           }
 
           /* Clean spacing + smaller text */
@@ -1844,8 +1930,8 @@ export default function BlogCard({
 
           /* Reduce spacing above buttons */
           .blog-card__footer {
-            margin-top: 0.20rem !important;
-            gap: 0.40rem !important;
+            margin-top: 0.2rem !important;
+            gap: 0.4rem !important;
           }
 
           /* Reduce gap between each button */
@@ -1856,7 +1942,7 @@ export default function BlogCard({
 
           /* Reduce spacing before comments section */
           .blog-card__comments-action {
-            margin-top: 0.10rem !important;
+            margin-top: 0.1rem !important;
           }
 
           .conversation-card {
