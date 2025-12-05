@@ -2015,9 +2015,11 @@ export default function BlogCard({
           /* NEW FIX: Avatar + name on line 1, text on line 2 */
           .conversation-comment__main {
             display: flex !important;
-            flex-direction: column !important;
+            flex-direction: row !important;
+            align-items: flex-start !important;
             width: 100%;
-            gap: 0.4rem !important;
+            gap: 0.5rem !important;
+            flex-wrap: nowrap !important;
           }
 
           .conversation-comment__meta {
@@ -2025,6 +2027,21 @@ export default function BlogCard({
             flex-direction: row !important;
             align-items: center !important;
             gap: 0.45rem !important;
+            flex: 1 1 auto;
+            min-width: 0;
+            flex-wrap: nowrap !important;
+          }
+
+          .conversation-comment__author {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.35rem !important;
+            min-width: 0;
+            max-width: 100%;
+            word-break: break-word;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
           }
 
           .conversation-comment__text {
