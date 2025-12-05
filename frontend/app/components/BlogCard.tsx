@@ -980,89 +980,73 @@ export default function BlogCard({
                           }`}
                         >
                           <div className="conversation-comment">
-                          <div className="conversation-comment__main conversation-comment__header">
-                            <div className="conversation-comment__avatar">
-                              <button
-                                type="button"
-                                className="p-0 border-0 bg-transparent"
-                                onClick={() =>
-                                  openUserProfile(comment.author)
-                                }
-                                aria-label={`View ${comment.author}'s profile`}
-                              >
-                                {comment.authorImage ? (
-                                  <img
-                                    src={comment.authorImage}
-                                    alt={`${comment.author}'s avatar`}
-                                    className="conversation-comment__avatar-image"
-                                  />
-                                ) : (
-                                  <span
-                                    className={`conversation-comment__avatar-fallback ${
-                                      isNight
-                                        ? "bg-secondary text-white"
-                                        : "bg-primary bg-opacity-10 text-primary"
-                                    }`}
-                                  >
-                                    {comment.author
-                                      ?.charAt(0)
-                                      ?.toUpperCase() || "?"}
-                                  </span>
-                                )}
-                              </button>
-                            </div>
-                            <div className="conversation-comment__meta">
-                              <div className="d-flex flex-column gap-1 w-100">
-                                <div className="d-flex align-items-center gap-2 flex-wrap">
-                                  <span className={isNight ? "text-light" : "text-muted"}>
-                                    -
-                                  </span>
-                                  <button
-                                    type="button"
-                                    className={`p-0 border-0 bg-transparent fw-semibold ${
-                                      isNight
-                                        ? "text-primary text-opacity-75"
-                                        : "text-primary"
-                                    }`}
-                                    onClick={() =>
-                                      openUserProfile(comment.author)
-                                    }
-                                    onKeyDown={(event) => {
-                                      if (
-                                        event.key === "Enter" ||
-                                        event.key === " "
-                                      ) {
-                                        event.preventDefault();
-                                        openUserProfile(comment.author);
-                                      }
-                                    }}
-                                    aria-label={`View ${comment.author}'s profile`}
-                                  >
-                                    {`${comment.author}'s profile`}
-                                  </button>
-                                  <span className={isNight ? "text-light" : "text-muted"}>+</span>
-                                  <span
-                                    className={`conversation-comment__author text-uppercase ${
-                                      isNight
-                                        ? "text-primary text-opacity-75"
-                                        : "text-primary"
-                                    }`}
-                                  >
-                                    {comment.author}
-                                  </span>
-                                </div>
-                                <p
-                                  className={`conversation-comment__text mb-0 ${
-                                    isNight ? "text-light" : "text-body"
-                                  }`}
+                            <div className="conversation-comment__main conversation-comment__header">
+                              <div className="conversation-comment__avatar">
+                                <button
+                                  type="button"
+                                  className="p-0 border-0 bg-transparent"
+                                  onClick={() =>
+                                    openUserProfile(comment.author)
+                                  }
+                                  aria-label={`View ${comment.author}'s profile`}
                                 >
-                                  - {comment.text}
-                                </p>
+                                  {comment.authorImage ? (
+                                    <img
+                                      src={comment.authorImage}
+                                      alt={`${comment.author}'s avatar`}
+                                      className="conversation-comment__avatar-image"
+                                    />
+                                  ) : (
+                                    <span
+                                      className={`conversation-comment__avatar-fallback ${
+                                        isNight
+                                          ? "bg-secondary text-white"
+                                          : "bg-primary bg-opacity-10 text-primary"
+                                      }`}
+                                    >
+                                      {comment.author
+                                        ?.charAt(0)
+                                        ?.toUpperCase() || "?"}
+                                    </span>
+                                  )}
+                                </button>
+                              </div>
+                              <div className="conversation-comment__meta">
+                                <span
+                                  className={`conversation-comment__author text-uppercase ${
+                                    isNight
+                                      ? "text-primary text-opacity-75"
+                                      : "text-primary"
+                                  }`}
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={() =>
+                                    openUserProfile(comment.author)
+                                  }
+                                  onKeyDown={(event) => {
+                                    if (
+                                      event.key === "Enter" ||
+                                      event.key === " "
+                                    ) {
+                                      event.preventDefault();
+                                      openUserProfile(comment.author);
+                                    }
+                                  }}
+                                >
+                                  {comment.author}
+                                </span>
                               </div>
                             </div>
-                          </div>
 
-                          <div className="conversation-comment__actions">
+                            <p
+                              className={`conversation-comment__text ${
+                                isNight ? "text-light" : "text-body"
+                              }`}
+                            >
+                              {comment.text}
+                            </p>
+
+                            <div className="conversation-comment__actions">
                               <button
                                 type="button"
                                 className="btn btn-sm btn-outline-success"
@@ -1150,37 +1134,28 @@ export default function BlogCard({
                                   >
                                     ↪
                                   </span>
-                                  <div className="conversation-reply__body d-flex flex-column flex-wrap align-items-start gap-1">
-                                    <div className="d-flex align-items-center gap-1 flex-wrap">
-                                      <span className={isNight ? "text-light" : "text-muted"}>
-                                        -
-                                      </span>
-                                      <button
-                                        type="button"
-                                        className="fw-semibold p-0 border-0 bg-transparent text-start"
-                                        onClick={() =>
-                                          openUserProfile(reply.author)
+                                  <div className="conversation-reply__body d-flex flex-wrap align-items-center gap-1">
+                                    <button
+                                      type="button"
+                                      className="fw-semibold p-0 border-0 bg-transparent text-start"
+                                      onClick={() =>
+                                        openUserProfile(reply.author)
+                                      }
+                                      onKeyDown={(event) => {
+                                        if (
+                                          event.key === "Enter" ||
+                                          event.key === " "
+                                        ) {
+                                          event.preventDefault();
+                                          openUserProfile(reply.author);
                                         }
-                                        onKeyDown={(event) => {
-                                          if (
-                                            event.key === "Enter" ||
-                                            event.key === " "
-                                          ) {
-                                            event.preventDefault();
-                                            openUserProfile(reply.author);
-                                          }
-                                        }}
-                                        aria-label={`View ${reply.author}'s profile`}
-                                      >
-                                        {`${reply.author}'s profile`}
-                                      </button>
-                                      <span className={isNight ? "text-light" : "text-muted"}>+</span>
-                                      <span className="fw-semibold text-break">
-                                        {reply.author}
-                                      </span>
-                                    </div>
+                                      }}
+                                      aria-label={`View ${reply.author}'s profile`}
+                                    >
+                                      {reply.author}
+                                    </button>
                                     <span className="text-muted">
-                                      - {reply.text}
+                                      {reply.text}
                                     </span>
                                     {reply.isPending && (
                                       <span className="badge bg-secondary bg-opacity-25 text-secondary ms-auto">
@@ -1402,63 +1377,36 @@ export default function BlogCard({
                               </button>
                             </div>
                             <div className="conversation-comment__meta">
-                              <div className="d-flex flex-column gap-1 w-100">
-                                <div className="d-flex align-items-center gap-2 flex-wrap">
-                                  <span
-                                    className={
-                                      theme === "night" ? "text-light" : "text-muted"
-                                    }
-                                  >
-                                    -
-                                  </span>
-                                  <button
-                                    type="button"
-                                    className={`p-0 border-0 bg-transparent fw-semibold ${
-                                      theme === "night"
-                                        ? "text-primary text-opacity-75"
-                                        : "text-primary"
-                                    }`}
-                                    onClick={() => openUserProfile(comment.author)}
-                                    onKeyDown={(event) => {
-                                      if (
-                                        event.key === "Enter" ||
-                                        event.key === " "
-                                      ) {
-                                        event.preventDefault();
-                                        openUserProfile(comment.author);
-                                      }
-                                    }}
-                                    aria-label={`View ${comment.author}'s profile`}
-                                  >
-                                    {`${comment.author}'s profile`}
-                                  </button>
-                                  <span
-                                    className={
-                                      theme === "night" ? "text-light" : "text-muted"
-                                    }
-                                  >
-                                    +
-                                  </span>
-                                  <span
-                                    className={`conversation-comment__author text-uppercase ${
-                                      theme === "night"
-                                        ? "text-primary text-opacity-75"
-                                        : "text-primary"
-                                    }`}
-                                  >
-                                    {comment.author}
-                                  </span>
-                                </div>
-                                <p
-                                  className={`conversation-comment__text mb-0 ${
-                                    theme === "night" ? "text-light" : "text-body"
-                                  }`}
-                                >
-                                  - {comment.text}
-                                </p>
-                              </div>
+                              <span
+                                className={`conversation-comment__author text-uppercase ${
+                                  theme === "night"
+                                    ? "text-primary text-opacity-75"
+                                    : "text-primary"
+                                }`}
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => openUserProfile(comment.author)}
+                                onKeyDown={(event) => {
+                                  if (
+                                    event.key === "Enter" ||
+                                    event.key === " "
+                                  ) {
+                                    event.preventDefault();
+                                    openUserProfile(comment.author);
+                                  }
+                                }}
+                              >
+                                {comment.author}
+                              </span>
                             </div>
                           </div>
+                          <p
+                            className={`conversation-comment__text ${
+                              theme === "night" ? "text-light" : "text-body"
+                            }`}
+                          >
+                            {comment.text}
+                          </p>
                           <div className="conversation-comment__actions">
                             <button
                               type="button"
@@ -1547,47 +1495,28 @@ export default function BlogCard({
                                 >
                                   ↪
                                 </span>
-                                <div className="conversation-reply__body d-flex flex-column flex-wrap align-items-start gap-1">
-                                  <div className="d-flex align-items-center gap-1 flex-wrap">
-                                    <span
-                                      className={
-                                        theme === "night" ? "text-light" : "text-muted"
+                                <div className="conversation-reply__body d-flex flex-wrap align-items-center gap-1">
+                                  <button
+                                    type="button"
+                                    className="fw-semibold p-0 border-0 bg-transparent text-start"
+                                    onClick={() =>
+                                      openUserProfile(reply.author)
+                                    }
+                                    onKeyDown={(event) => {
+                                      if (
+                                        event.key === "Enter" ||
+                                        event.key === " "
+                                      ) {
+                                        event.preventDefault();
+                                        openUserProfile(reply.author);
                                       }
-                                    >
-                                      -
-                                    </span>
-                                    <button
-                                      type="button"
-                                      className="fw-semibold p-0 border-0 bg-transparent text-start"
-                                      onClick={() =>
-                                        openUserProfile(reply.author)
-                                      }
-                                      onKeyDown={(event) => {
-                                        if (
-                                          event.key === "Enter" ||
-                                          event.key === " "
-                                        ) {
-                                          event.preventDefault();
-                                          openUserProfile(reply.author);
-                                        }
-                                      }}
-                                      aria-label={`View ${reply.author}'s profile`}
-                                    >
-                                      {`${reply.author}'s profile`}
-                                    </button>
-                                    <span
-                                      className={
-                                        theme === "night" ? "text-light" : "text-muted"
-                                      }
-                                    >
-                                      +
-                                    </span>
-                                    <span className="fw-semibold text-break">
-                                      {reply.author}
-                                    </span>
-                                  </div>
+                                    }}
+                                    aria-label={`View ${reply.author}'s profile`}
+                                  >
+                                    {reply.author}
+                                  </button>
                                   <span className="text-muted">
-                                    - {reply.text}
+                                    {reply.text}
                                   </span>
                                   {reply.isPending && (
                                     <span className="badge bg-secondary bg-opacity-25 text-secondary ms-auto">
