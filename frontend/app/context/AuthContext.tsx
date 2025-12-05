@@ -50,6 +50,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateOnlineStatus = useCallback(
     async (username: string, online: boolean) => {
+      // Avoid firing background requests when the user is offline. These would
+      // otherwise fail with a noisy "Failed to fetch" console error when the
+      // browser blocks network access.
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        return;
+      }
+
       try {
         const res = await fetch(apiUrl(`/api/users/${encodeURIComponent(username)}`), {
           method: "PUT",
@@ -57,6 +64,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             "Content-Type": "application/json",
             Authorization: username,
           },
+          // keepalive prevents the request from being canceled when the page
+          // is closing or hidden, reducing spurious fetch errors in the console.
+          keepalive: true,
           body: JSON.stringify({ online }),
         });
 
