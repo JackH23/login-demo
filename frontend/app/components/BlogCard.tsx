@@ -1043,104 +1043,106 @@ export default function BlogCard({
                           }`}
                         >
                           <div className="conversation-comment">
-                            <div className="conversation-comment__avatar">
-                              <button
-                                type="button"
-                                className="p-0 border-0 bg-transparent"
-                                onClick={() => openUserProfile(comment.author)}
-                                aria-label={`View ${comment.author}'s profile`}
-                              >
-                                {comment.authorImage ? (
-                                  <img
-                                    src={comment.authorImage}
-                                    alt={`${comment.author}'s avatar`}
-                                    className="conversation-comment__avatar-image"
-                                  />
-                                ) : (
-                                  <span
-                                    className={`conversation-comment__avatar-fallback ${
-                                      isNight
-                                        ? "bg-secondary text-white"
-                                        : "bg-primary bg-opacity-10 text-primary"
-                                    }`}
-                                  >
-                                    {comment.author?.charAt(0)?.toUpperCase() ||
-                                      "?"}
-                                  </span>
-                                )}
-                              </button>
-                            </div>
-
-                            <div className="conversation-comment__body">
-                              <div className="conversation-comment__meta">
-                                <span
-                                  className={`conversation-comment__author text-uppercase ${
-                                    isNight
-                                      ? "text-primary text-opacity-75"
-                                      : "text-primary"
-                                  }`}
-                                  role="button"
-                                  tabIndex={0}
+                            <div className="conversation-comment__main">
+                              <div className="conversation-comment__avatar">
+                                <button
+                                  type="button"
+                                  className="p-0 border-0 bg-transparent"
                                   onClick={() => openUserProfile(comment.author)}
-                                  onKeyDown={(event) => {
-                                    if (
-                                      event.key === "Enter" ||
-                                      event.key === " "
-                                    ) {
-                                      event.preventDefault();
-                                      openUserProfile(comment.author);
-                                    }
-                                  }}
+                                  aria-label={`View ${comment.author}'s profile`}
                                 >
-                                  {comment.author}
-                                </span>
+                                  {comment.authorImage ? (
+                                    <img
+                                      src={comment.authorImage}
+                                      alt={`${comment.author}'s avatar`}
+                                      className="conversation-comment__avatar-image"
+                                    />
+                                  ) : (
+                                    <span
+                                      className={`conversation-comment__avatar-fallback ${
+                                        isNight
+                                          ? "bg-secondary text-white"
+                                          : "bg-primary bg-opacity-10 text-primary"
+                                      }`}
+                                    >
+                                      {comment.author?.charAt(0)?.toUpperCase() ||
+                                        "?"}
+                                    </span>
+                                  )}
+                                </button>
                               </div>
 
-                              <p
-                                className={`conversation-comment__text ${
-                                  isNight ? "text-light" : "text-body"
-                                }`}
-                              >
-                                {comment.text}
-                              </p>
+                              <div className="conversation-comment__body">
+                                <div className="conversation-comment__meta">
+                                  <span
+                                    className={`conversation-comment__author text-uppercase ${
+                                      isNight
+                                        ? "text-primary text-opacity-75"
+                                        : "text-primary"
+                                    }`}
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() => openUserProfile(comment.author)}
+                                    onKeyDown={(event) => {
+                                      if (
+                                        event.key === "Enter" ||
+                                        event.key === " "
+                                      ) {
+                                        event.preventDefault();
+                                        openUserProfile(comment.author);
+                                      }
+                                    }}
+                                  >
+                                    {comment.author}
+                                  </span>
+                                </div>
 
-                              <div className="conversation-comment__actions">
-                                <button
-                                  type="button"
-                                  className="btn btn-sm btn-outline-success"
-                                  onClick={() => handleLikeComment(idx)}
-                                  disabled={
-                                    !user ||
-                                    isCommentPending ||
-                                    comment.likedBy?.includes(user.username) ||
-                                    comment.dislikedBy?.includes(user.username)
-                                  }
+                                <p
+                                  className={`conversation-comment__text ${
+                                    isNight ? "text-light" : "text-body"
+                                  }`}
                                 >
-                                  👍 {comment.likes}
-                                </button>
-                                <button
-                                  type="button"
-                                  className="btn btn-sm btn-outline-danger"
-                                  onClick={() => handleDislikeComment(idx)}
-                                  disabled={
-                                    !user ||
-                                    isCommentPending ||
-                                    comment.likedBy?.includes(user.username) ||
-                                    comment.dislikedBy?.includes(user.username)
-                                  }
-                                >
-                                  👎 {comment.dislikes}
-                                </button>
-                                <button
-                                  type="button"
-                                  className="btn btn-sm btn-outline-primary"
-                                  onClick={() => toggleReplyInput(idx)}
-                                  disabled={
-                                    !user || isCommentPending || isReplySending
-                                  }
-                                >
-                                  💬 Reply
-                                </button>
+                                  {comment.text}
+                                </p>
+
+                                <div className="conversation-comment__actions">
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline-success"
+                                    onClick={() => handleLikeComment(idx)}
+                                    disabled={
+                                      !user ||
+                                      isCommentPending ||
+                                      comment.likedBy?.includes(user.username) ||
+                                      comment.dislikedBy?.includes(user.username)
+                                    }
+                                  >
+                                    👍 {comment.likes}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline-danger"
+                                    onClick={() => handleDislikeComment(idx)}
+                                    disabled={
+                                      !user ||
+                                      isCommentPending ||
+                                      comment.likedBy?.includes(user.username) ||
+                                      comment.dislikedBy?.includes(user.username)
+                                    }
+                                  >
+                                    👎 {comment.dislikes}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline-primary"
+                                    onClick={() => toggleReplyInput(idx)}
+                                    disabled={
+                                      !user || isCommentPending || isReplySending
+                                    }
+                                  >
+                                    💬 Reply
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -1407,100 +1409,100 @@ export default function BlogCard({
                         }`}
                       >
                         <div className="conversation-comment">
-                          <div className="conversation-comment__avatar">
-                            <button
-                              type="button"
-                              className="p-0 border-0 bg-transparent"
-                              onClick={() => openUserProfile(comment.author)}
-                              aria-label={`View ${comment.author}'s profile`}
-                            >
-                              {comment.authorImage ? (
-                                <img
-                                  src={comment.authorImage}
-                                  alt={`${comment.author}'s avatar`}
-                                  className="conversation-comment__avatar-image"
-                                />
-                              ) : (
-                                <span
-                                  className={`conversation-comment__avatar-fallback ${
-                                    theme === "night"
-                                      ? "bg-secondary text-white"
-                                      : "bg-primary bg-opacity-10 text-primary"
-                                  }`}
-                                >
-                                  {comment.author?.charAt(0)?.toUpperCase() || "?"}
-                                </span>
-                              )}
-                            </button>
-                          </div>
-                          <div className="conversation-comment__body">
-                            <div className="conversation-comment__meta">
-                              <span
-                                className={`conversation-comment__author text-uppercase ${
-                                  theme === "night"
-                                    ? "text-primary text-opacity-75"
-                                    : "text-primary"
-                                }`}
-                                role="button"
-                                tabIndex={0}
+                          <div className="conversation-comment__main">
+                            <div className="conversation-comment__avatar">
+                              <button
+                                type="button"
+                                className="p-0 border-0 bg-transparent"
                                 onClick={() => openUserProfile(comment.author)}
-                                onKeyDown={(event) => {
-                                  if (
-                                    event.key === "Enter" ||
-                                    event.key === " "
-                                  ) {
-                                    event.preventDefault();
-                                    openUserProfile(comment.author);
-                                  }
-                                }}
+                                aria-label={`View ${comment.author}'s profile`}
                               >
-                                {comment.author}
-                              </span>
+                                {comment.authorImage ? (
+                                  <img
+                                    src={comment.authorImage}
+                                    alt={`${comment.author}'s avatar`}
+                                    className="conversation-comment__avatar-image"
+                                  />
+                                ) : (
+                                  <span
+                                    className={`conversation-comment__avatar-fallback ${
+                                      theme === "night"
+                                        ? "bg-secondary text-white"
+                                        : "bg-primary bg-opacity-10 text-primary"
+                                    }`}
+                                  >
+                                    {comment.author?.charAt(0)?.toUpperCase() || "?"}
+                                  </span>
+                                )}
+                              </button>
                             </div>
-                            <p
-                              className={`conversation-comment__text ${
-                                theme === "night" ? "text-light" : "text-body"
-                              }`}
-                            >
-                              {comment.text}
-                            </p>
-                            <div className="conversation-comment__actions">
-                              <button
-                                type="button"
-                                className="btn btn-sm btn-outline-success"
-                                onClick={() => handleLikeComment(idx)}
-                                disabled={
-                                  !user ||
-                                  isCommentPending ||
-                                  comment.likedBy?.includes(user.username) ||
-                                  comment.dislikedBy?.includes(user.username)
-                                }
+                            <div className="conversation-comment__body">
+                              <div className="conversation-comment__meta">
+                                <span
+                                  className={`conversation-comment__author text-uppercase ${
+                                    theme === "night"
+                                      ? "text-primary text-opacity-75"
+                                      : "text-primary"
+                                  }`}
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={() => openUserProfile(comment.author)}
+                                  onKeyDown={(event) => {
+                                    if (
+                                      event.key === "Enter" ||
+                                      event.key === " "
+                                    ) {
+                                      event.preventDefault();
+                                      openUserProfile(comment.author);
+                                    }
+                                  }}
+                                >
+                                  {comment.author}
+                                </span>
+                              </div>
+                              <p
+                                className={`conversation-comment__text ${
+                                  theme === "night" ? "text-light" : "text-body"
+                                }`}
                               >
-                                👍 {comment.likes}
-                              </button>
-                              <button
-                                type="button"
-                                className="btn btn-sm btn-outline-danger"
-                                onClick={() => handleDislikeComment(idx)}
-                                disabled={
-                                  !user ||
-                                  isCommentPending ||
-                                  comment.likedBy?.includes(user.username) ||
-                                  comment.dislikedBy?.includes(user.username)
-                                }
-                              >
-                                👎 {comment.dislikes}
-                              </button>
-                              <button
-                                type="button"
-                                className="btn btn-sm btn-outline-primary"
-                                onClick={() => toggleReplyInput(idx)}
-                                disabled={
-                                  !user || isCommentPending || isReplySending
-                                }
-                              >
-                                💬 Reply
-                              </button>
+                                {comment.text}
+                              </p>
+                              <div className="conversation-comment__actions">
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-outline-success"
+                                  onClick={() => handleLikeComment(idx)}
+                                  disabled={
+                                    !user ||
+                                    isCommentPending ||
+                                    comment.likedBy?.includes(user.username) ||
+                                    comment.dislikedBy?.includes(user.username)
+                                  }
+                                >
+                                  👍 {comment.likes}
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-outline-danger"
+                                  onClick={() => handleDislikeComment(idx)}
+                                  disabled={
+                                    !user ||
+                                    isCommentPending ||
+                                    comment.likedBy?.includes(user.username) ||
+                                    comment.dislikedBy?.includes(user.username)
+                                  }
+                                >
+                                  👎 {comment.dislikes}
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-outline-primary"
+                                  onClick={() => toggleReplyInput(idx)}
+                                  disabled={!user || isCommentPending || isReplySending}
+                                >
+                                  💬 Reply
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -1894,9 +1896,20 @@ export default function BlogCard({
           }
 
           /* Conversation section */
+          .conversation-comment-wrapper {
+            max-height: 240px;
+            overflow-y: auto;
+            padding-right: 0.35rem;
+          }
+
+          .conversation-comment {
+            flex-direction: column;
+          }
+
           .conversation-comment__main {
             align-items: flex-start;
             gap: 0.65rem;
+            width: 100%;
           }
 
           .conversation-comment__actions {
@@ -1924,6 +1937,7 @@ export default function BlogCard({
           .conversation-reply__body {
             flex: 1;
             min-width: 0;
+            word-break: break-word;
           }
 
           .conversation-card h5 {
