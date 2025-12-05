@@ -1867,6 +1867,17 @@ export default function BlogCard({
 
         /* 📱 MOBILE STYLES */
         @media (max-width: 576px) {
+          .conversation-card .conversation-header {
+            display: flex !important;
+            align-items: center !important;
+            padding: 1rem 0.8rem 0 0 !important;
+          }
+
+          /* Hide both the icon and the Conversation text */
+          .conversation-card .conversation-header h5 {
+            display: none !important;
+          }
+
           .conversation-card .community-subtitle {
             display: none !important;
           }

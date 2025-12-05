@@ -1,7 +1,13 @@
 "use client";
 
 // React hooks for managing context state on the client
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { Socket } from "socket.io-client";
 import { apiUrl, resolveImageUrl } from "@/app/lib/api";
 import socketClient from "@/lib/socketClient";
@@ -58,17 +64,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        const res = await fetch(apiUrl(`/api/users/${encodeURIComponent(username)}`), {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: username,
-          },
-          // keepalive prevents the request from being canceled when the page
-          // is closing or hidden, reducing spurious fetch errors in the console.
-          keepalive: true,
-          body: JSON.stringify({ online }),
-        });
+        const res = await fetch(
+          apiUrl(`/api/users/${encodeURIComponent(username)}`),
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: username,
+            },
+            // keepalive prevents the request from being canceled when the page
+            // is closing or hidden, reducing spurious fetch errors in the console.
+            keepalive: true,
+            body: JSON.stringify({ online }),
+          }
+        );
 
         if (!res.ok) {
           let message = "Failed to update user";
@@ -90,10 +99,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(null);
             return;
           }
+          console.error("Unable to update user status", error);
 
           throw new Error(message);
         }
       } catch (error) {
+        // Keep transient network failures (e.g., tab close, offline) from
+        // surfacing as console errors that trigger the Next.js dev overlay.
+        if (error instanceof TypeError && /fetch/i.test(error.message)) {
+          console.warn("Skip logging transient status update failure", error);
+          return;
+        }
+
         console.error("Unable to update user status", error);
       }
     },
@@ -217,7 +234,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch(apiUrl("/api/auth/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: sanitizedEmail, password: sanitizedPassword }),
+        body: JSON.stringify({
+          email: sanitizedEmail,
+          password: sanitizedPassword,
+        }),
       });
       if (res.ok) {
         const data = await res.json();
