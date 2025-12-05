@@ -823,78 +823,153 @@ export default function BlogCard({
         )}
 
         <div className="blog-card__footer d-flex flex-column flex-md-row gap-3 mt-4 align-items-start align-items-md-center w-100">
-          <div
-            className={`blog-card__actions d-flex flex-wrap gap-2 ${
-              isMobile ? "" : "align-items-center"
-            }`}
-          >
-            <button
-              className={`btn btn-sm btn-success rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
-              onClick={handleLikePost}
-              disabled={hasLikedPost || !user}
-              style={{ fontSize: isMobile ? "0.9rem" : undefined }}
-            >
-              <span>👍</span>
-              <span className="badge bg-white text-success ms-1">{likes}</span>
-            </button>
+          {isMobile ? (
+            <div className="w-100 d-flex flex-column gap-2">
+              <div className="blog-card__actions-mobile d-flex flex-wrap gap-2">
+                <button
+                  className={`btn btn-sm btn-success rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
+                  onClick={handleLikePost}
+                  disabled={hasLikedPost || !user}
+                  style={{ fontSize: "0.95rem" }}
+                >
+                  <span>👍</span>
+                  <span className="badge bg-white text-success ms-1">{likes}</span>
+                </button>
 
-            <button
-              className={`btn btn-sm btn-outline-danger rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
-              onClick={handleDislikePost}
-              disabled={hasDislikedPost || !user}
-              style={{ fontSize: isMobile ? "0.9rem" : undefined }}
-            >
-              <span>👎</span>
-              <span className="badge bg-light text-danger ms-1">
-                {dislikes}
-              </span>
-            </button>
-            <button
-              className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
-                isNight ? "btn-outline-light" : "btn-outline-secondary"
-              }`}
-              onClick={() => {
-                const shareText = `${blog.title}\n\n${blog.content}\n\nShared from Blog App`;
-                const shareUrl = window.location.href;
-                if (navigator.share) {
-                  navigator
-                    .share({
-                      title: blog.title,
-                      text: shareText,
-                      url: shareUrl,
-                    })
-                    .catch((err) => console.error("Share failed", err));
-                } else {
-                  navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
-                  alert("Link copied to clipboard!");
-                }
-              }}
-              style={{ fontSize: isMobile ? "0.9rem" : undefined }}
-            >
-              <span>⤴</span>
-              <span>Share</span>
-            </button>
+                <button
+                  className={`btn btn-sm btn-outline-danger rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
+                  onClick={handleDislikePost}
+                  disabled={hasDislikedPost || !user}
+                  style={{ fontSize: "0.95rem" }}
+                >
+                  <span>👎</span>
+                  <span className="badge bg-light text-danger ms-1">{dislikes}</span>
+                </button>
 
-            <button
-              className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
-                isNight ? "btn-outline-light" : "btn-outline-secondary"
-              }`}
-              onClick={() => setShowConversation((prev) => !prev)}
-              style={{ fontSize: isMobile ? "0.9rem" : undefined }}
-              aria-pressed={showConversation}
-            >
-              <span>💬</span>
-              <span>{showConversation ? "Hide chat" : "Comments"}</span>
-            </button>
-          </div>
+                <button
+                  className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
+                    isNight ? "btn-outline-light" : "btn-outline-secondary"
+                  }`}
+                  onClick={() => {
+                    const shareText = `${blog.title}\n\n${blog.content}\n\nShared from Blog App`;
+                    const shareUrl = window.location.href;
+                    if (navigator.share) {
+                      navigator
+                        .share({
+                          title: blog.title,
+                          text: shareText,
+                          url: shareUrl,
+                        })
+                        .catch((err) => console.error("Share failed", err));
+                    } else {
+                      navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
+                      alert("Link copied to clipboard!");
+                    }
+                  }}
+                  style={{ fontSize: "0.95rem" }}
+                >
+                  <span>⤴</span>
+                  <span>Share</span>
+                </button>
 
-          {user && user.username === blog.author && (
-            <button
-              className="btn btn-sm btn-outline-danger rounded-pill px-3"
-              onClick={() => setShowDeleteModal(true)}
-            >
-              🗑️ Delete
-            </button>
+                {user && user.username === blog.author && (
+                  <button
+                    className="btn btn-sm btn-outline-danger rounded-pill d-flex align-items-center gap-2 px-3"
+                    onClick={() => setShowDeleteModal(true)}
+                    style={{ fontSize: "0.95rem" }}
+                  >
+                    <span>🗑️</span>
+                    <span>Delete</span>
+                  </button>
+                )}
+              </div>
+
+              <div className="blog-card__comments-action w-100">
+                <button
+                  className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
+                    isNight ? "btn-outline-light" : "btn-outline-secondary"
+                  } w-100 justify-content-center`}
+                  onClick={() => setShowConversation((prev) => !prev)}
+                  style={{ fontSize: "0.95rem" }}
+                  aria-pressed={showConversation}
+                >
+                  <span>💬</span>
+                  <span>{showConversation ? "Hide chat" : "Comments"}</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="blog-card__actions d-flex flex-wrap gap-2 align-items-center">
+                <button
+                  className={`btn btn-sm btn-success rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
+                  onClick={handleLikePost}
+                  disabled={hasLikedPost || !user}
+                  style={{ fontSize: isMobile ? "0.9rem" : undefined }}
+                >
+                  <span>👍</span>
+                  <span className="badge bg-white text-success ms-1">{likes}</span>
+                </button>
+
+                <button
+                  className={`btn btn-sm btn-outline-danger rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
+                  onClick={handleDislikePost}
+                  disabled={hasDislikedPost || !user}
+                  style={{ fontSize: isMobile ? "0.9rem" : undefined }}
+                >
+                  <span>👎</span>
+                  <span className="badge bg-light text-danger ms-1">
+                    {dislikes}
+                  </span>
+                </button>
+                <button
+                  className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
+                    isNight ? "btn-outline-light" : "btn-outline-secondary"
+                  }`}
+                  onClick={() => {
+                    const shareText = `${blog.title}\n\n${blog.content}\n\nShared from Blog App`;
+                    const shareUrl = window.location.href;
+                    if (navigator.share) {
+                      navigator
+                        .share({
+                          title: blog.title,
+                          text: shareText,
+                          url: shareUrl,
+                        })
+                        .catch((err) => console.error("Share failed", err));
+                    } else {
+                      navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
+                      alert("Link copied to clipboard!");
+                    }
+                  }}
+                  style={{ fontSize: isMobile ? "0.9rem" : undefined }}
+                >
+                  <span>⤴</span>
+                  <span>Share</span>
+                </button>
+
+                <button
+                  className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
+                    isNight ? "btn-outline-light" : "btn-outline-secondary"
+                  }`}
+                  onClick={() => setShowConversation((prev) => !prev)}
+                  style={{ fontSize: isMobile ? "0.9rem" : undefined }}
+                  aria-pressed={showConversation}
+                >
+                  <span>💬</span>
+                  <span>{showConversation ? "Hide chat" : "Comments"}</span>
+                </button>
+              </div>
+
+              {user && user.username === blog.author && (
+                <button
+                  className="btn btn-sm btn-outline-danger rounded-pill px-3"
+                  onClick={() => setShowDeleteModal(true)}
+                >
+                  🗑️ Delete
+                </button>
+              )}
+            </>
           )}
         </div>
 
@@ -1748,18 +1823,25 @@ export default function BlogCard({
             gap: 0.75rem !important;
           }
 
-          .blog-card__actions {
+          .blog-card__actions-mobile {
             width: 100%;
-            display: grid !important;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            row-gap: 0.5rem;
+            justify-content: space-between;
           }
 
-          .blog-card__actions .btn {
-            width: 100%;
+          .blog-card__actions-mobile .btn {
+            flex: 1 1 calc(25% - 0.5rem);
+            min-width: 120px;
             justify-content: center;
-            font-size: 0.9rem;
-            padding: 0.45rem 0.65rem;
+            font-size: 0.95rem;
+            padding: 0.6rem 0.75rem;
+            min-height: 44px;
+          }
+
+          .blog-card__comments-action .btn {
+            justify-content: center;
+            font-size: 0.95rem;
+            padding: 0.6rem 0.75rem;
+            min-height: 44px;
           }
 
           .blog-card__body .card-text {
