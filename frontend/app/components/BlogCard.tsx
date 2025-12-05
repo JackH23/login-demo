@@ -1,7 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useEffect, CSSProperties, useCallback } from "react";
+import {
+  useState,
+  useEffect,
+  CSSProperties,
+  useCallback,
+  useRef,
+} from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { useCachedApi } from "../hooks/useCachedApi";
@@ -79,6 +85,9 @@ export default function BlogCard({
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [replySubmittingId, setReplySubmittingId] = useState<string | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [chatAnchorTop, setChatAnchorTop] = useState<number | null>(null);
+
 
   const { data: knownUsers } = useCachedApi<AuthorData[]>(
     user ? "/api/users" : null,
@@ -267,6 +276,24 @@ export default function BlogCard({
       }))
     );
   }, [resolveAvatar]);
+
+  useEffect(() => {
+    const buttonHeight = isMobile ? 44 : 48;
+    const buttonSpacing = isMobile ? 12 : 16;
+
+    const updateAnchor = () => {
+      const cardHeight = cardRef.current?.getBoundingClientRect().height;
+      if (!cardHeight) return;
+      setChatAnchorTop(cardHeight - buttonHeight - buttonSpacing);
+    };
+
+    if (!showConversation) {
+      updateAnchor();
+    }
+
+    window.addEventListener("resize", updateAnchor);
+    return () => window.removeEventListener("resize", updateAnchor);
+  }, [isMobile, showConversation]);
 
   const handleCommentSubmit = async () => {
     const text = newComment.trim();
@@ -599,6 +626,7 @@ export default function BlogCard({
 
   return (
     <div
+      ref={cardRef}
       className={`blog-card card border-0 shadow-lg w-100 mx-auto mb-4 position-relative ${
         isNight ? "bg-dark text-light" : "bg-white"
       }`}
@@ -1652,9 +1680,15 @@ export default function BlogCard({
       {/* Floating Chat Icon */}
       <button
         type="button"
-        className={`btn btn-sm rounded-circle position-absolute bottom-0 end-0 m-3 shadow ${
+        className={`btn btn-sm rounded-circle position-absolute shadow ${
           isNight ? "btn-outline-light bg-dark bg-opacity-50" : "btn-outline-light bg-white bg-opacity-75"
         }`}
+        style={{
+          right: isMobile ? "0.75rem" : "1rem",
+          ...(chatAnchorTop !== null
+            ? { top: `${chatAnchorTop}px` }
+            : { bottom: isMobile ? "0.75rem" : "1rem" }),
+        }}
         onClick={() => setShowConversation((prev) => !prev)}
         aria-label={`${showConversation ? "Hide" : "Show"} conversation`}
         aria-pressed={showConversation}
