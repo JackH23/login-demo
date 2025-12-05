@@ -124,8 +124,10 @@ export default function BlogCard({
   const isProfileNavigable = Boolean(displayAuthor);
 
   const resolveAvatar = useCallback(
-    (raw?: string | null, username?: string) =>
-      resolveImageUrl(raw) ?? (username ? userImages[username] : undefined),
+    (raw?: string | null, username?: string) => {
+      const knownUserImage = username ? userImages[username] : undefined;
+      return knownUserImage ?? resolveImageUrl(raw);
+    },
     [userImages]
   );
 
@@ -1096,18 +1098,16 @@ export default function BlogCard({
                                       : "text-muted"
                                   } small mb-2`}
                                 >
-                                  {reply.authorImage && (
-                                    <button
-                                      type="button"
-                                      className="conversation-reply__avatar p-0 border-0 bg-transparent"
-                                      onClick={() =>
-                                        openUserProfile(reply.author)
-                                      }
-                                      aria-label={`View ${reply.author}'s profile`}
-                                    >
+                                  <button
+                                    type="button"
+                                    className="conversation-reply__avatar p-0 border-0 bg-transparent"
+                                    onClick={() => openUserProfile(reply.author)}
+                                    aria-label={`View ${reply.author}'s profile`}
+                                  >
+                                    {reply.authorImage ? (
                                       <img
                                         src={reply.authorImage}
-                                        alt={reply.author}
+                                        alt={`${reply.author}'s avatar`}
                                         className="rounded-circle"
                                         style={{
                                           width: "28px",
@@ -1115,8 +1115,19 @@ export default function BlogCard({
                                           objectFit: "cover",
                                         }}
                                       />
-                                    </button>
-                                  )}
+                                    ) : (
+                                      <span
+                                        className={`d-inline-flex align-items-center justify-content-center rounded-circle ${
+                                          isNight
+                                            ? "bg-secondary text-white"
+                                            : "bg-primary bg-opacity-10 text-primary"
+                                        }`}
+                                        style={{ width: "28px", height: "28px" }}
+                                      >
+                                        {reply.author?.charAt(0)?.toUpperCase() || "?"}
+                                      </span>
+                                    )}
+                                  </button>
                                   <span
                                     className="conversation-reply__arrow"
                                     aria-hidden="true"
@@ -1448,18 +1459,16 @@ export default function BlogCard({
                                     : "text-muted"
                                 } small mb-2`}
                               >
-                                {reply.authorImage && (
-                                  <button
-                                    type="button"
-                                    className="conversation-reply__avatar p-0 border-0 bg-transparent"
-                                    onClick={() =>
-                                      openUserProfile(reply.author)
-                                    }
-                                    aria-label={`View ${reply.author}'s profile`}
-                                  >
+                                <button
+                                  type="button"
+                                  className="conversation-reply__avatar p-0 border-0 bg-transparent"
+                                  onClick={() => openUserProfile(reply.author)}
+                                  aria-label={`View ${reply.author}'s profile`}
+                                >
+                                  {reply.authorImage ? (
                                     <img
                                       src={reply.authorImage}
-                                      alt={reply.author}
+                                      alt={`${reply.author}'s avatar`}
                                       className="rounded-circle"
                                       style={{
                                         width: "24px",
@@ -1467,8 +1476,19 @@ export default function BlogCard({
                                         objectFit: "cover",
                                       }}
                                     />
-                                  </button>
-                                )}
+                                  ) : (
+                                    <span
+                                      className={`d-inline-flex align-items-center justify-content-center rounded-circle ${
+                                        theme === "night"
+                                          ? "bg-secondary text-white"
+                                          : "bg-primary bg-opacity-10 text-primary"
+                                      }`}
+                                      style={{ width: "24px", height: "24px" }}
+                                    >
+                                      {reply.author?.charAt(0)?.toUpperCase() || "?"}
+                                    </span>
+                                  )}
+                                </button>
                                 <span
                                   className="conversation-reply__arrow"
                                   aria-hidden="true"
