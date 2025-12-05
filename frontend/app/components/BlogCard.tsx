@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useEffect, CSSProperties, useCallback, useRef } from "react";
+import { useState, useEffect, CSSProperties, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { useCachedApi } from "../hooks/useCachedApi";
@@ -81,8 +81,6 @@ export default function BlogCard({
   const [replySubmittingId, setReplySubmittingId] = useState<string | null>(
     null
   );
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [chatAnchorTop, setChatAnchorTop] = useState<number | null>(null);
 
   const { data: knownUsers } = useCachedApi<AuthorData[]>(
     user ? "/api/users" : null,
@@ -271,24 +269,6 @@ export default function BlogCard({
       }))
     );
   }, [resolveAvatar]);
-
-  useEffect(() => {
-    const buttonHeight = isMobile ? 44 : 48;
-    const buttonSpacing = isMobile ? 12 : 16;
-
-    const updateAnchor = () => {
-      const cardHeight = cardRef.current?.getBoundingClientRect().height;
-      if (!cardHeight) return;
-      setChatAnchorTop(cardHeight - buttonHeight - buttonSpacing);
-    };
-
-    if (!showConversation) {
-      updateAnchor();
-    }
-
-    window.addEventListener("resize", updateAnchor);
-    return () => window.removeEventListener("resize", updateAnchor);
-  }, [isMobile, showConversation]);
 
   const handleCommentSubmit = async () => {
     const text = newComment.trim();
@@ -625,7 +605,6 @@ export default function BlogCard({
 
   return (
     <div
-      ref={cardRef}
       className={`blog-card card border-0 shadow-lg w-100 mx-auto mb-4 position-relative ${
         isNight ? "bg-dark text-light" : "bg-white"
       }`}
@@ -643,74 +622,75 @@ export default function BlogCard({
           background: headerGradient, // Dynamic background based on theme
           padding: isMobile ? "0.65rem 0.9rem" : "1.1rem 1.35rem",
         }}
-      >
-        {/* Row: author avatar + title + author name */}
+        >
+          {/* Row: author avatar + title + author name */}
         <div
-          className="blog-card__header d-flex align-items-center flex-column flex-md-row text-center text-md-start"
+          className="blog-card__header d-flex flex-column gap-2 gap-md-3 align-items-start text-start"
           style={{
             gap: isMobile ? "0.55rem" : "0.9rem",
           }}
         >
-          {/* If author has an image, display it */}
-          <button
-            type="button"
-            className="blog-card__avatar p-0 border-0 bg-transparent"
-            aria-label={
-              isProfileNavigable ? `View ${displayAuthor}'s profile` : undefined
-            }
-            onClick={isProfileNavigable ? openAuthorProfile : undefined}
-            disabled={!isProfileNavigable}
-            style={{ cursor: isProfileNavigable ? "pointer" : "default" }}
-          >
-            {author?.image ? (
-              <img
-                src={author.image}
-                alt={author.username}
-                className="rounded-circle border border-3 border-white"
-                style={{
-                  width: isMobile ? "40px" : "48px", // Avatar width
-                  height: isMobile ? "40px" : "48px", // Avatar height
-                  objectFit: "cover", // Ensures image fills the circle without distortion
-                }}
-              />
-            ) : (
-              <div
-                className="rounded-circle bg-white text-primary fw-semibold d-flex align-items-center justify-content-center"
-                style={{
-                  width: isMobile ? "40px" : "48px",
-                  height: isMobile ? "40px" : "48px",
-                }}
+          <div className="blog-card__author-row d-flex align-items-center w-100 gap-3 flex-wrap">
+            {/* If author has an image, display it */}
+            <button
+              type="button"
+              className="blog-card__avatar p-0 border-0 bg-transparent"
+              aria-label={
+                isProfileNavigable ? `View ${displayAuthor}'s profile` : undefined
+              }
+              onClick={isProfileNavigable ? openAuthorProfile : undefined}
+              disabled={!isProfileNavigable}
+              style={{ cursor: isProfileNavigable ? "pointer" : "default" }}
+            >
+              {author?.image ? (
+                <img
+                  src={author.image}
+                  alt={author.username}
+                  className="rounded-circle border border-3 border-white"
+                  style={{
+                    width: isMobile ? "40px" : "48px", // Avatar width
+                    height: isMobile ? "40px" : "48px", // Avatar height
+                    objectFit: "cover", // Ensures image fills the circle without distortion
+                  }}
+                />
+              ) : (
+                <div
+                  className="rounded-circle bg-white text-primary fw-semibold d-flex align-items-center justify-content-center"
+                  style={{
+                    width: isMobile ? "40px" : "48px",
+                    height: isMobile ? "40px" : "48px",
+                  }}
+                >
+                  {authorInitial}
+                </div>
+              )}
+            </button>
+
+            <div className="blog-card__author-meta d-flex align-items-center flex-wrap gap-2 text-start">
+              <span className="small text-white-50">By</span>
+              <button
+                type="button"
+                className="btn btn-link p-0 align-baseline fw-semibold text-white text-start"
+                onClick={openAuthorProfile}
+                disabled={!displayAuthor}
               >
-                {authorInitial}
-              </div>
-            )}
-          </button>
+                {displayAuthor || "Unknown"}
+              </button>
+            </div>
+          </div>
 
           {/* Blog title and author name section */}
-          <div className="blog-card__title flex-grow-1">
+          <div className="blog-card__title w-100">
             {/* Blog title */}
             <h3
               className="mb-1 fw-bold"
-              sstyle={{
+              style={{
                 fontSize: isMobile ? "1.05rem" : undefined,
                 lineHeight: 1.15,
               }}
             >
               {blog.title}
             </h3>
-
-            {/* Author name line */}
-            <p className="mb-0 small text-white-50 d-flex justify-content-center justify-content-md-start align-items-center gap-1">
-              <span>By</span>
-              <button
-                type="button"
-                className="btn btn-link p-0 align-baseline fw-semibold text-white"
-                onClick={openAuthorProfile}
-                disabled={!displayAuthor}
-              >
-                {displayAuthor || "Unknown"}
-              </button>
-            </p>
           </div>
 
           {!isMobile && (
@@ -842,7 +822,7 @@ export default function BlogCard({
           </small>
         )}
 
-        <div className="blog-card__footer d-flex flex-column flex-md-row gap-3 mt-4 align-items-start align-items-md-center">
+        <div className="blog-card__footer d-flex flex-column flex-md-row gap-3 mt-4 align-items-start align-items-md-center w-100">
           <div
             className={`blog-card__actions d-flex flex-wrap gap-2 ${
               isMobile ? "" : "align-items-center"
@@ -869,35 +849,43 @@ export default function BlogCard({
                 {dislikes}
               </span>
             </button>
-            {!isMobile && (
-              <button
-                className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
-                  isNight ? "btn-outline-light" : "btn-outline-secondary"
-                }`}
-                onClick={() => {
-                  const shareText = `${blog.title}\n\n${blog.content}\n\nShared from Blog App`;
-                  const shareUrl = window.location.href;
-                  if (navigator.share) {
-                    navigator
-                      .share({
-                        title: blog.title,
-                        text: shareText,
-                        url: shareUrl,
-                      })
-                      .catch((err) => console.error("Share failed", err));
-                  } else {
-                    navigator.clipboard.writeText(
-                      `${shareText}\n\n${shareUrl}`
-                    );
-                    alert("Link copied to clipboard!");
-                  }
-                }}
-                style={{ fontSize: isMobile ? "0.9rem" : undefined }}
-              >
-                <span>🔗</span>
-                <span>Share</span>
-              </button>
-            )}
+            <button
+              className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
+                isNight ? "btn-outline-light" : "btn-outline-secondary"
+              }`}
+              onClick={() => {
+                const shareText = `${blog.title}\n\n${blog.content}\n\nShared from Blog App`;
+                const shareUrl = window.location.href;
+                if (navigator.share) {
+                  navigator
+                    .share({
+                      title: blog.title,
+                      text: shareText,
+                      url: shareUrl,
+                    })
+                    .catch((err) => console.error("Share failed", err));
+                } else {
+                  navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
+                  alert("Link copied to clipboard!");
+                }
+              }}
+              style={{ fontSize: isMobile ? "0.9rem" : undefined }}
+            >
+              <span>⤴</span>
+              <span>Share</span>
+            </button>
+
+            <button
+              className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
+                isNight ? "btn-outline-light" : "btn-outline-secondary"
+              }`}
+              onClick={() => setShowConversation((prev) => !prev)}
+              style={{ fontSize: isMobile ? "0.9rem" : undefined }}
+              aria-pressed={showConversation}
+            >
+              <span>💬</span>
+              <span>{showConversation ? "Hide chat" : "Comments"}</span>
+            </button>
           </div>
 
           {user && user.username === blog.author && (
@@ -1624,6 +1612,18 @@ export default function BlogCard({
         </div>
       )}
       <style jsx>{`
+        .blog-card__header {
+          width: 100%;
+        }
+
+        .blog-card__author-row {
+          width: 100%;
+        }
+
+        .blog-card__author-meta button {
+          text-decoration: none;
+        }
+
         .blog-card__stats span {
           font-size: 0.95rem;
           display: inline-flex;
@@ -1717,6 +1717,15 @@ export default function BlogCard({
             width: 100%;
           }
 
+          .blog-card__author-row {
+            align-items: center;
+            gap: 0.65rem;
+          }
+
+          .blog-card__author-meta {
+            gap: 0.4rem;
+          }
+
           .blog-card__title h3 {
             font-size: 1.05rem;
             line-height: 1.2;
@@ -1799,39 +1808,6 @@ export default function BlogCard({
           }
         }
       `}</style>
-
-      {/* Floating Chat Icon */}
-      <button
-        type="button"
-        className={`btn btn-sm rounded-circle position-absolute shadow ${
-          isNight
-            ? "btn-outline-light bg-dark bg-opacity-50"
-            : "btn-outline-light bg-white bg-opacity-75"
-        }`}
-        style={{
-          right: isMobile ? "0.75rem" : "1rem",
-          ...(chatAnchorTop !== null
-            ? { top: `${chatAnchorTop}px` }
-            : { bottom: isMobile ? "0.75rem" : "1rem" }),
-        }}
-        onClick={() => setShowConversation((prev) => !prev)}
-        aria-label={`${showConversation ? "Hide" : "Show"} conversation`}
-        aria-pressed={showConversation}
-      >
-        <svg
-          width="22"
-          height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-        </svg>
-      </button>
     </div>
   );
 }
