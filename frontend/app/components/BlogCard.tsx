@@ -1253,27 +1253,29 @@ export default function BlogCard({
                                     >
                                       ↪
                                     </span>
-                                    <div className="conversation-reply__body d-flex flex-wrap align-items-center gap-1">
-                                      <button
-                                        type="button"
-                                        className="fw-semibold p-0 border-0 bg-transparent text-start"
-                                        onClick={() =>
-                                          openUserProfile(reply.author)
-                                        }
-                                        onKeyDown={(event) => {
-                                          if (
-                                            event.key === "Enter" ||
-                                            event.key === " "
-                                          ) {
-                                            event.preventDefault();
-                                            openUserProfile(reply.author);
+                                    <div className="conversation-reply__body d-flex flex-wrap align-items-start gap-1">
+                                      <div className="conversation-reply__header d-inline-flex align-items-center gap-1 flex-shrink-0">
+                                        <button
+                                          type="button"
+                                          className="fw-semibold p-0 border-0 bg-transparent text-start conversation-reply__author"
+                                          onClick={() =>
+                                            openUserProfile(reply.author)
                                           }
-                                        }}
-                                        aria-label={`View ${reply.author}'s profile`}
-                                      >
-                                        {reply.author}
-                                      </button>
-                                      <span className="text-muted">
+                                        onKeyDown={(event) => {
+                                            if (
+                                              event.key === "Enter" ||
+                                              event.key === " "
+                                            ) {
+                                              event.preventDefault();
+                                              openUserProfile(reply.author);
+                                            }
+                                          }}
+                                          aria-label={`View ${reply.author}'s profile`}
+                                        >
+                                          {reply.author}
+                                        </button>
+                                      </div>
+                                      <span className="conversation-reply__text text-muted">
                                         {reply.text}
                                       </span>
                                       {reply.isPending && (
@@ -1862,15 +1864,36 @@ export default function BlogCard({
         .conversation-reply {
           flex-wrap: nowrap;
           word-break: break-word;
+          align-items: flex-start;
         }
 
         .conversation-reply__arrow {
           color: ${isNight ? "#94a3b8" : "#6b7280"};
           line-height: 1.4;
+          margin-top: 4px;
+          flex-shrink: 0;
         }
 
         .conversation-reply__body {
           min-width: 0;
+          flex: 1;
+          align-items: flex-start;
+          gap: 0.35rem;
+        }
+
+        .conversation-reply__header {
+          flex-shrink: 0;
+        }
+
+        .conversation-reply__author {
+          color: inherit;
+          text-decoration: none;
+        }
+
+        .conversation-reply__text {
+          flex: 1 1 auto;
+          min-width: 0;
+          word-break: break-word;
         }
 
         /* 📱 MOBILE STYLES */
@@ -2095,6 +2118,14 @@ export default function BlogCard({
             flex: 1;
             min-width: 0;
             word-break: break-word;
+            align-items: flex-start;
+            gap: 0.3rem;
+          }
+
+          .conversation-reply__text {
+            flex: 1 1 100%;
+            min-width: 0;
+            line-height: 1.4;
           }
 
           .conversation-card h5 {
