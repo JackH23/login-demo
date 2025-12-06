@@ -1981,6 +1981,7 @@ export default function BlogCard({
           .blog-card__author-row {
             align-items: center;
             gap: 0.65rem;
+            flex-wrap: nowrap !important;
           }
 
           .blog-card__author-info {
@@ -1988,10 +1989,18 @@ export default function BlogCard({
             align-items: center;
             gap: 0.65rem;
             flex-wrap: nowrap;
+            min-width: 0;
           }
 
           .blog-card__author-meta {
             gap: 0.4rem;
+            min-width: 0;
+            display: inline-flex;
+            align-items: center;
+          }
+
+          .blog-card__author-meta button {
+            white-space: nowrap;
           }
 
           .blog-card__title h3 {
