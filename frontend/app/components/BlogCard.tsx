@@ -1802,15 +1802,15 @@ export default function BlogCard({
 
         .conversation-comment {
           display: flex;
-          flex-direction: row;
-          align-items: flex-start;
+          flex-direction: column;
+          align-items: stretch;
           gap: 0.75rem;
           min-width: 0;
+          width: 100%;
         }
 
         .conversation-comment__main {
-          display: grid;
-          grid-template-columns: auto 1fr;
+          display: flex;
           align-items: flex-start;
           gap: 0.75rem;
           min-width: 0;
@@ -1835,6 +1835,7 @@ export default function BlogCard({
           gap: 0.35rem;
           min-width: 0;
           width: 100%;
+          flex-wrap: wrap;
         }
 
         .conversation-comment__avatar-image,
@@ -1845,6 +1846,7 @@ export default function BlogCard({
           align-items: center;
           justify-content: center;
           border-radius: 50%;
+          flex-shrink: 0;
         }
 
         .conversation-comment__text {
@@ -1859,6 +1861,7 @@ export default function BlogCard({
           display: flex;
           flex-wrap: wrap;
           gap: 0.5rem;
+          align-items: center;
         }
 
         .conversation-reply {
@@ -2066,26 +2069,31 @@ export default function BlogCard({
           .conversation-comment {
             display: flex !important;
             flex-direction: column !important;
+            gap: 0.65rem !important;
             width: 100%;
           }
 
-          /* NEW FIX: Avatar + name on line 1, text on line 2 */
           .conversation-comment__main {
             display: flex !important;
-            flex-direction: column !important;
+            flex-direction: row !important;
+            align-items: flex-start !important;
             width: 100%;
-            gap: 0.4rem !important;
+            gap: 0.55rem !important;
+            min-width: 0;
           }
 
           .conversation-comment__meta {
             display: flex !important;
             flex-direction: row !important;
             align-items: center !important;
-            gap: 0.45rem !important;
+            gap: 0.35rem !important;
+            flex-wrap: wrap !important;
+            width: 100%;
+            min-width: 0;
           }
 
           .conversation-comment__text {
-            font-size: 0.82rem !important;
+            font-size: 0.9rem !important;
             line-height: 1.45 !important;
             margin-left: 0 !important;
             width: 100%;
@@ -2098,7 +2106,7 @@ export default function BlogCard({
             align-items: center;
             justify-content: flex-start;
             gap: 0.35rem;
-            flex-wrap: nowrap;
+            flex-wrap: wrap;
           }
 
           .conversation-comment__actions .btn {
@@ -2106,7 +2114,7 @@ export default function BlogCard({
             font-size: 0.82rem;
             padding: 0.35rem 0.55rem;
             min-width: 0;
-            flex: 0 1 auto;
+            flex: 1 1 calc(50% - 0.35rem);
           }
 
           .conversation-reply {

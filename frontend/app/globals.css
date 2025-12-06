@@ -473,11 +473,20 @@
 }
 
 .conversation-comment {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 0.75rem;
-  grid-template-columns: auto 1fr;
-  align-items: start;
+  align-items: stretch;
   min-width: 0;
+  width: 100%;
+}
+
+.conversation-comment__main {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-width: 0;
+  width: 100%;
 }
 
 .conversation-comment__body {
@@ -485,6 +494,7 @@
   flex-direction: column;
   gap: 0.5rem;
   min-width: 0;
+  flex: 1 1 0;
 }
 
 .conversation-comment__avatar {
@@ -497,6 +507,14 @@
   place-items: center;
   background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
   border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.conversation-comment__avatar button {
+  width: 100%;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .conversation-comment__avatar-image {
@@ -528,6 +546,7 @@
   flex: 1 1 auto;
   min-width: 0;
   width: 100%;
+  flex-wrap: wrap;
 }
 
 .conversation-comment__author {
@@ -583,7 +602,13 @@
   }
 
   .conversation-comment {
-    gap: 0.5rem;
+    gap: 0.65rem;
+  }
+
+  .conversation-comment__main {
+    align-items: flex-start;
+    gap: 0.55rem;
+    width: 100%;
   }
 
   .conversation-comment__avatar {
@@ -595,6 +620,7 @@
   .conversation-comment__meta {
     gap: 0.25rem;
     align-items: start;
+    flex: wrap;
     width: 100%;
   }
 
@@ -611,14 +637,14 @@
 
   .conversation-comment__actions {
     gap: 0.35rem;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     margin-top: 5px;
     width: 100%;
     align-items: center;
   }
 
   .conversation-comment__actions > .btn {
-    flex: 0 1 auto;
+    flex: 1 1 calc(50% - 0.35rem);
     padding: 0.25rem 0.45rem;
     font-size: 0.78rem;
     white-space: nowrap;
