@@ -487,6 +487,7 @@
   gap: 0.75rem;
   min-width: 0;
   width: 100%;
+  max-width: 100%;
 }
 
 .conversation-comment__body {
@@ -495,12 +496,13 @@
   gap: 0.5rem;
   min-width: 0;
   flex: 1 1 0;
+  overflow-wrap: anywhere;
 }
 
 .conversation-comment__avatar {
-  flex: 0 0 40px;
-  width: 40px;
-  height: 40px;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
   border-radius: 999px;
   overflow: hidden;
   display: grid;
@@ -561,6 +563,7 @@
   font-size: 0.95rem;
   line-height: 1.6;
   word-break: break-word;
+  overflow-wrap: anywhere;
   width: 100%;
   max-width: none;
 }
@@ -609,18 +612,19 @@
     align-items: flex-start;
     gap: 0.55rem;
     width: 100%;
+    max-width: 100%;
   }
 
   .conversation-comment__avatar {
-    width: 34px;
-    height: 34px;
-    flex-basis: 34px;
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
   }
 
   .conversation-comment__meta {
     gap: 0.25rem;
     align-items: start;
-    flex: wrap;
+    flex-wrap: wrap;
     width: 100%;
   }
 
@@ -633,6 +637,7 @@
     margin: 0;
     font-size: 0.9rem;
     line-height: 1.4;
+    overflow-wrap: anywhere;
   }
 
   .conversation-comment__actions {
@@ -672,6 +677,34 @@
   .conversation-input .btn {
     padding: 0.55rem 0.85rem;
     font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .conversation-comment {
+    flex-direction: column;
+  }
+
+  .conversation-comment__main {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .conversation-comment__avatar {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+    flex-shrink: 0;
+  }
+
+  .conversation-comment__body {
+    max-width: calc(100% - 48px);
+  }
+
+  .conversation-comment__text {
+    font-size: 0.88rem;
+    line-height: 1.35;
   }
 }
 

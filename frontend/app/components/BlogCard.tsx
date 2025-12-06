@@ -1815,6 +1815,7 @@ export default function BlogCard({
           gap: 0.75rem;
           min-width: 0;
           width: 100%;
+          max-width: 100%;
         }
 
         .conversation-comment__avatar {
@@ -1827,6 +1828,7 @@ export default function BlogCard({
           gap: 0.35rem;
           flex: 1;
           min-width: 0;
+          overflow-wrap: anywhere;
         }
 
         .conversation-comment__meta {
@@ -1853,6 +1855,7 @@ export default function BlogCard({
           margin-bottom: 0.25rem;
           line-height: 1.55;
           word-break: break-word;
+          overflow-wrap: anywhere;
           width: 100%;
           max-width: none;
         }
@@ -2080,6 +2083,21 @@ export default function BlogCard({
             width: 100%;
             gap: 0.55rem !important;
             min-width: 0;
+            max-width: 100%;
+          }
+
+          .conversation-comment__avatar,
+          .conversation-comment__avatar-image,
+          .conversation-comment__avatar-fallback {
+            width: 40px !important;
+            height: 40px !important;
+            flex: 0 0 40px !important;
+          }
+
+          .conversation-comment__body {
+            max-width: calc(100% - 48px);
+            min-width: 0;
+            flex: 1;
           }
 
           .conversation-comment__meta {
@@ -2097,6 +2115,7 @@ export default function BlogCard({
             line-height: 1.45 !important;
             margin-left: 0 !important;
             width: 100%;
+            overflow-wrap: anywhere;
           }
 
           .conversation-comment__actions {
