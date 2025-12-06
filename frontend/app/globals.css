@@ -610,16 +610,17 @@
   }
 
   .conversation-comment__actions {
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    margin-top: 10px;
+    gap: 0.35rem;
+    flex-wrap: nowrap;
+    margin-top: 5px;
     width: 100%;
+    align-items: center;
   }
 
   .conversation-comment__actions > .btn {
-    flex: 1 1 0;
-    padding: 0.3rem 0.4rem;
-    font-size: 0.8rem;
+    flex: 0 1 auto;
+    padding: 0.25rem 0.45rem;
+    font-size: 0.78rem;
     white-space: nowrap;
   }
 

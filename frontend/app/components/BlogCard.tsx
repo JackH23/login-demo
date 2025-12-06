@@ -2070,15 +2070,20 @@ export default function BlogCard({
 
           .conversation-comment__actions {
             width: 100%;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 0.4rem;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0.35rem;
+            flex-wrap: nowrap;
           }
 
           .conversation-comment__actions .btn {
             justify-content: center;
-            font-size: 0.9rem;
-            padding: 0.45rem 0.65rem;
+            font-size: 0.82rem;
+            padding: 0.35rem 0.55rem;
+            min-width: 0;
+            flex: 0 1 auto;
           }
 
           .conversation-reply {
