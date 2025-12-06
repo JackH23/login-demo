@@ -1194,7 +1194,7 @@ export default function BlogCard({
 
                           {/* Replies */}
                           {comment.replies.length > 0 && (
-                            <ul className="mt-3 ps-4 list-unstyled">
+                            <ul className="mt-3 ps-4 list-unstyled conversation-reply-list">
                               {comment.replies.map((reply, rIdx) => {
                                 const replyAvatar = resolveAvatar(
                                   reply.authorImage,
@@ -1222,24 +1222,15 @@ export default function BlogCard({
                                         <img
                                           src={replyAvatar}
                                           alt={`${reply.author}'s avatar`}
-                                          className="rounded-circle"
-                                          style={{
-                                            width: "28px",
-                                            height: "28px",
-                                            objectFit: "cover",
-                                          }}
+                                          className="rounded-circle conversation-reply__avatar-image"
                                         />
                                       ) : (
                                         <span
-                                          className={`d-inline-flex align-items-center justify-content-center rounded-circle ${
+                                          className={`conversation-reply__avatar-fallback d-inline-flex align-items-center justify-content-center rounded-circle ${
                                             isNight
                                               ? "bg-secondary text-white"
                                               : "bg-primary bg-opacity-10 text-primary"
                                           }`}
-                                          style={{
-                                            width: "28px",
-                                            height: "28px",
-                                          }}
                                         >
                                           {reply.author
                                             ?.charAt(0)
@@ -1253,7 +1244,7 @@ export default function BlogCard({
                                     >
                                       ↪
                                     </span>
-                                    <div className="conversation-reply__body d-flex flex-wrap align-items-start gap-1">
+                                    <div className="conversation-reply__body d-flex flex-wrap align-items-start gap-2">
                                       <div className="conversation-reply__header d-inline-flex align-items-center gap-1 flex-shrink-0">
                                         <button
                                           type="button"
@@ -1275,7 +1266,7 @@ export default function BlogCard({
                                           {reply.author}
                                         </button>
                                       </div>
-                                      <span className="conversation-reply__text text-muted">
+                                      <span className="conversation-reply__text conversation-reply__bubble text-muted">
                                         {reply.text}
                                       </span>
                                       {reply.isPending && (
@@ -1579,7 +1570,7 @@ export default function BlogCard({
 
                         {/* Replies */}
                         {comment.replies.length > 0 && (
-                          <ul className="mt-2 ps-3 list-unstyled">
+                          <ul className="mt-2 ps-3 list-unstyled conversation-reply-list">
                             {comment.replies.map((reply, rIdx) => {
                               const replyAvatar = resolveAvatar(
                                 reply.authorImage,
@@ -1607,24 +1598,15 @@ export default function BlogCard({
                                       <img
                                         src={replyAvatar}
                                         alt={`${reply.author}'s avatar`}
-                                        className="rounded-circle"
-                                        style={{
-                                          width: "24px",
-                                          height: "24px",
-                                          objectFit: "cover",
-                                        }}
+                                        className="rounded-circle conversation-reply__avatar-image"
                                       />
                                     ) : (
                                       <span
-                                        className={`d-inline-flex align-items-center justify-content-center rounded-circle ${
+                                        className={`conversation-reply__avatar-fallback d-inline-flex align-items-center justify-content-center rounded-circle ${
                                           theme === "night"
                                             ? "bg-secondary text-white"
                                             : "bg-primary bg-opacity-10 text-primary"
                                         }`}
-                                        style={{
-                                          width: "24px",
-                                          height: "24px",
-                                        }}
                                       >
                                         {reply.author
                                           ?.charAt(0)
@@ -1638,10 +1620,10 @@ export default function BlogCard({
                                   >
                                     ↪
                                   </span>
-                                  <div className="conversation-reply__body d-flex flex-wrap align-items-center gap-1">
+                                  <div className="conversation-reply__body d-flex flex-wrap align-items-start gap-2">
                                     <button
                                       type="button"
-                                      className="fw-semibold p-0 border-0 bg-transparent text-start"
+                                      className="fw-semibold p-0 border-0 bg-transparent text-start conversation-reply__author"
                                       onClick={() =>
                                         openUserProfile(reply.author)
                                       }
@@ -1658,7 +1640,7 @@ export default function BlogCard({
                                     >
                                       {reply.author}
                                     </button>
-                                    <span className="text-muted">
+                                    <span className="conversation-reply__text conversation-reply__bubble text-muted">
                                       {reply.text}
                                     </span>
                                     {reply.isPending && (
@@ -1871,6 +1853,26 @@ export default function BlogCard({
           flex-wrap: nowrap;
           word-break: break-word;
           align-items: flex-start;
+          gap: 0.75rem;
+        }
+
+        .conversation-reply__avatar {
+          width: 32px;
+          height: 32px;
+          flex: 0 0 32px;
+          margin-right: 0.25rem;
+        }
+
+        .conversation-reply__avatar-image,
+        .conversation-reply__avatar-fallback {
+          width: 32px;
+          height: 32px;
+          object-fit: cover;
+          border-radius: 50%;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
         }
 
         .conversation-reply__arrow {
@@ -1884,11 +1886,16 @@ export default function BlogCard({
           min-width: 0;
           flex: 1;
           align-items: flex-start;
-          gap: 0.35rem;
+          gap: 0.5rem;
         }
 
         .conversation-reply__header {
-          flex-shrink: 0;
+          flex-shrink: 1;
+          display: flex;
+          align-items: center;
+          gap: 0.375rem;
+          flex-wrap: wrap;
+          min-width: 0;
         }
 
         .conversation-reply__author {
@@ -1900,6 +1907,19 @@ export default function BlogCard({
           flex: 1 1 auto;
           min-width: 0;
           word-break: break-word;
+          line-height: 1.45;
+          height: auto;
+        }
+
+        .conversation-reply__bubble {
+          background-color: ${isNight
+            ? "rgba(255,255,255,0.06)"
+            : "#f8fafc"};
+          padding: 10px 14px;
+          border-radius: 12px;
+          display: inline-flex;
+          width: fit-content;
+          max-width: 100%;
         }
 
         /* 📱 MOBILE STYLES */
@@ -2138,7 +2158,15 @@ export default function BlogCard({
 
           .conversation-reply {
             align-items: flex-start !important;
-            gap: 0.35rem;
+            gap: 0.5rem;
+          }
+
+          .conversation-reply__avatar,
+          .conversation-reply__avatar-image,
+          .conversation-reply__avatar-fallback {
+            width: 32px !important;
+            height: 32px !important;
+            flex-basis: 32px !important;
           }
 
           .conversation-reply__body {
@@ -2146,7 +2174,15 @@ export default function BlogCard({
             min-width: 0;
             word-break: break-word;
             align-items: flex-start;
-            gap: 0.3rem;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+          }
+
+          .conversation-reply__header {
+            gap: 0.35rem !important;
+            flex-wrap: wrap !important;
+            min-width: 0;
+            flex-shrink: 1;
           }
 
           .conversation-reply__text {
@@ -2154,6 +2190,17 @@ export default function BlogCard({
             min-width: 0;
             font-size: 0.82rem !important;
             line-height: 1.4;
+          }
+
+          .conversation-reply__bubble {
+            width: fit-content;
+            max-width: 92%;
+            line-height: 1.4;
+          }
+
+          .conversation-reply-list {
+            border-left: 0 !important;
+            padding-left: 0.75rem !important;
           }
 
           .conversation-card h5 {
