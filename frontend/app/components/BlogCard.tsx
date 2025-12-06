@@ -1238,12 +1238,7 @@ export default function BlogCard({
                                         </span>
                                       )}
                                     </button>
-                                    <span
-                                      className="conversation-reply__arrow"
-                                      aria-hidden="true"
-                                    >
-                                      ↪
-                                    </span>
+                                    
                                     <div className="conversation-reply__body d-flex flex-wrap align-items-start gap-2">
                                       <div className="conversation-reply__header d-inline-flex align-items-center gap-1 flex-shrink-0">
                                         <button
@@ -1859,11 +1854,11 @@ export default function BlogCard({
         }
 
         .conversation-reply {
-          flex-wrap: nowrap;
+          flex-wrap: wrap;
           word-break: break-word;
           align-items: flex-start;
           gap: 0.65rem;
-          padding: 0.35rem 0.5rem;
+          padding: 0.45rem 0.75rem;
           background: ${isNight
             ? "rgba(255,255,255,0.03)"
             : "#f8fafc"};
@@ -1930,18 +1925,17 @@ export default function BlogCard({
           background-color: ${isNight
             ? "rgba(255,255,255,0.06)"
             : "#f8fafc"};
-          padding: 12px 14px;
+          padding: 14px 16px;
           border-radius: 14px;
-          display: inline-flex;
-          align-items: center;
-          width: fit-content;
+          display: block;
+          width: 100%;
           max-width: 100%;
         }
 
         .conversation-reply-list {
           border-left: 2px solid ${isNight ? "#334155" : "#e2e8f0"};
-          margin-left: 0.35rem;
-          padding-left: 1rem;
+          margin-left: 0rem;
+          padding-left: 0.85rem !important;
           gap: 0.4rem;
           display: flex;
           flex-direction: column;
@@ -2218,8 +2212,8 @@ export default function BlogCard({
           }
 
           .conversation-reply__bubble {
-            width: fit-content;
-            max-width: 92%;
+            width: 100%;
+            max-width: 100%;
             line-height: 1.4;
           }
 
