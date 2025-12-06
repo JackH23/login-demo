@@ -637,53 +637,55 @@ export default function BlogCard({
           }}
         >
           <div className="blog-card__author-row d-flex align-items-center w-100 gap-3 flex-wrap">
-            {/* If author has an image, display it */}
-            <button
-              type="button"
-              className="blog-card__avatar p-0 border-0 bg-transparent"
-              aria-label={
-                isProfileNavigable
-                  ? `View ${displayAuthor}'s profile`
-                  : undefined
-              }
-              onClick={isProfileNavigable ? openAuthorProfile : undefined}
-              disabled={!isProfileNavigable}
-              style={{ cursor: isProfileNavigable ? "pointer" : "default" }}
-            >
-              {author?.image ? (
-                <img
-                  src={author.image}
-                  alt={author.username}
-                  className="rounded-circle border border-3 border-white"
-                  style={{
-                    width: isMobile ? "40px" : "48px", // Avatar width
-                    height: isMobile ? "40px" : "48px", // Avatar height
-                    objectFit: "cover", // Ensures image fills the circle without distortion
-                  }}
-                />
-              ) : (
-                <div
-                  className="rounded-circle bg-white text-primary fw-semibold d-flex align-items-center justify-content-center"
-                  style={{
-                    width: isMobile ? "40px" : "48px",
-                    height: isMobile ? "40px" : "48px",
-                  }}
-                >
-                  {authorInitial}
-                </div>
-              )}
-            </button>
-
-            <div className="blog-card__author-meta d-flex align-items-center flex-wrap gap-2 text-start">
-              <span className="small text-white-50">By</span>
+            <div className="blog-card__author-info d-flex align-items-center gap-3">
+              {/* If author has an image, display it */}
               <button
-                type="button"
-                className="btn btn-link p-0 align-baseline fw-semibold text-white text-start"
-                onClick={openAuthorProfile}
+                className="blog-card__avatar p-0 border-0 bg-transparent"
+                aria-label={
+                  isProfileNavigable
+                    ? `View ${displayAuthor}'s profile`
+                    : undefined
+                }
+                onClick={isProfileNavigable ? openAuthorProfile : undefined}
+                disabled={!isProfileNavigable}
+                style={{ cursor: isProfileNavigable ? "pointer" : "default" }}
                 disabled={!displayAuthor}
               >
-                {displayAuthor || "Unknown"}
+                {author?.image ? (
+                  <img
+                    src={author.image}
+                    alt={author.username}
+                    className="rounded-circle border border-3 border-white"
+                    style={{
+                      width: isMobile ? "40px" : "48px", // Avatar width
+                      height: isMobile ? "40px" : "48px", // Avatar height
+                      objectFit: "cover", // Ensures image fills the circle without distortion
+                    }}
+                  />
+                ) : (
+                  <div
+                    className="rounded-circle bg-white text-primary fw-semibold d-flex align-items-center justify-content-center"
+                    style={{
+                      width: isMobile ? "40px" : "48px",
+                      height: isMobile ? "40px" : "48px",
+                    }}
+                  >
+                    {authorInitial}
+                  </div>
+                )}
               </button>
+
+              <div className="blog-card__author-meta d-flex align-items-center gap-2 text-start">
+                <span className="small text-white-50">By</span>
+                <button
+                  type="button"
+                  className="btn btn-link p-0 align-baseline fw-semibold text-white text-start"
+                  onClick={openAuthorProfile}
+                  disabled={!displayAuthor}
+                >
+                  {displayAuthor || "Unknown"}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1777,6 +1779,12 @@ export default function BlogCard({
           width: 100%;
         }
 
+        .blog-card__author-info {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
         .blog-card__author-meta button {
           text-decoration: none;
         }
@@ -1868,8 +1876,8 @@ export default function BlogCard({
         /* 📱 MOBILE STYLES */
         @media (max-width: 576px) {
           /* ----------------------------------
-     Conversation Header
-  -----------------------------------*/
+          Conversation Header
+          -----------------------------------*/
           .conversation-card .conversation-header {
             display: flex !important;
             justify-content: flex-end !important; /* View all to the right */
@@ -1902,8 +1910,8 @@ export default function BlogCard({
           }
 
           /* ----------------------------------
-     Blog Card Spacing
-  -----------------------------------*/
+          Blog Card Spacing
+          -----------------------------------*/
           .blog-card__media,
           .blog-card__media img {
             margin-bottom: 0.25rem !important;
@@ -1963,8 +1971,8 @@ export default function BlogCard({
           }
 
           /* ----------------------------------
-     Author + Stats
-  -----------------------------------*/
+          Author + Stats
+          -----------------------------------*/
           .blog-card__hero .blog-card__header {
             align-items: flex-start;
             text-align: left;
@@ -1973,6 +1981,13 @@ export default function BlogCard({
           .blog-card__author-row {
             align-items: center;
             gap: 0.65rem;
+          }
+
+          .blog-card__author-info {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+            flex-wrap: nowrap;
           }
 
           .blog-card__author-meta {
@@ -1998,8 +2013,8 @@ export default function BlogCard({
           }
 
           /* ----------------------------------
-     Conversation Comments Layout
-  -----------------------------------*/
+          Conversation Comments Layout
+          -----------------------------------*/
           .conversation-comment-wrapper {
             max-height: 240px;
             overflow-y: auto;
