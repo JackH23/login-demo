@@ -2111,7 +2111,7 @@ export default function BlogCard({
           }
 
           .conversation-comment__text {
-            font-size: 0.9rem !important;
+            font-size: 0.85rem !important;
             line-height: 1.45 !important;
             margin-left: 0 !important;
             width: 100%;
@@ -2152,6 +2152,7 @@ export default function BlogCard({
           .conversation-reply__text {
             flex: 1 1 100%;
             min-width: 0;
+            font-size: 0.82rem !important;
             line-height: 1.4;
           }
 
