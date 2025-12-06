@@ -1982,6 +1982,7 @@ export default function BlogCard({
             align-items: center;
             gap: 0.65rem;
             flex-wrap: nowrap !important;
+            min-width: 0;
           }
 
           .blog-card__author-info {
@@ -1990,17 +1991,26 @@ export default function BlogCard({
             gap: 0.65rem;
             flex-wrap: nowrap;
             min-width: 0;
+            flex-shrink: 0;
           }
 
           .blog-card__author-meta {
-            gap: 0.4rem;
+            gap: clamp(0.35rem, 2vw, 0.55rem);
             min-width: 0;
             display: inline-flex;
             align-items: center;
+            flex: 1 1 auto;
+            justify-content: flex-start;
           }
 
           .blog-card__author-meta button {
             white-space: nowrap;
+            min-width: 0;
+          }
+
+          .blog-card__author-meta span {
+            white-space: nowrap;
+            flex-shrink: 0;
           }
 
           .blog-card__title h3 {
