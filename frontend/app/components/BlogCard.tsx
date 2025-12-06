@@ -1789,6 +1789,8 @@ export default function BlogCard({
           gap: 0.75rem;
           min-width: 0;
           width: 100%;
+          max-width: 96%;
+          margin-inline: auto;
         }
 
         .conversation-comment__main {
@@ -1824,8 +1826,8 @@ export default function BlogCard({
 
         .conversation-comment__avatar-image,
         .conversation-comment__avatar-fallback {
-          width: 44px;
-          height: 44px;
+          width: 40px;
+          height: 40px;
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -1845,15 +1847,27 @@ export default function BlogCard({
         .conversation-comment__actions {
           display: flex;
           flex-wrap: wrap;
-          gap: 0.5rem;
+          gap: 0.35rem;
           align-items: center;
+        }
+
+        .conversation-comment__actions .btn {
+          padding: 0.3rem 0.6rem;
+          font-size: 0.78rem;
+          border-radius: 12px;
+          flex: 0 0 auto;
         }
 
         .conversation-reply {
           flex-wrap: nowrap;
           word-break: break-word;
           align-items: flex-start;
-          gap: 0.75rem;
+          gap: 0.65rem;
+          padding: 0.35rem 0.5rem;
+          background: ${isNight
+            ? "rgba(255,255,255,0.03)"
+            : "#f8fafc"};
+          border-radius: 14px;
         }
 
         .conversation-reply__avatar {
@@ -1878,7 +1892,7 @@ export default function BlogCard({
         .conversation-reply__arrow {
           color: ${isNight ? "#94a3b8" : "#6b7280"};
           line-height: 1.4;
-          margin-top: 4px;
+          margin-top: 8px;
           flex-shrink: 0;
         }
 
@@ -1886,14 +1900,15 @@ export default function BlogCard({
           min-width: 0;
           flex: 1;
           align-items: flex-start;
-          gap: 0.5rem;
+          gap: 0.4rem;
+          row-gap: 0.25rem;
         }
 
         .conversation-reply__header {
           flex-shrink: 1;
           display: flex;
           align-items: center;
-          gap: 0.375rem;
+          gap: 0.35rem;
           flex-wrap: wrap;
           min-width: 0;
         }
@@ -1915,11 +1930,21 @@ export default function BlogCard({
           background-color: ${isNight
             ? "rgba(255,255,255,0.06)"
             : "#f8fafc"};
-          padding: 10px 14px;
-          border-radius: 12px;
+          padding: 12px 14px;
+          border-radius: 14px;
           display: inline-flex;
+          align-items: center;
           width: fit-content;
           max-width: 100%;
+        }
+
+        .conversation-reply-list {
+          border-left: 2px solid ${isNight ? "#334155" : "#e2e8f0"};
+          margin-left: 0.35rem;
+          padding-left: 1rem;
+          gap: 0.4rem;
+          display: flex;
+          flex-direction: column;
         }
 
         /* 📱 MOBILE STYLES */
@@ -2144,21 +2169,21 @@ export default function BlogCard({
             flex-direction: row;
             align-items: center;
             justify-content: flex-start;
-            gap: 0.35rem;
+            gap: 0.3rem;
             flex-wrap: wrap;
           }
 
           .conversation-comment__actions .btn {
             justify-content: center;
-            font-size: 0.82rem;
-            padding: 0.35rem 0.55rem;
+            font-size: 0.78rem;
+            padding: 0.3rem 0.5rem;
             min-width: 0;
-            flex: 1 1 calc(50% - 0.35rem);
+            flex: 0 0 auto;
           }
 
           .conversation-reply {
             align-items: flex-start !important;
-            gap: 0.5rem;
+            gap: 0.45rem;
           }
 
           .conversation-reply__avatar,
@@ -2174,7 +2199,7 @@ export default function BlogCard({
             min-width: 0;
             word-break: break-word;
             align-items: flex-start;
-            gap: 0.4rem;
+            gap: 0.35rem;
             flex-wrap: wrap;
           }
 
