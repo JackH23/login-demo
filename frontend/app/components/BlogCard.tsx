@@ -1143,7 +1143,7 @@ export default function BlogCard({
                                 <div className="conversation-comment__actions">
                                   <button
                                     type="button"
-                                    className="btn btn-sm btn-outline-success"
+                                    className="btn btn-sm btn-outline-success conversation-comment__action-btn conversation-comment__action-btn--like"
                                     onClick={() => handleLikeComment(idx)}
                                     disabled={
                                       !user ||
@@ -1160,7 +1160,7 @@ export default function BlogCard({
                                   </button>
                                   <button
                                     type="button"
-                                    className="btn btn-sm btn-outline-danger"
+                                    className="btn btn-sm btn-outline-danger conversation-comment__action-btn conversation-comment__action-btn--dislike"
                                     onClick={() => handleDislikeComment(idx)}
                                     disabled={
                                       !user ||
@@ -1177,7 +1177,7 @@ export default function BlogCard({
                                   </button>
                                   <button
                                     type="button"
-                                    className="btn btn-sm btn-outline-primary"
+                                    className="btn btn-sm btn-outline-primary conversation-comment__action-btn conversation-comment__action-btn--reply"
                                     onClick={() => toggleReplyInput(idx)}
                                     disabled={
                                       !user ||
@@ -1529,7 +1529,7 @@ export default function BlogCard({
                               <div className="conversation-comment__actions">
                                 <button
                                   type="button"
-                                  className="btn btn-sm btn-outline-success"
+                                  className="btn btn-sm btn-outline-success conversation-comment__action-btn conversation-comment__action-btn--like"
                                   onClick={() => handleLikeComment(idx)}
                                   disabled={
                                     !user ||
@@ -1542,7 +1542,7 @@ export default function BlogCard({
                                 </button>
                                 <button
                                   type="button"
-                                  className="btn btn-sm btn-outline-danger"
+                                  className="btn btn-sm btn-outline-danger conversation-comment__action-btn conversation-comment__action-btn--dislike"
                                   onClick={() => handleDislikeComment(idx)}
                                   disabled={
                                     !user ||
@@ -1555,7 +1555,7 @@ export default function BlogCard({
                                 </button>
                                 <button
                                   type="button"
-                                  className="btn btn-sm btn-outline-primary"
+                                  className="btn btn-sm btn-outline-primary conversation-comment__action-btn conversation-comment__action-btn--reply"
                                   onClick={() => toggleReplyInput(idx)}
                                   disabled={
                                     !user || isCommentPending || isReplySending
