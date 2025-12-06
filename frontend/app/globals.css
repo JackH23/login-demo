@@ -686,9 +686,10 @@
   }
 
   .conversation-comment__main {
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    column-gap: 0.6rem;
     align-items: flex-start;
-    gap: 0.5rem;
   }
 
   .conversation-comment__avatar {
@@ -696,10 +697,13 @@
     height: 40px;
     flex-basis: 40px;
     flex-shrink: 0;
+    grid-row: 1 / span 3;
   }
 
   .conversation-comment__body {
-    max-width: calc(100% - 48px);
+    grid-column: 2 / -1;
+    max-width: 100%;
+    padding-left: 0.1rem;
   }
 
   .conversation-comment__text {
