@@ -1687,11 +1687,11 @@ export default function BlogCard({
               </div>
 
               {/* Comment Input */}
-              <div className="modal-footer">
-                <div className="d-flex gap-2 w-100">
+              <div className="modal-footer comment-footer">
+                <div className="comment-input-group">
                   <input
                     type="text"
-                    className="form-control"
+                    className="form-control comment-input"
                     placeholder={
                       user
                         ? "Write a comment..."
@@ -1702,7 +1702,7 @@ export default function BlogCard({
                     disabled={isSubmittingComment || !user}
                   />
                   <button
-                    className="btn btn-primary"
+                    className="btn btn-primary comment-send-btn"
                     onClick={handleCommentSubmit}
                     disabled={
                       !newComment.trim() || !user || isSubmittingComment

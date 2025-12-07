@@ -199,6 +199,33 @@
   transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
+.comment-footer {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 1rem 1.25rem;
+}
+
+.comment-input-group {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.comment-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.comment-send-btn {
+  flex: 0 0 110px;
+  border-radius: 999px;
+  white-space: nowrap;
+  align-self: center;
+}
+
 .mobile-topbar h1 {
   line-height: 1.25;
 }
