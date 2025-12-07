@@ -1066,7 +1066,7 @@ export default function BlogCard({
                       return (
                         <li
                           key={comment._id ?? idx}
-                          className={`conversation-comment-item p-3 mb-3 rounded-4 shadow-sm ${
+                          className={`conversation-comment-item p-3 rounded-4 shadow-sm ${
                             isNight
                               ? "bg-dark bg-opacity-75 text-white"
                               : "bg-white"
@@ -1239,8 +1239,8 @@ export default function BlogCard({
                                       )}
                                     </button>
                                     
-                                    <div className="conversation-reply__body d-flex flex-wrap align-items-start gap-2">
-                                      <div className="conversation-reply__header d-inline-flex align-items-center gap-1 flex-shrink-0">
+                                    <div className="conversation-reply__body">
+                                      <div className="conversation-reply__header">
                                         <button
                                           type="button"
                                           className="fw-semibold p-0 border-0 bg-transparent text-start conversation-reply__author"
@@ -1261,9 +1261,9 @@ export default function BlogCard({
                                           {reply.author}
                                         </button>
                                       </div>
-                                      <span className="conversation-reply__text conversation-reply__bubble text-muted">
+                                      <div className="conversation-reply__text conversation-reply__bubble text-muted">
                                         {reply.text}
-                                      </span>
+                                      </div>
                                       {reply.isPending && (
                                         <span className="badge bg-secondary bg-opacity-25 text-secondary ms-auto">
                                           Sending...
@@ -1436,7 +1436,7 @@ export default function BlogCard({
                 className="modal-body"
                 style={{ overflowY: "auto", flexGrow: 1, paddingRight: "10px" }}
               >
-                <ul className="list-group">
+                <ul className="conversation-comment-list list-unstyled mb-0">
                   {comments.map((comment, idx) => {
                     const commentAvatar = resolveAvatar(
                       comment.authorImage,
@@ -1455,8 +1455,10 @@ export default function BlogCard({
                     return (
                       <li
                         key={comment._id ?? idx}
-                        className={`list-group-item mb-3 rounded shadow-sm ${
-                          theme === "night" ? "bg-dark text-white" : "bg-white"
+                        className={`conversation-comment-item p-3 rounded-4 shadow-sm ${
+                          theme === "night"
+                            ? "bg-dark bg-opacity-75 text-white"
+                            : "bg-white"
                         }`}
                       >
                         <div className="conversation-comment">
@@ -1615,29 +1617,31 @@ export default function BlogCard({
                                   >
                                     ↪
                                   </span>
-                                  <div className="conversation-reply__body d-flex flex-wrap align-items-start gap-2">
-                                    <button
-                                      type="button"
-                                      className="fw-semibold p-0 border-0 bg-transparent text-start conversation-reply__author"
-                                      onClick={() =>
-                                        openUserProfile(reply.author)
-                                      }
-                                      onKeyDown={(event) => {
-                                        if (
-                                          event.key === "Enter" ||
-                                          event.key === " "
-                                        ) {
-                                          event.preventDefault();
-                                          openUserProfile(reply.author);
+                                  <div className="conversation-reply__body">
+                                    <div className="conversation-reply__header">
+                                      <button
+                                        type="button"
+                                        className="fw-semibold p-0 border-0 bg-transparent text-start conversation-reply__author"
+                                        onClick={() =>
+                                          openUserProfile(reply.author)
                                         }
-                                      }}
-                                      aria-label={`View ${reply.author}'s profile`}
-                                    >
-                                      {reply.author}
-                                    </button>
-                                    <span className="conversation-reply__text conversation-reply__bubble text-muted">
+                                        onKeyDown={(event) => {
+                                          if (
+                                            event.key === "Enter" ||
+                                            event.key === " "
+                                          ) {
+                                            event.preventDefault();
+                                            openUserProfile(reply.author);
+                                          }
+                                        }}
+                                        aria-label={`View ${reply.author}'s profile`}
+                                      >
+                                        {reply.author}
+                                      </button>
+                                    </div>
+                                    <div className="conversation-reply__text conversation-reply__bubble text-muted">
                                       {reply.text}
-                                    </span>
+                                    </div>
                                     {reply.isPending && (
                                       <span className="badge bg-secondary bg-opacity-25 text-secondary ms-auto">
                                         Sending...
@@ -1777,21 +1781,40 @@ export default function BlogCard({
           min-height: 36px;
         }
 
+        .conversation-comment-list {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .conversation-comment-item {
+          border: 1px solid ${isNight ? "rgba(255,255,255,0.08)" : "#e5e7eb"};
+          background: ${isNight ? "rgba(17,24,39,0.6)" : "#fbfdff"};
+          transition: transform 0.15s ease, box-shadow 0.2s ease;
+        }
+
+        .conversation-comment-item:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 10px 25px ${
+            isNight ? "rgba(0,0,0,0.3)" : "rgba(15,23,42,0.08)"
+          };
+        }
+
         .conversation-comment {
           display: flex;
           flex-direction: column;
           align-items: stretch;
-          gap: 0.75rem;
+          gap: 0.85rem;
           min-width: 0;
           width: 100%;
-          max-width: 96%;
+          max-width: 100%;
           margin-inline: auto;
         }
 
         .conversation-comment__main {
           display: flex;
           align-items: flex-start;
-          gap: 0.75rem;
+          gap: 0.85rem;
           min-width: 0;
           width: 100%;
           max-width: 100%;
@@ -1804,7 +1827,7 @@ export default function BlogCard({
         .conversation-comment__body {
           display: flex;
           flex-direction: column;
-          gap: 0.35rem;
+          gap: 0.5rem;
           flex: 1;
           min-width: 0;
           overflow-wrap: anywhere;
@@ -1813,7 +1836,7 @@ export default function BlogCard({
         .conversation-comment__meta {
           display: flex;
           align-items: center;
-          gap: 0.35rem;
+          gap: 0.5rem;
           min-width: 0;
           width: 100%;
           flex-wrap: wrap;
@@ -1821,8 +1844,8 @@ export default function BlogCard({
 
         .conversation-comment__avatar-image,
         .conversation-comment__avatar-fallback {
-          width: 40px;
-          height: 40px;
+          width: 44px;
+          height: 44px;
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -1831,51 +1854,60 @@ export default function BlogCard({
         }
 
         .conversation-comment__text {
-          margin-bottom: 0.25rem;
-          line-height: 1.55;
+          margin: 0;
+          padding: 0.75rem 0.9rem;
+          line-height: 1.6;
           word-break: break-word;
           overflow-wrap: anywhere;
           width: 100%;
           max-width: none;
+          border-radius: 14px;
+          background: ${isNight
+            ? "rgba(255,255,255,0.04)"
+            : "#f8fafc"};
+          border: 1px solid ${isNight
+            ? "rgba(255,255,255,0.06)"
+            : "#e2e8f0"};
         }
 
         .conversation-comment__actions {
           display: flex;
           flex-wrap: wrap;
-          gap: 0.35rem;
+          gap: 0.4rem;
           align-items: center;
         }
 
         .conversation-comment__actions .btn {
-          padding: 0.3rem 0.6rem;
-          font-size: 0.78rem;
-          border-radius: 12px;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.25rem;
+          padding: 0.35rem 0.75rem;
+          font-size: 0.82rem;
+          border-radius: 999px;
           flex: 0 0 auto;
+          line-height: 1.1;
         }
 
         .conversation-reply {
-          flex-wrap: wrap;
-          word-break: break-word;
+          display: flex;
           align-items: flex-start;
-          gap: 0.65rem;
-          padding: 0.45rem 0.75rem;
-          background: ${isNight
-            ? "rgba(255,255,255,0.03)"
-            : "#f8fafc"};
+          gap: 0.6rem;
+          padding: 0.35rem 0.25rem;
           border-radius: 14px;
+          width: 100%;
         }
 
         .conversation-reply__avatar {
-          width: 32px;
-          height: 32px;
-          flex: 0 0 32px;
-          margin-right: 0.25rem;
+          width: 34px;
+          height: 34px;
+          flex: 0 0 34px;
+          margin-top: 2px;
         }
 
         .conversation-reply__avatar-image,
         .conversation-reply__avatar-fallback {
-          width: 32px;
-          height: 32px;
+          width: 34px;
+          height: 34px;
           object-fit: cover;
           border-radius: 50%;
           display: inline-flex;
@@ -1885,7 +1917,7 @@ export default function BlogCard({
         }
 
         .conversation-reply__arrow {
-          color: ${isNight ? "#94a3b8" : "#6b7280"};
+          color: ${isNight ? "#94a3b8" : "#94a3b8"};
           line-height: 1.4;
           margin-top: 8px;
           flex-shrink: 0;
@@ -1893,17 +1925,17 @@ export default function BlogCard({
 
         .conversation-reply__body {
           min-width: 0;
-          flex: 1;
+          flex: 1 1 auto;
+          display: flex;
+          flex-direction: column;
           align-items: flex-start;
-          gap: 0.4rem;
-          row-gap: 0.25rem;
+          gap: 0.35rem;
         }
 
         .conversation-reply__header {
-          flex-shrink: 1;
-          display: flex;
+          display: inline-flex;
           align-items: center;
-          gap: 0.35rem;
+          gap: 0.4rem;
           flex-wrap: wrap;
           min-width: 0;
         }
@@ -1917,26 +1949,29 @@ export default function BlogCard({
           flex: 1 1 auto;
           min-width: 0;
           word-break: break-word;
-          line-height: 1.45;
+          line-height: 1.5;
           height: auto;
         }
 
         .conversation-reply__bubble {
           background-color: ${isNight
-            ? "rgba(255,255,255,0.06)"
+            ? "rgba(255,255,255,0.05)"
             : "#f8fafc"};
-          padding: 14px 16px;
+          padding: 0.75rem 0.95rem;
           border-radius: 14px;
           display: block;
-          width: 100%;
+          width: auto;
           max-width: 100%;
+          border: 1px solid ${isNight
+            ? "rgba(255,255,255,0.08)"
+            : "#e2e8f0"};
         }
 
         .conversation-reply-list {
-          border-left: 2px solid ${isNight ? "#334155" : "#e2e8f0"};
-          margin-left: 0rem;
-          padding-left: 0.85rem !important;
-          gap: 0.4rem;
+          border-left: 2px solid ${isNight ? "#334155" : "#e5e7eb"};
+          margin-left: 0.25rem;
+          padding-left: 1.05rem !important;
+          gap: 0.5rem;
           display: flex;
           flex-direction: column;
         }
