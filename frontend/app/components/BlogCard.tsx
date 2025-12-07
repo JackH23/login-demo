@@ -1311,7 +1311,7 @@ export default function BlogCard({
             )}
 
             {/* Add Comment Input */}
-            <div className="conversation-input d-flex flex-column flex-sm-row gap-2 align-items-stretch align-items-sm-center w-100">
+            <div className="conversation-input d-flex flex-row flex-sm-column gap-2 align-items-center align-items-sm-stretch w-100">
               <input
                 type="text"
                 className="form-control rounded-pill px-4 py-2 flex-grow-1 w-100"
