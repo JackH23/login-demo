@@ -675,6 +675,14 @@ export default function BlogCard({
           padding: isMobile ? "0.65rem 0.9rem" : "1.1rem 1.35rem",
         }}
       >
+        <button
+          type="button"
+          className="blog-card__menu-dots position-absolute top-0 end-0 m-2 m-md-3 border-0 p-2"
+          aria-label="More options"
+          disabled
+        >
+          <span aria-hidden="true">&#8230;</span>
+        </button>
         {/* Row: author avatar + title + author name */}
         <div
           className="blog-card__header d-flex flex-column gap-2 gap-md-3 align-items-start text-start"
@@ -1841,6 +1849,17 @@ export default function BlogCard({
           justify-content: center;
           gap: 0.35rem;
           min-height: 36px;
+        }
+
+        .blog-card__menu-dots {
+          color: #ffffff;
+          background: ${isNight
+            ? "rgba(255,255,255,0.08)"
+            : "rgba(255,255,255,0.18)"};
+          backdrop-filter: blur(6px);
+          border-radius: 999px;
+          line-height: 1;
+          cursor: default;
         }
 
         .comments-modal__dialog {
