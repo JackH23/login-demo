@@ -1000,11 +1000,11 @@ export default function BlogCard({
         {showConversation && (
           /* Comments Section */
           <div
-            className={`conversation-card mt-5 rounded-4 p-md-4 p-0 ${
+            className={`conversation-card mt-5 rounded-4 p-md-4 p-3 ${
               isNight ? "bg-secondary bg-opacity-25" : "bg-light"
             }`}
           >
-            <div className="conversation-header d-flex justify-content-between align-items-center mb-3">
+            <div className="conversation-header d-flex flex-column flex-md-row gap-2 justify-content-between align-items-start align-items-md-center mb-3">
               <div>
                 <h5 className="mb-1 d-flex align-items-center gap-2">
                   <span>💬</span>
@@ -1311,7 +1311,7 @@ export default function BlogCard({
             )}
 
             {/* Add Comment Input */}
-            <div className="conversation-input d-flex flex-row flex-sm-column gap-2 align-items-center align-items-sm-stretch w-100">
+            <div className="conversation-input d-flex flex-column flex-sm-row gap-2 align-items-stretch w-100">
               <input
                 type="text"
                 className="form-control rounded-pill px-4 py-2 flex-grow-1 w-100"
@@ -1325,7 +1325,7 @@ export default function BlogCard({
                 disabled={isSubmittingComment || !user}
               />
               <button
-                className="btn btn-primary rounded-pill px-4"
+                className="btn btn-primary rounded-pill px-4 w-100 w-sm-auto"
                 onClick={handleCommentSubmit}
                 disabled={!newComment.trim() || !user || isSubmittingComment}
               >
