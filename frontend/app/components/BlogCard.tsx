@@ -1068,7 +1068,7 @@ export default function BlogCard({
               </div>
               {totalComments > 0 && (
                 <button
-                  className="btn btn-sm btn-outline-primary rounded-pill"
+                  className="btn btn-sm btn-outline-primary rounded-pill view-all-btn"
                   onClick={() => setShowCommentsModal(true)}
                 >
                   View all
@@ -2198,6 +2198,12 @@ export default function BlogCard({
             font-size: 0.85rem !important;
             font-weight: 500 !important;
             color: #3b82f6 !important;
+          }
+
+          .conversation-card .conversation-header .view-all-btn {
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            line-height: 1.1 !important;
           }
 
           /* ----------------------------------
