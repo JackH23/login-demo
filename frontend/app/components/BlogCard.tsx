@@ -2367,7 +2367,16 @@ export default function BlogCard({
           .conversation-comment-wrapper {
             max-height: 260px;
             overflow-y: auto;
-            
+          }
+
+          .conversation-comment-list {
+            width: 100%;
+            gap: 0.75rem;
+          }
+
+          .conversation-comment-item {
+            width: 100%;
+            padding: 0.65rem 0.75rem;
           }
 
           .conversation-comment {
@@ -2382,7 +2391,7 @@ export default function BlogCard({
             flex-direction: row !important;
             align-items: flex-start !important;
             width: 100%;
-            gap: 0.55rem !important;
+            gap: 0.45rem !important;
             min-width: 0;
             max-width: 100%;
           }
@@ -2390,15 +2399,15 @@ export default function BlogCard({
           .conversation-comment__avatar,
           .conversation-comment__avatar-image,
           .conversation-comment__avatar-fallback {
-            width: 40px !important;
-            height: 40px !important;
-            flex: 0 0 40px !important;
+            width: 32px !important;
+            height: 32px !important;
+            flex: 0 0 32px !important;
           }
 
           .conversation-comment__body {
-            max-width: calc(100% - 48px);
+            max-width: 100%;
             min-width: 0;
-            flex: 1;
+            flex: 1 1 auto;
             width: 100%;
           }
 
@@ -2413,13 +2422,13 @@ export default function BlogCard({
           }
 
           .conversation-comment__text {
-            font-size: 0.85rem !important;
-            line-height: 1.45 !important;
+            font-size: 0.84rem !important;
+            line-height: 1.4 !important;
             margin-left: 0 !important;
             width: 100%;
             overflow-wrap: anywhere;
-            padding: 0.55rem 0.7rem !important;
-            border-radius: 11px;
+            padding: 0.45rem 0.6rem !important;
+            border-radius: 10px;
           }
 
           .conversation-comment__actions {
@@ -2428,20 +2437,20 @@ export default function BlogCard({
             flex-direction: row;
             align-items: center;
             justify-content: flex-start;
-            gap: 0.3rem;
+            gap: 0.25rem;
             flex-wrap: wrap;
           }
 
           .reaction-button {
-            font-size: 0.8rem;
-            padding: 0.3rem 0.45rem;
-            min-height: 34px;
+            font-size: 0.78rem;
+            padding: 0.25rem 0.4rem;
+            min-height: 30px;
           }
 
           .conversation-reply {
             align-items: flex-start !important;
-            gap: 0.45rem;
-            margin-left: 0.15rem;
+            gap: 0.4rem;
+            margin-left: 0.1rem;
           }
 
           .conversation-reply__avatar,
@@ -2479,25 +2488,37 @@ export default function BlogCard({
             width: 100%;
             max-width: 100%;
             line-height: 1.4;
-            padding: 0.55rem 0.65rem;
+            padding: 0.45rem 0.6rem;
           }
 
           .conversation-reply-list {
-            border-left: 0 !important;
-            padding-left: 0.65rem !important;
+            border-left: 1px solid ${isNight ? "#334155" : "#cbd5e1"} !important;
+            padding-left: 0.55rem !important;
+            margin-left: 0.05rem;
           }
 
           .reply-input-row {
-            margin-left: 1.75rem;
+            margin-left: 1.2rem;
           }
 
           .comment-input-panel {
-            padding-top: 0.5rem;
+            padding-top: 0.35rem;
           }
 
           .comment-input-group {
             grid-template-columns: 1fr auto;
-            align-items: stretch;
+            align-items: center;
+            gap: 0.4rem;
+          }
+
+          .comment-input {
+            min-height: 38px;
+            padding: 0.45rem 0.65rem;
+          }
+
+          .comment-send-btn {
+            min-height: 38px;
+            padding: 0.45rem 0.85rem;
           }
 
           .conversation-card h5 {
