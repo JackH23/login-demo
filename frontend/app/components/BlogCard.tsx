@@ -89,34 +89,7 @@ export default function BlogCard({
       transform: normalizeUsersResponse,
     }
   );
-  const mapCommentsResponse = useCallback(
-    (payload: { comments?: unknown[] }) =>
-      resolveCommentAvatars(
-        (payload.comments ?? []).map((comment) =>
-          mapCommentFromApi(comment as Record<string, unknown>)
-        )
-      ),
-    [mapCommentFromApi, resolveCommentAvatars]
-  );
-  const {
-    data: cachedComments,
-    refresh: refreshComments,
-    setData: setCachedComments,
-  } = useCachedApi<Comment[]>(
-    blog._id ? `/api/comments?postId=${blog._id}` : null,
-    {
-      fallback: [],
-      transform: mapCommentsResponse,
-      staleTime: 15_000,
-    }
-  );
-  const updateComments = useCallback(
-    (updater: Parameters<typeof setComments>[0]) => {
-      setComments(updater);
-      setCachedComments(updater);
-    },
-    [setCachedComments]
-  );
+  
   // Check if the current theme is "night"
   const isNight = theme === "night";
 
@@ -204,6 +177,35 @@ export default function BlogCard({
         })),
       })),
     [resolveAvatar]
+  );
+
+  const mapCommentsResponse = useCallback(
+    (payload: { comments?: unknown[] }) =>
+      resolveCommentAvatars(
+        (payload.comments ?? []).map((comment) =>
+          mapCommentFromApi(comment as Record<string, unknown>)
+        )
+      ),
+    [mapCommentFromApi, resolveCommentAvatars]
+  );
+  const {
+    data: cachedComments,
+    refresh: refreshComments,
+    setData: setCachedComments,
+  } = useCachedApi<Comment[]>(
+    blog._id ? `/api/comments?postId=${blog._id}` : null,
+    {
+      fallback: [],
+      transform: mapCommentsResponse,
+      staleTime: 15_000,
+    }
+  );
+  const updateComments = useCallback(
+    (updater: Parameters<typeof setComments>[0]) => {
+      setComments(updater);
+      setCachedComments(updater);
+    },
+    [setCachedComments]
   );
 
   const openAuthorProfile = () => {
