@@ -1000,7 +1000,7 @@ export default function BlogCard({
         {showConversation && (
           /* Comments Section */
           <div
-            className={`conversation-card mt-5 rounded-4 p-md-4 p-3 ${
+            className={`conversation-card ${isMobile ? "mt-3" : "mt-5"} rounded-4 p-md-4 p-3 ${
               isNight ? "bg-secondary bg-opacity-25" : "bg-light"
             }`}
           >
@@ -2195,9 +2195,9 @@ export default function BlogCard({
           Conversation Comments Layout
           -----------------------------------*/
           .conversation-comment-wrapper {
-            max-height: none;
-            overflow: visible;
-            padding-right: 0;
+            max-height: 260px;
+            overflow-y: auto;
+            padding-right: 0.25rem;
           }
 
           .conversation-comment {
