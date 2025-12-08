@@ -2325,7 +2325,8 @@ export default function BlogCard({
           }
 
           .comment-input-group {
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr auto;
+            align-items: stretch;
           }
 
           .conversation-card h5 {
