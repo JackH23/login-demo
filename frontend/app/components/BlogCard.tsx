@@ -1426,276 +1426,286 @@ export default function BlogCard({
           className="modal fade show d-block"
           tabIndex={-1}
           role="dialog"
+          aria-modal="true"
           style={{ backgroundColor: "rgba(0,0,0,0.85)" }}
           onClick={() => setShowCommentsModal(false)}
         >
           <div
-            className="modal-dialog modal-fullscreen-sm-down modal-dialog-centered"
+            className="modal-dialog modal-fullscreen-sm-down modal-dialog-centered comments-modal__dialog"
             role="document"
-            style={{ width: "94%", maxWidth: "900px" }}
             onClick={(e) => e.stopPropagation()}
           >
             <div
-              className={`modal-content ${
+              className={`modal-content comments-modal__shell ${
                 theme === "night" ? "bg-dark text-white" : ""
               }`}
-              style={{ borderRadius: "16px" }}
             >
-              <div className="modal-header border-0 pb-2">
-                <h5 className="modal-title">All Comments</h5>
+              <div className="modal-header border-0 pb-2 comments-modal__header">
+                <div className="d-flex flex-column gap-1">
+                  <h5 className="modal-title mb-0">All Comments</h5>
+                  <p className="comments-modal__subtle mb-0">
+                    {totalComments} comment{totalComments === 1 ? "" : "s"} · Tap a
+                    comment to reply
+                  </p>
+                </div>
                 <button
                   type="button"
                   className="btn-close"
                   onClick={() => setShowCommentsModal(false)}
+                  aria-label="Close"
                 />
               </div>
 
-              <div className="modal-body pt-2 pb-3 px-3 px-sm-4">
-                <ul className="conversation-comment-list list-unstyled mb-3">
-                  {comments.map((comment, idx) => {
-                    const commentAvatar = resolveAvatar(
-                      comment.authorImage,
-                      comment.author
-                    );
-                    const replyKey = comment._id ?? `local-${idx}`;
-                    const isCommentPending = comment.isPending || !comment._id;
-                    const isReplySending = replySubmittingId === replyKey;
-                    const canSendReply = Boolean(
-                      user &&
-                        comment._id &&
-                        comment.newReply.trim() &&
-                        !isReplySending
-                    );
+              <div className="modal-body comments-modal__body">
+                <div className="comments-modal__scroll">
+                  <ul className="conversation-comment-list list-unstyled mb-0">
+                    {comments.map((comment, idx) => {
+                      const commentAvatar = resolveAvatar(
+                        comment.authorImage,
+                        comment.author
+                      );
+                      const replyKey = comment._id ?? `local-${idx}`;
+                      const isCommentPending = comment.isPending || !comment._id;
+                      const isReplySending = replySubmittingId === replyKey;
+                      const canSendReply = Boolean(
+                        user &&
+                          comment._id &&
+                          comment.newReply.trim() &&
+                          !isReplySending
+                      );
 
-                    return (
-                      <li
-                        key={comment._id ?? idx}
-                        className={`conversation-comment-item rounded-4 shadow-sm ${
-                          theme === "night"
-                            ? "bg-dark bg-opacity-75 text-white"
-                            : "bg-white"
-                        }`}
-                      >
-                        <div className="conversation-comment">
-                          <div className="conversation-comment__main">
-                            <div className="conversation-comment__avatar">
-                              <button
-                                type="button"
-                                className="p-0 border-0 bg-transparent"
-                                onClick={() => openUserProfile(comment.author)}
-                                aria-label={`View ${comment.author}'s profile`}
-                              >
-                                {commentAvatar ? (
-                                  <img
-                                    src={commentAvatar}
-                                    alt={`${comment.author}'s avatar`}
-                                    className="conversation-comment__avatar-image"
-                                  />
-                                ) : (
+                      return (
+                        <li
+                          key={comment._id ?? idx}
+                          className={`conversation-comment-item rounded-4 shadow-sm ${
+                            theme === "night"
+                              ? "bg-dark bg-opacity-75 text-white"
+                              : "bg-white"
+                          }`}
+                        >
+                          <div className="conversation-comment">
+                            <div className="conversation-comment__main">
+                              <div className="conversation-comment__avatar">
+                                <button
+                                  type="button"
+                                  className="p-0 border-0 bg-transparent"
+                                  onClick={() => openUserProfile(comment.author)}
+                                  aria-label={`View ${comment.author}'s profile`}
+                                >
+                                  {commentAvatar ? (
+                                    <img
+                                      src={commentAvatar}
+                                      alt={`${comment.author}'s avatar`}
+                                      className="conversation-comment__avatar-image"
+                                    />
+                                  ) : (
+                                    <span
+                                      className={`conversation-comment__avatar-fallback ${
+                                        theme === "night"
+                                          ? "bg-secondary text-white"
+                                          : "bg-primary bg-opacity-10 text-primary"
+                                      }`}
+                                    >
+                                      {comment.author?.charAt(0)?.toUpperCase() ||
+                                        "?"}
+                                    </span>
+                                  )}
+                                </button>
+                              </div>
+                              <div className="conversation-comment__body">
+                                <div className="conversation-comment__meta">
                                   <span
-                                    className={`conversation-comment__avatar-fallback ${
+                                    className={`conversation-comment__author ${
                                       theme === "night"
-                                        ? "bg-secondary text-white"
-                                        : "bg-primary bg-opacity-10 text-primary"
+                                        ? "text-primary text-opacity-75"
+                                        : "text-primary"
                                     }`}
-                                  >
-                                    {comment.author?.charAt(0)?.toUpperCase() ||
-                                      "?"}
-                                  </span>
-                                )}
-                              </button>
-                            </div>
-                            <div className="conversation-comment__body">
-                              <div className="conversation-comment__meta">
-                                <span
-                                  className={`conversation-comment__author ${
-                                    theme === "night"
-                                      ? "text-primary text-opacity-75"
-                                      : "text-primary"
-                                  }`}
-                                  role="button"
-                                  tabIndex={0}
-                                  onClick={() =>
-                                    openUserProfile(comment.author)
-                                  }
-                                  onKeyDown={(event) => {
-                                    if (
-                                      event.key === "Enter" ||
-                                      event.key === " "
-                                    ) {
-                                      event.preventDefault();
-                                      openUserProfile(comment.author);
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() =>
+                                      openUserProfile(comment.author)
                                     }
-                                  }}
-                                >
-                                  {comment.author}
-                                </span>
-                              </div>
-                              <p
-                                className={`conversation-comment__text ${
-                                  theme === "night" ? "text-light" : "text-body"
-                                }`}
-                              >
-                                {comment.text}
-                              </p>
-                              <div className="conversation-comment__actions">
-                                <button
-                                  type="button"
-                                  className="reaction-button"
-                                  onClick={() => handleLikeComment(idx)}
-                                  disabled={
-                                    !user ||
-                                    isCommentPending ||
-                                    comment.likedBy?.includes(user.username) ||
-                                    comment.dislikedBy?.includes(user.username)
-                                  }
-                                >
-                                  👍 <span className="reaction-count">{comment.likes}</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  className="reaction-button"
-                                  onClick={() => handleDislikeComment(idx)}
-                                  disabled={
-                                    !user ||
-                                    isCommentPending ||
-                                    comment.likedBy?.includes(user.username) ||
-                                    comment.dislikedBy?.includes(user.username)
-                                  }
-                                >
-                                  👎 <span className="reaction-count">{comment.dislikes}</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  className="reaction-button"
-                                  onClick={() => toggleReplyInput(idx)}
-                                  disabled={
-                                    !user || isCommentPending || isReplySending
-                                  }
-                                >
-                                  💬 Reply
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Replies */}
-                        {comment.replies.length > 0 && (
-                          <ul className="mt-2 ps-3 list-unstyled conversation-reply-list">
-                            {comment.replies.map((reply, rIdx) => {
-                              const replyAvatar = resolveAvatar(
-                                reply.authorImage,
-                                reply.author
-                              );
-
-                              return (
-                                <li
-                                  key={reply.tempId ?? rIdx}
-                                  className={`conversation-reply d-flex align-items-start gap-2 ${
+                                    onKeyDown={(event) => {
+                                      if (
+                                        event.key === "Enter" ||
+                                        event.key === " "
+                                      ) {
+                                        event.preventDefault();
+                                        openUserProfile(comment.author);
+                                      }
+                                    }}
+                                  >
+                                    {comment.author}
+                                  </span>
+                                </div>
+                                <p
+                                  className={`conversation-comment__text ${
                                     theme === "night"
                                       ? "text-light"
-                                      : "text-muted"
-                                  } small mb-2`}
+                                      : "text-body"
+                                  }`}
                                 >
+                                  {comment.text}
+                                </p>
+                                <div className="conversation-comment__actions">
                                   <button
                                     type="button"
-                                    className="conversation-reply__avatar p-0 border-0 bg-transparent"
-                                    onClick={() =>
-                                      openUserProfile(reply.author)
+                                    className="reaction-button"
+                                    onClick={() => handleLikeComment(idx)}
+                                    disabled={
+                                      !user ||
+                                      isCommentPending ||
+                                      comment.likedBy?.includes(user.username) ||
+                                      comment.dislikedBy?.includes(user.username)
                                     }
-                                    aria-label={`View ${reply.author}'s profile`}
                                   >
-                                    {replyAvatar ? (
-                                      <img
-                                        src={replyAvatar}
-                                        alt={`${reply.author}'s avatar`}
-                                        className="rounded-circle conversation-reply__avatar-image"
-                                      />
-                                    ) : (
-                                      <span
-                                        className={`conversation-reply__avatar-fallback d-inline-flex align-items-center justify-content-center rounded-circle ${
-                                          theme === "night"
-                                            ? "bg-secondary text-white"
-                                            : "bg-primary bg-opacity-10 text-primary"
-                                        }`}
-                                      >
-                                        {reply.author
-                                          ?.charAt(0)
-                                          ?.toUpperCase() || "?"}
-                                      </span>
-                                    )}
+                                    👍 <span className="reaction-count">{comment.likes}</span>
                                   </button>
-                                  
-                                  <div className="conversation-reply__body">
-                                    <div className="conversation-reply__header">
-                                      <button
-                                        type="button"
-                                        className="fw-semibold p-0 border-0 bg-transparent text-start conversation-reply__author"
-                                        onClick={() =>
-                                          openUserProfile(reply.author)
-                                        }
-                                        onKeyDown={(event) => {
-                                          if (
-                                            event.key === "Enter" ||
-                                            event.key === " "
-                                          ) {
-                                            event.preventDefault();
-                                            openUserProfile(reply.author);
-                                          }
-                                        }}
-                                        aria-label={`View ${reply.author}'s profile`}
-                                      >
-                                        {reply.author}
-                                      </button>
-                                    </div>
-                                    <div className="conversation-reply__text conversation-reply__bubble text-muted">
-                                      {reply.text}
-                                    </div>
-                                    {reply.isPending && (
-                                      <span className="badge bg-secondary bg-opacity-25 text-secondary ms-auto">
-                                        Sending...
-                                      </span>
-                                    )}
-                                  </div>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        )}
-
-                        {/* Reply Input */}
-                        {comment.showReplyInput && (
-                          <div className="d-flex gap-2 mt-2 align-items-center reply-input-row">
-                            <input
-                              type="text"
-                              className="form-control form-control-sm reply-inline-input"
-                              placeholder={
-                                user
-                                  ? "Write a reply..."
-                                  : "Sign in to reply to this comment"
-                              }
-                              value={comment.newReply}
-                              onChange={(e) =>
-                                handleReplyChange(idx, e.target.value)
-                              }
-                              disabled={isReplySending || !user}
-                            />
-                            <button
-                              className="btn btn-sm btn-primary reply-inline-send"
-                              onClick={() => handleReplySubmit(idx)}
-                              disabled={!canSendReply}
-                            >
-                              {isReplySending ? "Sending..." : "Send"}
-                            </button>
+                                  <button
+                                    type="button"
+                                    className="reaction-button"
+                                    onClick={() => handleDislikeComment(idx)}
+                                    disabled={
+                                      !user ||
+                                      isCommentPending ||
+                                      comment.likedBy?.includes(user.username) ||
+                                      comment.dislikedBy?.includes(user.username)
+                                    }
+                                  >
+                                    👎 <span className="reaction-count">{comment.dislikes}</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="reaction-button"
+                                    onClick={() => toggleReplyInput(idx)}
+                                    disabled={
+                                      !user || isCommentPending || isReplySending
+                                    }
+                                  >
+                                    💬 Reply
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
 
-                <div className="comment-input-panel">
+                          {/* Replies */}
+                          {comment.replies.length > 0 && (
+                            <ul className="mt-2 ps-3 list-unstyled conversation-reply-list">
+                              {comment.replies.map((reply, rIdx) => {
+                                const replyAvatar = resolveAvatar(
+                                  reply.authorImage,
+                                  reply.author
+                                );
+
+                                return (
+                                  <li
+                                    key={reply.tempId ?? rIdx}
+                                    className={`conversation-reply d-flex align-items-start gap-2 ${
+                                      theme === "night"
+                                        ? "text-light"
+                                        : "text-muted"
+                                    } small mb-2`}
+                                  >
+                                    <button
+                                      type="button"
+                                      className="conversation-reply__avatar p-0 border-0 bg-transparent"
+                                      onClick={() =>
+                                        openUserProfile(reply.author)
+                                      }
+                                      aria-label={`View ${reply.author}'s profile`}
+                                    >
+                                      {replyAvatar ? (
+                                        <img
+                                          src={replyAvatar}
+                                          alt={`${reply.author}'s avatar`}
+                                          className="rounded-circle conversation-reply__avatar-image"
+                                        />
+                                      ) : (
+                                        <span
+                                          className={`conversation-reply__avatar-fallback d-inline-flex align-items-center justify-content-center rounded-circle ${
+                                            theme === "night"
+                                              ? "bg-secondary text-white"
+                                              : "bg-primary bg-opacity-10 text-primary"
+                                          }`}
+                                        >
+                                          {reply.author
+                                            ?.charAt(0)
+                                            ?.toUpperCase() || "?"}
+                                        </span>
+                                      )}
+                                    </button>
+
+                                    <div className="conversation-reply__body">
+                                      <div className="conversation-reply__header">
+                                        <button
+                                          type="button"
+                                          className="fw-semibold p-0 border-0 bg-transparent text-start conversation-reply__author"
+                                          onClick={() =>
+                                            openUserProfile(reply.author)
+                                          }
+                                          onKeyDown={(event) => {
+                                            if (
+                                              event.key === "Enter" ||
+                                              event.key === " "
+                                            ) {
+                                              event.preventDefault();
+                                              openUserProfile(reply.author);
+                                            }
+                                          }}
+                                          aria-label={`View ${reply.author}'s profile`}
+                                        >
+                                          {reply.author}
+                                        </button>
+                                      </div>
+                                      <div className="conversation-reply__text conversation-reply__bubble text-muted">
+                                        {reply.text}
+                                      </div>
+                                      {reply.isPending && (
+                                        <span className="badge bg-secondary bg-opacity-25 text-secondary ms-auto">
+                                          Sending...
+                                        </span>
+                                      )}
+                                    </div>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          )}
+
+                          {/* Reply Input */}
+                          {comment.showReplyInput && (
+                            <div className="d-flex gap-2 mt-2 align-items-center reply-input-row">
+                              <input
+                                type="text"
+                                className="form-control form-control-sm reply-inline-input"
+                                placeholder={
+                                  user
+                                    ? "Write a reply..."
+                                    : "Sign in to reply to this comment"
+                                }
+                                value={comment.newReply}
+                                onChange={(e) =>
+                                  handleReplyChange(idx, e.target.value)
+                                }
+                                disabled={isReplySending || !user}
+                              />
+                              <button
+                                className="btn btn-sm btn-primary reply-inline-send"
+                                onClick={() => handleReplySubmit(idx)}
+                                disabled={!canSendReply}
+                              >
+                                {isReplySending ? "Sending..." : "Send"}
+                              </button>
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+
+                <div className="comment-input-panel comments-modal__composer">
                   <label className="form-label mb-2 fw-semibold text-muted small">
                     Join the conversation
                   </label>
@@ -1791,6 +1801,69 @@ export default function BlogCard({
           justify-content: center;
           gap: 0.35rem;
           min-height: 36px;
+        }
+
+        .comments-modal__dialog {
+          width: 94%;
+          max-width: 900px;
+        }
+
+        .comments-modal__shell {
+          border-radius: 16px;
+          overflow: hidden;
+        }
+
+        .comments-modal__header {
+          position: sticky;
+          top: 0;
+          z-index: 2;
+          background: ${isNight
+            ? "rgba(15,23,42,0.9)"
+            : "rgba(255,255,255,0.95)"};
+          border-bottom: 1px solid ${
+            isNight ? "rgba(255,255,255,0.08)" : "#e5e7eb"
+          };
+          backdrop-filter: blur(6px);
+        }
+
+        .comments-modal__subtle {
+          font-size: 0.92rem;
+          color: ${isNight ? "#cbd5e1" : "#475569"};
+        }
+
+        .comments-modal__body {
+          background: ${isNight
+            ? "linear-gradient(180deg, rgba(15,23,42,0.85), rgba(30,41,59,0.95))"
+            : "#f8fafc"};
+          padding: 0.75rem 0.85rem 0.5rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .comments-modal__scroll {
+          max-height: 60vh;
+          overflow-y: auto;
+          padding: 0.25rem 0.25rem 0.5rem;
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .comments-modal__composer {
+          position: sticky;
+          bottom: 0;
+          border-top: none;
+          margin-top: 0;
+          background: ${isNight ? "rgba(15,23,42,0.95)" : "#ffffff"};
+          border: 1px solid ${isNight
+            ? "rgba(255,255,255,0.08)"
+            : "#e2e8f0"};
+          box-shadow: 0 12px 32px ${
+            isNight ? "rgba(0,0,0,0.35)" : "rgba(15,23,42,0.08)"
+          };
+          border-radius: 14px;
+          padding: 0.85rem 0.9rem 0.75rem;
         }
 
         .conversation-comment-list {
@@ -2207,6 +2280,39 @@ export default function BlogCard({
             padding: 0.35rem 0.7rem;
             flex: 1;
             min-height: 32px;
+          }
+
+          .comments-modal__dialog {
+            width: 100% !important;
+            max-width: none;
+            margin: 0;
+            height: 100%;
+            display: flex;
+            align-items: flex-end;
+          }
+
+          .comments-modal__shell {
+            border-radius: 20px 20px 0 0;
+          }
+
+          .comments-modal__header {
+            padding: 0.85rem 1rem 0.65rem;
+          }
+
+          .comments-modal__body {
+            padding: 0.5rem 0.85rem 0.4rem;
+          }
+
+          .comments-modal__scroll {
+            max-height: calc(100vh - 230px);
+            padding-inline: 0.15rem;
+          }
+
+          .comments-modal__composer {
+            margin: 0 -0.1rem -0.1rem;
+            box-shadow: 0 -12px 32px ${
+              isNight ? "rgba(0,0,0,0.55)" : "rgba(15,23,42,0.12)"
+            };
           }
 
           /* ----------------------------------
