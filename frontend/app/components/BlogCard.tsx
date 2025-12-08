@@ -1239,13 +1239,6 @@ export default function BlogCard({
                                       )}
                                     </button>
 
-                                    <span
-                                      className="conversation-reply__arrow"
-                                      aria-hidden="true"
-                                    >
-                                      ↪
-                                    </span>
-
                                     <div className="conversation-reply__body">
                                       <div className="conversation-reply__header">
                                         <button
@@ -1615,12 +1608,7 @@ export default function BlogCard({
                                       </span>
                                     )}
                                   </button>
-                                  <span
-                                    className="conversation-reply__arrow"
-                                    aria-hidden="true"
-                                  >
-                                    ↪
-                                  </span>
+                                  
                                   <div className="conversation-reply__body">
                                     <div className="conversation-reply__header">
                                       <button
@@ -2054,7 +2042,7 @@ export default function BlogCard({
             display: flex !important;
             justify-content: flex-end !important; /* View all to the right */
             align-items: center !important;
-            padding: 0.8rem 0.8rem 0 0 !important; /* top right bottom left */
+            padding: 0 0 0 0 !important; /* top right bottom left */
             width: 100%;
           }
 
