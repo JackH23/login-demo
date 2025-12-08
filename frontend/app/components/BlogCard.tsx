@@ -1,7 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useEffect, CSSProperties, useCallback } from "react";
+import {
+  useState,
+  useEffect,
+  CSSProperties,
+  useCallback,
+  useRef,
+} from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { useCachedApi } from "../hooks/useCachedApi";
@@ -81,6 +87,7 @@ export default function BlogCard({
   const [replySubmittingId, setReplySubmittingId] = useState<string | null>(
     null
   );
+  const replyInputRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const { data: knownUsers } = useCachedApi<AuthorData[]>(
     user ? "/api/users" : null,
@@ -468,12 +475,33 @@ export default function BlogCard({
     }
   };
 
+  const scrollToReplyInput = (key: string) => {
+    const target = replyInputRefs.current[key];
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+      const input = target.querySelector("input");
+      if (input instanceof HTMLInputElement) {
+        input.focus();
+      }
+    }
+  };
+
   const toggleReplyInput = (index: number) => {
+    const comment = comments[index];
+    if (!comment) return;
+
+    const replyKey = comment._id ?? `local-${index}`;
+    const shouldOpen = !comment.showReplyInput;
+
     updateComments((prev) =>
       prev.map((c, i) =>
         i === index ? { ...c, showReplyInput: !c.showReplyInput } : c
       )
     );
+
+    if (shouldOpen) {
+      requestAnimationFrame(() => scrollToReplyInput(replyKey));
+    }
   };
 
   const handleReplyChange = (index: number, value: string) => {
@@ -1296,7 +1324,13 @@ export default function BlogCard({
 
                           {/* Reply Input */}
                           {comment.showReplyInput && (
-                            <div className="d-flex gap-2 mt-2 align-items-center reply-input-row">
+                            <div
+                              className="d-flex gap-2 mt-2 align-items-center reply-input-row"
+                              ref={(el) => {
+                                const key = comment._id ?? `local-${idx}`;
+                                replyInputRefs.current[key] = el;
+                              }}
+                            >
                               <input
                                 type="text"
                                 className="form-control form-control-sm reply-inline-input"
@@ -1675,7 +1709,13 @@ export default function BlogCard({
 
                           {/* Reply Input */}
                           {comment.showReplyInput && (
-                            <div className="d-flex gap-2 mt-2 align-items-center reply-input-row">
+                            <div
+                              className="d-flex gap-2 mt-2 align-items-center reply-input-row"
+                              ref={(el) => {
+                                const key = comment._id ?? `local-${idx}`;
+                                replyInputRefs.current[key] = el;
+                              }}
+                            >
                               <input
                                 type="text"
                                 className="form-control form-control-sm reply-inline-input"
