@@ -1066,7 +1066,7 @@ export default function BlogCard({
                       return (
                         <li
                           key={comment._id ?? idx}
-                          className={`conversation-comment-item p-3 rounded-4 shadow-sm ${
+                          className={`conversation-comment-item rounded-4 shadow-sm ${
                             isNight
                               ? "bg-dark bg-opacity-75 text-white"
                               : "bg-white"
@@ -1108,7 +1108,7 @@ export default function BlogCard({
                               <div className="conversation-comment__body">
                                 <div className="conversation-comment__meta">
                                   <span
-                                    className={`conversation-comment__author text-uppercase ${
+                                    className={`conversation-comment__author ${
                                       isNight
                                         ? "text-primary text-opacity-75"
                                         : "text-primary"
@@ -1143,7 +1143,7 @@ export default function BlogCard({
                                 <div className="conversation-comment__actions">
                                   <button
                                     type="button"
-                                    className="btn btn-sm btn-outline-success"
+                                    className="reaction-button"
                                     onClick={() => handleLikeComment(idx)}
                                     disabled={
                                       !user ||
@@ -1156,11 +1156,11 @@ export default function BlogCard({
                                       )
                                     }
                                   >
-                                    👍 {comment.likes}
+                                    👍 <span className="reaction-count">{comment.likes}</span>
                                   </button>
                                   <button
                                     type="button"
-                                    className="btn btn-sm btn-outline-danger"
+                                    className="reaction-button"
                                     onClick={() => handleDislikeComment(idx)}
                                     disabled={
                                       !user ||
@@ -1173,11 +1173,11 @@ export default function BlogCard({
                                       )
                                     }
                                   >
-                                    👎 {comment.dislikes}
+                                    👎 <span className="reaction-count">{comment.dislikes}</span>
                                   </button>
                                   <button
                                     type="button"
-                                    className="btn btn-sm btn-outline-primary"
+                                    className="reaction-button"
                                     onClick={() => toggleReplyInput(idx)}
                                     disabled={
                                       !user ||
@@ -1194,24 +1194,24 @@ export default function BlogCard({
 
                           {/* Replies */}
                           {comment.replies.length > 0 && (
-                            <ul className="mt-3 ps-4 list-unstyled conversation-reply-list">
+                            <ul className="mt-2 ps-3 list-unstyled conversation-reply-list">
                               {comment.replies.map((reply, rIdx) => {
                                 const replyAvatar = resolveAvatar(
                                   reply.authorImage,
                                   reply.author
                                 );
 
-                                return (
-                                  <li
-                                    key={reply.tempId ?? rIdx}
-                                    className={`conversation-reply d-flex align-items-start gap-2 ${
-                                      theme === "night"
-                                        ? "text-light"
-                                        : "text-muted"
-                                    } small mb-2`}
-                                  >
-                                    <button
-                                      type="button"
+                                  return (
+                                    <li
+                                      key={reply.tempId ?? rIdx}
+                                      className={`conversation-reply d-flex align-items-start gap-2 ${
+                                        theme === "night"
+                                          ? "text-light"
+                                          : "text-muted"
+                                      } small mb-2`}
+                                    >
+                                      <button
+                                        type="button"
                                       className="conversation-reply__avatar p-0 border-0 bg-transparent"
                                       onClick={() =>
                                         openUserProfile(reply.author)
@@ -1238,7 +1238,14 @@ export default function BlogCard({
                                         </span>
                                       )}
                                     </button>
-                                    
+
+                                    <span
+                                      className="conversation-reply__arrow"
+                                      aria-hidden="true"
+                                    >
+                                      ↪
+                                    </span>
+
                                     <div className="conversation-reply__body">
                                       <div className="conversation-reply__header">
                                         <button
@@ -1247,7 +1254,7 @@ export default function BlogCard({
                                           onClick={() =>
                                             openUserProfile(reply.author)
                                           }
-                                        onKeyDown={(event) => {
+                                          onKeyDown={(event) => {
                                             if (
                                               event.key === "Enter" ||
                                               event.key === " "
@@ -1278,10 +1285,10 @@ export default function BlogCard({
 
                           {/* Reply Input */}
                           {comment.showReplyInput && (
-                            <div className="d-flex gap-2 mt-3">
+                            <div className="d-flex gap-2 mt-2 align-items-center reply-input-row">
                               <input
                                 type="text"
-                                className="form-control form-control-sm rounded-pill"
+                                className="form-control form-control-sm reply-inline-input"
                                 placeholder={
                                   user
                                     ? "Write a reply..."
@@ -1294,7 +1301,7 @@ export default function BlogCard({
                                 disabled={isReplySending || !user}
                               />
                               <button
-                                className="btn btn-sm btn-primary rounded-pill px-3"
+                                className="btn btn-sm btn-primary reply-inline-send"
                                 onClick={() => handleReplySubmit(idx)}
                                 disabled={!canSendReply}
                               >
@@ -1311,26 +1318,31 @@ export default function BlogCard({
             )}
 
             {/* Add Comment Input */}
-            <div className="conversation-input d-flex flex-column flex-sm-row gap-2 align-items-stretch w-100">
-              <input
-                type="text"
-                className="form-control rounded-pill px-4 py-2 flex-grow-1 w-100"
-                placeholder={
-                  user
-                    ? "Share your perspective..."
-                    : "Sign in to share your perspective"
-                }
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                disabled={isSubmittingComment || !user}
-              />
-              <button
-                className="btn btn-primary rounded-pill px-4 w-100 w-sm-auto"
-                onClick={handleCommentSubmit}
-                disabled={!newComment.trim() || !user || isSubmittingComment}
-              >
-                {isSubmittingComment ? "Sending..." : "Send"}
-              </button>
+            <div className="comment-input-panel">
+              <label className="form-label mb-2 fw-semibold text-muted small">
+                Join the conversation
+              </label>
+              <div className="comment-input-group">
+                <input
+                  type="text"
+                  className="form-control comment-input"
+                  placeholder={
+                    user
+                      ? "Write a comment..."
+                      : "Sign in to join the conversation"
+                  }
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  disabled={isSubmittingComment || !user}
+                />
+                <button
+                  className="btn btn-primary comment-send-btn"
+                  onClick={handleCommentSubmit}
+                  disabled={!newComment.trim() || !user || isSubmittingComment}
+                >
+                  {isSubmittingComment ? "Sending..." : "Send"}
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -1407,22 +1419,18 @@ export default function BlogCard({
           onClick={() => setShowCommentsModal(false)}
         >
           <div
-            className="modal-dialog modal-xl modal-dialog-centered"
+            className="modal-dialog modal-fullscreen-sm-down modal-dialog-centered"
             role="document"
-            style={{ width: "90%", maxWidth: "none" }}
+            style={{ width: "94%", maxWidth: "900px" }}
             onClick={(e) => e.stopPropagation()}
           >
             <div
               className={`modal-content ${
                 theme === "night" ? "bg-dark text-white" : ""
               }`}
-              style={{
-                height: "90vh",
-                display: "flex",
-                flexDirection: "column",
-              }}
+              style={{ borderRadius: "16px" }}
             >
-              <div className="modal-header">
+              <div className="modal-header border-0 pb-2">
                 <h5 className="modal-title">All Comments</h5>
                 <button
                   type="button"
@@ -1431,12 +1439,8 @@ export default function BlogCard({
                 />
               </div>
 
-              {/* Scrollable Comments */}
-              <div
-                className="modal-body"
-                style={{ overflowY: "auto", flexGrow: 1, paddingRight: "10px" }}
-              >
-                <ul className="conversation-comment-list list-unstyled mb-0">
+              <div className="modal-body pt-2 pb-3 px-3 px-sm-4">
+                <ul className="conversation-comment-list list-unstyled mb-3">
                   {comments.map((comment, idx) => {
                     const commentAvatar = resolveAvatar(
                       comment.authorImage,
@@ -1455,7 +1459,7 @@ export default function BlogCard({
                     return (
                       <li
                         key={comment._id ?? idx}
-                        className={`conversation-comment-item p-3 rounded-4 shadow-sm ${
+                        className={`conversation-comment-item rounded-4 shadow-sm ${
                           theme === "night"
                             ? "bg-dark bg-opacity-75 text-white"
                             : "bg-white"
@@ -1493,7 +1497,7 @@ export default function BlogCard({
                             <div className="conversation-comment__body">
                               <div className="conversation-comment__meta">
                                 <span
-                                  className={`conversation-comment__author text-uppercase ${
+                                  className={`conversation-comment__author ${
                                     theme === "night"
                                       ? "text-primary text-opacity-75"
                                       : "text-primary"
@@ -1526,7 +1530,7 @@ export default function BlogCard({
                               <div className="conversation-comment__actions">
                                 <button
                                   type="button"
-                                  className="btn btn-sm btn-outline-success"
+                                  className="reaction-button"
                                   onClick={() => handleLikeComment(idx)}
                                   disabled={
                                     !user ||
@@ -1535,11 +1539,11 @@ export default function BlogCard({
                                     comment.dislikedBy?.includes(user.username)
                                   }
                                 >
-                                  👍 {comment.likes}
+                                  👍 <span className="reaction-count">{comment.likes}</span>
                                 </button>
                                 <button
                                   type="button"
-                                  className="btn btn-sm btn-outline-danger"
+                                  className="reaction-button"
                                   onClick={() => handleDislikeComment(idx)}
                                   disabled={
                                     !user ||
@@ -1548,11 +1552,11 @@ export default function BlogCard({
                                     comment.dislikedBy?.includes(user.username)
                                   }
                                 >
-                                  👎 {comment.dislikes}
+                                  👎 <span className="reaction-count">{comment.dislikes}</span>
                                 </button>
                                 <button
                                   type="button"
-                                  className="btn btn-sm btn-outline-primary"
+                                  className="reaction-button"
                                   onClick={() => toggleReplyInput(idx)}
                                   disabled={
                                     !user || isCommentPending || isReplySending
@@ -1656,10 +1660,10 @@ export default function BlogCard({
 
                         {/* Reply Input */}
                         {comment.showReplyInput && (
-                          <div className="d-flex gap-2 mt-2">
+                          <div className="d-flex gap-2 mt-2 align-items-center reply-input-row">
                             <input
                               type="text"
-                              className="form-control form-control-sm"
+                              className="form-control form-control-sm reply-inline-input"
                               placeholder={
                                 user
                                   ? "Write a reply..."
@@ -1672,7 +1676,7 @@ export default function BlogCard({
                               disabled={isReplySending || !user}
                             />
                             <button
-                              className="btn btn-sm btn-primary"
+                              className="btn btn-sm btn-primary reply-inline-send"
                               onClick={() => handleReplySubmit(idx)}
                               disabled={!canSendReply}
                             >
@@ -1684,32 +1688,34 @@ export default function BlogCard({
                     );
                   })}
                 </ul>
-              </div>
 
-              {/* Comment Input */}
-              <div className="modal-footer comment-footer">
-                <div className="comment-input-group">
-                  <input
-                    type="text"
-                    className="form-control comment-input"
-                    placeholder={
-                      user
-                        ? "Write a comment..."
-                        : "Sign in to join the conversation"
-                    }
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    disabled={isSubmittingComment || !user}
-                  />
-                  <button
-                    className="btn btn-primary comment-send-btn"
-                    onClick={handleCommentSubmit}
-                    disabled={
-                      !newComment.trim() || !user || isSubmittingComment
-                    }
-                  >
-                    {isSubmittingComment ? "Sending..." : "Send"}
-                  </button>
+                <div className="comment-input-panel">
+                  <label className="form-label mb-2 fw-semibold text-muted small">
+                    Join the conversation
+                  </label>
+                  <div className="comment-input-group">
+                    <input
+                      type="text"
+                      className="form-control comment-input"
+                      placeholder={
+                        user
+                          ? "Write a comment..."
+                          : "Sign in to join the conversation"
+                      }
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      disabled={isSubmittingComment || !user}
+                    />
+                    <button
+                      className="btn btn-primary comment-send-btn"
+                      onClick={handleCommentSubmit}
+                      disabled={
+                        !newComment.trim() || !user || isSubmittingComment
+                      }
+                    >
+                      {isSubmittingComment ? "Sending..." : "Send"}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1788,6 +1794,7 @@ export default function BlogCard({
         }
 
         .conversation-comment-item {
+          padding: 0.85rem 1rem;
           border: 1px solid ${isNight ? "rgba(255,255,255,0.08)" : "#e5e7eb"};
           background: ${isNight ? "rgba(17,24,39,0.6)" : "#fbfdff"};
           transition: transform 0.15s ease, box-shadow 0.2s ease;
@@ -1855,13 +1862,13 @@ export default function BlogCard({
 
         .conversation-comment__text {
           margin: 0;
-          padding: 0.75rem 0.9rem;
+          padding: 0.6rem 0.75rem;
           line-height: 1.6;
           word-break: break-word;
           overflow-wrap: anywhere;
           width: 100%;
           max-width: none;
-          border-radius: 14px;
+          border-radius: 12px;
           background: ${isNight
             ? "rgba(255,255,255,0.04)"
             : "#f8fafc"};
@@ -1877,37 +1884,50 @@ export default function BlogCard({
           align-items: center;
         }
 
-        .conversation-comment__actions .btn {
+        .reaction-button {
           display: inline-flex;
           align-items: center;
-          gap: 0.25rem;
-          padding: 0.35rem 0.75rem;
+          gap: 0.35rem;
+          padding: 0.35rem 0.55rem;
           font-size: 0.82rem;
+          line-height: 1.2;
           border-radius: 999px;
-          flex: 0 0 auto;
-          line-height: 1.1;
+          border: 1px solid ${isNight ? "#334155" : "#d1d5db"};
+          background: ${isNight ? "rgba(255,255,255,0.03)" : "#f8fafc"};
+          color: inherit;
+          min-height: 36px;
+          min-width: 0;
+        }
+
+        .reaction-button:disabled {
+          opacity: 0.55;
+        }
+
+        .reaction-count {
+          min-width: 0.9rem;
+          text-align: right;
         }
 
         .conversation-reply {
           display: flex;
           align-items: flex-start;
           gap: 0.6rem;
-          padding: 0.35rem 0.25rem;
-          border-radius: 14px;
+          padding: 0.25rem 0.25rem 0.25rem 0.4rem;
+          border-radius: 12px;
           width: 100%;
         }
 
         .conversation-reply__avatar {
-          width: 34px;
-          height: 34px;
-          flex: 0 0 34px;
-          margin-top: 2px;
+          width: 30px;
+          height: 30px;
+          flex: 0 0 30px;
+          margin-top: 3px;
         }
 
         .conversation-reply__avatar-image,
         .conversation-reply__avatar-fallback {
-          width: 34px;
-          height: 34px;
+          width: 30px;
+          height: 30px;
           object-fit: cover;
           border-radius: 50%;
           display: inline-flex;
@@ -1957,8 +1977,8 @@ export default function BlogCard({
           background-color: ${isNight
             ? "rgba(255,255,255,0.05)"
             : "#f8fafc"};
-          padding: 0.75rem 0.95rem;
-          border-radius: 14px;
+          padding: 0.6rem 0.75rem;
+          border-radius: 12px;
           display: block;
           width: auto;
           max-width: 100%;
@@ -1968,12 +1988,61 @@ export default function BlogCard({
         }
 
         .conversation-reply-list {
+          position: relative;
           border-left: 2px solid ${isNight ? "#334155" : "#e5e7eb"};
-          margin-left: 0.25rem;
-          padding-left: 1.05rem !important;
+          margin-left: 0.15rem;
+          padding-left: 1.1rem !important;
           gap: 0.5rem;
           display: flex;
           flex-direction: column;
+        }
+
+        .conversation-reply-list::before {
+          content: "";
+          position: absolute;
+          left: -2px;
+          top: 6px;
+          bottom: 6px;
+          width: 2px;
+          background: ${isNight ? "rgba(148,163,184,0.35)" : "rgba(148,163,184,0.55)"};
+        }
+
+        .reply-inline-input {
+          min-height: 38px;
+        }
+
+        .reply-inline-send {
+          min-height: 38px;
+          padding-inline: 0.85rem;
+        }
+
+        .reply-input-row {
+          margin-left: 2.6rem;
+        }
+
+        .comment-input-panel {
+          border-top: 1px solid ${isNight ? "rgba(255,255,255,0.08)" : "#e5e7eb"};
+          padding-top: 0.75rem;
+          margin-top: 0.75rem;
+        }
+
+        .comment-input-group {
+          display: grid;
+          grid-template-columns: 1fr auto;
+          gap: 0.55rem;
+          align-items: center;
+        }
+
+        .comment-input {
+          min-height: 42px;
+          padding: 0.5rem 0.75rem;
+          border-radius: 10px;
+        }
+
+        .comment-send-btn {
+          min-height: 42px;
+          padding: 0.5rem 1rem;
+          border-radius: 10px;
         }
 
         /* 📱 MOBILE STYLES */
@@ -2138,9 +2207,9 @@ export default function BlogCard({
           Conversation Comments Layout
           -----------------------------------*/
           .conversation-comment-wrapper {
-            max-height: 240px;
-            overflow-y: auto;
-            padding-right: 0.35rem;
+            max-height: none;
+            overflow: visible;
+            padding-right: 0;
           }
 
           .conversation-comment {
@@ -2190,6 +2259,8 @@ export default function BlogCard({
             margin-left: 0 !important;
             width: 100%;
             overflow-wrap: anywhere;
+            padding: 0.55rem 0.7rem !important;
+            border-radius: 11px;
           }
 
           .conversation-comment__actions {
@@ -2202,25 +2273,24 @@ export default function BlogCard({
             flex-wrap: wrap;
           }
 
-          .conversation-comment__actions .btn {
-            justify-content: center;
-            font-size: 0.78rem;
-            padding: 0.3rem 0.5rem;
-            min-width: 0;
-            flex: 0 0 auto;
+          .reaction-button {
+            font-size: 0.8rem;
+            padding: 0.3rem 0.45rem;
+            min-height: 34px;
           }
 
           .conversation-reply {
             align-items: flex-start !important;
             gap: 0.45rem;
+            margin-left: 0.15rem;
           }
 
           .conversation-reply__avatar,
           .conversation-reply__avatar-image,
           .conversation-reply__avatar-fallback {
-            width: 32px !important;
-            height: 32px !important;
-            flex-basis: 32px !important;
+            width: 28px !important;
+            height: 28px !important;
+            flex-basis: 28px !important;
           }
 
           .conversation-reply__body {
@@ -2250,11 +2320,24 @@ export default function BlogCard({
             width: 100%;
             max-width: 100%;
             line-height: 1.4;
+            padding: 0.55rem 0.65rem;
           }
 
           .conversation-reply-list {
             border-left: 0 !important;
-            padding-left: 0.75rem !important;
+            padding-left: 0.65rem !important;
+          }
+
+          .reply-input-row {
+            margin-left: 1.75rem;
+          }
+
+          .comment-input-panel {
+            padding-top: 0.5rem;
+          }
+
+          .comment-input-group {
+            grid-template-columns: 1fr;
           }
 
           .conversation-card h5 {
