@@ -89,6 +89,34 @@ export default function BlogCard({
       transform: normalizeUsersResponse,
     }
   );
+  const mapCommentsResponse = useCallback(
+    (payload: { comments?: unknown[] }) =>
+      resolveCommentAvatars(
+        (payload.comments ?? []).map((comment) =>
+          mapCommentFromApi(comment as Record<string, unknown>)
+        )
+      ),
+    [mapCommentFromApi, resolveCommentAvatars]
+  );
+  const {
+    data: cachedComments,
+    refresh: refreshComments,
+    setData: setCachedComments,
+  } = useCachedApi<Comment[]>(
+    blog._id ? `/api/comments?postId=${blog._id}` : null,
+    {
+      fallback: [],
+      transform: mapCommentsResponse,
+      staleTime: 15_000,
+    }
+  );
+  const updateComments = useCallback(
+    (updater: Parameters<typeof setComments>[0]) => {
+      setComments(updater);
+      setCachedComments(updater);
+    },
+    [setCachedComments]
+  );
   // Check if the current theme is "night"
   const isNight = theme === "night";
 
@@ -247,34 +275,22 @@ export default function BlogCard({
   }, [knownUsers]);
 
   useEffect(() => {
-    if (!blog._id) return;
-    let isMounted = true;
-
-    const fetchComments = async () => {
-      try {
-        const res = await fetch(apiUrl(`/api/comments?postId=${blog._id}`));
-        const data = await res.json();
-        if (!isMounted) return;
-        const list = resolveCommentAvatars(
-          (data.comments ?? []).map(mapCommentFromApi)
-        );
-        setComments(list);
-      } catch {
-        if (!isMounted) return;
-        setComments([]);
-      }
-    };
-
-    fetchComments();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [blog._id, mapCommentFromApi]);
+    setComments(cachedComments);
+  }, [cachedComments]);
 
   useEffect(() => {
-    setComments((prev) => resolveCommentAvatars(prev));
-  }, [resolveCommentAvatars]);
+    updateComments((prev) => resolveCommentAvatars(prev));
+  }, [resolveCommentAvatars, updateComments]);
+
+  useEffect(() => {
+    if (!blog._id) return;
+    refreshComments();
+  }, [blog._id, refreshComments]);
+
+  useEffect(() => {
+    if (!showConversation || !blog._id) return;
+    refreshComments();
+  }, [blog._id, refreshComments, showConversation]);
 
   const handleCommentSubmit = async () => {
     const text = newComment.trim();
@@ -298,7 +314,7 @@ export default function BlogCard({
 
     setNewComment("");
     setIsSubmittingComment(true);
-    setComments((prev) => [...prev, optimisticComment]);
+    updateComments((prev) => [...prev, optimisticComment]);
 
     let isSaved = false;
 
@@ -317,7 +333,7 @@ export default function BlogCard({
         if (!res.ok) throw new Error("Failed to submit comment");
 
         const data = await res.json();
-        setComments((prev) =>
+        updateComments((prev) =>
           prev.map((comment) =>
             comment._id === tempId
               ? { ...mapCommentFromApi(data.comment), isPending: false }
@@ -331,7 +347,7 @@ export default function BlogCard({
     }
 
     if (!isSaved) {
-      setComments((prev) => prev.filter((comment) => comment._id !== tempId));
+      updateComments((prev) => prev.filter((comment) => comment._id !== tempId));
       setNewComment(text);
     }
 
@@ -346,7 +362,7 @@ export default function BlogCard({
       comment.dislikedBy?.includes(user.username)
     )
       return;
-    setComments((prev) =>
+    updateComments((prev) =>
       prev.map((c, i) =>
         i === index
           ? {
@@ -366,7 +382,7 @@ export default function BlogCard({
         });
         if (res.ok) {
           const data = await res.json();
-          setComments((prev) =>
+          updateComments((prev) =>
             prev.map((c, i) =>
               i === index
                 ? {
@@ -379,7 +395,7 @@ export default function BlogCard({
           );
         }
       } catch {
-        setComments((prev) =>
+        updateComments((prev) =>
           prev.map((c, i) =>
             i === index
               ? {
@@ -402,7 +418,7 @@ export default function BlogCard({
       comment.likedBy?.includes(user.username)
     )
       return;
-    setComments((prev) =>
+    updateComments((prev) =>
       prev.map((c, i) =>
         i === index
           ? {
@@ -422,7 +438,7 @@ export default function BlogCard({
         });
         if (res.ok) {
           const data = await res.json();
-          setComments((prev) =>
+          updateComments((prev) =>
             prev.map((c, i) =>
               i === index
                 ? {
@@ -435,7 +451,7 @@ export default function BlogCard({
           );
         }
       } catch {
-        setComments((prev) =>
+        updateComments((prev) =>
           prev.map((c, i) =>
             i === index
               ? {
@@ -451,7 +467,7 @@ export default function BlogCard({
   };
 
   const toggleReplyInput = (index: number) => {
-    setComments((prev) =>
+    updateComments((prev) =>
       prev.map((c, i) =>
         i === index ? { ...c, showReplyInput: !c.showReplyInput } : c
       )
@@ -459,7 +475,7 @@ export default function BlogCard({
   };
 
   const handleReplyChange = (index: number, value: string) => {
-    setComments((prev) =>
+    updateComments((prev) =>
       prev.map((c, i) => (i === index ? { ...c, newReply: value } : c))
     );
   };
@@ -481,7 +497,7 @@ export default function BlogCard({
     };
 
     setReplySubmittingId(replyKey);
-    setComments((prev) =>
+    updateComments((prev) =>
       prev.map((c, i) =>
         i === index
           ? {
@@ -504,7 +520,7 @@ export default function BlogCard({
       if (!res.ok) throw new Error("Failed to submit reply");
 
       const data = await res.json();
-      setComments((prev) =>
+      updateComments((prev) =>
         prev.map((c, i) =>
           i === index
             ? {
@@ -517,7 +533,7 @@ export default function BlogCard({
       );
     } catch (error) {
       console.error("Unable to submit reply", error);
-      setComments((prev) =>
+      updateComments((prev) =>
         prev.map((c, i) =>
           i === index
             ? {
