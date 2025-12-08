@@ -45,6 +45,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // stored preference on mount so the client can update once it knows the
   // user's choice.
   const [theme, setThemeState] = useState<Theme>("brightness");
+  const [hasHydrated, setHasHydrated] = useState(false);
 
   const setTheme = (value: Theme) => {
     setThemeState(value);
@@ -55,17 +56,20 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const storedTheme = readStoredTheme();
     setThemeState(storedTheme);
+    setHasHydrated(true);
   }, []);
 
   // Keep DOM attributes, classes, and storage in sync whenever the theme
   // changes so user selections persist across sessions.
   useEffect(() => {
+    if (!hasHydrated) return;
+
     if (typeof window !== "undefined") {
       window.localStorage.setItem(THEME_STORAGE_KEY, theme);
     }
 
     applyThemeToDom(theme);
-  }, [theme]);
+  }, [theme, hasHydrated]);
 
   // Sync theme changes across tabs so the preference stays consistent.
   useEffect(() => {
