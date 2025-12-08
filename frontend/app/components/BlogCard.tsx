@@ -2346,12 +2346,12 @@ export default function BlogCard({
           }
 
           .comments-modal__body {
-            padding: 0.5rem 0.85rem 0.4rem;
+            padding: 0.45rem 0.6rem 0.35rem;
           }
 
           .comments-modal__scroll {
             max-height: calc(100vh - 230px);
-            padding-inline: 0.15rem;
+            padding-inline: 0.05rem;
           }
 
           .comments-modal__composer {
@@ -2367,7 +2367,7 @@ export default function BlogCard({
           .conversation-comment-wrapper {
             max-height: 260px;
             overflow-y: auto;
-            padding-right: 0.25rem;
+            
           }
 
           .conversation-comment {
@@ -2399,6 +2399,7 @@ export default function BlogCard({
             max-width: calc(100% - 48px);
             min-width: 0;
             flex: 1;
+            width: 100%;
           }
 
           .conversation-comment__meta {
