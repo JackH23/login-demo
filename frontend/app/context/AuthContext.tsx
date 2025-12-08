@@ -18,6 +18,21 @@ interface User {
   image?: string | null;
 }
 
+// Returns true when a network-related failure should be ignored because the
+// browser is suspending requests (e.g., background tab) or the user is offline.
+function shouldIgnoreNetworkError(error: unknown) {
+  if (!(error instanceof Error)) return false;
+
+  const message = error.message.toLowerCase();
+  return (
+    message.includes("failed to fetch") ||
+    message.includes("networkerror when attempting to fetch resource") ||
+    message.includes("load failed") ||
+    message.includes("network io suspended") ||
+    error.name === "AbortError"
+  );
+}
+
 // Shape of the authentication context value shared with components
 interface AuthContextValue {
   // Currently logged in user or null if not authenticated
@@ -99,17 +114,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(null);
             return;
           }
-          console.error("Unable to update user status", error);
+          console.error("Unable to update user status", message);
 
           throw new Error(message);
         }
       } catch (error) {
         // Keep transient network failures (e.g., tab close, offline) from
         // surfacing as console errors that trigger the Next.js dev overlay.
-        if (error instanceof TypeError && /fetch/i.test(error.message)) {
-          console.warn("Skip logging transient status update failure", error);
-          return;
-        }
+        if (shouldIgnoreNetworkError(error)) return;
 
         console.error("Unable to update user status", error);
       }
