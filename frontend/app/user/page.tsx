@@ -34,6 +34,9 @@ export default function UserPage() {
     transform: normalizeUsersResponse,
   });
   const [searchTerm, setSearchTerm] = useState("");
+  const [stickyOffset, setStickyOffset] = useState(88);
+  const [isCompactLayout, setIsCompactLayout] = useState(false);
+  const [openAdminMenu, setOpenAdminMenu] = useState<string | null>(null);
   const { confirm: showConfirm, dialog: confirmDialog } = useConfirmDialog();
   const { prompt: showPrompt, dialog: promptDialog } = usePromptDialog();
 
@@ -50,6 +53,31 @@ export default function UserPage() {
   useEffect(() => {
     // Socket listeners disabled; rely on API data
   }, [setUsers, socket]);
+
+  useEffect(() => {
+    const updateLayoutMetrics = () => {
+      const topbar = document.querySelector(
+        ".topbar-wrapper",
+      ) as HTMLElement | null;
+      const topbarHeight = topbar?.getBoundingClientRect().height ?? 0;
+      setStickyOffset(topbarHeight + 12);
+      setIsCompactLayout(window.innerWidth < 768);
+    };
+
+    updateLayoutMetrics();
+    window.addEventListener("resize", updateLayoutMetrics);
+    return () => window.removeEventListener("resize", updateLayoutMetrics);
+  }, []);
+
+  useEffect(() => {
+    if (!isCompactLayout) {
+      setOpenAdminMenu(null);
+    }
+  }, [isCompactLayout]);
+
+  const toggleAdminMenu = (username: string) => {
+    setOpenAdminMenu((prev) => (prev === username ? null : username));
+  };
 
   if (loading || usersLoading || !user) {
     return (
@@ -328,7 +356,7 @@ export default function UserPage() {
 
   return (
     <div
-      className={`container-fluid min-vh-100 p-4 ${
+      className={`container-fluid min-vh-100 p-2 p-sm-3 p-lg-4 ${
         theme === "night" ? "bg-dark text-white" : "bg-light"
       }`}
     >
@@ -347,12 +375,12 @@ export default function UserPage() {
       {/* Search input */}
       {/* Sticky Search Bar */}
       <div
-        className="input-group position-sticky z-2"
+        className="input-group position-sticky z-2 user-directory-search"
         style={{
-          top: "75px", // adjust based on your sticky header height
-          maxWidth: "400px",
+          top: stickyOffset,
+          maxWidth: isCompactLayout ? "100%" : "520px",
           marginBottom: "1rem",
-          paddingTop: "0.5rem",
+          paddingTop: "0.25rem",
         }}
       >
         <input
@@ -361,6 +389,7 @@ export default function UserPage() {
           placeholder="Search users by username..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          aria-label="Search users by username"
         />
       </div>
 
@@ -387,7 +416,7 @@ export default function UserPage() {
                     <li key={u.username} className="user-card" role="listitem">
                       <div className="user-card-main">
                           <div
-                            className="user-card-avatar"
+                            className="user-card-avatar user-card-avatar--focusable"
                             role="presentation"
                             onClick={() => navigateToProfile(u.username)}
                             onKeyDown={(event) => {
@@ -469,8 +498,13 @@ export default function UserPage() {
                         >
                           <div className="user-card-header">
                             <span className="user-card-name">{u.username}</span>
+                          </div>
+                          <div className="user-card-status-row">
                             <span className={presenceClass} data-variant="label">
                               {u.online ? "Online" : "Offline"}
+                            </span>
+                            <span className="user-card-substatus">
+                              {u.online ? "Available to chat" : "Offline for now"}
                             </span>
                           </div>
                           <div className="user-card-meta">
@@ -482,7 +516,13 @@ export default function UserPage() {
                           </div>
                         </div>
                       </div>
-                      <div className="user-card-actions" role="group" aria-label={`Actions for ${u.username}`}>
+                      <div
+                        className={`user-card-actions ${
+                          isCompactLayout ? "user-card-actions--stacked" : ""
+                        }`}
+                        role="group"
+                        aria-label={`Actions for ${u.username}`}
+                      >
                         <button
                           type="button"
                           className="user-card-action user-card-action--secondary"
@@ -512,22 +552,65 @@ export default function UserPage() {
                         </button>
                         {isAdmin && (
                           <>
-                            <button
-                              type="button"
-                              className="user-card-action user-card-action--edit"
-                              onClick={() => handleEdit(u)}
-                            >
-                              <i className="bi bi-pencil-square" aria-hidden="true"></i>
-                              Edit
-                            </button>
-                            <button
-                              type="button"
-                              className="user-card-action user-card-action--danger"
-                              onClick={() => handleDelete(u.username)}
-                            >
-                              <i className="bi bi-trash" aria-hidden="true"></i>
-                              Delete
-                            </button>
+                            {isCompactLayout ? (
+                              <div className="user-card-more">
+                                <button
+                                  type="button"
+                                  className="user-card-action user-card-action--secondary user-card-action--more"
+                                  onClick={() => toggleAdminMenu(u.username)}
+                                  aria-expanded={openAdminMenu === u.username}
+                                  aria-controls={`admin-actions-${u.username}`}
+                                >
+                                  <i className="bi bi-three-dots" aria-hidden="true"></i>
+                                  Manage
+                                </button>
+                                {openAdminMenu === u.username && (
+                                  <div
+                                    id={`admin-actions-${u.username}`}
+                                    className="user-card-more-menu"
+                                  >
+                                    <button
+                                      type="button"
+                                      className="user-card-action user-card-action--edit"
+                                      onClick={() => handleEdit(u)}
+                                    >
+                                      <i
+                                        className="bi bi-pencil-square"
+                                        aria-hidden="true"
+                                      ></i>
+                                      Edit profile
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="user-card-action user-card-action--danger"
+                                      onClick={() => handleDelete(u.username)}
+                                    >
+                                      <i className="bi bi-trash" aria-hidden="true"></i>
+                                      Delete user
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <>
+                                <button
+                                  type="button"
+                                  className="user-card-action user-card-action--edit"
+                                  onClick={() => handleEdit(u)}
+                                >
+                                  <i className="bi bi-pencil-square" aria-hidden="true"></i>
+                                  Edit
+                                </button>
+                                <button
+                                  type="button"
+                                  className="user-card-action user-card-action--danger"
+                                  onClick={() => handleDelete(u.username)}
+                                >
+                                  <i className="bi bi-trash" aria-hidden="true"></i>
+                                  Delete
+                                </button>
+                              </>
+                            )}
                           </>
                         )}
                       </div>
@@ -537,7 +620,19 @@ export default function UserPage() {
               </ul>
             </>
           ) : (
-            <p className="text-muted text-center">No users found.</p>
+            <div className="user-card-empty text-center py-5">
+              <p className="text-muted mb-2">No users match your search right now.</p>
+              <p className="text-muted mb-3">
+                Invite teammates to join or adjust your filters to see more people.
+              </p>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => router.push("/signup")}
+              >
+                Invite teammates
+              </button>
+            </div>
           )}
         </div>
       </div>
