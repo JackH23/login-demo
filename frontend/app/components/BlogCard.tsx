@@ -1958,7 +1958,7 @@ export default function BlogCard({
         }
 
         .blog-card__menu {
-          z-index: 6;
+          z-index: 2;
           position: relative;
         }
 
@@ -2007,7 +2007,7 @@ export default function BlogCard({
           border: none;
           padding: 0;
           margin: 0;
-          z-index: 5;
+          z-index: 2;
           cursor: pointer;
         }
 
@@ -2025,7 +2025,7 @@ export default function BlogCard({
           transform: translateY(-6px) scale(0.95);
           transform-origin: top right;
           transition: opacity 180ms ease, transform 180ms ease;
-          z-index: 7;
+          z-index: 2;
           background-clip: padding-box;
         }
 
