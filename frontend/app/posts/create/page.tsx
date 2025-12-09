@@ -75,7 +75,7 @@ export default function CreateBlogPage() {
         <div
           className={`rounded-4 p-4 p-lg-5 mb-5 position-relative overflow-hidden ${
             isNight ? "bg-gradient" : "bg-white"
-          }`}
+          } d-none d-md-block`}
           style={{
             background: isNight
               ? "linear-gradient(135deg, rgba(40,40,60,.9), rgba(12,12,30,.85))"
@@ -260,7 +260,7 @@ export default function CreateBlogPage() {
               <div
                 className={`card border-0 shadow-lg rounded-4 p-4 ${
                   isNight ? "bg-dark text-light" : "bg-white"
-                }`}
+                } d-none d-md-block`}
               >
                 <h3 className="h5 fw-bold mb-3">Engagement insights</h3>
                 <ul className="list-unstyled d-grid gap-3 mb-0">
@@ -302,7 +302,7 @@ export default function CreateBlogPage() {
               <div
                 className={`card border-0 shadow-lg rounded-4 overflow-hidden ${
                   isNight ? "bg-dark text-light" : "bg-white"
-                }`}
+                } d-none d-md-block`}
               >
                 {image ? (
                   <img
