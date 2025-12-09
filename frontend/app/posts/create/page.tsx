@@ -144,7 +144,7 @@ export default function CreateBlogPage() {
             {/* Blog Form */}
             <form
               onSubmit={handleSubmit}
-              className={`card border-0 shadow-lg rounded-4 p-4 p-lg-5 ${
+              className={`card border-0 shadow-lg rounded-4 p-4 p-lg-5 storyboard-card ${
                 isNight ? "bg-dark text-light" : "bg-white"
               }`}
             >
@@ -160,7 +160,7 @@ export default function CreateBlogPage() {
                   className="btn btn-outline-secondary"
                   onClick={() => router.push("/home")}
                 >
-                  ⬅ Back to Home
+                  ⬅
                 </button>
               </div>
 

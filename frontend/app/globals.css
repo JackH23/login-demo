@@ -2135,6 +2135,46 @@
   }
 }
 
+/* Storyboard form mobile tweaks */
+@media (max-width: 576px) {
+  .storyboard-card {
+    padding: 1.25rem 1rem !important;
+    border-radius: 1rem;
+  }
+
+  .storyboard-card h2,
+  .storyboard-card .h3 {
+    font-size: 1.3rem;
+  }
+
+  .storyboard-card label,
+  .storyboard-card .text-secondary,
+  .storyboard-card small {
+    font-size: 0.9rem;
+  }
+
+  .storyboard-card .form-control,
+  .storyboard-card textarea {
+    font-size: 0.95rem;
+    padding: 0.55rem 0.75rem;
+  }
+
+  .storyboard-card .form-control-lg {
+    font-size: 1rem;
+    padding: 0.65rem 0.85rem;
+  }
+
+  .storyboard-card .btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.95rem;
+  }
+
+  .storyboard-card .btn-lg {
+    padding: 0.65rem 1rem;
+    font-size: 1rem;
+  }
+}
+
 @keyframes app-shimmer {
   0% {
     transform: translateX(-100%);
