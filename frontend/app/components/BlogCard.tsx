@@ -88,6 +88,7 @@ export default function BlogCard({
     null
   );
   const [showActionsMenu, setShowActionsMenu] = useState(false);
+  const [useBottomSheet, setUseBottomSheet] = useState(false);
   const replyInputRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const menuDropdownRef = useRef<HTMLDivElement | null>(null);
@@ -336,6 +337,34 @@ export default function BlogCard({
       document.removeEventListener("keydown", handleEscape);
     };
   }, [showActionsMenu]);
+
+  useEffect(() => {
+    if (!showActionsMenu || !isMobile) {
+      setUseBottomSheet(false);
+      return;
+    }
+
+    const updatePlacement = () => {
+      const buttonRect = menuButtonRef.current?.getBoundingClientRect();
+      const dropdownRect = menuDropdownRef.current?.getBoundingClientRect();
+
+      if (!buttonRect || !dropdownRect) return;
+
+      const viewportHeight = window.innerHeight;
+      const dropdownBottom = buttonRect.bottom + dropdownRect.height + 24;
+      const isNearBottom = buttonRect.bottom > viewportHeight - 120;
+      const wouldOverflow = dropdownBottom > viewportHeight;
+
+      setUseBottomSheet(isNearBottom || wouldOverflow);
+    };
+
+    requestAnimationFrame(updatePlacement);
+    window.addEventListener("resize", updatePlacement);
+
+    return () => {
+      window.removeEventListener("resize", updatePlacement);
+    };
+  }, [isMobile, showActionsMenu]);
 
   const handleCommentSubmit = async () => {
     const text = newComment.trim();
@@ -743,7 +772,9 @@ export default function BlogCard({
                   id={`blog-card-menu-${blog._id ?? "new"}`}
                   className={`blog-card__menu-dropdown ${
                     isMobile
-                      ? "blog-card__menu-dropdown--mobile"
+                      ? useBottomSheet
+                        ? "blog-card__menu-dropdown--mobile-sheet"
+                        : "blog-card__menu-dropdown--mobile"
                       : "blog-card__menu-dropdown--desktop"
                   } ${isNight ? "is-dark" : "is-light"}`}
                   data-open={showActionsMenu}
@@ -1940,7 +1971,7 @@ export default function BlogCard({
             : "rgba(255,255,255,0.85)"};
           border: 1px solid ${isNight ? "rgba(226,232,240,0.18)" : "#e2e8f0"};
           border-radius: 999px;
-          padding: 0.65rem 0.7rem;
+          padding: 0.65rem 0.75rem;
           min-height: 44px;
           min-width: 44px;
           cursor: pointer;
@@ -1983,22 +2014,21 @@ export default function BlogCard({
           inset-inline-end: 0;
           top: calc(100% + 0.4rem);
           min-width: 230px;
-          max-width: min(320px, calc(100vw - 2rem));
-          border-radius: 10px;
-          padding: 1rem 1.1rem;
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-          border: 1px solid ${isNight ? "rgba(148,163,184,0.35)" : "#e2e8f0"};
+          max-width: min(320px, calc(100vw - 1.5rem));
+          border-radius: 12px;
+          padding: 1rem 1.15rem;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+          border: 1px solid rgba(255, 120, 150, 0.25);
           opacity: 0;
           transform: translateY(-6px) scale(0.95);
           transform-origin: top right;
-          transition: opacity 160ms ease, transform 160ms ease;
+          transition: opacity 180ms ease, transform 180ms ease;
           z-index: 7;
           background-clip: padding-box;
         }
 
         .blog-card__menu-dropdown[data-open="true"] {
           opacity: 1;
-          transform: translateY(0) scale(1);
         }
 
         .blog-card__menu-dropdown.is-light {
@@ -2011,7 +2041,27 @@ export default function BlogCard({
           color: #e2e8f0;
         }
 
+        .blog-card__menu-dropdown--desktop[data-open="true"] {
+          transform: translateY(0) scale(1);
+        }
+
         .blog-card__menu-dropdown--mobile {
+        position: absolute;
+          right: 0;
+          top: 0;
+          transform: translate(-4px, 48px) scale(0.95);
+          max-width: min(260px, calc(100vw - 1.5rem));
+          width: max-content;
+          padding: 0.85rem 1rem;
+          border-radius: 12px;
+          transform-origin: top right;
+        }
+
+        .blog-card__menu-dropdown--mobile[data-open="true"] {
+          transform: translate(-4px, 48px) scale(1);
+        }
+
+        .blog-card__menu-dropdown--mobile-sheet {
           position: fixed;
           right: auto;
           left: 50%;
@@ -2020,34 +2070,34 @@ export default function BlogCard({
           transform: translate(-50%, 16px) scale(0.95);
           width: min(520px, calc(100vw - 1.5rem));
           margin-top: 0;
-          border-radius: 14px;
-          padding: 1.2rem 1.3rem;
+          border-radius: 16px;
+          padding: 1.15rem 1.25rem;
           transform-origin: center bottom;
         }
 
-        .blog-card__menu-dropdown--mobile[data-open="true"] {
+        .blog-card__menu-dropdown--mobile-sheet[data-open="true"] {
           transform: translate(-50%, 0) scale(1);
         }
 
         .blog-card__menu-list {
           display: flex;
           flex-direction: column;
-          gap: 0.75rem;
+          gap: 0.65rem;
         }
 
         .blog-card__menu-item {
           width: 100%;
           display: flex;
           align-items: flex-start;
-          gap: 0.9rem;
-          padding: 0.95rem 1rem;
-          border-radius: 10px;
+          gap: 0.7rem;
+          padding: 0.95rem 1.05rem;
+          border-radius: 12px;
           border: 1px solid transparent;
           background: ${isNight ? "rgba(255,255,255,0.05)" : "#f8fafc"};
           color: inherit;
           text-align: left;
           cursor: pointer;
-          min-height: 56px;
+          min-height: 60px;
           transition: background 120ms ease, border-color 120ms ease,
             transform 120ms ease;
         }
@@ -2081,13 +2131,13 @@ export default function BlogCard({
           width: 1.75rem;
           height: 1.75rem;
           line-height: 1;
-          margin-top: 0.1rem;
+          margin-top: 0.05rem;
         }
 
         .blog-card__menu-item-copy {
           display: flex;
           flex-direction: column;
-          gap: 0.35rem;
+          gap: 0.25rem;
         }
 
         .blog-card__menu-item-title {
@@ -2096,7 +2146,7 @@ export default function BlogCard({
         }
 
         .blog-card__menu-item-subtitle {
-          font-size: 0.88rem;
+          font-size: 0.9rem;
           color: ${isNight ? "#cbd5e1" : "#475569"};
         }
 
@@ -2117,12 +2167,12 @@ export default function BlogCard({
             position: absolute;
             left: auto;
             right: 0;
-            top: 100%;
+            top: 0%;
             bottom: auto;
-            transform: translateY(-6px) scale(0.95);
-            width: 260px;
-            padding: 1rem 1.1rem;
-            border-radius: 10px;
+            transform: translate(-4px, 48px) scale(0.95);
+            width: auto;
+            padding: 0.85rem 1rem;
+            border-radius: 12px;
           }
         }
 
@@ -2130,6 +2180,7 @@ export default function BlogCard({
           .blog-card__menu-dots,
           .blog-card__menu-dropdown,
           .blog-card__menu-dropdown--mobile,
+          .blog-card__menu-dropdown--mobile-sheet,
           .blog-card__menu-item {
             transition: none;
             transform: none;
