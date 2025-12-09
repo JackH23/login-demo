@@ -716,36 +716,61 @@ export default function BlogCard({
             <button
               type="button"
               ref={menuButtonRef}
-              className="blog-card__menu-dots border-0 p-2"
-              aria-label="More options"
+              className="blog-card__menu-dots border-0"
+              aria-label="Post actions"
               aria-haspopup="menu"
               aria-expanded={showActionsMenu}
+              aria-controls={`blog-card-menu-${blog._id ?? "new"}`}
               onClick={() => setShowActionsMenu((prev) => !prev)}
             >
-              <span aria-hidden={true}>&#8230;</span>
+              <span className="blog-card__menu-icon" aria-hidden={true}>
+                &#8230;
+              </span>
+              <span className="visually-hidden">Toggle actions menu</span>
             </button>
 
             {showActionsMenu && (
-              <div
-                ref={menuDropdownRef}
-                role="menu"
-                className={`blog-card__menu-dropdown ${
-                  isNight ? "bg-dark text-light" : "bg-white"
-                } border shadow`}
-              >
+              <>
                 <button
                   type="button"
-                  className="dropdown-item text-danger d-flex align-items-center gap-2"
-                  role="menuitem"
-                  onClick={() => {
-                    setShowActionsMenu(false);
-                    setShowDeleteModal(true);
-                  }}
+                  className="blog-card__menu-backdrop"
+                  aria-label="Close actions menu"
+                  onClick={() => setShowActionsMenu(false)}
+                />
+                <div
+                  ref={menuDropdownRef}
+                  role="menu"
+                  id={`blog-card-menu-${blog._id ?? "new"}`}
+                  className={`blog-card__menu-dropdown ${
+                    isMobile
+                      ? "blog-card__menu-dropdown--mobile"
+                      : "blog-card__menu-dropdown--desktop"
+                  } ${isNight ? "is-dark" : "is-light"}`}
+                  data-open={showActionsMenu}
                 >
-                  <span aria-hidden={true}>🗑️</span>
-                  <span>Delete</span>
-                </button>
-              </div>
+                  <div className="blog-card__menu-list" role="none">
+                    <button
+                      type="button"
+                      className="blog-card__menu-item blog-card__menu-item--danger"
+                      role="menuitem"
+                      onClick={() => {
+                        setShowActionsMenu(false);
+                        setShowDeleteModal(true);
+                      }}
+                    >
+                      <span aria-hidden={true} className="blog-card__menu-item-icon">
+                        🗑️
+                      </span>
+                      <div className="blog-card__menu-item-copy">
+                        <span className="blog-card__menu-item-title">Delete post</span>
+                        <span className="blog-card__menu-item-subtitle">
+                          Permanently remove this post
+                        </span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </>
             )}
           </div>
         )}
@@ -1899,35 +1924,208 @@ export default function BlogCard({
           min-height: 36px;
         }
 
-        .blog-card__menu-dots {
-          color: #ffffff;
-          background: ${isNight
-            ? "rgba(255,255,255,0.08)"
-            : "rgba(255,255,255,0.18)"};
-          backdrop-filter: blur(6px);
-          border-radius: 999px;
-          line-height: 1;
-          cursor: pointer;
-          transition: background 0.2s ease;
-        }
-
-        .blog-card__menu-dots:hover {
-          background: ${isNight
-            ? "rgba(255,255,255,0.16)"
-            : "rgba(255,255,255,0.3)"};
-        }
-
         .blog-card__menu {
-          z-index: 2;
+          z-index: 6;
+        }
+
+        .blog-card__menu-dots {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.25rem;
+          color: ${isNight ? "#e2e8f0" : "#0f172a"};
+          background: ${isNight
+            ? "rgba(255,255,255,0.1)"
+            : "rgba(255,255,255,0.85)"};
+          border: 1px solid ${isNight ? "rgba(226,232,240,0.18)" : "#e2e8f0"};
+          border-radius: 999px;
+          padding: 0.65rem 0.7rem;
+          min-height: 44px;
+          min-width: 44px;
+          cursor: pointer;
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+          transition: transform 120ms ease, box-shadow 120ms ease,
+            background 120ms ease, border-color 120ms ease;
+        }
+
+        .blog-card__menu-dots:hover,
+        .blog-card__menu-dots:focus-visible {
+          background: ${isNight ? "rgba(255,255,255,0.18)" : "#f8fafc"};
+          border-color: ${isNight ? "#94a3b8" : "#cbd5e1"};
+          transform: translateY(-1px) scale(1.02);
+          outline: none;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .blog-card__menu-dots:active {
+          transform: translateY(0);
+        }
+
+        .blog-card__menu-icon {
+          font-size: 1.25rem;
+          letter-spacing: 0.1em;
+        }
+
+        .blog-card__menu-backdrop {
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.3);
+          border: none;
+          padding: 0;
+          margin: 0;
+          z-index: 5;
+          cursor: pointer;
         }
 
         .blog-card__menu-dropdown {
           position: absolute;
           right: 0;
-          margin-top: 0.35rem;
-          min-width: 170px;
+          margin-top: 0.5rem;
+          min-width: 230px;
+          border-radius: 16px;
+          padding: 0.5rem;
+          box-shadow: ${isNight
+            ? "0 12px 45px rgba(0, 0, 0, 0.55)"
+            : "0 12px 35px rgba(15, 23, 42, 0.18)"};
+          border: 1px solid ${isNight ? "rgba(148,163,184,0.25)" : "#e2e8f0"};
+          opacity: 0;
+          transform: translateY(-6px) scale(0.98);
+          transform-origin: top right;
+          transition: opacity 140ms ease, transform 140ms ease;
+          z-index: 7;
+        }
+
+        .blog-card__menu-dropdown[data-open="true"] {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+
+        .blog-card__menu-dropdown.is-light {
+          background: #ffffff;
+          color: #0f172a;
+        }
+
+        .blog-card__menu-dropdown.is-dark {
+          background: linear-gradient(135deg, rgba(30, 41, 59, 0.96), rgba(15, 23, 42, 0.96));
+          color: #e2e8f0;
+        }
+
+        .blog-card__menu-dropdown--mobile {
+          position: fixed;
+          right: auto;
+          left: 50%;
+          bottom: 1.25rem;
+          top: auto;
+          transform: translate(-50%, 16px) scale(1);
+          width: min(440px, calc(100vw - 2.5rem));
+          margin-top: 0;
+          border-radius: 18px;
+        }
+
+        .blog-card__menu-dropdown--mobile[data-open="true"] {
+          transform: translate(-50%, 0) scale(1);
+        }
+
+        .blog-card__menu-list {
+          display: flex;
+          flex-direction: column;
+          gap: 0.35rem;
+        }
+
+        .blog-card__menu-item {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.8rem 0.9rem;
           border-radius: 12px;
+          border: 1px solid transparent;
+          background: ${isNight ? "rgba(255,255,255,0.05)" : "#f8fafc"};
+          color: inherit;
+          text-align: left;
+          cursor: pointer;
+          transition: background 120ms ease, border-color 120ms ease,
+            transform 120ms ease;
+        }
+
+        .blog-card__menu-item:hover,
+        .blog-card__menu-item:focus-visible {
+          outline: none;
+          background: ${isNight ? "rgba(255,255,255,0.09)" : "#eef2ff"};
+          border-color: ${isNight ? "rgba(148,163,184,0.35)" : "#cbd5e1"};
+          transform: translateY(-1px);
+        }
+
+        .blog-card__menu-item--danger {
+          background: ${isNight ? "rgba(190,24,93,0.08)" : "#fff1f2"};
+          color: ${isNight ? "#fecdd3" : "#b91c1c"};
+          border-color: ${isNight ? "rgba(248,113,113,0.35)" : "#fecdd3"};
+        }
+
+        .blog-card__menu-item--danger:hover,
+        .blog-card__menu-item--danger:focus-visible {
+          background: ${isNight ? "rgba(248,113,113,0.16)" : "#ffe4e6"};
+          border-color: ${isNight ? "rgba(248,113,113,0.55)" : "#fca5a5"};
+          color: ${isNight ? "#fecdd3" : "#991b1b"};
+        }
+
+        .blog-card__menu-item-icon {
+          font-size: 1.2rem;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 1.75rem;
+          height: 1.75rem;
+        }
+
+        .blog-card__menu-item-copy {
+          display: flex;
+          flex-direction: column;
+          gap: 0.15rem;
+        }
+
+        .blog-card__menu-item-title {
+          font-weight: 600;
+          font-size: 0.98rem;
+        }
+
+        .blog-card__menu-item-subtitle {
+          font-size: 0.86rem;
+          color: ${isNight ? "#cbd5e1" : "#475569"};
+        }
+
+        .visually-hidden {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: -1px;
           overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+          border: 0;
+          white-space: nowrap;
+        }
+
+        @media (min-width: 577px) {
+          .blog-card__menu-dropdown--mobile {
+            position: absolute;
+            left: auto;
+            right: 0;
+            top: 100%;
+            bottom: auto;
+            transform: translateY(-6px) scale(0.98);
+            width: 240px;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .blog-card__menu-dots,
+          .blog-card__menu-dropdown,
+          .blog-card__menu-dropdown--mobile,
+          .blog-card__menu-item {
+            transition: none;
+            transform: none;
+          }
         }
 
         .comments-modal__dialog {
