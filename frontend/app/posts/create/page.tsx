@@ -175,7 +175,7 @@ export default function CreateBlogPage() {
                   onChange={(e) => setTitle(e.target.value)}
                   required
                 />
-                <div className="d-flex justify-content-between small mt-2 text-secondary">
+                <div className="d-flex justify-content-between small mt-2 text-secondary d-none d-md-block">
                   <span>{title.length} / 120 characters</span>
                   <span>{title.trim().length >= 5 ? "Looks good!" : "Add a little more flair."}</span>
                 </div>
@@ -192,7 +192,7 @@ export default function CreateBlogPage() {
                   onChange={(e) => setContent(e.target.value)}
                   required
                 />
-                <div className="d-flex justify-content-between small mt-2 text-secondary">
+                <div className="d-flex justify-content-between small mt-2 text-secondary d-none d-md-block">
                   <span>{wordCount} words</span>
                   <span>
                     {wordCount >= 50
@@ -219,7 +219,7 @@ export default function CreateBlogPage() {
                     accept="image/*"
                     onChange={handleImageUpload}
                   />
-                  <small className="text-secondary d-block mt-2">
+                  <small className="text-secondary d-none d-md-block mt-2">
                     PNG, JPG or GIF (max 5MB) — visuals boost engagement by 94%!
                   </small>
                 </div>
@@ -244,7 +244,7 @@ export default function CreateBlogPage() {
 
               {/* Submit Button */}
               <div className="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
-                <div className="text-secondary small">
+                <div className="text-secondary small d-none d-md-block">
                   <strong>Pro tip:</strong> Eye-catching introductions increase readership by 60%.
                 </div>
                 <button type="submit" className="btn btn-success btn-lg px-4">
