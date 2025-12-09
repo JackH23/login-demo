@@ -724,7 +724,7 @@ export default function BlogCard({
               onClick={() => setShowActionsMenu((prev) => !prev)}
             >
               <span className="blog-card__menu-icon" aria-hidden={true}>
-                &#8230;
+                &#8942;
               </span>
               <span className="visually-hidden">Toggle actions menu</span>
             </button>
