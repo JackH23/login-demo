@@ -742,6 +742,7 @@ export default function BlogCard({
       >
         {user && user.username === blog.author && (
           <div className="blog-card__menu position-absolute top-0 end-0 m-2 m-md-3">
+            {/* MENU-DOTS */}
             <button
               type="button"
               ref={menuButtonRef}
@@ -779,6 +780,7 @@ export default function BlogCard({
                   } ${isNight ? "is-dark" : "is-light"}`}
                   data-open={showActionsMenu}
                 >
+                  {/* DELETE POST */}
                   <div className="blog-card__menu-list" role="none">
                     <button
                       type="button"
