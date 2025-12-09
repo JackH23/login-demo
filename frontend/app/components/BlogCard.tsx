@@ -559,9 +559,13 @@ export default function BlogCard({
     const shouldOpen = !comment.showReplyInput;
 
     updateComments((prev) =>
-      prev.map((c, i) =>
-        i === index ? { ...c, showReplyInput: !c.showReplyInput } : c
-      )
+      prev.map((c, i) => {
+        if (i === index) {
+          return { ...c, showReplyInput: shouldOpen };
+        }
+
+        return c.showReplyInput ? { ...c, showReplyInput: false } : c;
+      })
     );
 
     if (shouldOpen) {
