@@ -1028,6 +1028,99 @@
   }
 }
 
+@media (max-width: 576px) {
+  .user-card {
+    padding: 0.85rem 0.95rem;
+    border-radius: 16px;
+    gap: 0.85rem;
+  }
+
+  .user-card-main {
+    gap: 0.75rem;
+    flex: 1 1 220px;
+  }
+
+  .user-card-avatar {
+    width: 52px;
+    height: 52px;
+    flex: 0 0 52px;
+    padding: 4px;
+    border-radius: 14px;
+  }
+
+  .user-card-avatar-img,
+  .user-card-avatar-placeholder {
+    width: 44px;
+    height: 44px;
+  }
+
+  .user-card-avatar-placeholder {
+    font-size: 0.95rem;
+  }
+
+  .user-card-presence:not([data-variant="label"]) {
+    width: 14px;
+    height: 14px;
+    border-width: 1.5px;
+  }
+
+  .user-card-body {
+    gap: 0.25rem;
+  }
+
+  .user-card-header {
+    gap: 0.5rem;
+  }
+
+  .user-card-name {
+    font-size: 0.98rem;
+  }
+
+  .user-card-subtext,
+  .user-card-substatus,
+  .user-card-status-row {
+    font-size: 0.82rem;
+  }
+
+  .user-card-meta {
+    gap: 0.35rem;
+  }
+
+  .user-card-chip {
+    padding: 0.2rem 0.55rem;
+    font-size: 0.7rem;
+    gap: 0.2rem;
+  }
+
+  .user-card-actions {
+    gap: 0.5rem;
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .user-card-actions--stacked {
+    gap: 0.45rem;
+  }
+
+  .user-card-action {
+    padding: 0.45rem 0.9rem;
+    font-size: 0.78rem;
+    gap: 0.35rem;
+  }
+
+  .user-card-actions--stacked .user-card-action {
+    min-height: 40px;
+  }
+
+  .user-card-action i {
+    font-size: 0.9rem;
+  }
+
+  .user-card-more-menu {
+    gap: 0.4rem;
+  }
+}
+
 .user-card-empty {
   max-width: 520px;
   margin: 0 auto;
