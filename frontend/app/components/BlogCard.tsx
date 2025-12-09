@@ -87,7 +87,10 @@ export default function BlogCard({
   const [replySubmittingId, setReplySubmittingId] = useState<string | null>(
     null
   );
+  const [showActionsMenu, setShowActionsMenu] = useState(false);
   const replyInputRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const menuButtonRef = useRef<HTMLButtonElement | null>(null);
+  const menuDropdownRef = useRef<HTMLDivElement | null>(null);
 
   const { data: knownUsers } = useCachedApi<AuthorData[]>(
     user ? "/api/users" : null,
@@ -300,6 +303,39 @@ export default function BlogCard({
     if (!showConversation || !blog._id) return;
     refreshComments();
   }, [blog._id, refreshComments, showConversation]);
+
+  useEffect(() => {
+    setShowActionsMenu(false);
+  }, [blog._id, user?.username]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (
+        showActionsMenu &&
+        menuDropdownRef.current &&
+        menuButtonRef.current &&
+        !menuDropdownRef.current.contains(target) &&
+        !menuButtonRef.current.contains(target)
+      ) {
+        setShowActionsMenu(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setShowActionsMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [showActionsMenu]);
 
   const handleCommentSubmit = async () => {
     const text = newComment.trim();
@@ -675,14 +711,44 @@ export default function BlogCard({
           padding: isMobile ? "0.65rem 0.9rem" : "1.1rem 1.35rem",
         }}
       >
-        <button
-          type="button"
-          className="blog-card__menu-dots position-absolute top-0 end-0 m-2 m-md-3 border-0 p-2"
-          aria-label="More options"
-          disabled
-        >
-          <span aria-hidden="true">&#8230;</span>
-        </button>
+        {user && user.username === blog.author && (
+          <div className="blog-card__menu position-absolute top-0 end-0 m-2 m-md-3">
+            <button
+              type="button"
+              ref={menuButtonRef}
+              className="blog-card__menu-dots border-0 p-2"
+              aria-label="More options"
+              aria-haspopup="menu"
+              aria-expanded={showActionsMenu}
+              onClick={() => setShowActionsMenu((prev) => !prev)}
+            >
+              <span aria-hidden={true}>&#8230;</span>
+            </button>
+
+            {showActionsMenu && (
+              <div
+                ref={menuDropdownRef}
+                role="menu"
+                className={`blog-card__menu-dropdown ${
+                  isNight ? "bg-dark text-light" : "bg-white"
+                } border shadow`}
+              >
+                <button
+                  type="button"
+                  className="dropdown-item text-danger d-flex align-items-center gap-2"
+                  role="menuitem"
+                  onClick={() => {
+                    setShowActionsMenu(false);
+                    setShowDeleteModal(true);
+                  }}
+                >
+                  <span aria-hidden={true}>🗑️</span>
+                  <span>Delete</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
         {/* Row: author avatar + title + author name */}
         <div
           className="blog-card__header d-flex flex-column gap-2 gap-md-3 align-items-start text-start"
@@ -946,16 +1012,6 @@ export default function BlogCard({
                   <span>Share</span>
                 </button>
 
-                {user && user.username === blog.author && (
-                  <button
-                    className="btn btn-sm btn-outline-danger rounded-pill d-flex align-items-center gap-2 px-3"
-                    onClick={() => setShowDeleteModal(true)}
-                    style={{ fontSize: "0.95rem" }}
-                  >
-                    <span>🗑️</span>
-                    <span>Delete</span>
-                  </button>
-                )}
               </div>
 
               <div className="blog-card__comments-action w-100">
@@ -1039,14 +1095,6 @@ export default function BlogCard({
                 </button>
               </div>
 
-              {user && user.username === blog.author && (
-                <button
-                  className="btn btn-sm btn-outline-danger rounded-pill px-3"
-                  onClick={() => setShowDeleteModal(true)}
-                >
-                  🗑️ Delete
-                </button>
-              )}
             </>
           )}
         </div>
@@ -1859,7 +1907,27 @@ export default function BlogCard({
           backdrop-filter: blur(6px);
           border-radius: 999px;
           line-height: 1;
-          cursor: default;
+          cursor: pointer;
+          transition: background 0.2s ease;
+        }
+
+        .blog-card__menu-dots:hover {
+          background: ${isNight
+            ? "rgba(255,255,255,0.16)"
+            : "rgba(255,255,255,0.3)"};
+        }
+
+        .blog-card__menu {
+          z-index: 2;
+        }
+
+        .blog-card__menu-dropdown {
+          position: absolute;
+          right: 0;
+          margin-top: 0.35rem;
+          min-width: 170px;
+          border-radius: 12px;
+          overflow: hidden;
         }
 
         .comments-modal__dialog {
