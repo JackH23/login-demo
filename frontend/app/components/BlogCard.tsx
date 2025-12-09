@@ -1968,27 +1968,24 @@ export default function BlogCard({
           justify-content: center;
           gap: 0.25rem;
           color: ${isNight ? "#e2e8f0" : "#0f172a"};
-          background: ${isNight
-            ? "rgba(255,255,255,0.1)"
-            : "rgba(255,255,255,0.85)"};
-          border: 1px solid ${isNight ? "rgba(226,232,240,0.18)" : "#e2e8f0"};
-          border-radius: 999px;
-          padding: 0.65rem 0.75rem;
-          min-height: 44px;
-          min-width: 44px;
+          background: transparent;
+          border: none;
+          padding: 0.25rem;
+          min-height: auto;
+          min-width: auto;
           cursor: pointer;
-          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.14);
+          box-shadow: none;
           transition: transform 120ms ease, box-shadow 120ms ease,
             background 120ms ease, border-color 120ms ease;
         }
 
         .blog-card__menu-dots:hover,
         .blog-card__menu-dots:focus-visible {
-          background: ${isNight ? "rgba(255,255,255,0.18)" : "#f8fafc"};
-          border-color: ${isNight ? "#94a3b8" : "#cbd5e1"};
+          background: transparent;
+          border-color: transparent;
           transform: translateY(-1px) scale(1.02);
           outline: none;
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+          box-shadow: none;
         }
 
         .blog-card__menu-dots:active {
