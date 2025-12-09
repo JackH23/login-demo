@@ -1,13 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import {
-  useState,
-  useEffect,
-  CSSProperties,
-  useCallback,
-  useRef,
-} from "react";
+import { useState, useEffect, CSSProperties, useCallback, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { useCachedApi } from "../hooks/useCachedApi";
@@ -89,6 +83,7 @@ export default function BlogCard({
   );
   const [showActionsMenu, setShowActionsMenu] = useState(false);
   const [useBottomSheet, setUseBottomSheet] = useState(false);
+  const canManagePost = user?.username === blog.author;
   const replyInputRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const menuDropdownRef = useRef<HTMLDivElement | null>(null);
@@ -100,7 +95,7 @@ export default function BlogCard({
       transform: normalizeUsersResponse,
     }
   );
-  
+
   // Check if the current theme is "night"
   const isNight = theme === "night";
 
@@ -421,7 +416,9 @@ export default function BlogCard({
     }
 
     if (!isSaved) {
-      updateComments((prev) => prev.filter((comment) => comment._id !== tempId));
+      updateComments((prev) =>
+        prev.filter((comment) => comment._id !== tempId)
+      );
       setNewComment(text);
     }
 
@@ -744,73 +741,78 @@ export default function BlogCard({
           padding: isMobile ? "0.65rem 0.9rem" : "1.1rem 1.35rem",
         }}
       >
-        {user && user.username === blog.author && (
-          <div className="blog-card__menu position-absolute top-0 end-0 m-2 m-md-3">
-            {/* MENU-DOTS */}
-            <button
-              type="button"
-              ref={menuButtonRef}
-              className="blog-card__menu-dots border-0"
-              aria-label="Post actions"
-              aria-haspopup="menu"
-              aria-expanded={showActionsMenu}
-              aria-controls={`blog-card-menu-${blog._id ?? "new"}`}
-              onClick={() => setShowActionsMenu((prev) => !prev)}
-            >
-              <span className="blog-card__menu-icon" aria-hidden={true}>
-                &#8942;
-              </span>
-              <span className="visually-hidden">Toggle actions menu</span>
-            </button>
+        <div className="blog-card__menu position-absolute top-0 end-0 m-2 m-md-3">
+          {/* MENU-DOTS */}
+          <button
+            type="button"
+            ref={menuButtonRef}
+            className={`blog-card__menu-dots border-0 ${
+              canManagePost ? "" : "blog-card__menu-dots--muted"
+            }`}
+            aria-label="Post actions"
+            aria-haspopup="menu"
+            aria-expanded={showActionsMenu}
+            aria-controls={`blog-card-menu-${blog._id ?? "new"}`}
+            onClick={() => setShowActionsMenu((prev) => !prev)}
+          >
+            <span className="blog-card__menu-icon" aria-hidden={true}>
+              &#8942;
+            </span>
+            <span className="visually-hidden">Toggle actions menu</span>
+          </button>
 
-            {showActionsMenu && (
-              <>
-                <button
-                  type="button"
-                  className="blog-card__menu-backdrop"
-                  aria-label="Close actions menu"
-                  onClick={() => setShowActionsMenu(false)}
-                />
-                <div
-                  ref={menuDropdownRef}
-                  role="menu"
-                  id={`blog-card-menu-${blog._id ?? "new"}`}
-                  className={`blog-card__menu-dropdown ${
-                    isMobile
-                      ? useBottomSheet
-                        ? "blog-card__menu-dropdown--mobile-sheet"
-                        : "blog-card__menu-dropdown--mobile"
-                      : "blog-card__menu-dropdown--desktop"
-                  } ${isNight ? "is-dark" : "is-light"}`}
-                  data-open={showActionsMenu}
-                >
-                  {/* DELETE POST */}
-                  <div className="blog-card__menu-list" role="none">
-                    <button
-                      type="button"
-                      className="blog-card__menu-item blog-card__menu-item--danger"
-                      role="menuitem"
-                      onClick={() => {
-                        setShowActionsMenu(false);
-                        setShowDeleteModal(true);
-                      }}
+          {showActionsMenu && (
+            <>
+              <button
+                type="button"
+                className="blog-card__menu-backdrop"
+                aria-label="Close actions menu"
+                onClick={() => setShowActionsMenu(false)}
+              />
+              <div
+                ref={menuDropdownRef}
+                role="menu"
+                id={`blog-card-menu-${blog._id ?? "new"}`}
+                className={`blog-card__menu-dropdown ${
+                  isMobile
+                    ? useBottomSheet
+                      ? "blog-card__menu-dropdown--mobile-sheet"
+                      : "blog-card__menu-dropdown--mobile"
+                    : "blog-card__menu-dropdown--desktop"
+                } ${isNight ? "is-dark" : "is-light"}`}
+                data-open={showActionsMenu}
+              >
+                {/* DELETE POST */}
+                <div className="blog-card__menu-list" role="none">
+                  <button
+                    type="button"
+                    className="blog-card__menu-item blog-card__menu-item--danger"
+                    role="menuitem"
+                    onClick={() => {
+                      setShowActionsMenu(false);
+                      setShowDeleteModal(true);
+                    }}
+                  >
+                    <span
+                      aria-hidden={true}
+                      className="blog-card__menu-item-icon"
                     >
-                      <span aria-hidden={true} className="blog-card__menu-item-icon">
-                        🗑️
+                      🗑️
+                    </span>
+                    <div className="blog-card__menu-item-copy">
+                      <span className="blog-card__menu-item-title">
+                        Delete post
                       </span>
-                      <div className="blog-card__menu-item-copy">
-                        <span className="blog-card__menu-item-title">Delete post</span>
-                        <span className="blog-card__menu-item-subtitle">
-                          Permanently remove this post
-                        </span>
-                      </div>
-                    </button>
-                  </div>
+                      <span className="blog-card__menu-item-subtitle">
+                        Permanently remove this post
+                      </span>
+                    </div>
+                  </button>
                 </div>
-              </>
-            )}
-          </div>
-        )}
+              </div>
+            </>
+          )}
+        </div>
         {/* Row: author avatar + title + author name */}
         <div
           className="blog-card__header d-flex flex-column gap-2 gap-md-3 align-items-start text-start"
@@ -1073,7 +1075,6 @@ export default function BlogCard({
                   <span>⤴</span>
                   <span>Share</span>
                 </button>
-
               </div>
 
               <div className="blog-card__comments-action w-100">
@@ -1156,7 +1157,6 @@ export default function BlogCard({
                   <span>{showConversation ? "Hide chat" : "Comments"}</span>
                 </button>
               </div>
-
             </>
           )}
         </div>
@@ -1164,7 +1164,9 @@ export default function BlogCard({
         {showConversation && (
           /* Comments Section */
           <div
-            className={`conversation-card ${isMobile ? "mt-3" : "mt-5"} rounded-4 p-md-4 p-3 ${
+            className={`conversation-card ${
+              isMobile ? "mt-3" : "mt-5"
+            } rounded-4 p-md-4 p-3 ${
               isNight ? "bg-secondary bg-opacity-25" : "bg-light"
             }`}
           >
@@ -1320,7 +1322,10 @@ export default function BlogCard({
                                       )
                                     }
                                   >
-                                    👍 <span className="reaction-count">{comment.likes}</span>
+                                    👍{" "}
+                                    <span className="reaction-count">
+                                      {comment.likes}
+                                    </span>
                                   </button>
                                   <button
                                     type="button"
@@ -1337,7 +1342,10 @@ export default function BlogCard({
                                       )
                                     }
                                   >
-                                    👎 <span className="reaction-count">{comment.dislikes}</span>
+                                    👎{" "}
+                                    <span className="reaction-count">
+                                      {comment.dislikes}
+                                    </span>
                                   </button>
                                   <button
                                     type="button"
@@ -1365,17 +1373,17 @@ export default function BlogCard({
                                   reply.author
                                 );
 
-                                  return (
-                                    <li
-                                      key={reply.tempId ?? rIdx}
-                                      className={`conversation-reply d-flex align-items-start gap-2 ${
-                                        theme === "night"
-                                          ? "text-light"
-                                          : "text-muted"
-                                      } small mb-2`}
-                                    >
-                                      <button
-                                        type="button"
+                                return (
+                                  <li
+                                    key={reply.tempId ?? rIdx}
+                                    className={`conversation-reply d-flex align-items-start gap-2 ${
+                                      theme === "night"
+                                        ? "text-light"
+                                        : "text-muted"
+                                    } small mb-2`}
+                                  >
+                                    <button
+                                      type="button"
                                       className="conversation-reply__avatar p-0 border-0 bg-transparent"
                                       onClick={() =>
                                         openUserProfile(reply.author)
@@ -1596,8 +1604,8 @@ export default function BlogCard({
                 <div className="d-flex flex-column gap-1">
                   <h5 className="modal-title mb-0">All Comments</h5>
                   <p className="comments-modal__subtle mb-0">
-                    {totalComments} comment{totalComments === 1 ? "" : "s"} · Tap a
-                    comment to reply
+                    {totalComments} comment{totalComments === 1 ? "" : "s"} ·
+                    Tap a comment to reply
                   </p>
                 </div>
                 <button
@@ -1617,7 +1625,8 @@ export default function BlogCard({
                         comment.author
                       );
                       const replyKey = comment._id ?? `local-${idx}`;
-                      const isCommentPending = comment.isPending || !comment._id;
+                      const isCommentPending =
+                        comment.isPending || !comment._id;
                       const isReplySending = replySubmittingId === replyKey;
                       const canSendReply = Boolean(
                         user &&
@@ -1641,7 +1650,9 @@ export default function BlogCard({
                                 <button
                                   type="button"
                                   className="p-0 border-0 bg-transparent"
-                                  onClick={() => openUserProfile(comment.author)}
+                                  onClick={() =>
+                                    openUserProfile(comment.author)
+                                  }
                                   aria-label={`View ${comment.author}'s profile`}
                                 >
                                   {commentAvatar ? (
@@ -1658,8 +1669,9 @@ export default function BlogCard({
                                           : "bg-primary bg-opacity-10 text-primary"
                                       }`}
                                     >
-                                      {comment.author?.charAt(0)?.toUpperCase() ||
-                                        "?"}
+                                      {comment.author
+                                        ?.charAt(0)
+                                        ?.toUpperCase() || "?"}
                                     </span>
                                   )}
                                 </button>
@@ -1707,11 +1719,18 @@ export default function BlogCard({
                                     disabled={
                                       !user ||
                                       isCommentPending ||
-                                      comment.likedBy?.includes(user.username) ||
-                                      comment.dislikedBy?.includes(user.username)
+                                      comment.likedBy?.includes(
+                                        user.username
+                                      ) ||
+                                      comment.dislikedBy?.includes(
+                                        user.username
+                                      )
                                     }
                                   >
-                                    👍 <span className="reaction-count">{comment.likes}</span>
+                                    👍{" "}
+                                    <span className="reaction-count">
+                                      {comment.likes}
+                                    </span>
                                   </button>
                                   <button
                                     type="button"
@@ -1720,18 +1739,27 @@ export default function BlogCard({
                                     disabled={
                                       !user ||
                                       isCommentPending ||
-                                      comment.likedBy?.includes(user.username) ||
-                                      comment.dislikedBy?.includes(user.username)
+                                      comment.likedBy?.includes(
+                                        user.username
+                                      ) ||
+                                      comment.dislikedBy?.includes(
+                                        user.username
+                                      )
                                     }
                                   >
-                                    👎 <span className="reaction-count">{comment.dislikes}</span>
+                                    👎{" "}
+                                    <span className="reaction-count">
+                                      {comment.dislikes}
+                                    </span>
                                   </button>
                                   <button
                                     type="button"
                                     className="reaction-button"
                                     onClick={() => toggleReplyInput(idx)}
                                     disabled={
-                                      !user || isCommentPending || isReplySending
+                                      !user ||
+                                      isCommentPending ||
+                                      isReplySending
                                     }
                                   >
                                     💬 Reply
@@ -1996,6 +2024,10 @@ export default function BlogCard({
           transform: translateY(0);
         }
 
+        .blog-card__menu-dots--muted {
+          opacity: 0.85;
+        }
+
         .blog-card__menu-icon {
           font-size: 1.25rem;
           letter-spacing: 0.1em;
@@ -2040,7 +2072,11 @@ export default function BlogCard({
         }
 
         .blog-card__menu-dropdown.is-dark {
-          background: linear-gradient(135deg, rgba(30, 41, 59, 0.96), rgba(15, 23, 42, 0.96));
+          background: linear-gradient(
+            135deg,
+            rgba(30, 41, 59, 0.96),
+            rgba(15, 23, 42, 0.96)
+          );
           color: #e2e8f0;
         }
 
@@ -2049,7 +2085,7 @@ export default function BlogCard({
         }
 
         .blog-card__menu-dropdown--mobile {
-        position: absolute;
+          position: absolute;
           right: 0;
           top: 0;
           transform: translate(-4px, 48px) scale(0.95);
@@ -2124,6 +2160,20 @@ export default function BlogCard({
           background: ${isNight ? "rgba(248,113,113,0.16)" : "#ffe4e6"};
           border-color: ${isNight ? "rgba(248,113,113,0.55)" : "#fca5a5"};
           color: ${isNight ? "#fecdd3" : "#991b1b"};
+        }
+
+        .blog-card__menu-item--muted {
+          background: ${isNight ? "rgba(255,255,255,0.04)" : "#f8fafc"};
+          border-color: ${isNight ? "rgba(148,163,184,0.25)" : "#e2e8f0"};
+          color: ${isNight ? "#cbd5e1" : "#475569"};
+          cursor: default;
+        }
+
+        .blog-card__menu-item--muted:hover,
+        .blog-card__menu-item--muted:focus-visible {
+          transform: none;
+          background: ${isNight ? "rgba(255,255,255,0.05)" : "#eef2ff"};
+          border-color: ${isNight ? "rgba(148,163,184,0.35)" : "#cbd5e1"};
         }
 
         .blog-card__menu-item-icon {
@@ -2207,9 +2257,8 @@ export default function BlogCard({
           background: ${isNight
             ? "rgba(15,23,42,0.9)"
             : "rgba(255,255,255,0.95)"};
-          border-bottom: 1px solid ${
-            isNight ? "rgba(255,255,255,0.08)" : "#e5e7eb"
-          };
+          border-bottom: 1px solid
+            ${isNight ? "rgba(255,255,255,0.08)" : "#e5e7eb"};
           backdrop-filter: blur(6px);
         }
 
@@ -2243,12 +2292,9 @@ export default function BlogCard({
           border-top: none;
           margin-top: 0;
           background: ${isNight ? "rgba(15,23,42,0.95)" : "#ffffff"};
-          border: 1px solid ${isNight
-            ? "rgba(255,255,255,0.08)"
-            : "#e2e8f0"};
-          box-shadow: 0 12px 32px ${
-            isNight ? "rgba(0,0,0,0.35)" : "rgba(15,23,42,0.08)"
-          };
+          border: 1px solid ${isNight ? "rgba(255,255,255,0.08)" : "#e2e8f0"};
+          box-shadow: 0 12px 32px
+            ${isNight ? "rgba(0,0,0,0.35)" : "rgba(15,23,42,0.08)"};
           border-radius: 14px;
           padding: 0.85rem 0.9rem 0.75rem;
         }
@@ -2268,9 +2314,8 @@ export default function BlogCard({
 
         .conversation-comment-item:hover {
           transform: translateY(-1px);
-          box-shadow: 0 10px 25px ${
-            isNight ? "rgba(0,0,0,0.3)" : "rgba(15,23,42,0.08)"
-          };
+          box-shadow: 0 10px 25px
+            ${isNight ? "rgba(0,0,0,0.3)" : "rgba(15,23,42,0.08)"};
         }
 
         .conversation-comment {
@@ -2335,12 +2380,8 @@ export default function BlogCard({
           width: 100%;
           max-width: none;
           border-radius: 12px;
-          background: ${isNight
-            ? "rgba(255,255,255,0.04)"
-            : "#f8fafc"};
-          border: 1px solid ${isNight
-            ? "rgba(255,255,255,0.06)"
-            : "#e2e8f0"};
+          background: ${isNight ? "rgba(255,255,255,0.04)" : "#f8fafc"};
+          border: 1px solid ${isNight ? "rgba(255,255,255,0.06)" : "#e2e8f0"};
         }
 
         .conversation-comment__actions {
@@ -2440,17 +2481,13 @@ export default function BlogCard({
         }
 
         .conversation-reply__bubble {
-          background-color: ${isNight
-            ? "rgba(255,255,255,0.05)"
-            : "#f8fafc"};
+          background-color: ${isNight ? "rgba(255,255,255,0.05)" : "#f8fafc"};
           padding: 0.6rem 0.75rem;
           border-radius: 12px;
           display: block;
           width: auto;
           max-width: 100%;
-          border: 1px solid ${isNight
-            ? "rgba(255,255,255,0.08)"
-            : "#e2e8f0"};
+          border: 1px solid ${isNight ? "rgba(255,255,255,0.08)" : "#e2e8f0"};
         }
 
         .conversation-reply-list {
@@ -2470,7 +2507,9 @@ export default function BlogCard({
           top: 6px;
           bottom: 6px;
           width: 2px;
-          background: ${isNight ? "rgba(148,163,184,0.35)" : "rgba(148,163,184,0.55)"};
+          background: ${isNight
+            ? "rgba(148,163,184,0.35)"
+            : "rgba(148,163,184,0.55)"};
         }
 
         .reply-inline-input {
@@ -2487,7 +2526,8 @@ export default function BlogCard({
         }
 
         .comment-input-panel {
-          border-top: 1px solid ${isNight ? "rgba(255,255,255,0.08)" : "#e5e7eb"};
+          border-top: 1px solid
+            ${isNight ? "rgba(255,255,255,0.08)" : "#e5e7eb"};
           padding-top: 0.75rem;
           margin-top: 0.75rem;
         }
@@ -2703,9 +2743,7 @@ export default function BlogCard({
 
           .comments-modal__composer {
             margin: 0 -0.1rem -0.1rem;
-            box-shadow: 0 -12px 32px ${
-              isNight ? "rgba(0,0,0,0.55)" : "rgba(15,23,42,0.12)"
-            };
+            box-shadow: 0 -12px 32px ${isNight ? "rgba(0,0,0,0.55)" : "rgba(15,23,42,0.12)"};
           }
 
           /* ----------------------------------
