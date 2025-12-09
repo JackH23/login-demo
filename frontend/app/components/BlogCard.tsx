@@ -1926,6 +1926,7 @@ export default function BlogCard({
 
         .blog-card__menu {
           z-index: 6;
+          position: relative;
         }
 
         .blog-card__menu-dots {
@@ -1943,7 +1944,7 @@ export default function BlogCard({
           min-height: 44px;
           min-width: 44px;
           cursor: pointer;
-          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.14);
           transition: transform 120ms ease, box-shadow 120ms ease,
             background 120ms ease, border-color 120ms ease;
         }
@@ -1979,20 +1980,20 @@ export default function BlogCard({
 
         .blog-card__menu-dropdown {
           position: absolute;
-          right: 0;
-          margin-top: 0.5rem;
+          inset-inline-end: 0;
+          top: calc(100% + 0.4rem);
           min-width: 230px;
-          border-radius: 16px;
-          padding: 0.5rem;
-          box-shadow: ${isNight
-            ? "0 12px 45px rgba(0, 0, 0, 0.55)"
-            : "0 12px 35px rgba(15, 23, 42, 0.18)"};
-          border: 1px solid ${isNight ? "rgba(148,163,184,0.25)" : "#e2e8f0"};
+          max-width: min(320px, calc(100vw - 2rem));
+          border-radius: 10px;
+          padding: 1rem 1.1rem;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+          border: 1px solid ${isNight ? "rgba(148,163,184,0.35)" : "#e2e8f0"};
           opacity: 0;
-          transform: translateY(-6px) scale(0.98);
+          transform: translateY(-6px) scale(0.95);
           transform-origin: top right;
-          transition: opacity 140ms ease, transform 140ms ease;
+          transition: opacity 160ms ease, transform 160ms ease;
           z-index: 7;
+          background-clip: padding-box;
         }
 
         .blog-card__menu-dropdown[data-open="true"] {
@@ -2016,10 +2017,12 @@ export default function BlogCard({
           left: 50%;
           bottom: 1.25rem;
           top: auto;
-          transform: translate(-50%, 16px) scale(1);
-          width: min(440px, calc(100vw - 2.5rem));
+          transform: translate(-50%, 16px) scale(0.95);
+          width: min(520px, calc(100vw - 1.5rem));
           margin-top: 0;
-          border-radius: 18px;
+          border-radius: 14px;
+          padding: 1.2rem 1.3rem;
+          transform-origin: center bottom;
         }
 
         .blog-card__menu-dropdown--mobile[data-open="true"] {
@@ -2029,21 +2032,22 @@ export default function BlogCard({
         .blog-card__menu-list {
           display: flex;
           flex-direction: column;
-          gap: 0.35rem;
+          gap: 0.75rem;
         }
 
         .blog-card__menu-item {
           width: 100%;
           display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          padding: 0.8rem 0.9rem;
-          border-radius: 12px;
+          align-items: flex-start;
+          gap: 0.9rem;
+          padding: 0.95rem 1rem;
+          border-radius: 10px;
           border: 1px solid transparent;
           background: ${isNight ? "rgba(255,255,255,0.05)" : "#f8fafc"};
           color: inherit;
           text-align: left;
           cursor: pointer;
+          min-height: 56px;
           transition: background 120ms ease, border-color 120ms ease,
             transform 120ms ease;
         }
@@ -2070,27 +2074,29 @@ export default function BlogCard({
         }
 
         .blog-card__menu-item-icon {
-          font-size: 1.2rem;
+          font-size: 1.125rem;
           display: inline-flex;
           align-items: center;
           justify-content: center;
           width: 1.75rem;
           height: 1.75rem;
+          line-height: 1;
+          margin-top: 0.1rem;
         }
 
         .blog-card__menu-item-copy {
           display: flex;
           flex-direction: column;
-          gap: 0.15rem;
+          gap: 0.35rem;
         }
 
         .blog-card__menu-item-title {
-          font-weight: 600;
-          font-size: 0.98rem;
+          font-weight: 700;
+          font-size: 1rem;
         }
 
         .blog-card__menu-item-subtitle {
-          font-size: 0.86rem;
+          font-size: 0.88rem;
           color: ${isNight ? "#cbd5e1" : "#475569"};
         }
 
@@ -2113,8 +2119,10 @@ export default function BlogCard({
             right: 0;
             top: 100%;
             bottom: auto;
-            transform: translateY(-6px) scale(0.98);
-            width: 240px;
+            transform: translateY(-6px) scale(0.95);
+            width: 260px;
+            padding: 1rem 1.1rem;
+            border-radius: 10px;
           }
         }
 
