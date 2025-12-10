@@ -157,7 +157,64 @@ export default function AnalysisPage() {
           </div>
         </div>
 
-        <div className="row g-3 g-md-4 mt-1 row-cols-1 row-cols-sm-2 row-cols-md-3 analysis-stats-row">
+        <div className="d-md-none">
+          <div className="card border-0 shadow-sm">
+            <div className="card-body p-3">
+              <div className="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                  <h6 className="mb-1 text-uppercase text-muted">Activity Snapshot</h6>
+                  <div className="text-muted small">Your latest engagement metrics</div>
+                </div>
+                <span className="badge bg-primary-subtle text-primary-emphasis">Live</span>
+              </div>
+              <div className="d-grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))" }}>
+                <div className="d-flex gap-2 align-items-start">
+                  <span className="fs-5">📝</span>
+                  <div>
+                    <div className="text-uppercase text-muted small">Total Posts</div>
+                    <div className="fw-bold text-primary">{postCount}</div>
+                  </div>
+                </div>
+                <div className="d-flex gap-2 align-items-start">
+                  <span className="fs-5">💬</span>
+                  <div className="flex-grow-1">
+                    <div className="text-uppercase text-muted small">Comments</div>
+                    <div className="fw-bold text-success">{commentCount}</div>
+                    <div className="progress mt-1" style={{ height: "4px" }}>
+                      <div
+                        className="progress-bar bg-success"
+                        role="progressbar"
+                        style={{ width: `${Math.min(100, averageComments * 10)}%` }}
+                        aria-valuenow={averageComments}
+                        aria-valuemin={0}
+                        aria-valuemax={10}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="d-flex gap-2 align-items-start">
+                  <span className="fs-5">⭐</span>
+                  <div className="flex-grow-1">
+                    <div className="text-uppercase text-muted small">Likes</div>
+                    <div className="fw-bold text-warning">{totalLikes}</div>
+                    <div className="progress mt-1" style={{ height: "4px" }}>
+                      <div
+                        className="progress-bar bg-warning"
+                        role="progressbar"
+                        style={{ width: `${Math.min(100, averageLikes * 10)}%` }}
+                        aria-valuenow={averageLikes}
+                        aria-valuemin={0}
+                        aria-valuemax={10}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row g-3 g-md-4 mt-1 row-cols-1 row-cols-sm-2 row-cols-md-3 analysis-stats-row d-none d-md-flex">
           <div className="col">
             <div className="card border-0 shadow-sm h-100 analysis-stat-card">
               <div className="card-body p-3 p-md-4">
