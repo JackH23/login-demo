@@ -1041,6 +1041,12 @@
   max-width: 900px;
 }
 
+@media (min-width: 992px) {
+  .friend-panel {
+    max-width: 100%;
+  }
+}
+
 .friend-panel-header {
   padding-bottom: 0.5rem;
   margin-bottom: 0.75rem;
