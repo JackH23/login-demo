@@ -103,6 +103,8 @@ export default function AdminPage() {
     };
   }, [users, getPostCount]);
 
+  const topContributor = topContributors[0];
+
   const recentPosts = useMemo(() => posts.slice(0, 6), [posts]);
 
   if (loading || loadingUsers || loadingPosts || !user) {
@@ -150,7 +152,51 @@ export default function AdminPage() {
         </div>
 
         {/* Summary cards */}
-        <div className="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3 mb-4">
+        <div className="d-md-none mb-4">
+          <div
+            className={`rounded-4 overflow-hidden shadow-sm ${cardThemeClass}`}
+            style={{
+              border: isNight ? "1px solid #2e3642" : "1px solid #e5e7eb",
+            }}
+          >
+            <div
+              className="d-flex justify-content-between align-items-center px-3 py-3 border-bottom"
+              style={{ borderColor: isNight ? "#2e3642" : "#e5e7eb" }}
+            >
+              <span className="fw-semibold">Total Users</span>
+              <span className="fw-bold">{users.length}</span>
+            </div>
+            <div
+              className="d-flex justify-content-between align-items-center px-3 py-3 border-bottom"
+              style={{ borderColor: isNight ? "#2e3642" : "#e5e7eb" }}
+            >
+              <span className="fw-semibold">Total Posts</span>
+              <span className="fw-bold">{posts.length}</span>
+            </div>
+            <div
+              className="d-flex justify-content-between align-items-center px-3 py-3 border-bottom"
+              style={{ borderColor: isNight ? "#2e3642" : "#e5e7eb" }}
+            >
+              <span className="fw-semibold">Active Users</span>
+              <div className="d-flex align-items-center gap-2">
+                <span className="fw-bold">{onlineCount}</span>
+                <span
+                  className={`badge ${onlineCount ? "bg-success" : "bg-secondary"}`}
+                >
+                  {onlineCount ? "Live" : "Offline"}
+                </span>
+              </div>
+            </div>
+            <div className="d-flex justify-content-between align-items-center px-3 py-3">
+              <span className="fw-semibold">Top Contributor</span>
+              <span className="fw-bold">
+                {topContributor ? topContributor.username : "None yet"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3 mb-4 d-none d-md-flex">
           <div className="col">
             <div
               className="card h-100 border-0 text-white"
