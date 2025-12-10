@@ -119,7 +119,7 @@ export default function AnalysisPage() {
       <div className="container mt-4" style={{ maxWidth: "1100px" }}>
         <div className="card border-0 shadow-lg overflow-hidden analysis-hero-card">
           <div
-            className="card-body p-3 p-md-4"
+            className="card-body p-3 p-md-4 analysis-hero-body"
             style={{
               backgroundColor: theme === "night" ? "#0f1525" : "#ffffff",
               background:
@@ -145,7 +145,7 @@ export default function AnalysisPage() {
                 </p>
               </div>
               <div className="text-center text-md-end w-100 w-md-auto analysis-score">
-                <div className="small text-muted mb-1">Engagement score</div>
+                <div className="small text-muted mb-1 analysis-score-label">Engagement score</div>
                 <div className="display-6 fw-semibold text-primary mb-1 analysis-score-value">
                   {engagementScore}%
                 </div>
@@ -166,7 +166,7 @@ export default function AnalysisPage() {
 
         <div className="d-md-none">
           <div className="card border-0 shadow-sm activity-snapshot-card">
-            <div className="card-body p-3">
+            <div className="card-body p-3 activity-card-body">
               <div className="d-flex align-items-start justify-content-between mb-2 activity-header">
                 <div>
                   <div className="mb-1 text-uppercase text-muted fw-semibold small activity-title">
@@ -178,21 +178,21 @@ export default function AnalysisPage() {
               </div>
               <div className="d-flex flex-column gap-2 activity-metrics mt-3">
                 <div className="d-flex align-items-center justify-content-between activity-metric">
-                  <div className="d-flex align-items-center gap-2">
+                  <div className="d-flex align-items-center gap-2 activity-metric-label">
                     <span className="metric-icon">📝</span>
                     <div className="text-muted">Posts</div>
                   </div>
                   <div className="fw-bold text-primary">{postCount}</div>
                 </div>
                 <div className="d-flex align-items-center justify-content-between activity-metric">
-                  <div className="d-flex align-items-center gap-2">
+                  <div className="d-flex align-items-center gap-2 activity-metric-label">
                     <span className="metric-icon">💬</span>
                     <div className="text-muted">Comments</div>
                   </div>
                   <div className="fw-bold text-success">{commentCount}</div>
                 </div>
                 <div className="d-flex align-items-center justify-content-between activity-metric">
-                  <div className="d-flex align-items-center gap-2">
+                  <div className="d-flex align-items-center gap-2 activity-metric-label">
                     <span className="metric-icon">⭐</span>
                     <div className="text-muted">Likes</div>
                   </div>
@@ -277,7 +277,7 @@ export default function AnalysisPage() {
           </div>
         </div>
 
-        <div className="row g-4 mt-2">
+        <div className="row g-4 mt-2 analysis-main-grid">
           <div className="col-lg-7">
             <div className="card border-0 shadow-sm h-100">
               <div className="card-body spotlight-card">
@@ -446,19 +446,24 @@ export default function AnalysisPage() {
         }
 
         @media (max-width: 576px) {
-          .analysis-hero-card .card-body {
-            padding: 0.75rem 0.9rem;
+          .analysis-hero-card {
+            margin-bottom: 0.95rem;
+          }
+
+          .analysis-hero-card .analysis-hero-body {
+            padding: 0.9rem 0.85rem;
           }
 
           .analysis-hero-header {
-            gap: 0.55rem;
+            gap: 0.45rem;
           }
 
           .analysis-badge {
             border-radius: 999px;
-            font-size: 0.68rem;
+            font-size: 0.64rem;
             letter-spacing: 0.02em;
-            padding: 0.2rem 0.55rem;
+            padding: 0.18rem 0.5rem;
+            line-height: 1.1;
           }
 
           .analysis-title {
@@ -472,20 +477,25 @@ export default function AnalysisPage() {
 
           .analysis-score .small {
             font-size: 0.7rem;
-            margin-bottom: 0.1rem !important;
+            margin-bottom: 0.35rem !important;
           }
 
           .analysis-score .display-6,
           .analysis-score .analysis-score-value {
             font-size: 1.85rem;
-            margin-bottom: 0.2rem !important;
+            margin-bottom: 0.28rem !important;
+            line-height: 1.05;
           }
 
           .analysis-progress {
             height: 5px;
             width: 100%;
             max-width: 180px !important;
-            margin-top: 0.1rem;
+            margin-top: 0.05rem;
+          }
+
+          .activity-card-body {
+            padding: 0.85rem 0.9rem;
           }
 
           .analysis-stats-row {
@@ -515,54 +525,73 @@ export default function AnalysisPage() {
           }
 
           .activity-snapshot-card .card-body {
-            padding: 0.75rem 0.9rem;
+            padding: 0.85rem 0.9rem;
           }
 
           .activity-header {
             gap: 0.5rem;
+            margin-bottom: 0.45rem !important;
           }
 
           .activity-title {
             font-size: 0.7rem;
             letter-spacing: 0.05em;
+            margin-bottom: 0.3rem;
           }
 
           .activity-subtitle {
             font-size: 0.78rem;
-            margin-bottom: 0.1rem;
+            margin-bottom: 0.25rem;
           }
 
           .live-badge {
-            font-size: 0.65rem;
-            padding: 0.2rem 0.45rem;
+            font-size: 0.62rem;
+            padding: 0.2rem 0.5rem;
+            margin-right: 0.2rem;
           }
 
           .activity-metrics {
-            gap: 0.4rem;
+            gap: 0.55rem;
+            margin-top: 0.35rem !important;
           }
 
           .activity-metric {
-            padding: 0.35rem 0;
+            padding: 0.25rem 0;
+          }
+
+          .activity-metric-label {
+            align-items: baseline;
+            gap: 0.45rem;
           }
 
           .metric-icon {
-            font-size: 1rem;
+            font-size: 1.15rem;
             width: 20px;
             text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+          }
+
+          .analysis-main-grid {
+            row-gap: 0.95rem;
+            margin-top: 0.75rem !important;
           }
 
           .spotlight-card {
-            padding: 0.85rem 0.95rem;
+            padding: 0.7rem 0.85rem;
             border-radius: 12px;
           }
 
           .spotlight-header {
             padding: 0 0.2rem;
-            gap: 0.45rem;
+            gap: 0.35rem;
+            margin-bottom: 0.55rem;
           }
 
           .spotlight-title-wrap {
-            gap: 0.35rem;
+            gap: 0.28rem;
           }
 
           .spotlight-title-wrap h5 {
@@ -574,8 +603,8 @@ export default function AnalysisPage() {
           }
 
           .spotlight-badge {
-            font-size: 0.7rem;
-            padding: 0.25rem 0.5rem;
+            font-size: 0.68rem;
+            padding: 0.22rem 0.45rem;
           }
 
           .spotlight-item {
