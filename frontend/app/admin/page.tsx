@@ -65,6 +65,27 @@ export default function AdminPage() {
     return "Good evening";
   }, []);
 
+  const metricCardStyle = {
+    background: "#1e2530",
+    borderRadius: "12px",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+  } as const;
+
+  const metricBodyStyle = {
+    padding: "12px 16px",
+  } as const;
+
+  const metricLabelStyle = {
+    marginBottom: "4px",
+    fontSize: "0.8rem",
+    opacity: 0.7,
+  } as const;
+
+  const metricValueStyle = {
+    fontSize: "1.5rem",
+    fontWeight: 600,
+  } as const;
+
   const getPostCount = useCallback(
     (username: string) =>
       posts.filter((p) => p.author === username).length,
@@ -131,41 +152,68 @@ export default function AdminPage() {
         {/* Summary cards */}
         <div className="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3 mb-4">
           <div className="col">
-            <div className={`card shadow-sm border-0 h-100 ${cardThemeClass}`}>
-              <div className="card-body d-flex flex-column gap-2">
+            <div
+              className="card h-100 border-0 text-white"
+              style={metricCardStyle}
+            >
+              <div
+                className="card-body d-flex flex-column"
+                style={metricBodyStyle}
+              >
                 <p
-                  className={`text-uppercase fw-semibold small mb-1 ${mutedTextClass}`}
+                  className={`text-uppercase fw-semibold mb-0 ${mutedTextClass}`}
+                  style={metricLabelStyle}
                 >
                   Total Users
                 </p>
-                <p className="fs-2 fw-bold mb-0">{users.length}</p>
+                <p className="mb-0" style={metricValueStyle}>
+                  {users.length}
+                </p>
               </div>
             </div>
           </div>
 
           <div className="col">
-            <div className={`card shadow-sm border-0 h-100 ${cardThemeClass}`}>
-              <div className="card-body d-flex flex-column gap-2">
+            <div
+              className="card h-100 border-0 text-white"
+              style={metricCardStyle}
+            >
+              <div
+                className="card-body d-flex flex-column"
+                style={metricBodyStyle}
+              >
                 <p
-                  className={`text-uppercase fw-semibold small mb-1 ${mutedTextClass}`}
+                  className={`text-uppercase fw-semibold mb-0 ${mutedTextClass}`}
+                  style={metricLabelStyle}
                 >
                   Total Posts
                 </p>
-                <p className="fs-2 fw-bold mb-0">{posts.length}</p>
+                <p className="mb-0" style={metricValueStyle}>
+                  {posts.length}
+                </p>
               </div>
             </div>
           </div>
 
           <div className="col">
-            <div className={`card shadow-sm border-0 h-100 ${cardThemeClass}`}>
-              <div className="card-body d-flex flex-column gap-2">
+            <div
+              className="card h-100 border-0 text-white"
+              style={metricCardStyle}
+            >
+              <div
+                className="card-body d-flex flex-column"
+                style={metricBodyStyle}
+              >
                 <p
-                  className={`text-uppercase fw-semibold small mb-1 ${mutedTextClass}`}
+                  className={`text-uppercase fw-semibold mb-0 ${mutedTextClass}`}
+                  style={metricLabelStyle}
                 >
                   Active Users
                 </p>
-                <div className="d-flex align-items-center justify-content-between">
-                  <p className="fs-2 fw-bold mb-0">{onlineCount}</p>
+                <div className="d-flex align-items-center gap-2">
+                  <p className="mb-0" style={metricValueStyle}>
+                    {onlineCount}
+                  </p>
                   <span
                     className={`badge ${
                       onlineCount ? "bg-success" : "bg-secondary"
@@ -179,14 +227,21 @@ export default function AdminPage() {
           </div>
 
           <div className="col">
-            <div className={`card shadow-sm border-0 h-100 ${cardThemeClass}`}>
-              <div className="card-body d-flex flex-column gap-2">
+            <div
+              className="card h-100 border-0 text-white"
+              style={metricCardStyle}
+            >
+              <div
+                className="card-body d-flex flex-column"
+                style={metricBodyStyle}
+              >
                 <p
-                  className={`text-uppercase fw-semibold small mb-1 ${mutedTextClass}`}
+                  className={`text-uppercase fw-semibold mb-0 ${mutedTextClass}`}
+                  style={metricLabelStyle}
                 >
                   Top Contributor Posts
                 </p>
-                <p className="fs-2 fw-bold mb-0">
+                <p className="mb-0" style={metricValueStyle}>
                   {topContributors.reduce(
                     (total, contributor) =>
                       total + getPostCount(contributor.username),
