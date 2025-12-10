@@ -276,37 +276,59 @@ export default function AnalysisPage() {
         <div className="row g-4 mt-2">
           <div className="col-lg-7">
             <div className="card border-0 shadow-sm h-100">
-              <div className="card-body">
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                  <h5 className="mb-0">🔥 Spotlight Posts</h5>
-                  <span className="badge bg-secondary-subtle text-secondary-emphasis">
-                    Top {spotlightPosts.length || 0} performers
+              <div className="card-body spotlight-card">
+                <div className="d-flex justify-content-between align-items-center mb-3 spotlight-header">
+                  <div className="d-flex align-items-center gap-2 spotlight-title-wrap">
+                    <span aria-hidden>🔥</span>
+                    <h5 className="mb-0">Spotlight Posts</h5>
+                  </div>
+                  <span className="badge bg-secondary-subtle text-secondary-emphasis spotlight-badge">
+                    Top {spotlightPosts.length || 1}
                   </span>
                 </div>
                 {spotlightPosts.length ? (
                   <div className="list-group list-group-flush">
                     {spotlightPosts.map((post, index) => (
-                      <div key={post._id} className="list-group-item px-0 py-3">
+                      <div key={post._id} className="list-group-item px-0 py-3 spotlight-item">
                         <div className="d-flex align-items-start gap-2 gap-sm-3 flex-column flex-sm-row">
-                          <div className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style={{ width: "36px", height: "36px" }}>
+                          <div
+                            className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center spotlight-rank"
+                            aria-label={`Post rank ${index + 1}`}
+                          >
                             #{index + 1}
                           </div>
                           <div className="flex-grow-1">
-                            <h6
-                              className="mb-1"
-                              style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
-                            >
-                              {post.title}
-                            </h6>
+                            <div className="d-flex align-items-center gap-2 mb-1 spotlight-post-title-row">
+                              <h6
+                                className="mb-0 spotlight-post-title"
+                                style={{
+                                  display: "-webkit-box",
+                                  WebkitLineClamp: 2,
+                                  WebkitBoxOrient: "vertical",
+                                  overflow: "hidden",
+                                }}
+                              >
+                                {post.title}
+                              </h6>
+                            </div>
                             <p
-                              className="text-muted small mb-2"
-                              style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+                              className="text-muted small mb-2 spotlight-post-description"
+                              style={{
+                                display: "-webkit-box",
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
+                              }}
                             >
                               {post.content}
                             </p>
-                            <div className="d-flex flex-wrap gap-2 small text-muted">
-                              <span>👍 {post.likes}</span>
-                              <span>💬 {post.comments}</span>
+                            <div className="d-flex align-items-center gap-3 small text-muted spotlight-metrics">
+                              <span className="d-inline-flex align-items-center gap-1">
+                                <span aria-hidden>👍</span> {post.likes}
+                              </span>
+                              <span className="d-inline-flex align-items-center gap-1">
+                                <span aria-hidden>💬</span> {post.comments}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -383,6 +405,40 @@ export default function AnalysisPage() {
           border-radius: 999px;
           width: 100%;
           max-width: 220px;
+        }
+
+        .spotlight-card {
+          border-radius: 14px;
+        }
+
+        .spotlight-title-wrap h5 {
+          font-weight: 700;
+        }
+
+        .spotlight-badge {
+          border-radius: 10px;
+          font-weight: 600;
+        }
+
+        .spotlight-rank {
+          width: 40px;
+          height: 40px;
+          font-weight: 700;
+          font-size: 1rem;
+        }
+
+        .spotlight-post-title {
+          font-weight: 600;
+          font-size: 1.05rem;
+          line-height: 1.3;
+        }
+
+        .spotlight-post-description {
+          line-height: 1.4;
+        }
+
+        .spotlight-metrics span {
+          white-space: nowrap;
         }
 
         @media (max-width: 576px) {
@@ -484,6 +540,62 @@ export default function AnalysisPage() {
             font-size: 1.1rem;
             width: 22px;
             text-align: center;
+          }
+
+          .spotlight-card {
+            padding: 0.9rem 1rem;
+            border-radius: 12px;
+          }
+
+          .spotlight-header {
+            padding: 0 0.25rem;
+            gap: 0.5rem;
+          }
+
+          .spotlight-title-wrap {
+            gap: 0.4rem;
+          }
+
+          .spotlight-title-wrap h5 {
+            font-size: 1.05rem;
+          }
+
+          .spotlight-title-wrap span[aria-hidden] {
+            font-size: 1.05rem;
+          }
+
+          .spotlight-badge {
+            font-size: 0.72rem;
+            padding: 0.3rem 0.55rem;
+          }
+
+          .spotlight-item {
+            padding: 0.85rem 0;
+          }
+
+          .spotlight-rank {
+            width: 34px;
+            height: 34px;
+            font-size: 0.9rem;
+            margin-top: 2px;
+          }
+
+          .spotlight-post-title {
+            font-size: 1rem;
+            font-weight: 600;
+          }
+
+          .spotlight-post-description {
+            font-size: 0.9rem;
+          }
+
+          .spotlight-metrics {
+            gap: 1.1rem;
+            font-size: 0.9rem;
+          }
+
+          .spotlight-metrics span span[aria-hidden] {
+            font-size: 1rem;
           }
         }
       `}</style>
