@@ -65,6 +65,27 @@ export default function AdminPage() {
     return "Good evening";
   }, []);
 
+  const metricCardStyle = {
+    background: "#1e2530",
+    borderRadius: "12px",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+  } as const;
+
+  const metricBodyStyle = {
+    padding: "12px 16px",
+  } as const;
+
+  const metricLabelStyle = {
+    marginBottom: "4px",
+    fontSize: "0.8rem",
+    opacity: 0.7,
+  } as const;
+
+  const metricValueStyle = {
+    fontSize: "1.5rem",
+    fontWeight: 600,
+  } as const;
+
   const getPostCount = useCallback(
     (username: string) =>
       posts.filter((p) => p.author === username).length,
@@ -81,15 +102,6 @@ export default function AdminPage() {
       onlineCount: users.filter((u) => u.online).length,
     };
   }, [users, getPostCount]);
-
-  const totalTopContributorPosts = useMemo(
-    () =>
-      topContributors.reduce(
-        (total, contributor) => total + getPostCount(contributor.username),
-        0
-      ),
-    [getPostCount, topContributors]
-  );
 
   const recentPosts = useMemo(() => posts.slice(0, 6), [posts]);
 
@@ -138,103 +150,104 @@ export default function AdminPage() {
         </div>
 
         {/* Summary cards */}
-        <div className="mb-4">
-          <div
-            className={`card border-0 shadow-sm ${
-              isNight ? "bg-dark text-white" : "bg-white"
-            }`}
-          >
-            <div className="card-body p-3 p-md-4">
-              <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-                <div>
-                  <p className={`text-uppercase small fw-semibold mb-1 ${mutedTextClass}`}>
-                    Overview
-                  </p>
-                  <h2 className="h5 mb-0">Platform Metrics</h2>
-                </div>
-                <span
-                  className={`badge px-3 py-2 ${
-                    onlineCount ? "bg-success-subtle text-success" : "bg-secondary"
-                  }`}
+        <div className="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3 mb-4">
+          <div className="col">
+            <div
+              className="card h-100 border-0 text-white"
+              style={metricCardStyle}
+            >
+              <div
+                className="card-body d-flex flex-column"
+                style={metricBodyStyle}
+              >
+                <p
+                  className={`text-uppercase fw-semibold mb-0 ${mutedTextClass}`}
+                  style={metricLabelStyle}
                 >
-                  {onlineCount ? "Live activity" : "Idle"}
-                </span>
+                  Total Users
+                </p>
+                <p className="mb-0" style={metricValueStyle}>
+                  {users.length}
+                </p>
               </div>
-              <p className={`mb-3 small ${mutedTextClass} d-none d-sm-block`}>
-                Quick overview of community health at a glance. Optimized for
-                mobile with stacked stats.
-              </p>
+            </div>
+          </div>
 
-              <div className="d-grid gap-2">
-                <div
-                  className="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 p-3 rounded-4"
-                  style={{
-                    backgroundColor: isNight
-                      ? "rgba(255, 255, 255, 0.05)"
-                      : "rgba(15, 23, 42, 0.04)",
-                  }}
+          <div className="col">
+            <div
+              className="card h-100 border-0 text-white"
+              style={metricCardStyle}
+            >
+              <div
+                className="card-body d-flex flex-column"
+                style={metricBodyStyle}
+              >
+                <p
+                  className={`text-uppercase fw-semibold mb-0 ${mutedTextClass}`}
+                  style={metricLabelStyle}
                 >
-                  <div className="d-flex flex-column">
-                    <span className={`text-uppercase fw-semibold small ${mutedTextClass}`}>
-                      Total Users
-                    </span>
-                    <span className="fw-semibold">Registered accounts</span>
-                  </div>
-                  <span className="display-6 mb-0 lh-1">{users.length}</span>
-                </div>
+                  Total Posts
+                </p>
+                <p className="mb-0" style={metricValueStyle}>
+                  {posts.length}
+                </p>
+              </div>
+            </div>
+          </div>
 
-                <div
-                  className={`d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 p-3 rounded-4 border ${
-                    isNight ? "border-secondary" : "border-secondary-subtle"
-                  }`}
+          <div className="col">
+            <div
+              className="card h-100 border-0 text-white"
+              style={metricCardStyle}
+            >
+              <div
+                className="card-body d-flex flex-column"
+                style={metricBodyStyle}
+              >
+                <p
+                  className={`text-uppercase fw-semibold mb-0 ${mutedTextClass}`}
+                  style={metricLabelStyle}
                 >
-                  <div className="d-flex flex-column">
-                    <span className={`text-uppercase fw-semibold small ${mutedTextClass}`}>
-                      Total Posts
-                    </span>
-                    <span className="fw-semibold">Published entries</span>
-                  </div>
-                  <span className="fs-3 fw-semibold mb-0 lh-1">{posts.length}</span>
-                </div>
-
-                <div
-                  className={`d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 p-3 rounded-4 border ${
-                    isNight ? "border-secondary" : "border-secondary-subtle"
-                  }`}
-                >
-                  <div className="d-flex flex-column">
-                    <span className={`text-uppercase fw-semibold small ${mutedTextClass}`}>
-                      Active Users
-                    </span>
-                    <span className="fw-semibold">Currently online</span>
-                  </div>
-                  <div className="d-flex align-items-center gap-2">
-                    <span className="fs-3 fw-semibold mb-0 lh-1">{onlineCount}</span>
-                    <span
-                      className={`badge ${
-                        onlineCount ? "bg-success-subtle text-success" : "bg-secondary"
-                      }`}
-                    >
-                      {onlineCount ? "Live" : "Offline"}
-                    </span>
-                  </div>
-                </div>
-
-                <div
-                  className={`d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 p-3 rounded-4 border ${
-                    isNight ? "border-secondary" : "border-secondary-subtle"
-                  }`}
-                >
-                  <div className="d-flex flex-column">
-                    <span className={`text-uppercase fw-semibold small ${mutedTextClass}`}>
-                      Top Contributor Posts
-                    </span>
-                    <span className="fw-semibold">Across leading members</span>
-                  </div>
-                  <span className="fs-3 fw-semibold mb-0 lh-1">
-                    {totalTopContributorPosts}
+                  Active Users
+                </p>
+                <div className="d-flex align-items-center gap-2">
+                  <p className="mb-0" style={metricValueStyle}>
+                    {onlineCount}
+                  </p>
+                  <span
+                    className={`badge ${
+                      onlineCount ? "bg-success" : "bg-secondary"
+                    }`}
+                  >
+                    {onlineCount ? "Live now" : "No one online"}
                   </span>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="col">
+            <div
+              className="card h-100 border-0 text-white"
+              style={metricCardStyle}
+            >
+              <div
+                className="card-body d-flex flex-column"
+                style={metricBodyStyle}
+              >
+                <p
+                  className={`text-uppercase fw-semibold mb-0 ${mutedTextClass}`}
+                  style={metricLabelStyle}
+                >
+                  Top Contributor Posts
+                </p>
+                <p className="mb-0" style={metricValueStyle}>
+                  {topContributors.reduce(
+                    (total, contributor) =>
+                      total + getPostCount(contributor.username),
+                    0
+                  )}
+                </p>
               </div>
             </div>
           </div>
