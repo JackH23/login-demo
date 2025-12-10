@@ -512,13 +512,13 @@ export default function SettingPage() {
               : "1px solid rgba(244,63,94,0.35)",
           }}
         >
-          <div className="card-body p-4">
+          <div className="card-body p-3 p-md-4">
             <div className="d-flex align-items-start gap-3">
               <div
-                className="rounded-circle d-flex align-items-center justify-content-center"
+                className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 d-none d-md-block"
                 style={{
-                  width: "48px",
-                  height: "48px",
+                  width: "42px",
+                  height: "42px",
                   background: isNight ? "rgba(239,68,68,0.35)" : "rgba(225,29,72,0.1)",
                 }}
               >
@@ -528,16 +528,24 @@ export default function SettingPage() {
               </div>
               <div className="flex-grow-1">
                 <h5 className="fw-semibold text-danger mb-1">Danger zone</h5>
-                <p className={`mb-3 ${mutedTextClass}`}>
+                <p className={`mb-3 ${mutedTextClass} d-none d-md-block`}>
                   Deleting your account will permanently remove your profile,
                   posts, and connections. This action cannot be undone.
                 </p>
-                <button
-                  className="btn btn-danger w-100 fw-semibold shadow-sm"
-                  onClick={handleDeleteAccount}
-                >
-                  Delete my account
-                </button>
+                <div className="d-grid gap-2">
+                  <button
+                    className="btn btn-danger btn-sm w-100 fw-semibold shadow-sm d-md-none"
+                    onClick={handleDeleteAccount}
+                  >
+                    Delete my account
+                  </button>
+                  <button
+                    className="btn btn-danger w-100 fw-semibold shadow-sm d-none d-md-inline-flex"
+                    onClick={handleDeleteAccount}
+                  >
+                    Delete my account
+                  </button>
+                </div>
               </div>
             </div>
           </div>
