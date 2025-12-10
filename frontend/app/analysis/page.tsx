@@ -146,7 +146,9 @@ export default function AnalysisPage() {
               </div>
               <div className="text-center text-md-end w-100 w-md-auto analysis-score">
                 <div className="small text-muted mb-1">Engagement score</div>
-                <div className="display-6 fw-semibold text-primary mb-1">{engagementScore}%</div>
+                <div className="display-6 fw-semibold text-primary mb-1 analysis-score-value">
+                  {engagementScore}%
+                </div>
                 <div className="progress analysis-progress mx-auto mx-md-0" style={{ height: "6px" }}>
                   <div
                     className="progress-bar bg-primary"
@@ -167,7 +169,9 @@ export default function AnalysisPage() {
             <div className="card-body p-3">
               <div className="d-flex align-items-start justify-content-between mb-2 activity-header">
                 <div>
-                  <div className="mb-1 text-uppercase text-muted fw-semibold small activity-title">Activity Snapshot</div>
+                  <div className="mb-1 text-uppercase text-muted fw-semibold small activity-title">
+                    Activity Snapshot
+                  </div>
                   <div className="text-muted small activity-subtitle">Your latest engagement metrics</div>
                 </div>
                 <span className="badge bg-primary-subtle text-primary-emphasis rounded-pill live-badge">Live</span>
@@ -176,7 +180,7 @@ export default function AnalysisPage() {
                 <div className="d-flex align-items-center justify-content-between activity-metric">
                   <div className="d-flex align-items-center gap-2">
                     <span className="metric-icon">📝</span>
-                    <div className="text-muted">Total Posts</div>
+                    <div className="text-muted">Posts</div>
                   </div>
                   <div className="fw-bold text-primary">{postCount}</div>
                 </div>
@@ -290,7 +294,7 @@ export default function AnalysisPage() {
                   <div className="list-group list-group-flush">
                     {spotlightPosts.map((post, index) => (
                       <div key={post._id} className="list-group-item px-0 py-3 spotlight-item">
-                        <div className="d-flex align-items-start gap-2 gap-sm-3 flex-column flex-sm-row">
+                        <div className="d-flex align-items-start gap-2 gap-sm-3 flex-row flex-sm-row flex-wrap">
                           <div
                             className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center spotlight-rank"
                             aria-label={`Post rank ${index + 1}`}
@@ -443,41 +447,45 @@ export default function AnalysisPage() {
 
         @media (max-width: 576px) {
           .analysis-hero-card .card-body {
-            padding: 0.85rem 1rem;
+            padding: 0.75rem 0.9rem;
           }
 
           .analysis-hero-header {
-            gap: 0.75rem;
+            gap: 0.55rem;
           }
 
           .analysis-badge {
             border-radius: 999px;
             font-size: 0.68rem;
             letter-spacing: 0.02em;
-            padding: 0.25rem 0.6rem;
+            padding: 0.2rem 0.55rem;
           }
 
           .analysis-title {
-            font-size: 1.1rem;
-            line-height: 1.3;
+            font-size: 1.05rem;
+            line-height: 1.25;
           }
 
           .analysis-title span[aria-hidden] {
-            font-size: 1.25rem;
+            font-size: 1.15rem;
           }
 
           .analysis-score .small {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
+            margin-bottom: 0.1rem !important;
           }
 
-          .analysis-score .display-6 {
-            font-size: 1.9rem;
+          .analysis-score .display-6,
+          .analysis-score .analysis-score-value {
+            font-size: 1.85rem;
+            margin-bottom: 0.2rem !important;
           }
 
           .analysis-progress {
-            height: 6px;
-            width: 90%;
-            max-width: none !important;
+            height: 5px;
+            width: 100%;
+            max-width: 180px !important;
+            margin-top: 0.1rem;
           }
 
           .analysis-stats-row {
@@ -507,29 +515,30 @@ export default function AnalysisPage() {
           }
 
           .activity-snapshot-card .card-body {
-            padding: 0.85rem 1rem;
+            padding: 0.75rem 0.9rem;
           }
 
           .activity-header {
-            gap: 0.75rem;
+            gap: 0.5rem;
           }
 
           .activity-title {
-            font-size: 0.72rem;
-            letter-spacing: 0.04em;
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
           }
 
           .activity-subtitle {
-            font-size: 0.82rem;
+            font-size: 0.78rem;
+            margin-bottom: 0.1rem;
           }
 
           .live-badge {
-            font-size: 0.68rem;
-            padding: 0.25rem 0.55rem;
+            font-size: 0.65rem;
+            padding: 0.2rem 0.45rem;
           }
 
           .activity-metrics {
-            gap: 0.5rem;
+            gap: 0.4rem;
           }
 
           .activity-metric {
@@ -537,65 +546,66 @@ export default function AnalysisPage() {
           }
 
           .metric-icon {
-            font-size: 1.1rem;
-            width: 22px;
+            font-size: 1rem;
+            width: 20px;
             text-align: center;
           }
 
           .spotlight-card {
-            padding: 0.9rem 1rem;
+            padding: 0.85rem 0.95rem;
             border-radius: 12px;
           }
 
           .spotlight-header {
-            padding: 0 0.25rem;
-            gap: 0.5rem;
+            padding: 0 0.2rem;
+            gap: 0.45rem;
           }
 
           .spotlight-title-wrap {
-            gap: 0.4rem;
+            gap: 0.35rem;
           }
 
           .spotlight-title-wrap h5 {
-            font-size: 1.05rem;
+            font-size: 1rem;
           }
 
           .spotlight-title-wrap span[aria-hidden] {
-            font-size: 1.05rem;
+            font-size: 1rem;
           }
 
           .spotlight-badge {
-            font-size: 0.72rem;
-            padding: 0.3rem 0.55rem;
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
           }
 
           .spotlight-item {
-            padding: 0.85rem 0;
+            padding: 0.75rem 0;
           }
 
           .spotlight-rank {
-            width: 34px;
-            height: 34px;
-            font-size: 0.9rem;
-            margin-top: 2px;
+            width: 32px;
+            height: 32px;
+            font-size: 0.85rem;
+            margin-top: 0;
           }
 
           .spotlight-post-title {
-            font-size: 1rem;
-            font-weight: 600;
+            font-size: 0.98rem;
+            font-weight: 700;
           }
 
           .spotlight-post-description {
-            font-size: 0.9rem;
+            font-size: 0.88rem;
+            margin-bottom: 0.4rem !important;
           }
 
           .spotlight-metrics {
-            gap: 1.1rem;
-            font-size: 0.9rem;
+            gap: 1rem;
+            font-size: 0.88rem;
           }
 
           .spotlight-metrics span span[aria-hidden] {
-            font-size: 1rem;
+            font-size: 0.95rem;
           }
         }
       `}</style>
