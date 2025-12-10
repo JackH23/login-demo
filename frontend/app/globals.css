@@ -1038,7 +1038,7 @@
   border-radius: 16px;
   margin: 0 auto;
   width: 100%;
-  max-width: none;
+  max-width: 900px;
 }
 
 .friend-panel-header {
