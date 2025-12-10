@@ -121,7 +121,7 @@ export default function AdminPage() {
               {greeting}, {user.username}
             </p>
             <h1 className="h3 mb-1">📋 Admin Dashboard</h1>
-            <p className={`mb-0 ${mutedTextClass}`}>
+            <p className={`mb-0 ${mutedTextClass} d-none d-md-block`}>
               Track user activity, highlight top contributors, and review
               recent posts in one place.
             </p>
