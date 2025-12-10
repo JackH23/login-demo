@@ -45,19 +45,23 @@ function FriendListSkeleton({ theme }: { theme: string }) {
           <ul className="friend-list" role="list">
             {Array.from({ length: 4 }).map((_, index) => (
               <li key={index} className="friend-row is-loading" aria-hidden="true">
-                <div className="friend-avatar">
-                  <span className="placeholder rounded-circle" />
-                  <span className="user-card-presence user-card-presence--offline" />
-                </div>
-                <div className="friend-row-content">
-                  <div className="placeholder-wave mb-2">
-                    <span className="placeholder col-7" />
+                <div className="friend-row-main" role="presentation">
+                  <div className="friend-avatar">
+                    <span className="placeholder rounded-circle" />
+                    <span className="user-card-presence user-card-presence--offline" />
                   </div>
-                  <div className="placeholder-wave">
-                    <span className="placeholder col-10" />
+                  <div className="friend-row-content">
+                    <div className="placeholder-wave mb-2">
+                      <span className="placeholder col-7" />
+                    </div>
+                    <div className="placeholder-wave">
+                      <span className="placeholder col-10" />
+                    </div>
                   </div>
                 </div>
-                <div className="friend-row-action placeholder rounded-pill" />
+                <div className="friend-row-actions">
+                  <div className="friend-message-btn placeholder rounded-pill" />
+                </div>
               </li>
             ))}
           </ul>
@@ -218,18 +222,15 @@ export default function FriendPage() {
 
                 return (
                   <li key={f.username} className="friend-row" role="listitem">
-                    <button
-                      type="button"
+                    <div
                       className="friend-row-main"
-                      onClick={() => router.push(`/chat?user=${f.username}`)}
-                      onContextMenu={(event) => {
-                        event.preventDefault();
-                        openProfile(f.username);
-                      }}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => openProfile(f.username)}
                       onKeyDown={(event) => {
                         if (event.key === "Enter" || event.key === " ") {
                           event.preventDefault();
-                          router.push(`/chat?user=${f.username}`);
+                          openProfile(f.username);
                         }
                       }}
                     >
@@ -254,6 +255,14 @@ export default function FriendPage() {
                       <div className="friend-row-content">
                         <div className="friend-row-top">
                           <span className="friend-name">{f.username}</span>
+                          <span
+                            className={`friend-status ${
+                              f.online ? "friend-status--online" : "friend-status--offline"
+                            }`}
+                          >
+                            <span className="friend-status-dot" aria-hidden="true" />
+                            {f.online ? "Online" : "Offline"}
+                          </span>
                         </div>
                         <p
                           className={`friend-preview mb-0 ${loadingMessages ? "is-loading" : ""}`}
@@ -264,16 +273,18 @@ export default function FriendPage() {
                             : preview || "No recent messages yet"}
                         </p>
                       </div>
-                    </button>
+                    </div>
 
-                    <button
-                      type="button"
-                      className="friend-row-action"
-                      aria-label={`Open ${f.username}'s profile`}
-                      onClick={() => openProfile(f.username)}
-                    >
-                      <i className="bi bi-chevron-right" aria-hidden="true" />
-                    </button>
+                    <div className="friend-row-actions">
+                      <button
+                        type="button"
+                        className="friend-message-btn"
+                        onClick={() => router.push(`/chat?user=${f.username}`)}
+                      >
+                        <i className="bi bi-chat-dots" aria-hidden="true" />
+                        <span>Message</span>
+                      </button>
+                    </div>
                   </li>
                 );
               })}
