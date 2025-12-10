@@ -398,7 +398,7 @@ export default function AnalysisPage() {
           </div>
         </div>
 
-        <div className="card border-0 shadow-sm mt-4">
+        <div className="card border-0 shadow-sm mt-4 d-none d-md-block">
           <div className="card-body text-center text-muted">
             <em>More personal insights are on the way. Keep writing to unlock trend forecasts and audience badges!</em>
           </div>
