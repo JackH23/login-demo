@@ -159,56 +159,57 @@ export default function AnalysisPage() {
 
         <div className="d-md-none">
           <div className="card border-0 shadow-sm">
-            <div className="card-body p-3">
-              <div className="d-flex align-items-center justify-content-between mb-3">
-                <div>
-                  <h6 className="mb-1 text-uppercase text-muted">Activity Snapshot</h6>
-                  <div className="text-muted small">Your latest engagement metrics</div>
-                </div>
-                <span className="badge bg-primary-subtle text-primary-emphasis">Live</span>
-              </div>
-              <div className="d-grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))" }}>
-                <div className="d-flex gap-2 align-items-start">
-                  <span className="fs-5">📝</span>
+            <div
+              className="card-body p-3 d-flex flex-column justify-content-between"
+              style={{ minHeight: "180px", maxHeight: "220px" }}
+            >
+              <div className="d-flex align-items-center justify-content-between">
+                <div className="d-flex align-items-center gap-2">
+                  <span role="img" aria-label="chart" className="fs-5">
+                    📊
+                  </span>
                   <div>
-                    <div className="text-uppercase text-muted small">Total Posts</div>
-                    <div className="fw-bold text-primary">{postCount}</div>
+                    <h6 className="mb-0 text-uppercase text-muted">Your Blog Activity</h6>
+                    <small className="text-muted">Mobile version</small>
                   </div>
                 </div>
-                <div className="d-flex gap-2 align-items-start">
-                  <span className="fs-5">💬</span>
-                  <div className="flex-grow-1">
-                    <div className="text-uppercase text-muted small">Comments</div>
-                    <div className="fw-bold text-success">{commentCount}</div>
-                    <div className="progress mt-1" style={{ height: "4px" }}>
-                      <div
-                        className="progress-bar bg-success"
-                        role="progressbar"
-                        style={{ width: `${Math.min(100, averageComments * 10)}%` }}
-                        aria-valuenow={averageComments}
-                        aria-valuemin={0}
-                        aria-valuemax={10}
-                      />
-                    </div>
+                <span
+                  className="text-muted"
+                  role="img"
+                  aria-label="engagement info"
+                  title="How engagement is calculated?"
+                >
+                  ℹ️
+                </span>
+              </div>
+
+              <div className="text-center">
+                <div className="small text-muted mb-1">Engagement score</div>
+                <div className="display-5 fw-semibold text-primary mb-2">{engagementScore}%</div>
+                <div className="d-flex justify-content-center">
+                  <div className="progress w-100" style={{ height: "4px", maxWidth: "260px" }}>
+                    <div
+                      className="progress-bar bg-primary"
+                      role="progressbar"
+                      style={{ width: `${engagementScore}%` }}
+                      aria-valuenow={engagementScore}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                    />
                   </div>
                 </div>
-                <div className="d-flex gap-2 align-items-start">
-                  <span className="fs-5">⭐</span>
-                  <div className="flex-grow-1">
-                    <div className="text-uppercase text-muted small">Likes</div>
-                    <div className="fw-bold text-warning">{totalLikes}</div>
-                    <div className="progress mt-1" style={{ height: "4px" }}>
-                      <div
-                        className="progress-bar bg-warning"
-                        role="progressbar"
-                        style={{ width: `${Math.min(100, averageLikes * 10)}%` }}
-                        aria-valuenow={averageLikes}
-                        aria-valuemin={0}
-                        aria-valuemax={10}
-                      />
-                    </div>
-                  </div>
-                </div>
+              </div>
+
+              <div className="d-flex justify-content-between text-muted small">
+                <span className="d-flex align-items-center gap-1">
+                  📝<strong className="text-dark">{postCount}</strong> Posts
+                </span>
+                <span className="d-flex align-items-center gap-1">
+                  💬<strong className="text-dark">{commentCount}</strong> Comments
+                </span>
+                <span className="d-flex align-items-center gap-1">
+                  ⭐<strong className="text-dark">{totalLikes}</strong> Likes
+                </span>
               </div>
             </div>
           </div>
