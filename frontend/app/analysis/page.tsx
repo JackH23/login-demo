@@ -157,10 +157,10 @@ export default function AnalysisPage() {
           </div>
         </div>
 
-        <div className="row g-3 g-md-4 mt-1 row-cols-1 row-cols-sm-2 row-cols-md-3">
+        <div className="row g-3 g-md-4 mt-1 row-cols-1 row-cols-sm-2 row-cols-md-3 analysis-stats-row">
           <div className="col">
-            <div className="card border-0 shadow-sm h-100">
-              <div className="card-body">
+            <div className="card border-0 shadow-sm h-100 analysis-stat-card">
+              <div className="card-body p-3 p-md-4">
                 <div className="d-flex align-items-center mb-3">
                   <span className="me-2 fs-5 fs-md-3">📝</span>
                   <h6 className="mb-0 text-uppercase text-muted">Total Posts</h6>
@@ -176,8 +176,8 @@ export default function AnalysisPage() {
             </div>
           </div>
           <div className="col">
-            <div className="card border-0 shadow-sm h-100">
-              <div className="card-body">
+            <div className="card border-0 shadow-sm h-100 analysis-stat-card">
+              <div className="card-body p-3 p-md-4">
                 <div className="d-flex align-items-center mb-3">
                   <span className="me-2 fs-5 fs-md-3">💬</span>
                   <h6 className="mb-0 text-uppercase text-muted">Comments</h6>
@@ -203,8 +203,8 @@ export default function AnalysisPage() {
             </div>
           </div>
           <div className="col">
-            <div className="card border-0 shadow-sm h-100">
-              <div className="card-body">
+            <div className="card border-0 shadow-sm h-100 analysis-stat-card">
+              <div className="card-body p-3 p-md-4">
                 <div className="d-flex align-items-center mb-3">
                   <span className="me-2 fs-5 fs-md-3">⭐</span>
                   <h6 className="mb-0 text-uppercase text-muted">Likes</h6>
@@ -336,6 +336,35 @@ export default function AnalysisPage() {
           </div>
         </div>
       </div>
+      <style jsx global>{`
+        @media (max-width: 576px) {
+          .analysis-stats-row {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 0.75rem;
+            padding-bottom: 0.5rem;
+            margin: 0 -0.25rem;
+          }
+
+          .analysis-stats-row > .col {
+            flex: 0 0 70%;
+            max-width: 70%;
+          }
+
+          .analysis-stat-card .card-body {
+            padding: 0.75rem;
+          }
+
+          .analysis-stat-card h2 {
+            font-size: 1.5rem;
+          }
+
+          .analysis-stat-card h6 {
+            font-size: 0.85rem;
+          }
+        }
+      `}</style>
     </div>
   );
 }
