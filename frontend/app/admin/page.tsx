@@ -69,7 +69,7 @@ export default function AdminPage() {
     return () => window.removeEventListener("resize", updateIsMobile);
   }, []);
 
-  const [showAllMobileUsers, setShowAllMobileUsers] = useState(false);
+  const [showAllUsers, setShowAllUsers] = useState(false);
 
   const isNight = theme === "night";
   const cardThemeClass = isNight ? "bg-dark border-secondary text-light" : "";
@@ -111,12 +111,14 @@ export default function AdminPage() {
   const visibleUsers = useMemo(() => {
     if (!users.length) return [];
 
-    if (isMobile && !showAllMobileUsers) {
-      return users.slice(-1);
+    const latestUsers = users.slice(-4);
+
+    if (!showAllUsers) {
+      return isMobile ? latestUsers.slice(-1) : latestUsers;
     }
 
     return users;
-  }, [isMobile, showAllMobileUsers, users]);
+  }, [isMobile, showAllUsers, users]);
 
   const { topContributors, onlineCount } = useMemo(() => {
     const sortedUsers = [...users].sort(
@@ -339,17 +341,19 @@ export default function AdminPage() {
                 </div>
                 <div className="d-flex justify-content-between align-items-center mb-3">
                   <p className={`mb-0 small ${mutedTextClass}`}>
-                    {isMobile && !showAllMobileUsers && users.length > 1
+                    {isMobile && !showAllUsers && users.length > 1
                       ? "Showing the latest member on mobile"
-                      : "Browse your members"}
+                      : showAllUsers
+                        ? "Showing all members"
+                        : "Showing the latest members"}
                   </p>
-                  {users.length > 1 && (
+                  {users.length > 4 && (
                     <button
                       type="button"
-                      className="btn btn-outline-primary btn-sm d-md-none"
-                      onClick={() => setShowAllMobileUsers((prev) => !prev)}
+                      className="btn btn-outline-primary btn-sm"
+                      onClick={() => setShowAllUsers((prev) => !prev)}
                     >
-                      {showAllMobileUsers ? "Show latest" : "Show all"}
+                      {showAllUsers ? "Show latest" : "Show all"}
                     </button>
                   )}
                 </div>
