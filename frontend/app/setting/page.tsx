@@ -301,7 +301,7 @@ export default function SettingPage() {
         <div
           className={`card shadow-sm border-0 rounded-4 mb-4 ${
             isNight ? "bg-transparent text-light" : "bg-transparent"
-          }`}
+          } d-none d-md-block`}
           style={{
             background: isNight
               ? "linear-gradient(135deg, rgba(17,24,39,0.95), rgba(30,64,175,0.75))"
@@ -384,7 +384,7 @@ export default function SettingPage() {
             <h5 className="fw-semibold mb-1 d-flex align-items-center gap-2">
               <span aria-hidden="true">🧩</span>Profile Settings
             </h5>
-            <p className={`mb-0 ${mutedTextClass}`}>
+            <p className={`mb-0 ${mutedTextClass} d-none d-md-block`}>
               Personalise how your profile looks to everyone else.
             </p>
           </div>
@@ -414,7 +414,7 @@ export default function SettingPage() {
                   />
                 )}
               </div>
-              <div className={`${mutedTextClass} text-center text-sm-start`}>
+              <div className={`${mutedTextClass} text-center text-sm-start d-none d-md-block`}>
                 <div className="fw-semibold text-reset">Profile preview</div>
                 <small>
                   Update your avatar and details to keep your profile fresh.

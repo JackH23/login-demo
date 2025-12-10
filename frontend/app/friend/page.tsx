@@ -197,12 +197,12 @@ export default function FriendPage() {
         <div className="card-body">
           <div className="friend-panel-header d-flex align-items-center justify-content-between">
             <div>
-              <p className="text-uppercase small fw-semibold text-secondary mb-1">
+              <p className="text-uppercase small fw-semibold text-secondary mb-1 d-none d-md-block">
                 People you follow
               </p>
               <h3 className="h5 mb-0">Friends ({friendUsers.length})</h3>
             </div>
-            <span className="text-muted small">Tap to message • Hold for options</span>
+            <span className="text-muted small d-none d-md-block">Tap to message • Hold for options</span>
           </div>
 
           {friendUsers.length > 0 ? (
