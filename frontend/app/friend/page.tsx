@@ -83,8 +83,13 @@ export default function FriendPage() {
     fallback: [],
     transform: normalizeUsersResponse,
   });
-  const [friends, setFriends] = useState<string[]>([]);
-  const [isFetching, setIsFetching] = useState(true);
+  const {
+    data: friends,
+    loading: loadingFriends,
+  } = useCachedApi<string[]>(user ? `/api/friends?username=${user.username}` : null, {
+    fallback: [],
+    transform: (payload) => (payload as { friends?: string[] }).friends ?? [],
+  });
   const [lastMessages, setLastMessages] = useState<Record<string, LastMessage | null>>({});
   const [loadingMessages, setLoadingMessages] = useState(true);
 
@@ -95,34 +100,15 @@ export default function FriendPage() {
   }, [loading, user, router]);
 
   useEffect(() => {
-    if (!user) return;
-
-    const fetchData = async () => {
-      try {
-        const [usersRes, friendsRes] = await Promise.all([
-          fetch(apiUrl("/api/users")),
-          fetch(apiUrl(`/api/friends?username=${user.username}`)),
-        ]);
-        const usersData = await usersRes.json();
-        const friendsData = await friendsRes.json();
-        setUsers(normalizeUsersResponse(usersData));
-        setFriends(friendsData.friends ?? []);
-      } catch {
-        setUsers([]);
-        setFriends([]);
-      } finally {
-        setIsFetching(false);
-      }
-    };
-
-    fetchData();
-  }, [setUsers, user]);
-
-  useEffect(() => {
     // Socket listeners disabled; relying on API responses for status
   }, [setUsers, socket]);
 
   useEffect(() => {
+    if (loadingFriends) {
+      setLoadingMessages(true);
+      return;
+    }
+
     const fetchLastMessages = async () => {
       if (!user || friends.length === 0) {
         setLastMessages({});
@@ -155,9 +141,9 @@ export default function FriendPage() {
     };
 
     fetchLastMessages();
-  }, [user, friends]);
+  }, [user, friends, loadingFriends]);
 
-  const isBootstrapping = loading || isFetching || loadingUsers || !user;
+  const isBootstrapping = loading || loadingUsers || loadingFriends || !user;
 
   if (isBootstrapping) {
     return <FriendListSkeleton theme={theme} />;
