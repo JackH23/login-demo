@@ -90,18 +90,20 @@ export default function AnalysisPage() {
 
   return (
     <div
-      className={`container-fluid min-vh-100 p-4 ${
-        theme === "night" ? "bg-dark text-white" : ""
+      className={`container-fluid min-vh-100 p-3 p-md-4 ${
+        theme === "night" ? "bg-dark text-white" : "bg-body"
       }`}
       style={
         theme === "night"
           ? {
+              backgroundColor: "#0b1020",
               background:
-                "radial-gradient(circle at top left, rgba(0,123,255,0.25), rgba(10,10,10,0.95))",
+                "radial-gradient(circle at top left, rgba(0,123,255,0.2), rgba(10,10,10,0.9))",
             }
           : {
+              backgroundColor: "#f5f7fb",
               background:
-                "linear-gradient(135deg, rgba(79,172,254,0.25), rgba(0,242,254,0.25))",
+                "linear-gradient(135deg, rgba(79,172,254,0.15), rgba(0,242,254,0.15))",
             }
       }
     >
@@ -117,29 +119,30 @@ export default function AnalysisPage() {
       <div className="container mt-4" style={{ maxWidth: "1100px" }}>
         <div className="card border-0 shadow-lg overflow-hidden">
           <div
-            className="card-body p-4 p-md-5"
+            className="card-body p-3 p-md-4"
             style={{
+              backgroundColor: theme === "night" ? "#0f1525" : "#ffffff",
               background:
                 theme === "night"
-                  ? "linear-gradient(135deg, rgba(15,15,35,0.9), rgba(30,30,60,0.85))"
-                  : "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(245,250,255,0.9))",
+                  ? "linear-gradient(135deg, rgba(15,15,35,0.85), rgba(30,30,60,0.75))"
+                  : "linear-gradient(135deg, rgba(255,255,255,0.92), rgba(245,250,255,0.86))",
             }}
           >
-            <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+            <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 gap-md-4">
               <div>
                 <span className="badge bg-primary-subtle text-primary-emphasis fw-semibold mb-2">
                   Analysis Overview
                 </span>
                 <h2 className="fw-bold mb-2">📈 Your Blog Activity</h2>
-                <p className="text-muted mb-0">
+                <p className="text-muted mb-0 d-none d-md-block">
                   Track how your writing resonates. Explore your strongest posts, see where engagement thrives,
                   and uncover opportunities to connect with readers more deeply.
                 </p>
               </div>
-              <div className="text-md-end">
+              <div className="text-md-end w-100 w-md-auto">
                 <div className="small text-muted">Engagement score</div>
                 <div className="display-6 fw-semibold text-primary">{engagementScore}%</div>
-                <div className="progress" style={{ height: "8px", width: "180px" }}>
+                <div className="progress" style={{ height: "8px", width: "100%", maxWidth: "220px" }}>
                   <div
                     className="progress-bar bg-primary"
                     role="progressbar"
@@ -154,30 +157,36 @@ export default function AnalysisPage() {
           </div>
         </div>
 
-        <div className="row g-4 mt-1">
-          <div className="col-md-4">
+        <div className="row g-3 g-md-4 mt-1 row-cols-1 row-cols-sm-2 row-cols-md-3">
+          <div className="col">
             <div className="card border-0 shadow-sm h-100">
               <div className="card-body">
                 <div className="d-flex align-items-center mb-3">
-                  <span className="me-2 fs-3">📝</span>
+                  <span className="me-2 fs-5 fs-md-3">📝</span>
                   <h6 className="mb-0 text-uppercase text-muted">Total Posts</h6>
                 </div>
                 <h2 className="fw-bold text-primary">{postCount}</h2>
-                <p className="text-muted small mb-0">
+                <p
+                  className="text-muted small mb-0 d-none d-md-block"
+                  style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+                >
                   Keep publishing consistently to unlock deeper analytics and trend insights.
                 </p>
               </div>
             </div>
           </div>
-          <div className="col-md-4">
+          <div className="col">
             <div className="card border-0 shadow-sm h-100">
               <div className="card-body">
                 <div className="d-flex align-items-center mb-3">
-                  <span className="me-2 fs-3">💬</span>
+                  <span className="me-2 fs-5 fs-md-3">💬</span>
                   <h6 className="mb-0 text-uppercase text-muted">Comments</h6>
                 </div>
                 <h2 className="fw-bold text-success">{commentCount}</h2>
-                <p className="text-muted small mb-2">
+                <p
+                  className="text-muted small mb-2 d-none d-md-block"
+                  style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+                >
                   On average {averageComments} readers respond to each post.
                 </p>
                 <div className="progress" style={{ height: "6px" }}>
@@ -193,15 +202,18 @@ export default function AnalysisPage() {
               </div>
             </div>
           </div>
-          <div className="col-md-4">
+          <div className="col">
             <div className="card border-0 shadow-sm h-100">
               <div className="card-body">
                 <div className="d-flex align-items-center mb-3">
-                  <span className="me-2 fs-3">⭐</span>
+                  <span className="me-2 fs-5 fs-md-3">⭐</span>
                   <h6 className="mb-0 text-uppercase text-muted">Likes</h6>
                 </div>
                 <h2 className="fw-bold text-warning">{totalLikes}</h2>
-                <p className="text-muted small mb-2">
+                <p
+                  className="text-muted small mb-2 d-none d-md-block"
+                  style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+                >
                   Average of {averageLikes} likes per post. Celebrate your most-loved stories!
                 </p>
                 <div className="progress" style={{ height: "6px" }}>
@@ -233,16 +245,24 @@ export default function AnalysisPage() {
                   <div className="list-group list-group-flush">
                     {spotlightPosts.map((post, index) => (
                       <div key={post._id} className="list-group-item px-0 py-3">
-                        <div className="d-flex align-items-start gap-3">
+                        <div className="d-flex align-items-start gap-2 gap-sm-3 flex-column flex-sm-row">
                           <div className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style={{ width: "36px", height: "36px" }}>
                             #{index + 1}
                           </div>
                           <div className="flex-grow-1">
-                            <h6 className="mb-1">{post.title}</h6>
-                            <p className="text-muted small mb-2">
-                              {post.content.slice(0, 120)}{post.content.length > 120 ? "…" : ""}
+                            <h6
+                              className="mb-1"
+                              style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+                            >
+                              {post.title}
+                            </h6>
+                            <p
+                              className="text-muted small mb-2"
+                              style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+                            >
+                              {post.content}
                             </p>
-                            <div className="d-flex gap-3 small text-muted">
+                            <div className="d-flex flex-wrap gap-2 small text-muted">
                               <span>👍 {post.likes}</span>
                               <span>💬 {post.comments}</span>
                             </div>
@@ -252,21 +272,23 @@ export default function AnalysisPage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center text-muted py-5">
+                  <div className="text-center text-muted py-4 py-md-5 d-flex flex-column align-items-center gap-2">
                     <p className="mb-1">You haven’t posted anything yet.</p>
                     <small>Start sharing your thoughts to see insights populate here.</small>
+                    <button className="btn btn-primary">Create your first post</button>
+                    <small className="text-muted">Share a quick update to unlock tailored insights.</small>
                   </div>
                 )}
               </div>
             </div>
           </div>
-          <div className="col-lg-5">
+          <div className="col-lg-5 d-none d-md-block">
             <div className="card border-0 shadow-sm h-100">
               <div className="card-body d-flex flex-column">
                 <h5 className="mb-3">💡 Growth Opportunities</h5>
-                <ul className="list-unstyled flex-grow-1">
-                  <li className="mb-3 d-flex">
-                    <span className="me-3">🎯</span>
+                <ul className="list-unstyled flex-grow-1 d-grid gap-3" style={{ lineHeight: 1.6 }}>
+                  <li className="d-flex gap-3 border-bottom pb-3">
+                    <span className="fs-5">🎯</span>
                     <div>
                       <strong>Focus on high-performing themes.</strong>
                       <div className="text-muted small">
@@ -274,8 +296,8 @@ export default function AnalysisPage() {
                       </div>
                     </div>
                   </li>
-                  <li className="mb-3 d-flex">
-                    <span className="me-3">🤝</span>
+                  <li className="d-flex gap-3 border-bottom pb-3">
+                    <span className="fs-5">🤝</span>
                     <div>
                       <strong>Boost conversation.</strong>
                       <div className="text-muted small">
@@ -283,8 +305,8 @@ export default function AnalysisPage() {
                       </div>
                     </div>
                   </li>
-                  <li className="d-flex">
-                    <span className="me-3">📅</span>
+                  <li className="d-flex gap-3">
+                    <span className="fs-5">📅</span>
                     <div>
                       <strong>Plan your next publish.</strong>
                       <div className="text-muted small">
