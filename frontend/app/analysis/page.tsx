@@ -279,7 +279,7 @@ export default function AnalysisPage() {
 
         <div className="row g-4 mt-2 analysis-main-grid">
           <div className="col-lg-7">
-            <div className="card border-0 shadow-sm h-100">
+            <div className="card border-0 shadow-sm h-100 spotlight-card-container">
               <div className="card-body spotlight-card">
                 <div className="d-flex justify-content-between align-items-center mb-3 spotlight-header">
                   <div className="d-flex align-items-center gap-2 spotlight-title-wrap">
@@ -498,6 +498,10 @@ export default function AnalysisPage() {
             padding: 0.85rem 0.9rem;
           }
 
+          .activity-snapshot-card {
+            margin-bottom: 0.95rem;
+          }
+
           .analysis-stats-row {
             display: flex;
             flex-wrap: nowrap;
@@ -576,7 +580,11 @@ export default function AnalysisPage() {
 
           .analysis-main-grid {
             row-gap: 0.95rem;
-            margin-top: 0.75rem !important;
+            margin-top: 0.45rem !important;
+          }
+
+          .spotlight-card-container {
+            margin-bottom: 0.95rem;
           }
 
           .spotlight-card {
