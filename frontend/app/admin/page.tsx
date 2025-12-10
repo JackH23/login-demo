@@ -56,6 +56,7 @@ export default function AdminPage() {
     users.find((u) => u.username === user?.username) ?? null;
 
   const [isMobile, setIsMobile] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const updateIsMobile = () => {
@@ -108,17 +109,28 @@ export default function AdminPage() {
     [posts]
   );
 
-  const visibleUsers = useMemo(() => {
-    if (!users.length) return [];
+  const filteredUsers = useMemo(() => {
+    if (!searchTerm.trim()) return users;
 
-    const latestUsers = users.slice(-4);
+    const query = searchTerm.trim().toLowerCase();
+    return users.filter((u) => u.username.toLowerCase().includes(query));
+  }, [searchTerm, users]);
+
+  const visibleUsers = useMemo(() => {
+    if (!filteredUsers.length) return [];
+
+    if (searchTerm) {
+      return filteredUsers;
+    }
+
+    const latestUsers = filteredUsers.slice(-4);
 
     if (!showAllUsers) {
       return isMobile ? latestUsers.slice(-1) : latestUsers;
     }
 
-    return users;
-  }, [isMobile, showAllUsers, users]);
+    return filteredUsers;
+  }, [filteredUsers, isMobile, searchTerm, showAllUsers]);
 
   const { topContributors, onlineCount } = useMemo(() => {
     const sortedUsers = [...users].sort(
@@ -333,34 +345,71 @@ export default function AdminPage() {
           <div className="col-lg-7">
             <div className={`card shadow-sm h-100 border-0 ${cardThemeClass}`}>
               <div className="card-body">
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                  <h2 className="h5 mb-0">User Directory</h2>
-                  <span className={`badge bg-primary`}>
+                <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+                  <div className="d-flex flex-column gap-1">
+                    <h2 className="h5 mb-0">User Directory</h2>
+                    <p className={`mb-0 small ${mutedTextClass}`}>
+                      Search and manage your community members.
+                    </p>
+                  </div>
+                  <span className={`badge bg-primary align-self-start`}>
                     {users.length} members
                   </span>
                 </div>
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                  <p className={`mb-0 small ${mutedTextClass}`}>
-                    {isMobile && !showAllUsers && users.length > 1
-                      ? "Showing the latest member on mobile"
-                      : showAllUsers
-                        ? "Showing all members"
-                        : "Showing the latest members"}
-                  </p>
-                  {users.length > 4 && (
-                    <button
-                      type="button"
-                      className="btn btn-outline-primary btn-sm"
-                      onClick={() => setShowAllUsers((prev) => !prev)}
-                    >
-                      {showAllUsers ? "Show latest" : "Show all"}
-                    </button>
+                <form
+                  className="row g-2 align-items-center mb-3"
+                  role="search"
+                  onSubmit={(event) => event.preventDefault()}
+                >
+                  <div className="col-12 col-md">
+                    <label className="form-label visually-hidden" htmlFor="user-search">
+                      Search users
+                    </label>
+                    <div className="input-group">
+                      <span className={`input-group-text ${cardThemeClass}`}>🔍</span>
+                      <input
+                        id="user-search"
+                        type="search"
+                        className="form-control"
+                        placeholder="Search users by username"
+                        value={searchTerm}
+                        onChange={(event) => setSearchTerm(event.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="col-auto">
+                    <p className={`mb-0 small ${mutedTextClass}`}>
+                      {searchTerm
+                        ? `Showing ${filteredUsers.length} result${
+                            filteredUsers.length === 1 ? "" : "s"
+                          }`
+                        : isMobile && !showAllUsers && users.length > 1
+                          ? "Showing the latest member on mobile"
+                          : showAllUsers
+                            ? "Showing all members"
+                            : "Showing the latest members"}
+                    </p>
+                  </div>
+                  {users.length > 4 && !searchTerm && (
+                    <div className="col-auto">
+                      <button
+                        type="button"
+                        className="btn btn-outline-primary btn-sm"
+                        onClick={() => setShowAllUsers((prev) => !prev)}
+                      >
+                        {showAllUsers ? "Show latest" : "Show all"}
+                      </button>
+                    </div>
                   )}
-                </div>
+                </form>
 
                 {users.length === 0 ? (
                   <p className={`${mutedTextClass} text-center py-4`}>
                     Invite teammates to see them listed here.
+                  </p>
+                ) : filteredUsers.length === 0 ? (
+                  <p className={`${mutedTextClass} text-center py-4`}>
+                    No users match your search.
                   </p>
                 ) : (
                   <div className="row g-3">
