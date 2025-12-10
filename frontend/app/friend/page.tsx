@@ -23,6 +23,50 @@ interface LastMessage {
   fileName?: string;
 }
 
+function FriendListSkeleton({ theme }: { theme: string }) {
+  const baseClasses =
+    theme === "night"
+      ? "bg-dark text-white border border-primary-subtle"
+      : "bg-light";
+
+  return (
+    <div className={`friend-page-shell container-fluid min-vh-100 px-3 py-3 pt-2 ${baseClasses}`}>
+      <div className="friend-skeleton-topbar rounded-4 shadow-sm mb-3" />
+      <div className="friend-panel card border-0 shadow-sm">
+        <div className="card-body">
+          <div className="friend-panel-header d-flex align-items-center justify-content-between mb-3">
+            <div className="placeholder-wave w-50">
+              <span className="placeholder col-8" />
+            </div>
+            <div className="placeholder-wave w-25 text-end">
+              <span className="placeholder col-6" />
+            </div>
+          </div>
+          <ul className="friend-list" role="list">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <li key={index} className="friend-row is-loading" aria-hidden="true">
+                <div className="friend-avatar">
+                  <span className="placeholder rounded-circle" />
+                  <span className="user-card-presence user-card-presence--offline" />
+                </div>
+                <div className="friend-row-content">
+                  <div className="placeholder-wave mb-2">
+                    <span className="placeholder col-7" />
+                  </div>
+                  <div className="placeholder-wave">
+                    <span className="placeholder col-10" />
+                  </div>
+                </div>
+                <div className="friend-row-action placeholder rounded-pill" />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function FriendPage() {
   const { user, loading, socket } = useAuth();
   const { theme } = useTheme();
@@ -109,14 +153,10 @@ export default function FriendPage() {
     fetchLastMessages();
   }, [user, friends]);
 
-  if (loading || isFetching || loadingMessages || loadingUsers || !user) {
-    return (
-      <LoadingState
-        title="Loading your conversations"
-        subtitle="We’re syncing your friends list and the most recent messages."
-        skeletonCount={3}
-      />
-    );
+  const isBootstrapping = loading || isFetching || loadingUsers || !user;
+
+  if (isBootstrapping) {
+    return <FriendListSkeleton theme={theme} />;
   }
 
   const currentUserData = users.find((u) => u.username === user.username);
@@ -138,22 +178,30 @@ export default function FriendPage() {
 
   return (
     <div
-      className={`container-fluid min-vh-100 p-4 ${
+      className={`friend-page-shell container-fluid min-vh-100 px-3 py-3 pt-2 ${
         theme === "night" ? "bg-dark text-white" : "bg-light"
       }`}
     >
-      {/* Sticky Top Bar and Menu */}
       <TopBar
         title="Friend"
         active="friend"
         currentUser={{ username: currentUserData.username, image: currentUserData.image }}
       />
 
-      {/* Content */}
-      <div className="card shadow-sm w-100 mx-auto" style={{ maxWidth: "100%", top: "10px" }}>
+      <section className="friend-panel card border-0 shadow-sm">
         <div className="card-body">
+          <div className="friend-panel-header d-flex align-items-center justify-content-between">
+            <div>
+              <p className="text-uppercase small fw-semibold text-secondary mb-1">
+                People you follow
+              </p>
+              <h3 className="h5 mb-0">Friends ({friendUsers.length})</h3>
+            </div>
+            <span className="text-muted small">Tap to message • Hold for options</span>
+          </div>
+
           {friendUsers.length > 0 ? (
-            <ul className="user-directory" role="list">
+            <ul className="friend-list" role="list">
               {friendUsers.map((f) => {
                 const last = lastMessages[f.username];
                 let preview = "";
@@ -162,29 +210,30 @@ export default function FriendPage() {
                   else if (last.type === "image") preview = "[Image]";
                   else preview = last.fileName ? `[File] ${last.fileName}` : "[File]";
                 }
+
                 const presenceClass = f.online
                   ? "user-card-presence user-card-presence--online"
                   : "user-card-presence user-card-presence--offline";
                 const initials = f.username.charAt(0).toUpperCase();
+
                 return (
-                  <li
-                    key={f.username}
-                    className="user-card user-card--friend"
-                    role="listitem"
-                  >
-                    <div
-                      className="user-card-main"
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => openProfile(f.username)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          openProfile(f.username);
+                  <li key={f.username} className="friend-row" role="listitem">
+                    <button
+                      type="button"
+                      className="friend-row-main"
+                      onClick={() => router.push(`/chat?user=${f.username}`)}
+                      onContextMenu={(event) => {
+                        event.preventDefault();
+                        openProfile(f.username);
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          router.push(`/chat?user=${f.username}`);
                         }
                       }}
                     >
-                      <div className="user-card-avatar">
+                      <div className="friend-avatar" title={f.online ? "Online" : "Offline"}>
                         {f.image ? (
                           <img
                             src={f.image}
@@ -192,55 +241,63 @@ export default function FriendPage() {
                             className="user-card-avatar-img"
                           />
                         ) : (
-                          <span
-                            className="user-card-avatar-placeholder"
-                            aria-hidden="true"
-                          >
+                          <span className="user-card-avatar-placeholder" aria-hidden="true">
                             {initials}
                           </span>
                         )}
-                        <span className={presenceClass} aria-hidden="true"></span>
+                        <span className={presenceClass} aria-hidden="true" />
                         <span className="visually-hidden">
                           {f.online ? "Online" : "Offline"}
                         </span>
                       </div>
-                      <div className="user-card-body">
-                        <div className="user-card-header">
-                          <span className="user-card-name">{f.username}</span>
-                          <span className={presenceClass} data-variant="label">
-                            {f.online ? "Online" : "Offline"}
-                          </span>
+
+                      <div className="friend-row-content">
+                        <div className="friend-row-top">
+                          <span className="friend-name">{f.username}</span>
                         </div>
-                        {preview && (
-                          <p className="user-card-preview mb-0" title={preview}>
-                            {preview}
-                          </p>
-                        )}
+                        <p
+                          className={`friend-preview mb-0 ${loadingMessages ? "is-loading" : ""}`}
+                          title={preview || (loadingMessages ? undefined : "No recent messages yet")}
+                        >
+                          {loadingMessages
+                            ? "Loading last message..."
+                            : preview || "No recent messages yet"}
+                        </p>
                       </div>
-                    </div>
-                    <div
-                      className="user-card-actions"
-                      role="group"
-                      aria-label={`Message ${f.username}`}
+                    </button>
+
+                    <button
+                      type="button"
+                      className="friend-row-action"
+                      aria-label={`Open ${f.username}'s profile`}
+                      onClick={() => openProfile(f.username)}
                     >
-                      <button
-                        type="button"
-                        className="user-card-action user-card-action--secondary"
-                        onClick={() => router.push(`/chat?user=${f.username}`)}
-                      >
-                        <i className="bi bi-chat-dots" aria-hidden="true"></i>
-                        Message
-                      </button>
-                    </div>
+                      <i className="bi bi-chevron-right" aria-hidden="true" />
+                    </button>
                   </li>
                 );
               })}
             </ul>
           ) : (
-            <p className="text-muted text-center">You have no friends added.</p>
+            <div className="friend-empty-state text-center">
+              <div className="friend-empty-visual" aria-hidden="true">
+                <i className="bi bi-people" />
+              </div>
+              <h3 className="h5">No friends yet</h3>
+              <p className="text-muted mb-3">
+                Start building your circle. Search for people you know or invite them to chat.
+              </p>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => router.push("/home")}
+              >
+                Find friends
+              </button>
+            </div>
           )}
         </div>
-      </div>
+      </section>
     </div>
   );
 }
