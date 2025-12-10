@@ -320,6 +320,7 @@ export default function AdminPage() {
                   <div className="row g-3">
                     {users.map((u) => {
                       const postCount = getPostCount(u.username);
+                      const isOnline = Boolean(u.online);
 
                       return (
                         <div key={u.username} className="col-12 col-md-6">
@@ -341,44 +342,55 @@ export default function AdminPage() {
                               }
                             }}
                           >
-                            <div className="card-body d-flex gap-3 align-items-center flex-wrap">
+                            <div className="card-body d-flex gap-3 align-items-center p-3">
                               <img
                                 src={u.image}
                                 alt={`${u.username} profile picture`}
                                 className="rounded-circle"
                                 width={56}
-                                height={56}
-                                style={{ objectFit: "cover" }}
+                                width={52}
+                                height={52}
                               />
-                              <div className="flex-grow-1">
-                                <div className="d-flex align-items-center justify-content-between gap-2">
-                                  <h3 className="h6 mb-0">{u.username}</h3>
-                                  {u.online ? (
-                                    <span className="badge bg-success">
-                                      Online
-                                    </span>
-                                  ) : (
-                                    <span
-                                      className={`badge ${
-                                        isNight
-                                          ? "bg-secondary"
-                                          : "bg-light text-dark"
-                                      }`}
+                              <div className="flex-grow-1 d-flex flex-column gap-1">
+                                <div className="d-flex align-items-start justify-content-between gap-2">
+                                  <div className="d-flex flex-column gap-1">
+                                    <h3 className="h6 mb-0">{u.username}</h3>
+                                    <div
+                                      className={`d-flex align-items-center gap-2 small ${mutedTextClass}`}
                                     >
-                                      Offline
-                                    </span>
-                                  )}
-                                </div>
-                                <div className={`d-flex align-items-center gap-2 small ${mutedTextClass}`}>
+                                      <span
+                                        className="rounded-circle"
+                                        style={{
+                                          width: 10,
+                                          height: 10,
+                                          backgroundColor: isOnline
+                                            ? "#22c55e"
+                                            : isNight
+                                              ? "#6b7280"
+                                              : "#9ca3af",
+                                          display: "inline-block",
+                                        }}
+                                        aria-hidden="true"
+                                      />
+                                      <span className="fw-semibold">
+                                        {isOnline ? "Online" : "Offline"}
+                                      </span>
+                                    </div>
+                                  </div>
                                   <span
-                                    className={`badge rounded-pill ${
-                                      u.online ? "bg-success-subtle text-success" : "bg-secondary-subtle text-secondary"
-                                    }`}
+                                    className="badge bg-primary-subtle text-primary fw-semibold py-1 px-2 small d-none d-md-inline-flex"
                                   >
-                                    {u.online ? "Active" : "Idle"}
+                                    {postCount} {postCount === 1 ? "post" : "posts"}
                                   </span>
+                                  </div>
+                                <div
+                                  className={`d-flex align-items-center gap-2 small ${mutedTextClass}`}
+                                >
+                                  <span>{isOnline ? "Active" : "Idle"}</span>
                                   <span aria-hidden="true">•</span>
-                                  <span>{postCount} {postCount === 1 ? "post" : "posts"}</span>
+                                  <span>
+                                    {postCount} {postCount === 1 ? "post" : "posts"}
+                                  </span>
                                 </div>
                               </div>
                             </div>
