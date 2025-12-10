@@ -500,16 +500,18 @@ export default function UserPage() {
                             <span className="user-card-name">{u.username}</span>
                           </div>
                           <div className="user-card-status-row">
-                            <span className={presenceClass} data-variant="label">
-                              {u.online ? "Online" : "Offline"}
-                            </span>
-                          </div>
-                          <div className="user-card-meta">
-                            {isFriend && (
-                              <span className="user-card-chip user-card-chip--success">
-                                Friend
+                            <div className="user-card-status-badges">
+                              <span className={presenceClass} data-variant="label">
+                                {u.online ? "Online" : "Offline"}
                               </span>
-                            )}
+                              {isFriend && (
+                                <span className="user-card-chip user-card-chip--success user-card-chip--mobile-inline">
+                                  Friend
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="user-card-meta user-card-meta--desktop">
                           </div>
                         </div>
                       </div>
