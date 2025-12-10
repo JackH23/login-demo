@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -55,6 +55,22 @@ export default function AdminPage() {
   const currentUserData =
     users.find((u) => u.username === user?.username) ?? null;
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const updateIsMobile = () => {
+      if (typeof window === "undefined") return;
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    updateIsMobile();
+    window.addEventListener("resize", updateIsMobile);
+
+    return () => window.removeEventListener("resize", updateIsMobile);
+  }, []);
+
+  const [showAllMobileUsers, setShowAllMobileUsers] = useState(false);
+
   const isNight = theme === "night";
   const cardThemeClass = isNight ? "bg-dark border-secondary text-light" : "";
   const mutedTextClass = isNight ? "text-secondary" : "text-muted";
@@ -91,6 +107,16 @@ export default function AdminPage() {
       posts.filter((p) => p.author === username).length,
     [posts]
   );
+
+  const visibleUsers = useMemo(() => {
+    if (!users.length) return [];
+
+    if (isMobile && !showAllMobileUsers) {
+      return users.slice(-1);
+    }
+
+    return users;
+  }, [isMobile, showAllMobileUsers, users]);
 
   const { topContributors, onlineCount } = useMemo(() => {
     const sortedUsers = [...users].sort(
@@ -311,6 +337,22 @@ export default function AdminPage() {
                     {users.length} members
                   </span>
                 </div>
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                  <p className={`mb-0 small ${mutedTextClass}`}>
+                    {isMobile && !showAllMobileUsers && users.length > 1
+                      ? "Showing the latest member on mobile"
+                      : "Browse your members"}
+                  </p>
+                  {users.length > 1 && (
+                    <button
+                      type="button"
+                      className="btn btn-outline-primary btn-sm d-md-none"
+                      onClick={() => setShowAllMobileUsers((prev) => !prev)}
+                    >
+                      {showAllMobileUsers ? "Show latest" : "Show all"}
+                    </button>
+                  )}
+                </div>
 
                 {users.length === 0 ? (
                   <p className={`${mutedTextClass} text-center py-4`}>
@@ -318,7 +360,7 @@ export default function AdminPage() {
                   </p>
                 ) : (
                   <div className="row g-3">
-                    {users.map((u) => {
+                    {visibleUsers.map((u) => {
                       const postCount = getPostCount(u.username);
                       const isOnline = Boolean(u.online);
 
