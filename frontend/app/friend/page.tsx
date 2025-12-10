@@ -273,13 +273,12 @@ export default function FriendPage() {
                           <span className="user-card-name">{f.username}</span>
                         </div>
                         <div className="user-card-status-row">
-                          <span className={presenceClass} data-variant="label">
-                            {f.online ? "Online" : "Offline"}
-                          </span>
+                          <div className="user-card-status-badges">
+                            <span className={presenceClass} data-variant="label">
+                              {f.online ? "Online" : "Offline"}
+                            </span>
+                          </div>
                           <span className="user-card-substatus">{subtitle}</span>
-                        </div>
-                        <div className="user-card-meta">
-                          <span className="user-card-chip user-card-chip--success">Friend</span>
                         </div>
                       </div>
                     </div>

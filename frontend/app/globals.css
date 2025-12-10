@@ -503,6 +503,13 @@
   font-size: 0.9rem;
 }
 
+.user-card-status-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
 .bg-dark .user-card-status-row {
   color: rgba(226, 232, 240, 0.8);
 }
@@ -845,6 +852,10 @@
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
+}
+
+.user-card-chip--mobile-inline {
+  display: none;
 }
 
 .user-card-chip {
@@ -1311,6 +1322,20 @@
   .friend-message-btn {
     min-height: 48px;
     font-size: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .user-card-status-badges {
+    gap: 0.45rem;
+  }
+
+  .user-card-chip--mobile-inline {
+    display: inline-flex;
+  }
+
+  .user-card-meta--desktop {
+    display: none;
   }
 }
 

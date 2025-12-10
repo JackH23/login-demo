@@ -503,9 +503,6 @@ export default function UserPage() {
                             <span className={presenceClass} data-variant="label">
                               {u.online ? "Online" : "Offline"}
                             </span>
-                            <span className="user-card-substatus">
-                              {u.online ? "Available to chat" : "Offline for now"}
-                            </span>
                           </div>
                           <div className="user-card-meta">
                             {isFriend && (
