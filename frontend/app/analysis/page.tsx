@@ -117,7 +117,7 @@ export default function AnalysisPage() {
       />
 
       <div className="container mt-4" style={{ maxWidth: "1100px" }}>
-        <div className="card border-0 shadow-lg overflow-hidden">
+        <div className="card border-0 shadow-lg overflow-hidden analysis-hero-card">
           <div
             className="card-body p-3 p-md-4"
             style={{
@@ -128,21 +128,26 @@ export default function AnalysisPage() {
                   : "linear-gradient(135deg, rgba(255,255,255,0.92), rgba(245,250,255,0.86))",
             }}
           >
-            <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 gap-md-4">
-              <div>
-                <span className="badge bg-primary-subtle text-primary-emphasis fw-semibold mb-2">
-                  Analysis Overview
-                </span>
-                <h2 className="fw-bold mb-2">📈 Your Blog Activity</h2>
+            <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 gap-md-4 analysis-hero-header">
+              <div className="w-100">
+                <div className="d-flex align-items-center flex-wrap gap-2 mb-2">
+                  <span className="badge bg-primary-subtle text-primary-emphasis fw-semibold analysis-badge">
+                    Analysis Overview
+                  </span>
+                  <h2 className="fw-bold mb-0 d-flex align-items-center gap-2 analysis-title">
+                    <span aria-hidden>📈</span>
+                    <span>Your Blog Activity</span>
+                  </h2>
+                </div>
                 <p className="text-muted mb-0 d-none d-md-block">
                   Track how your writing resonates. Explore your strongest posts, see where engagement thrives,
                   and uncover opportunities to connect with readers more deeply.
                 </p>
               </div>
-              <div className="text-md-end w-100 w-md-auto">
-                <div className="small text-muted">Engagement score</div>
-                <div className="display-6 fw-semibold text-primary">{engagementScore}%</div>
-                <div className="progress" style={{ height: "8px", width: "100%", maxWidth: "220px" }}>
+              <div className="text-center text-md-end w-100 w-md-auto analysis-score">
+                <div className="small text-muted mb-1">Engagement score</div>
+                <div className="display-6 fw-semibold text-primary mb-1">{engagementScore}%</div>
+                <div className="progress analysis-progress mx-auto mx-md-0" style={{ height: "6px" }}>
                   <div
                     className="progress-bar bg-primary"
                     role="progressbar"
@@ -158,56 +163,36 @@ export default function AnalysisPage() {
         </div>
 
         <div className="d-md-none">
-          <div className="card border-0 shadow-sm">
+          <div className="card border-0 shadow-sm activity-snapshot-card">
             <div className="card-body p-3">
-              <div className="d-flex align-items-center justify-content-between mb-3">
+              <div className="d-flex align-items-start justify-content-between mb-2 activity-header">
                 <div>
-                  <h6 className="mb-1 text-uppercase text-muted">Activity Snapshot</h6>
-                  <div className="text-muted small">Your latest engagement metrics</div>
+                  <div className="mb-1 text-uppercase text-muted fw-semibold small activity-title">Activity Snapshot</div>
+                  <div className="text-muted small activity-subtitle">Your latest engagement metrics</div>
                 </div>
-                <span className="badge bg-primary-subtle text-primary-emphasis">Live</span>
+                <span className="badge bg-primary-subtle text-primary-emphasis rounded-pill live-badge">Live</span>
               </div>
-              <div className="d-grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))" }}>
-                <div className="d-flex gap-2 align-items-start">
-                  <span className="fs-5">📝</span>
-                  <div>
-                    <div className="text-uppercase text-muted small">Total Posts</div>
-                    <div className="fw-bold text-primary">{postCount}</div>
+              <div className="d-flex flex-column gap-2 activity-metrics mt-3">
+                <div className="d-flex align-items-center justify-content-between activity-metric">
+                  <div className="d-flex align-items-center gap-2">
+                    <span className="metric-icon">📝</span>
+                    <div className="text-muted">Total Posts</div>
                   </div>
+                  <div className="fw-bold text-primary">{postCount}</div>
                 </div>
-                <div className="d-flex gap-2 align-items-start">
-                  <span className="fs-5">💬</span>
-                  <div className="flex-grow-1">
-                    <div className="text-uppercase text-muted small">Comments</div>
-                    <div className="fw-bold text-success">{commentCount}</div>
-                    <div className="progress mt-1" style={{ height: "4px" }}>
-                      <div
-                        className="progress-bar bg-success"
-                        role="progressbar"
-                        style={{ width: `${Math.min(100, averageComments * 10)}%` }}
-                        aria-valuenow={averageComments}
-                        aria-valuemin={0}
-                        aria-valuemax={10}
-                      />
-                    </div>
+                <div className="d-flex align-items-center justify-content-between activity-metric">
+                  <div className="d-flex align-items-center gap-2">
+                    <span className="metric-icon">💬</span>
+                    <div className="text-muted">Comments</div>
                   </div>
+                  <div className="fw-bold text-success">{commentCount}</div>
                 </div>
-                <div className="d-flex gap-2 align-items-start">
-                  <span className="fs-5">⭐</span>
-                  <div className="flex-grow-1">
-                    <div className="text-uppercase text-muted small">Likes</div>
-                    <div className="fw-bold text-warning">{totalLikes}</div>
-                    <div className="progress mt-1" style={{ height: "4px" }}>
-                      <div
-                        className="progress-bar bg-warning"
-                        role="progressbar"
-                        style={{ width: `${Math.min(100, averageLikes * 10)}%` }}
-                        aria-valuenow={averageLikes}
-                        aria-valuemin={0}
-                        aria-valuemax={10}
-                      />
-                    </div>
+                <div className="d-flex align-items-center justify-content-between activity-metric">
+                  <div className="d-flex align-items-center gap-2">
+                    <span className="metric-icon">⭐</span>
+                    <div className="text-muted">Likes</div>
                   </div>
+                  <div className="fw-bold text-warning">{totalLikes}</div>
                 </div>
               </div>
             </div>
@@ -394,7 +379,51 @@ export default function AnalysisPage() {
         </div>
       </div>
       <style jsx global>{`
+        .analysis-progress {
+          border-radius: 999px;
+          width: 100%;
+          max-width: 220px;
+        }
+
         @media (max-width: 576px) {
+          .analysis-hero-card .card-body {
+            padding: 0.85rem 1rem;
+          }
+
+          .analysis-hero-header {
+            gap: 0.75rem;
+          }
+
+          .analysis-badge {
+            border-radius: 999px;
+            font-size: 0.68rem;
+            letter-spacing: 0.02em;
+            padding: 0.25rem 0.6rem;
+          }
+
+          .analysis-title {
+            font-size: 1.1rem;
+            line-height: 1.3;
+          }
+
+          .analysis-title span[aria-hidden] {
+            font-size: 1.25rem;
+          }
+
+          .analysis-score .small {
+            font-size: 0.75rem;
+          }
+
+          .analysis-score .display-6 {
+            font-size: 1.9rem;
+          }
+
+          .analysis-progress {
+            height: 6px;
+            width: 90%;
+            max-width: none !important;
+          }
+
           .analysis-stats-row {
             display: flex;
             flex-wrap: nowrap;
@@ -419,6 +448,42 @@ export default function AnalysisPage() {
 
           .analysis-stat-card h6 {
             font-size: 0.85rem;
+          }
+
+          .activity-snapshot-card .card-body {
+            padding: 0.85rem 1rem;
+          }
+
+          .activity-header {
+            gap: 0.75rem;
+          }
+
+          .activity-title {
+            font-size: 0.72rem;
+            letter-spacing: 0.04em;
+          }
+
+          .activity-subtitle {
+            font-size: 0.82rem;
+          }
+
+          .live-badge {
+            font-size: 0.68rem;
+            padding: 0.25rem 0.55rem;
+          }
+
+          .activity-metrics {
+            gap: 0.5rem;
+          }
+
+          .activity-metric {
+            padding: 0.35rem 0;
+          }
+
+          .metric-icon {
+            font-size: 1.1rem;
+            width: 22px;
+            text-align: center;
           }
         }
       `}</style>
