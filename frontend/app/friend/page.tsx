@@ -42,25 +42,29 @@ function FriendListSkeleton({ theme }: { theme: string }) {
               <span className="placeholder col-6" />
             </div>
           </div>
-          <ul className="friend-list" role="list">
+          <ul className="user-directory" role="list">
             {Array.from({ length: 4 }).map((_, index) => (
-              <li key={index} className="friend-row is-loading" aria-hidden="true">
-                <div className="friend-row-main" role="presentation">
-                  <div className="friend-avatar">
-                    <span className="placeholder rounded-circle" />
+              <li key={index} className="user-card" aria-hidden="true">
+                <div className="user-card-main">
+                  <div className="user-card-avatar">
+                    <span className="placeholder rounded-circle d-block w-100 h-100" />
                     <span className="user-card-presence user-card-presence--offline" />
                   </div>
-                  <div className="friend-row-content">
+                  <div className="user-card-body">
                     <div className="placeholder-wave mb-2">
-                      <span className="placeholder col-7" />
+                      <span className="placeholder col-6" />
+                    </div>
+                    <div className="placeholder-wave mb-1">
+                      <span className="placeholder col-8" />
                     </div>
                     <div className="placeholder-wave">
-                      <span className="placeholder col-10" />
+                      <span className="placeholder col-4" />
                     </div>
                   </div>
                 </div>
-                <div className="friend-row-actions">
-                  <div className="friend-message-btn placeholder rounded-pill" />
+                <div className="user-card-actions user-card-actions--stacked" aria-hidden="true">
+                  <div className="placeholder rounded-pill w-100 mb-2" style={{ height: "44px" }} />
+                  <div className="placeholder rounded-pill w-100" style={{ height: "44px" }} />
                 </div>
               </li>
             ))}
@@ -92,6 +96,7 @@ export default function FriendPage() {
   });
   const [lastMessages, setLastMessages] = useState<Record<string, LastMessage | null>>({});
   const [loadingMessages, setLoadingMessages] = useState(true);
+  const [isCompactLayout, setIsCompactLayout] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -102,6 +107,16 @@ export default function FriendPage() {
   useEffect(() => {
     // Socket listeners disabled; relying on API responses for status
   }, [setUsers, socket]);
+
+  useEffect(() => {
+    const updateLayoutMetrics = () => {
+      setIsCompactLayout(window.innerWidth < 768);
+    };
+
+    updateLayoutMetrics();
+    window.addEventListener("resize", updateLayoutMetrics);
+    return () => window.removeEventListener("resize", updateLayoutMetrics);
+  }, []);
 
   useEffect(() => {
     if (loadingFriends) {
@@ -191,7 +206,7 @@ export default function FriendPage() {
           </div>
 
           {friendUsers.length > 0 ? (
-            <ul className="friend-list" role="list">
+            <ul className="user-directory" role="list">
               {friendUsers.map((f) => {
                 const last = lastMessages[f.username];
                 let preview = "";
@@ -205,22 +220,26 @@ export default function FriendPage() {
                   ? "user-card-presence user-card-presence--online"
                   : "user-card-presence user-card-presence--offline";
                 const initials = f.username.charAt(0).toUpperCase();
+                const subtitle = loadingMessages
+                  ? "Loading last message..."
+                  : preview || (f.online ? "Available to chat" : "Offline for now");
 
                 return (
-                  <li key={f.username} className="friend-row" role="listitem">
-                    <div
-                      className="friend-row-main"
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => openProfile(f.username)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          openProfile(f.username);
-                        }
-                      }}
-                    >
-                      <div className="friend-avatar" title={f.online ? "Online" : "Offline"}>
+                  <li key={f.username} className="user-card user-card--friend" role="listitem">
+                    <div className="user-card-main">
+                      <div
+                        className="user-card-avatar user-card-avatar--focusable"
+                        role="presentation"
+                        onClick={() => openProfile(f.username)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            openProfile(f.username);
+                          }
+                        }}
+                        tabIndex={0}
+                        style={{ cursor: "pointer" }}
+                      >
                         {f.image ? (
                           <img
                             src={f.image}
@@ -232,43 +251,61 @@ export default function FriendPage() {
                             {initials}
                           </span>
                         )}
-                        <span className={presenceClass} aria-hidden="true" />
+                        <span className={presenceClass} aria-hidden="true"></span>
                         <span className="visually-hidden">
                           {f.online ? "Online" : "Offline"}
                         </span>
                       </div>
 
-                      <div className="friend-row-content">
-                        <div className="friend-row-top">
-                          <span className="friend-name">{f.username}</span>
-                          <span
-                            className={`friend-status ${
-                              f.online ? "friend-status--online" : "friend-status--offline"
-                            }`}
-                          >
-                            <span className="friend-status-dot" aria-hidden="true" />
+                      <div
+                        className="user-card-body"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => openProfile(f.username)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            openProfile(f.username);
+                          }
+                        }}
+                      >
+                        <div className="user-card-header">
+                          <span className="user-card-name">{f.username}</span>
+                        </div>
+                        <div className="user-card-status-row">
+                          <span className={presenceClass} data-variant="label">
                             {f.online ? "Online" : "Offline"}
                           </span>
+                          <span className="user-card-substatus">{subtitle}</span>
                         </div>
-                        <p
-                          className={`friend-preview mb-0 ${loadingMessages ? "is-loading" : ""}`}
-                          title={preview || (loadingMessages ? undefined : "No recent messages yet")}
-                        >
-                          {loadingMessages
-                            ? "Loading last message..."
-                            : preview || "No recent messages yet"}
-                        </p>
+                        <div className="user-card-meta">
+                          <span className="user-card-chip user-card-chip--success">Friend</span>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="friend-row-actions">
+                    <div
+                      className={`user-card-actions ${
+                        isCompactLayout ? "user-card-actions--stacked" : ""
+                      }`}
+                      role="group"
+                      aria-label={`Actions for ${f.username}`}
+                    >
                       <button
                         type="button"
-                        className="friend-message-btn"
+                        className="user-card-action user-card-action--secondary"
+                        onClick={() => openProfile(f.username)}
+                      >
+                        <i className="bi bi-person" aria-hidden="true"></i>
+                        View profile
+                      </button>
+                      <button
+                        type="button"
+                        className="user-card-action user-card-action--secondary"
                         onClick={() => router.push(`/chat?user=${f.username}`)}
                       >
-                        <i className="bi bi-chat-dots" aria-hidden="true" />
-                        <span>Message</span>
+                        <i className="bi bi-chat-dots" aria-hidden="true"></i>
+                        Message
                       </button>
                     </div>
                   </li>
