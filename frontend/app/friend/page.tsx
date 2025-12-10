@@ -30,7 +30,7 @@ function FriendListSkeleton({ theme }: { theme: string }) {
       : "bg-light";
 
   return (
-    <div className={`friend-page-shell container-fluid min-vh-100 px-3 py-3 pt-2 ${baseClasses}`}>
+    <div className={`friend-page-shell container-fluid min-vh-100 p-4 ${baseClasses}`}>
       <div className="friend-skeleton-topbar rounded-4 shadow-sm mb-3" />
       <div className="friend-panel card border-0 shadow-sm">
         <div className="card-body">
@@ -182,7 +182,7 @@ export default function FriendPage() {
 
   return (
     <div
-      className={`friend-page-shell container-fluid min-vh-100 px-3 py-3 pt-2 ${
+      className={`friend-page-shell container-fluid min-vh-100 p-4 ${
         theme === "night" ? "bg-dark text-white" : "bg-light"
       }`}
     >

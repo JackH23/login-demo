@@ -1031,13 +1031,14 @@
 
 /* Friend page mobile-first refinements */
 .friend-page-shell {
-  max-width: 1024px;
+  width: 100%;
 }
 
 .friend-panel {
   border-radius: 16px;
   margin: 0 auto;
-  max-width: 900px;
+  width: 100%;
+  max-width: none;
 }
 
 .friend-panel-header {
