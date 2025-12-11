@@ -50,6 +50,7 @@ function ChatPageContent() {
   const [participants, setParticipants] = useState<ChatParticipant[]>([]);
   const [emojiList, setEmojiList] = useState<ChatEmoji[]>([]);
   const [people, setPeople] = useState<ChatParticipant[]>([]);
+  const [isFetchingPeople, setIsFetchingPeople] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isMobile, setIsMobile] = useState(false);
   const [showChatThread, setShowChatThread] = useState(Boolean(chatUser));
@@ -76,11 +77,30 @@ function ChatPageContent() {
     setShowChatThread(Boolean(chatUser));
   }, [chatUser]);
 
+  const appendPeopleIncrementally = useCallback(
+    async (users: ChatParticipant[], signal?: AbortSignal) => {
+      const CHUNK_SIZE = 15;
+      setIsFetchingPeople(true);
+      setPeople([]);
+
+      for (let i = 0; i < users.length; i += CHUNK_SIZE) {
+        if (signal?.aborted) return;
+        const slice = users.slice(i, i + CHUNK_SIZE);
+        setPeople((prev) => [...prev, ...slice]);
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+      }
+
+      setIsFetchingPeople(false);
+    },
+    []
+  );
+
   const fetchPeople = useCallback(
     async (signal?: AbortSignal) => {
       if (!user) return;
 
       try {
+        setIsFetchingPeople(true);
         const res = await fetch(apiUrl("/api/users"), {
           signal,
           headers: { Authorization: user.username },
@@ -89,14 +109,18 @@ function ChatPageContent() {
 
         const data = (await res.json()) as { users?: ChatParticipant[] };
         if (Array.isArray(data.users)) {
-          setPeople(data.users);
+          await appendPeopleIncrementally(data.users, signal);
+        } else {
+          setPeople([]);
         }
       } catch (error) {
         if (signal?.aborted) return;
         console.error("Unable to load people", error);
+      } finally {
+        setIsFetchingPeople(false);
       }
     },
-    [user]
+    [appendPeopleIncrementally, user]
   );
 
   useEffect(() => {
@@ -765,6 +789,20 @@ function ChatPageContent() {
         />
       </div>
       <div className="mobile-conversation-list">
+        {isFetchingPeople && people.length === 0 && (
+          <>
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <div key={idx} className="mobile-conversation-row mobile-conversation-row--skeleton">
+                <div className="mobile-conversation-avatar mobile-conversation-avatar--skeleton" />
+                <div className="mobile-conversation-meta">
+                  <span className="mobile-conversation-name mobile-conversation-name--skeleton" />
+                  <span className="mobile-conversation-status mobile-conversation-status--skeleton" />
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+
         {filteredPeople.map((person) => (
           <button
             key={person.username}
@@ -792,6 +830,10 @@ function ChatPageContent() {
             {person.online && <span className="mobile-online-dot" aria-hidden="true"></span>}
           </button>
         ))}
+
+        {isFetchingPeople && people.length > 0 && (
+          <div className="mobile-conversation-loading-more">Loading more people…</div>
+        )}
       </div>
     </div>
   );

@@ -221,12 +221,21 @@
   outline: none;
 }
 
+.mobile-conversation-row--skeleton {
+  cursor: default;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
 .mobile-conversation-avatar {
   width: 48px;
   height: 48px;
   border-radius: 50%;
   object-fit: cover;
   background: rgba(255, 255, 255, 0.08);
+}
+
+.mobile-conversation-avatar--skeleton {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .mobile-conversation-avatar--fallback {
@@ -247,9 +256,25 @@
   font-size: 1rem;
 }
 
+.mobile-conversation-name--skeleton {
+  display: block;
+  width: 55%;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+}
+
 .mobile-conversation-status {
   font-size: 0.85rem;
   color: rgba(226, 232, 240, 0.65);
+}
+
+.mobile-conversation-status--skeleton {
+  display: block;
+  width: 40%;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
 }
 
 .mobile-online-dot {
@@ -258,6 +283,25 @@
   background: #22c55e;
   border-radius: 50%;
   box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+}
+
+.mobile-conversation-loading-more {
+  text-align: center;
+  padding: 0.75rem;
+  color: rgba(226, 232, 240, 0.8);
+  font-size: 0.9rem;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
 }
 
 .mobile-empty-state {
