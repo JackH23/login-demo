@@ -1490,7 +1490,7 @@ export default function BlogCard({
 
             {/* Add Comment Input */}
             <div className="comment-input-panel">
-              <label className="form-label mb-2 fw-semibold text-muted small">
+              <label className="form-label mb-2 fw-semibold text-muted small d-none d-md-block">
                 Join the conversation
               </label>
               <div className="comment-input-group">
