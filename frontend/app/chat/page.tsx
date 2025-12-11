@@ -252,10 +252,12 @@ function ChatPageContent() {
 
   const filteredPeople = useMemo(
     () =>
-      allChatPeople.filter((person) =>
-        person.username.toLowerCase().includes(searchTerm.toLowerCase())
-      ),
-    [allChatPeople, searchTerm]
+      isMobile
+        ? allChatPeople
+        : allChatPeople.filter((person) =>
+            person.username.toLowerCase().includes(searchTerm.toLowerCase())
+          ),
+    [allChatPeople, searchTerm, isMobile]
   );
 
   // Show the scroll-to-bottom button when the user scrolls away from the bottom
@@ -414,14 +416,6 @@ function ChatPageContent() {
           aria-label="Back to conversations"
         >
           ←
-        </button>
-        <button
-          type="button"
-          className="mobile-back-button"
-          onClick={handleBackToProfile}
-          aria-label="Back to your profile"
-        >
-          ⬅
         </button>
       </div>
       {chatUser ? (
