@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { Socket } from "socket.io-client";
@@ -49,6 +49,10 @@ function ChatPageContent() {
   const [chatOnline, setChatOnline] = useState(false);
   const [participants, setParticipants] = useState<ChatParticipant[]>([]);
   const [emojiList, setEmojiList] = useState<ChatEmoji[]>([]);
+  const [people, setPeople] = useState<ChatParticipant[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
+  const [showChatThread, setShowChatThread] = useState(Boolean(chatUser));
   const emojiLoadedRef = useRef(false);
   const fetchingMessagesRef = useRef(false);
 
@@ -56,6 +60,49 @@ function ChatPageContent() {
     setParticipants([]);
     setChatOnline(false);
   }, [chatUser]);
+
+  useEffect(() => {
+    const updateBreakpoint = () => {
+      if (typeof window === "undefined") return;
+      setIsMobile(window.matchMedia("(max-width: 768px)").matches);
+    };
+
+    updateBreakpoint();
+    window.addEventListener("resize", updateBreakpoint);
+    return () => window.removeEventListener("resize", updateBreakpoint);
+  }, []);
+
+  useEffect(() => {
+    setShowChatThread(Boolean(chatUser));
+  }, [chatUser]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const controller = new AbortController();
+
+    const fetchPeople = async () => {
+      try {
+        const res = await fetch(apiUrl("/api/users"), {
+          signal: controller.signal,
+          headers: { Authorization: user.username },
+        });
+        if (!res.ok) throw new Error(`Failed to load users: ${res.status}`);
+
+        const data = (await res.json()) as { users?: ChatParticipant[] };
+        if (Array.isArray(data.users)) {
+          setPeople(data.users);
+        }
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        console.error("Unable to load people", error);
+      }
+    };
+
+    void fetchPeople();
+
+    return () => controller.abort();
+  }, [user]);
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -169,6 +216,26 @@ function ChatPageContent() {
     if (!chatUser) return;
     router.push(`/user/${encodeURIComponent(chatUser)}`);
   };
+
+  const handleSelectChat = (username: string) => {
+    router.push(`/chat?user=${encodeURIComponent(username)}`);
+    setShowChatThread(true);
+  };
+
+  const handleBackToList = () => {
+    if (isMobile) setShowChatThread(false);
+    router.replace("/chat");
+  };
+
+  const filteredPeople = useMemo(
+    () =>
+      people
+        .filter((person) => person.username !== user?.username)
+        .filter((person) =>
+          person.username.toLowerCase().includes(searchTerm.toLowerCase())
+        ),
+    [people, searchTerm, user?.username]
+  );
 
   // Show the scroll-to-bottom button when the user scrolls away from the bottom
   // or when new messages arrive while not at the bottom
@@ -310,266 +377,402 @@ function ChatPageContent() {
 
   let lastDateLabel = "";
 
-  return (
+  const headerContent = isMobile ? (
+    <div
+      className={`mobile-thread-header ${
+        theme === "night"
+          ? "mobile-thread-header--night"
+          : "mobile-thread-header--day"
+      }`}
+    >
+      <button
+        type="button"
+        className="mobile-back-button"
+        onClick={handleBackToList}
+        aria-label="Back to conversations"
+      >
+        ←
+      </button>
+      {chatUser ? (
+        <div className="d-flex align-items-center gap-3">
+          {chatPartner?.image ? (
+            <img
+              src={chatPartner.image}
+              alt={`${chatUser}'s avatar`}
+              className="mobile-thread-avatar"
+            />
+          ) : (
+            <div className="mobile-thread-avatar mobile-thread-avatar--fallback">
+              {chatUser.charAt(0).toUpperCase()}
+            </div>
+          )}
+          <div className="d-flex flex-column">
+            <span className="mobile-thread-name">{chatUser}</span>
+            <span className="mobile-thread-status">
+              {chatOnline ? "Online" : "Last seen recently"}
+            </span>
+          </div>
+        </div>
+      ) : (
+        <div className="d-flex align-items-center gap-2">
+          <div className="mobile-thread-avatar mobile-thread-avatar--fallback">💬</div>
+          <div className="d-flex flex-column">
+            <span className="mobile-thread-name">PulseChat</span>
+            <span className="mobile-thread-status">Pick a chat to start</span>
+          </div>
+        </div>
+      )}
+    </div>
+  ) : (
+    <header
+      className={`chat-header ${
+        theme === "night" ? "chat-header-night" : "chat-header-day"
+      }`}
+    >
+      <div className="chat-header-brand d-flex align-items-center gap-3 flex-wrap">
+        <div className="brand-badge">
+          <span className="brand-icon" aria-hidden="true">
+            💬
+          </span>
+        </div>
+        <div className="d-flex flex-column flex-sm-row align-items-sm-center gap-1 gap-sm-3">
+          <span className="brand-name">PulseChat</span>
+          <span className="brand-tagline">Conversations that keep you close.</span>
+        </div>
+      </div>
+
+      {chatUser && (
+        <div className="chat-user-status d-flex align-items-center gap-3 flex-wrap">
+          <div
+            className="d-flex align-items-center gap-2"
+            role="button"
+            tabIndex={0}
+            onClick={openProfile}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                openProfile();
+              }
+            }}
+          >
+            {chatPartner?.image ? (
+              <img
+                src={chatPartner.image}
+                alt={`${chatUser}'s avatar`}
+                className="chat-user-avatar"
+              />
+            ) : (
+              <div className="chat-user-avatar chat-user-avatar--fallback">
+                {chatUser.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <div
+              className={`status-dot ${chatOnline ? "status-dot-online" : "status-dot-offline"}`}
+              aria-hidden="true"
+            ></div>
+            <div className="d-flex flex-column">
+              <span className="status-username">{chatUser}</span>
+              <span className="status-text">
+                {chatOnline ? "Online now" : "Last seen moments ago"}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="chat-header-actions d-flex align-items-center gap-2">
+        <button
+          type="button"
+          className="chat-header-action"
+          aria-label="Toggle notifications"
+        >
+          🔔
+        </button>
+        <button
+          type="button"
+          className="chat-header-action"
+          onClick={toggleTheme}
+          aria-label={`Switch to ${theme === "night" ? "Light" : "Dark"} Mode`}
+        >
+          {theme === "night" ? "🌞" : "🌙"}
+        </button>
+        <a href="/user" className="chat-header-action" aria-label="Back to home">
+          🏠
+        </a>
+      </div>
+    </header>
+  );
+
+  const messagesContent = (
+    <div
+      ref={messagesContainerRef}
+      id="chat-scroll-container"
+      className={`chat-canvas flex-grow-1 overflow-auto ${
+        theme === "night" ? "chat-canvas-night" : "chat-canvas-day"
+      }`}
+    >
+      {messages.map((msg, idx) => {
+        const msgDate = new Date(msg.createdAt).toDateString();
+        const isSender = msg.from === user?.username;
+
+        const showDateLabel = msgDate !== lastDateLabel;
+        if (showDateLabel) lastDateLabel = msgDate;
+
+        return (
+          <div key={msg._id + idx}>
+            {showDateLabel && (
+              <div className="text-center text-muted small my-3">
+                <span className="badge bg-secondary">
+                  {formatDateLabel(msg.createdAt)}
+                </span>
+              </div>
+            )}
+
+            <div
+              onContextMenu={(e) => {
+                e.preventDefault();
+                if (isSender) setSelectedMsgId(msg._id);
+                else setSelectedMsgId(null);
+              }}
+              className={`chat-message ${
+                isSender ? "chat-message--sent" : "chat-message--received"
+              }`}
+            >
+              <div
+                className={`chat-message-bubble ${
+                  isSender
+                    ? "chat-message-bubble--sent"
+                    : theme === "night"
+                    ? "chat-message-bubble--night"
+                    : "chat-message-bubble--day"
+                }`}
+              >
+                <div className="chat-message-meta">
+                  {!isSender && (
+                    <span className="chat-message-sender">{msg.from}</span>
+                  )}
+                  <time className="chat-message-time" dateTime={msg.createdAt}>
+                    {new Date(msg.createdAt).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </time>
+                </div>
+
+                {msg.type === "text" && (
+                  <p className="chat-message-text">{msg.content}</p>
+                )}
+
+                {msg.type === "image" && (
+                  <div className="chat-message-media">
+                    <img src={msg.content} alt="sent-img" />
+                  </div>
+                )}
+
+                {msg.type === "file" && (
+                  <div className="chat-message-file">
+                    <div className="chat-message-file-icon" aria-hidden="true">
+                      📄
+                    </div>
+                    <div className="chat-message-file-meta">
+                      <a href={msg.content} download={msg.fileName}>
+                        {msg.fileName}
+                      </a>
+                      <span className="chat-message-file-type">
+                        {msg.fileName?.split(".").pop()?.toUpperCase()} File
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {isSender && selectedMsgId === msg._id && (
+                  <div className="chat-message-actions">
+                    {msg.type === "text" && (
+                      <button
+                        className="chat-message-action"
+                        onClick={() => {
+                          handleEdit(msg);
+                          setSelectedMsgId(null);
+                        }}
+                      >
+                        ✏️ Edit
+                      </button>
+                    )}
+                    <button
+                      className="chat-message-action chat-message-action--danger"
+                      onClick={() => {
+                        handleDelete(msg._id);
+                        setSelectedMsgId(null);
+                      }}
+                    >
+                      🗑️ Delete
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+      {showScrollButton && (
+        <button
+          className="scroll-to-bottom-btn"
+          onClick={scrollToBottom}
+          title="Scroll to latest"
+        >
+          ⬇
+        </button>
+      )}
+
+      <div ref={bottomRef}></div>
+    </div>
+  );
+
+  const composer = (
+    <footer
+      className={`chat-footer ${
+        theme === "night" ? "chat-footer--night" : "chat-footer--day"
+      }`}
+    >
+      <div className="chat-composer" role="group" aria-label="Message composer">
+        <button
+          type="button"
+          className="chat-composer__icon-btn"
+          aria-label="Add emoji"
+          title={emojiButtonTitle}
+        >
+          😊
+        </button>
+        <input
+          type="text"
+          className="chat-composer__input"
+          placeholder="Type your message..."
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSend()}
+        />
+        <button
+          type="button"
+          className="chat-composer__icon-btn"
+          aria-label="Attach a file"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          📎
+        </button>
+        <button
+          type="button"
+          className="chat-composer__send"
+          aria-label="Send message"
+          onClick={handleSend}
+        >
+          ➤
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+          onChange={handleFile}
+          hidden
+        />
+      </div>
+    </footer>
+  );
+
+  const desktopLayout = (
     <div
       className={`container-fluid d-flex flex-column vh-100 p-0 ${
         theme === "night" ? "bg-dark text-white" : "bg-light"
       }`}
     >
-      {/* Header */}
-      <header
-        className={`chat-header ${
-          theme === "night" ? "chat-header-night" : "chat-header-day"
-        }`}
-      >
-        <div className="chat-header-brand d-flex align-items-center gap-3 flex-wrap">
-          <div className="brand-badge">
-            <span className="brand-icon" aria-hidden="true">
-              💬
-            </span>
-          </div>
-          <div className="d-flex flex-column flex-sm-row align-items-sm-center gap-1 gap-sm-3">
-            <span className="brand-name">PulseChat</span>
-            <span className="brand-tagline">Conversations that keep you close.</span>
+      {headerContent}
+      {messagesContent}
+      {composer}
+    </div>
+  );
+
+  const mobileListLayout = (
+    <div className="chat-mobile-list-view">
+      <div className="mobile-list-header">
+        <div className="mobile-list-brand">
+          <span className="mobile-list-logo">💬</span>
+          <div className="d-flex flex-column">
+            <span className="mobile-list-title">PulseChat</span>
+            <span className="mobile-list-subtitle">Conversations</span>
           </div>
         </div>
-
-        {chatUser && (
-          <div className="chat-user-status d-flex align-items-center gap-3 flex-wrap">
-            <div
-              className="d-flex align-items-center gap-2"
-              role="button"
-              tabIndex={0}
-              onClick={openProfile}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  openProfile();
-                }
-              }}
-            >
-              {chatPartner?.image ? (
-                <img
-                  src={chatPartner.image}
-                  alt={`${chatUser}'s avatar`}
-                  className="chat-user-avatar"
-                />
-              ) : (
-                <div className="chat-user-avatar chat-user-avatar--fallback">
-                  {chatUser.charAt(0).toUpperCase()}
-                </div>
-              )}
-              <div
-                className={`status-dot ${chatOnline ? "status-dot-online" : "status-dot-offline"}`}
-                aria-hidden="true"
-              ></div>
-              <div className="d-flex flex-column">
-                <span className="status-username">{chatUser}</span>
-                <span className="status-text">
-                  {chatOnline ? "Online now" : "Last seen moments ago"}
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="chat-header-actions d-flex align-items-center gap-2">
-          <button
-            type="button"
-            className="chat-header-action"
-            aria-label="Toggle notifications"
-          >
-            🔔
-          </button>
-          <button
-            type="button"
-            className="chat-header-action"
-            onClick={toggleTheme}
-            aria-label={`Switch to ${theme === "night" ? "Light" : "Dark"} Mode`}
-          >
-            {theme === "night" ? "🌞" : "🌙"}
-          </button>
-          <a href="/user" className="chat-header-action" aria-label="Back to home">
-            🏠
+        {user && (
+          <a className="mobile-profile-pill" href="/user" aria-label="Profile">
+            {user.image ? (
+              <img src={user.image} alt="Your avatar" />
+            ) : (
+              <span>{user.username.charAt(0).toUpperCase()}</span>
+            )}
           </a>
-        </div>
-      </header>
-
-      {/* Message Area */}
-      <div
-        ref={messagesContainerRef}
-        id="chat-scroll-container"
-        className={`chat-canvas flex-grow-1 overflow-auto ${
-          theme === "night" ? "chat-canvas-night" : "chat-canvas-day"
-        }`}
-      >
-        {messages.map((msg, idx) => {
-          const msgDate = new Date(msg.createdAt).toDateString();
-          const isSender = msg.from === user?.username;
-
-          const showDateLabel = msgDate !== lastDateLabel;
-          if (showDateLabel) lastDateLabel = msgDate;
-
-          return (
-            <div key={msg._id + idx}>
-              {showDateLabel && (
-                <div className="text-center text-muted small my-3">
-                  <span className="badge bg-secondary">
-                    {formatDateLabel(msg.createdAt)}
-                  </span>
-                </div>
-              )}
-
-              <div
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  if (isSender) setSelectedMsgId(msg._id);
-                  else setSelectedMsgId(null);
-                }}
-                className={`chat-message ${
-                  isSender ? "chat-message--sent" : "chat-message--received"
-                }`}
-              >
-                <div
-                  className={`chat-message-bubble ${
-                    isSender
-                      ? "chat-message-bubble--sent"
-                      : theme === "night"
-                      ? "chat-message-bubble--night"
-                      : "chat-message-bubble--day"
-                  }`}
-                >
-                  <div className="chat-message-meta">
-                    {!isSender && (
-                      <span className="chat-message-sender">{msg.from}</span>
-                    )}
-                    <time
-                      className="chat-message-time"
-                      dateTime={msg.createdAt}
-                    >
-                      {new Date(msg.createdAt).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </time>
-                  </div>
-
-                  {msg.type === "text" && (
-                    <p className="chat-message-text">{msg.content}</p>
-                  )}
-
-                  {msg.type === "image" && (
-                    <div className="chat-message-media">
-                      <img src={msg.content} alt="sent-img" />
-                    </div>
-                  )}
-
-                  {msg.type === "file" && (
-                    <div className="chat-message-file">
-                      <div className="chat-message-file-icon" aria-hidden="true">
-                        📄
-                      </div>
-                      <div className="chat-message-file-meta">
-                        <a href={msg.content} download={msg.fileName}>
-                          {msg.fileName}
-                        </a>
-                        <span className="chat-message-file-type">
-                          {msg.fileName?.split(".").pop()?.toUpperCase()} File
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {isSender && selectedMsgId === msg._id && (
-                    <div className="chat-message-actions">
-                      {msg.type === "text" && (
-                        <button
-                          className="chat-message-action"
-                          onClick={() => {
-                            handleEdit(msg);
-                            setSelectedMsgId(null);
-                          }}
-                        >
-                          ✏️ Edit
-                        </button>
-                      )}
-                      <button
-                        className="chat-message-action chat-message-action--danger"
-                        onClick={() => {
-                          handleDelete(msg._id);
-                          setSelectedMsgId(null);
-                        }}
-                      >
-                        🗑️ Delete
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-        {showScrollButton && (
-          <button
-            className="scroll-to-bottom-btn"
-            onClick={scrollToBottom}
-            title="Scroll to latest"
-          >
-            ⬇
-          </button>
         )}
-
-        <div ref={bottomRef}></div>
       </div>
+      <div className="mobile-list-search">
+        <input
+          type="search"
+          placeholder="Search people"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+      <div className="mobile-conversation-list">
+        {filteredPeople.map((person) => (
+          <button
+            key={person.username}
+            type="button"
+            className="mobile-conversation-row"
+            onClick={() => handleSelectChat(person.username)}
+          >
+            {person.image ? (
+              <img
+                src={person.image}
+                alt={`${person.username}'s avatar`}
+                className="mobile-conversation-avatar"
+              />
+            ) : (
+              <div className="mobile-conversation-avatar mobile-conversation-avatar--fallback">
+                {person.username.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <div className="mobile-conversation-meta">
+              <span className="mobile-conversation-name">{person.username}</span>
+              <span className="mobile-conversation-status">
+                {person.online ? "Online" : "Offline"}
+              </span>
+            </div>
+            {person.online && <span className="mobile-online-dot" aria-hidden="true"></span>}
+          </button>
+        ))}
+        {filteredPeople.length === 0 && (
+          <div className="mobile-empty-state">No conversations found.</div>
+        )}
+      </div>
+    </div>
+  );
 
-      {/* Composer Footer */}
-      <footer
-        className={`chat-footer ${
-          theme === "night" ? "chat-footer--night" : "chat-footer--day"
-        }`}
-      >
-        <div className="chat-composer" role="group" aria-label="Message composer">
-          <button
-            type="button"
-            className="chat-composer__icon-btn"
-            aria-label="Add emoji"
-            title={emojiButtonTitle}
-          >
-            😊
-          </button>
-          <input
-            type="text"
-            className="chat-composer__input"
-            placeholder="Type your message..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          />
-          <button
-            type="button"
-            className="chat-composer__icon-btn"
-            aria-label="Attach a file"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            📎
-          </button>
-          <button
-            type="button"
-            className="chat-composer__send"
-            aria-label="Send message"
-            onClick={handleSend}
-          >
-            ➤
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
-            onChange={handleFile}
-            hidden
-          />
+  const mobileThreadLayout = (
+    <div className="chat-mobile-thread-view">
+      {headerContent}
+      {messagesContent}
+      {composer}
+    </div>
+  );
+
+  if (!isMobile) return desktopLayout;
+
+  return (
+    <div className="chat-mobile-shell">
+      {!showChatThread && mobileListLayout}
+      {showChatThread && chatUser && mobileThreadLayout}
+      {!chatUser && showChatThread && (
+        <div className="chat-mobile-thread-view">
+          {headerContent}
+          <div className="empty-thread-message">Choose a conversation to start chatting.</div>
         </div>
-      </footer>
+      )}
     </div>
   );
 }

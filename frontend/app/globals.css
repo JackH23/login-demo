@@ -99,6 +99,233 @@
   font-size: 0.95rem;
 }
 
+.chat-mobile-shell {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0d1220 0%, #0b1022 40%, #0f172a 100%);
+  color: #e2e8f0;
+}
+
+.chat-mobile-list-view,
+.chat-mobile-thread-view {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.mobile-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, #111827, #0f172a);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.mobile-list-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mobile-list-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 1.25rem;
+}
+
+.mobile-list-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.mobile-list-subtitle {
+  font-size: 0.8rem;
+  color: rgba(226, 232, 240, 0.75);
+}
+
+.mobile-profile-pill {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  text-decoration: none;
+}
+
+.mobile-profile-pill img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mobile-list-search {
+  padding: 0.75rem 1.25rem;
+  background: rgba(15, 23, 42, 0.85);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mobile-list-search input {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(17, 24, 39, 0.9);
+  color: #e2e8f0;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.95rem;
+}
+
+.mobile-list-search input::placeholder {
+  color: rgba(226, 232, 240, 0.6);
+}
+
+.mobile-conversation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem 1rem;
+}
+
+.mobile-conversation-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.85rem;
+  align-items: center;
+  padding: 0.85rem 0.95rem;
+  border: none;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  color: inherit;
+  border-radius: 16px;
+  text-align: left;
+  transition: background-color 120ms ease, transform 120ms ease;
+}
+
+.mobile-conversation-row:active {
+  transform: scale(0.995);
+}
+
+.mobile-conversation-row:hover,
+.mobile-conversation-row:focus-visible {
+  background: rgba(255, 255, 255, 0.06);
+  outline: none;
+}
+
+.mobile-conversation-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.mobile-conversation-avatar--fallback {
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.mobile-conversation-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.mobile-conversation-name {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.mobile-conversation-status {
+  font-size: 0.85rem;
+  color: rgba(226, 232, 240, 0.65);
+}
+
+.mobile-online-dot {
+  width: 12px;
+  height: 12px;
+  background: #22c55e;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+}
+
+.mobile-empty-state {
+  text-align: center;
+  color: rgba(226, 232, 240, 0.65);
+  padding: 2rem 1rem;
+}
+
+.mobile-thread-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 25;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.45);
+}
+
+.mobile-thread-header--day {
+  background: linear-gradient(135deg, #e0f2fe, #bfdbfe);
+  color: #0f172a;
+}
+
+.mobile-thread-header--night {
+  background: #0d1220;
+  color: #e2e8f0;
+}
+
+.mobile-back-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid rgba(226, 232, 240, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+}
+
+.mobile-thread-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.mobile-thread-avatar--fallback {
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+
+.mobile-thread-name {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.mobile-thread-status {
+  font-size: 0.82rem;
+  color: rgba(226, 232, 240, 0.7);
+}
+
+.empty-thread-message {
+  padding: 2rem;
+  text-align: center;
+  color: rgba(226, 232, 240, 0.7);
+}
+
 .chat-message-media {
   border-radius: 1rem;
   overflow: hidden;
@@ -1449,16 +1676,16 @@
 
 @media (max-width: 576px) {
   .chat-canvas {
-    padding: 1.5rem 1rem 4.5rem 1rem;
+    padding: 1rem 0.75rem 4.25rem 0.75rem;
   }
 
   .chat-message-bubble {
-    max-width: 88%;
-    padding: 0.9rem 1rem;
+    max-width: 94%;
+    padding: 0.8rem 0.9rem;
   }
 
   .chat-message-meta {
-    font-size: 0.7rem;
+    font-size: 0.68rem;
   }
 }
 
