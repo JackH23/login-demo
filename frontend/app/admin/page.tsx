@@ -109,6 +109,8 @@ export default function AdminPage() {
     [posts]
   );
 
+  const sectionBorderColor = isNight ? "#2e3642" : "#e5e7eb";
+
   const filteredUsers = useMemo(() => {
     if (!searchTerm.trim()) return users;
 
@@ -348,7 +350,7 @@ export default function AdminPage() {
                 <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
                   <div className="d-flex flex-column gap-1">
                     <h2 className="h5 mb-0">User Directory</h2>
-                    <p className={`mb-0 small ${mutedTextClass}`}>
+                    <p className={`mb-0 small ${mutedTextClass} d-none d-md-block`}>
                       Search and manage your community members.
                     </p>
                   </div>
@@ -521,6 +523,31 @@ export default function AdminPage() {
                     Posts will appear here as soon as your community starts
                     sharing.
                   </p>
+                ) : isMobile ? (
+                  <div className="d-flex flex-column gap-2">
+                    {recentPosts.map((post) => (
+                      <div
+                        key={post._id}
+                        className={`d-flex flex-column gap-2 rounded-3 p-3 ${cardThemeClass}`}
+                        style={{ border: `1px solid ${sectionBorderColor}` }}
+                      >
+                        <div className="d-flex justify-content-between align-items-start gap-2">
+                          <div>
+                            <p className={`small text-uppercase mb-1 ${mutedTextClass}`}>
+                              Recent post
+                            </p>
+                            <h3 className="h6 mb-1">{post.title}</h3>
+                            <p className={`mb-0 small ${mutedTextClass}`}>
+                              by <span className="fw-semibold">{post.author}</span>
+                            </p>
+                          </div>
+                          <span className="badge bg-primary-subtle text-primary fw-semibold align-self-start">
+                            View
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 ) : (
                   <div className="d-flex flex-column gap-3">
                     {recentPosts.map((post) => (
@@ -563,6 +590,34 @@ export default function AdminPage() {
                   <p className={`${mutedTextClass} text-center mb-0`}>
                     Contributors will appear here once posts are published.
                   </p>
+                ) : isMobile ? (
+                  <div className="d-flex flex-column gap-2">
+                    {topContributors.map((contributor, index) => {
+                      const count = getPostCount(contributor.username);
+                      return (
+                        <div
+                          key={contributor.username}
+                          className={`d-flex justify-content-between align-items-center rounded-3 p-3 ${cardThemeClass}`}
+                          style={{ border: `1px solid ${sectionBorderColor}` }}
+                        >
+                          <div className="d-flex align-items-center gap-3">
+                            <span className="badge bg-dark-subtle text-dark fw-semibold">
+                              {index + 1}
+                            </span>
+                            <div className="d-flex flex-column gap-1">
+                              <span className="fw-semibold">{contributor.username}</span>
+                              <span className={`small ${mutedTextClass}`}>
+                                Leading with {count} {count === 1 ? "post" : "posts"}
+                              </span>
+                            </div>
+                          </div>
+                          <span className="badge bg-primary-subtle text-primary fw-semibold">
+                            {count} {count === 1 ? "post" : "posts"}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 ) : (
                   <ol className="list-unstyled mb-0 d-flex flex-column gap-2">
                     {topContributors.map((contributor, index) => {
