@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { Socket } from "socket.io-client";
@@ -76,15 +76,13 @@ function ChatPageContent() {
     setShowChatThread(Boolean(chatUser));
   }, [chatUser]);
 
-  useEffect(() => {
-    if (!user) return;
+  const fetchPeople = useCallback(
+    async (signal?: AbortSignal) => {
+      if (!user) return;
 
-    const controller = new AbortController();
-
-    const fetchPeople = async () => {
       try {
         const res = await fetch(apiUrl("/api/users"), {
-          signal: controller.signal,
+          signal,
           headers: { Authorization: user.username },
         });
         if (!res.ok) throw new Error(`Failed to load users: ${res.status}`);
@@ -94,15 +92,30 @@ function ChatPageContent() {
           setPeople(data.users);
         }
       } catch (error) {
-        if (controller.signal.aborted) return;
+        if (signal?.aborted) return;
         console.error("Unable to load people", error);
       }
-    };
+    },
+    [user]
+  );
 
-    void fetchPeople();
+  useEffect(() => {
+    if (!user) return;
+
+    const controller = new AbortController();
+    void fetchPeople(controller.signal);
 
     return () => controller.abort();
-  }, [user]);
+  }, [user, fetchPeople]);
+
+  useEffect(() => {
+    if (!isMobile || showChatThread) return;
+
+    const controller = new AbortController();
+    void fetchPeople(controller.signal);
+
+    return () => controller.abort();
+  }, [fetchPeople, isMobile, showChatThread]);
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
