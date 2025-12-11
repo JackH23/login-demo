@@ -227,14 +227,35 @@ function ChatPageContent() {
     router.replace("/chat");
   };
 
+  const handleBackToProfile = () => {
+    router.push("/user");
+  };
+
+  const allChatPeople = useMemo(() => {
+    const uniquePeople = new Map<string, ChatParticipant>();
+
+    [...people, ...participants].forEach((person) => {
+      if (person.username === user?.username) return;
+      if (!uniquePeople.has(person.username)) {
+        uniquePeople.set(person.username, person);
+      }
+    });
+
+    if (chatUser && chatUser !== user?.username && !uniquePeople.has(chatUser)) {
+      uniquePeople.set(chatUser, { username: chatUser });
+    }
+
+    return Array.from(uniquePeople.values()).sort((a, b) =>
+      a.username.localeCompare(b.username)
+    );
+  }, [people, participants, user?.username, chatUser]);
+
   const filteredPeople = useMemo(
     () =>
-      people
-        .filter((person) => person.username !== user?.username)
-        .filter((person) =>
-          person.username.toLowerCase().includes(searchTerm.toLowerCase())
-        ),
-    [people, searchTerm, user?.username]
+      allChatPeople.filter((person) =>
+        person.username.toLowerCase().includes(searchTerm.toLowerCase())
+      ),
+    [allChatPeople, searchTerm]
   );
 
   // Show the scroll-to-bottom button when the user scrolls away from the bottom
@@ -385,14 +406,24 @@ function ChatPageContent() {
           : "mobile-thread-header--day"
       }`}
     >
-      <button
-        type="button"
-        className="mobile-back-button"
-        onClick={handleBackToList}
-        aria-label="Back to conversations"
-      >
-        ←
-      </button>
+      <div className="mobile-header-actions">
+        <button
+          type="button"
+          className="mobile-back-button"
+          onClick={handleBackToList}
+          aria-label="Back to conversations"
+        >
+          ←
+        </button>
+        <button
+          type="button"
+          className="mobile-back-button"
+          onClick={handleBackToProfile}
+          aria-label="Back to your profile"
+        >
+          ⬅
+        </button>
+      </div>
       {chatUser ? (
         <div className="d-flex align-items-center gap-3">
           {chatPartner?.image ? (
@@ -693,6 +724,14 @@ function ChatPageContent() {
   const mobileListLayout = (
     <div className="chat-mobile-list-view">
       <div className="mobile-list-header">
+        <button
+          type="button"
+          className="mobile-back-button"
+          onClick={handleBackToProfile}
+          aria-label="Back to user page"
+        >
+          ←
+        </button>
         <div className="mobile-list-brand">
           <span className="mobile-list-logo">💬</span>
           <div className="d-flex flex-column">
@@ -746,9 +785,6 @@ function ChatPageContent() {
             {person.online && <span className="mobile-online-dot" aria-hidden="true"></span>}
           </button>
         ))}
-        {filteredPeople.length === 0 && (
-          <div className="mobile-empty-state">No conversations found.</div>
-        )}
       </div>
     </div>
   );
