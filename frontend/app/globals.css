@@ -1846,6 +1846,62 @@
   }
 }
 
+@media (max-width: 576px) {
+  .chat-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "brand actions"
+      "status status";
+    align-items: center;
+    gap: 0.6rem 0.8rem;
+    padding: 0.8rem 1rem;
+  }
+
+  .chat-header-brand {
+    grid-area: brand;
+    min-width: 0;
+  }
+
+  .chat-header-brand .brand-name {
+    font-size: 1rem;
+  }
+
+  .chat-header-brand .brand-tagline {
+    display: none;
+  }
+
+  .chat-user-status {
+    grid-area: status;
+    width: 100%;
+    margin: 0;
+    padding: 0.6rem 0.75rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .chat-header-night .chat-user-status {
+    background: rgba(15, 23, 42, 0.5);
+  }
+
+  .chat-user-avatar {
+    width: 38px;
+    height: 38px;
+  }
+
+  .chat-header-actions {
+    grid-area: actions;
+    margin-left: 0;
+    gap: 0.35rem;
+  }
+
+  .chat-header-action {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+}
+
 .confirm-dialog-diff-pill {
   font-size: 0.65rem;
   font-weight: 600;

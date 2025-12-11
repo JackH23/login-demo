@@ -322,7 +322,7 @@ function ChatPageContent() {
           theme === "night" ? "chat-header-night" : "chat-header-day"
         }`}
       >
-        <div className="d-flex align-items-center gap-3 flex-wrap">
+        <div className="chat-header-brand d-flex align-items-center gap-3 flex-wrap">
           <div className="brand-badge">
             <span className="brand-icon" aria-hidden="true">
               💬
