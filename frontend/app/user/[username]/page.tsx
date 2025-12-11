@@ -144,7 +144,74 @@ export default function UserProfilePage() {
       />
 
       <div className="container mt-4">
-        <div className="card border-0 shadow-lg mb-4">
+        <div className="card border-0 shadow-lg mb-4 d-md-none">
+          <div className="card-body d-flex flex-column gap-3">
+            <div className="d-flex align-items-center gap-3">
+              <div className="position-relative">
+                {profileUser.image ? (
+                  <img
+                    src={profileUser.image}
+                    alt={`${profileUser.username} profile`}
+                    className="rounded-circle border"
+                    style={{ width: "72px", height: "72px", objectFit: "cover" }}
+                  />
+                ) : (
+                  <div
+                    className="rounded-circle d-flex align-items-center justify-content-center border"
+                    style={{ width: "72px", height: "72px", fontSize: "1.5rem" }}
+                  >
+                    {profileUser.username.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <span
+                  className={`badge ${presenceClass} position-absolute end-0 bottom-0 translate-middle p-2 border border-light`}
+                  title={presenceLabel}
+                  aria-label={presenceLabel}
+                >
+                  <span className="visually-hidden">{presenceLabel}</span>
+                </span>
+              </div>
+
+              <div className="flex-grow-1">
+                <p className="text-uppercase text-muted small mb-1">Public profile</p>
+                <h1 className="h5 mb-1">{profileUser.username}</h1>
+                <span className={`badge ${presenceClass} bg-opacity-10 text-uppercase fw-semibold`}>
+                  {presenceLabel}
+                </span>
+              </div>
+            </div>
+
+            <div className="row text-center g-3 small">
+              <div className="col-4">
+                <p className="text-muted text-uppercase mb-1">Friends</p>
+                <p className="h6 mb-0">{(profileUser.friends ?? []).length}</p>
+              </div>
+              <div className="col-4">
+                <p className="text-muted text-uppercase mb-1">Posts</p>
+                <p className="h6 mb-0">{posts.length}</p>
+              </div>
+              <div className="col-4">
+                <p className="text-muted text-uppercase mb-1">Status</p>
+                <p className="h6 mb-0">{presenceLabel}</p>
+              </div>
+            </div>
+
+            <div className="d-grid gap-2">
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => router.push(`/chat?user=${encodeURIComponent(profileUser.username)}`)}
+              >
+                Message
+              </button>
+              <button type="button" className="btn btn-outline-secondary" onClick={() => router.push("/user")}>
+                Back to directory
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="card border-0 shadow-lg mb-4 d-none d-md-block">
           <div className="card-body d-flex flex-column flex-md-row align-items-md-center gap-4">
             <div className="position-relative">
               {profileUser.image ? (
