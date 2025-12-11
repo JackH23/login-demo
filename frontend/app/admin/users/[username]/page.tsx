@@ -124,11 +124,11 @@ export default function AdminUserProfilePage() {
         <div className="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-md-center mb-4 mt-2">
           <div>
             <h1 className="h3 mb-1">{profile.username}</h1>
-            <p className={`mb-0 ${mutedTextClass}`}>
+            <p className={`mb-0 ${mutedTextClass} d-none d-md-block`}>
               Viewing full profile and posts created by this user.
             </p>
           </div>
-          <div className="d-flex align-items-center gap-2">
+          <div className="d-none d-md-flex align-items-center gap-2">
             <span
               className={`badge ${
                 profile.online ? "bg-success" : "bg-secondary"
@@ -139,6 +139,45 @@ export default function AdminUserProfilePage() {
             <span className="badge bg-primary-subtle text-primary fw-semibold">
               {profile.friends?.length ?? 0} friends
             </span>
+          </div>
+        </div>
+
+        <div className="d-md-none mb-3">
+          <div className="row g-2">
+            <div className="col-12 col-sm-6">
+              <div className={`card shadow-sm border-0 h-100 ${cardThemeClass}`}>
+                <div className="card-body d-flex justify-content-between align-items-center py-3">
+                  <div>
+                    <p className={`mb-1 small ${mutedTextClass}`}>Status</p>
+                    <span
+                      className={`badge ${
+                        profile.online ? "bg-success" : "bg-secondary"
+                      }`}
+                    >
+                      {profile.online ? "Online" : "Offline"}
+                    </span>
+                  </div>
+                  <span className={`fw-semibold ${mutedTextClass}`}>
+                    {profile.online ? "Live" : "Away"}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="col-12 col-sm-6">
+              <div className={`card shadow-sm border-0 h-100 ${cardThemeClass}`}>
+                <div className="card-body d-flex justify-content-between align-items-center py-3">
+                  <div>
+                    <p className={`mb-1 small ${mutedTextClass} d-none d-md-block`}>Connections</p>
+                    <span className="badge bg-primary-subtle text-primary fw-semibold">
+                      {profile.friends?.length ?? 0} friends
+                    </span>
+                  </div>
+                  <span className={`fw-semibold ${mutedTextClass}`}>
+                    Keep growing
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
