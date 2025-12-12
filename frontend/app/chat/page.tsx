@@ -131,16 +131,7 @@ function ChatPageContent() {
     void fetchPeople(controller.signal);
 
     return () => controller.abort();
-  }, [user, fetchPeople]);
-
-  useEffect(() => {
-    if (!isMobile) return;
-
-    const controller = new AbortController();
-    void fetchPeople(controller.signal);
-
-    return () => controller.abort();
-  }, [fetchPeople, isMobile]);
+  }, [user, fetchPeople, isMobile]);
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
