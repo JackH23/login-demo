@@ -334,19 +334,45 @@ export default function UserPage() {
     });
     if (!confirmed) return;
 
-    const res = await fetch(apiUrl('/api/friends'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user: user.username, friend }),
-    });
-    if (res.ok) {
+    const addFriendLocally = () =>
       setUsers((prev) =>
         prev.map((item) =>
           item.username === user.username
-            ? { ...item, friends: [...(item.friends ?? []), friend] }
+            ? {
+                ...item,
+                friends: Array.from(new Set([...(item.friends ?? []), friend])),
+              }
             : item
         )
       );
+
+    const removeFriendLocally = () =>
+      setUsers((prev) =>
+        prev.map((item) =>
+          item.username === user.username
+            ? {
+                ...item,
+                friends: (item.friends ?? []).filter((name) => name !== friend),
+              }
+            : item
+        )
+      );
+
+      addFriendLocally();
+
+    try {
+      const res = await fetch(apiUrl("/api/friends"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user: user.username, friend }),
+      });
+
+      if (!res.ok) {
+        removeFriendLocally();
+      }
+    } catch (error) {
+      removeFriendLocally();
+      console.error("Failed to add friend", error);
     }
   };
 
