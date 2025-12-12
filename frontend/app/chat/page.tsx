@@ -287,15 +287,14 @@ function ChatPageContent() {
     );
   }, [people, participants, user?.username, chatUser]);
 
-  const filteredPeople = useMemo(
-    () =>
-      isMobile
-        ? allChatPeople
-        : allChatPeople.filter((person) =>
-            person.username.toLowerCase().includes(searchTerm.toLowerCase())
-          ),
-    [allChatPeople, searchTerm, isMobile]
-  );
+  const filteredPeople = useMemo(() => {
+    const normalizedTerm = searchTerm.trim().toLowerCase();
+    if (!normalizedTerm) return allChatPeople;
+
+    return allChatPeople.filter((person) =>
+      person.username.toLowerCase().includes(normalizedTerm)
+    );
+  }, [allChatPeople, searchTerm]);
 
   // Show the scroll-to-bottom button when the user scrolls away from the bottom
   // or when new messages arrive while not at the bottom
@@ -832,10 +831,6 @@ function ChatPageContent() {
             {person.online && <span className="mobile-online-dot" aria-hidden="true"></span>}
           </button>
         ))}
-
-        {isFetchingPeople && people.length > 0 && (
-          <div className="mobile-conversation-loading-more">Loading more people…</div>
-        )}
       </div>
     </div>
   );
