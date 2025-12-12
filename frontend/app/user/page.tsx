@@ -541,14 +541,7 @@ export default function UserPage() {
                           <i className="bi bi-person-plus" aria-hidden="true"></i>
                           {isFriend ? "Friend" : "Add Friend"}
                         </button>
-                        <button
-                          type="button"
-                          className="user-card-action user-card-action--secondary"
-                          onClick={() => router.push(`/chat?user=${u.username}`)}
-                        >
-                          <i className="bi bi-chat-dots" aria-hidden="true"></i>
-                          Message
-                        </button>
+                        
                         {isAdmin && (
                           <>
                             {isCompactLayout ? (

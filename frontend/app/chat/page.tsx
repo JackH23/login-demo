@@ -265,7 +265,7 @@ function ChatPageContent() {
   };
 
   const handleBackToProfile = () => {
-    router.push("/user");
+    router.push("/friend");
   };
 
   const allChatPeople = useMemo(() => {
