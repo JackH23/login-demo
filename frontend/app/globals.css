@@ -2449,7 +2449,7 @@
 
 .chat-composer {
   display: grid;
-  grid-template-columns: auto 1fr auto auto;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: clamp(0.5rem, 2vw, 0.75rem);
   padding: clamp(0.6rem, 1.5vw, 0.85rem) clamp(0.75rem, 2vw, 1.25rem);
@@ -2464,9 +2464,18 @@
   box-shadow: 0 20px 40px rgba(15, 23, 42, 0.5);
 }
 
+.chat-composer__input-row {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.45rem, 1.5vw, 0.75rem);
+  width: 100%;
+  min-width: 0;
+}
+
 .chat-composer__input {
   width: 100%;
   border: none;
+  flex: 1 1 auto;
   background: transparent;
   color: inherit;
   font-size: 0.95rem;

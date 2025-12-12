@@ -705,14 +705,24 @@ function ChatPageContent() {
         >
           😊
         </button>
-        <input
-          type="text"
-          className="chat-composer__input"
-          placeholder="Type your message..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSend()}
-        />
+        <div className="chat-composer__input-row">
+          <input
+            type="text"
+            className="chat-composer__input"
+            placeholder="Type your message..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+          />
+          <button
+            type="button"
+            className="chat-composer__send"
+            aria-label="Send message"
+            onClick={handleSend}
+          >
+            ➤
+          </button>
+        </div>
         <button
           type="button"
           className="chat-composer__icon-btn"
@@ -720,14 +730,6 @@ function ChatPageContent() {
           onClick={() => fileInputRef.current?.click()}
         >
           📎
-        </button>
-        <button
-          type="button"
-          className="chat-composer__send"
-          aria-label="Send message"
-          onClick={handleSend}
-        >
-          ➤
         </button>
         <input
           ref={fileInputRef}
