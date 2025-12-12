@@ -21,6 +21,7 @@ interface ChatParticipant {
   username: string;
   image?: string;
   online?: boolean;
+  friends?: string[];
 }
 
 interface ChatEmoji {
@@ -248,6 +249,8 @@ function ChatPageContent() {
   const emojiButtonTitle = emojiList.length
     ? `Insert emoji (${emojiList.length} available)`
     : "Add emoji";
+
+  const currentUsername = user?.username ?? "";
     
   const openProfile = () => {
     if (!chatUser) return;
@@ -289,12 +292,21 @@ function ChatPageContent() {
 
   const filteredPeople = useMemo(() => {
     const normalizedTerm = searchTerm.trim().toLowerCase();
-    if (!normalizedTerm) return allChatPeople;
+    const baseList =
+      isMobile && currentUsername
+        ? allChatPeople.filter((person) =>
+            Array.isArray(person.friends)
+              ? person.friends.includes(currentUsername)
+              : false
+          )
+        : allChatPeople;
 
-    return allChatPeople.filter((person) =>
+    if (!normalizedTerm) return baseList;
+
+    return baseList.filter((person) =>
       person.username.toLowerCase().includes(normalizedTerm)
     );
-  }, [allChatPeople, searchTerm]);
+  }, [allChatPeople, currentUsername, isMobile, searchTerm]);
 
   // Show the scroll-to-bottom button when the user scrolls away from the bottom
   // or when new messages arrive while not at the bottom
