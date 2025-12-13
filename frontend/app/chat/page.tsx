@@ -623,7 +623,7 @@ function ChatPageContent() {
         >
           {theme === "night" ? "🌞" : "🌙"}
         </button>
-        <a href="/user" className="chat-header-action" aria-label="Back to home">
+        <a href="/friend" className="chat-header-action" aria-label="Back to home">
           🏠
         </a>
       </div>

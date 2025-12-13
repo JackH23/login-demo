@@ -323,7 +323,7 @@ export default function FriendPage() {
               <button
                 type="button"
                 className="btn btn-primary"
-                onClick={() => router.push("/home")}
+                onClick={() => router.push("/user")}
               >
                 Find friends
               </button>
