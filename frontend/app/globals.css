@@ -196,6 +196,12 @@
   padding: 0.25rem 0.5rem 1rem;
 }
 
+.mobile-conversation-list--animated .mobile-conversation-row:not(.mobile-conversation-row--skeleton) {
+  opacity: 0;
+  transform: translateY(12px);
+  animation: mobileConversationEnter 260ms ease forwards;
+}
+
 .mobile-conversation-row {
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -290,6 +296,21 @@
   padding: 0.75rem;
   color: rgba(226, 232, 240, 0.8);
   font-size: 0.9rem;
+}
+
+@keyframes mobileConversationEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(4px) scale(1);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes pulse {

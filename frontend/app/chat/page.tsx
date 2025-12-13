@@ -855,7 +855,7 @@ function ChatPageContent() {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
-      <div className="mobile-conversation-list">
+      <div className="mobile-conversation-list mobile-conversation-list--animated">
         {isFetchingPeople && people.length === 0 && (
           <>
             {Array.from({ length: 6 }).map((_, idx) => (
@@ -870,12 +870,13 @@ function ChatPageContent() {
           </>
         )}
 
-        {filteredPeople.map((person) => (
+        {filteredPeople.map((person, index) => (
           <button
             key={person.username}
             type="button"
             className="mobile-conversation-row"
             onClick={() => handleSelectChat(person.username)}
+            style={{ animationDelay: `${Math.min(index, 10) * 60}ms` }}
           >
             {person.image ? (
               <img
