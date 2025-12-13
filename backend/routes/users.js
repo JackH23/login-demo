@@ -54,11 +54,11 @@ function getRequester(req) {
 router.get(
   '/',
   asyncHandler(async (_req, res) => {
-    const users = await User.find({}, 'username image friends online -_id')
+    const users = await User.find({}, '-password -__v')
       .sort({ username: 1 })
       .lean();
 
-    return res.json({ users: users.map(serializeUser) });
+    return res.json({ users });
   })
 );
 
