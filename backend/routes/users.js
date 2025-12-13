@@ -51,13 +51,17 @@ function getRequester(req) {
   return null;
 }
 
-router.get('/', asyncHandler(async (_req, res) => {
-  const users = await User.find({}, 'username image friends online -_id')
-    
-    .sort({ username: 1 })
-    .lean();
-  return res.json({ users: users.map(serializeUser) });
-}));
+router.get(
+  '/',
+  asyncHandler(async (_req, res) => {
+    const users = await User.find({}, 'username image friends online -_id')
+      .sort({ username: 1 })
+      .lean();
+
+    return res.json({ users: users.map(serializeUser) });
+  })
+);
+
 
 router.get('/:username/image', asyncHandler(async (req, res) => {
   const { username } = req.params;
