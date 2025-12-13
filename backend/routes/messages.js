@@ -30,14 +30,21 @@ router.get('/', asyncHandler(async (req, res) => {
       : null;
 
   const fetchMessages = async () => {
-    const baseQuery = Message.find(filter).select('from to type content fileName createdAt');
-
     if (boundedLimit) {
-      const recent = await baseQuery.sort({ createdAt: -1 }).limit(boundedLimit).lean();
-      return recent.reverse();
+      // Ensure sorting happens in the database instead of relying on reversing client-side
+      return Message.aggregate([
+        { $match: filter },
+        { $sort: { createdAt: -1 } },
+        { $limit: boundedLimit },
+        { $sort: { createdAt: 1 } },
+        { $project: { from: 1, to: 1, type: 1, content: 1, fileName: 1, createdAt: 1 } },
+      ]);
     }
 
-    return baseQuery.sort({ createdAt: 1 }).lean();
+    return Message.find(filter)
+      .select('from to type content fileName createdAt')
+      .sort({ createdAt: 1 })
+      .lean();
   };
 
   const [messages, participants, emojis] = await Promise.all([
