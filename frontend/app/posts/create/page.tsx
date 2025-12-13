@@ -10,6 +10,7 @@ export default function CreateBlogPage() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [image, setImage] = useState<string | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
   const router = useRouter();
   const { user } = useAuth();
   const { theme } = useTheme();
@@ -46,7 +47,12 @@ export default function CreateBlogPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    setIsPublishing(true);
+
+    if (!user) {
+      setIsPublishing(false);
+      return;
+    }
 
     const res = await fetch(apiUrl("/api/posts"), {
       method: "POST",
@@ -62,6 +68,8 @@ export default function CreateBlogPage() {
     if (res.ok) {
       router.push("/home");
     }
+
+    setIsPublishing(false);
   };
 
   return (
@@ -247,8 +255,15 @@ export default function CreateBlogPage() {
                 <div className="text-secondary small d-none d-md-block">
                   <strong>Pro tip:</strong> Eye-catching introductions increase readership by 60%.
                 </div>
-                <button type="submit" className="btn btn-success btn-lg px-4">
-                  ✅ Publish Post
+                <button
+                  type="submit"
+                  className={`btn btn-success btn-lg px-4 publishing-button ${
+                    isPublishing ? "is-animating" : ""
+                  }`}
+                  disabled={isPublishing}
+                >
+                  <span className="me-2">✅</span>
+                  <span>{isPublishing ? "Publishing..." : "Publish Post"}</span>
                 </button>
               </div>
             </form>
@@ -341,6 +356,32 @@ export default function CreateBlogPage() {
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        .publishing-button {
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+          box-shadow: 0 0.5rem 1.25rem rgba(25, 135, 84, 0.25);
+        }
+
+        .publishing-button.is-animating {
+          animation: pulse 0.9s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+          0% {
+            transform: translateY(0);
+            box-shadow: 0 0.5rem 1.25rem rgba(25, 135, 84, 0.25);
+          }
+          50% {
+            transform: translateY(-3px);
+            box-shadow: 0 0.8rem 1.5rem rgba(25, 135, 84, 0.35);
+          }
+          100% {
+            transform: translateY(0);
+            box-shadow: 0 0.5rem 1.25rem rgba(25, 135, 84, 0.25);
+          }
+        }
+      `}</style>
     </div>
   );
 }
