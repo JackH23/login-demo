@@ -55,6 +55,7 @@ function ChatPageContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isMobile, setIsMobile] = useState(false);
   const [showChatThread, setShowChatThread] = useState(Boolean(chatUser));
+  const [latestMessages, setLatestMessages] = useState<Record<string, string>>({});
   const emojiLoadedRef = useRef(false);
   const fetchingMessagesRef = useRef(false);
 
@@ -62,6 +63,12 @@ function ChatPageContent() {
     setParticipants([]);
     setChatOnline(false);
   }, [chatUser]);
+
+  useEffect(() => {
+    if (!people.length) {
+      setLatestMessages({});
+    }
+  }, [people.length]);
 
   useEffect(() => {
     const updateBreakpoint = () => {
@@ -132,6 +139,62 @@ function ChatPageContent() {
 
     return () => controller.abort();
   }, [user, fetchPeople, isMobile]);
+
+  useEffect(() => {
+    if (!user || !isMobile || people.length === 0) return;
+
+    const controller = new AbortController();
+    const fetchLatestMessages = async () => {
+      try {
+        const previews = await Promise.all(
+          people.map(async (person) => {
+            const params = new URLSearchParams({
+              user1: user.username,
+              user2: person.username,
+              limit: "1",
+            });
+
+            const res = await fetch(apiUrl(`/api/messages?${params.toString()}`), {
+              signal: controller.signal,
+            });
+
+            if (!res.ok) return null;
+
+            const data = (await res.json()) as { messages?: Message[] };
+            const lastMessage = data.messages?.[data.messages.length - 1];
+
+            if (!lastMessage) return null;
+
+            const label =
+              lastMessage.type === "text"
+                ? lastMessage.content
+                : lastMessage.fileName || (lastMessage.type === "image" ? "Photo" : "File");
+
+            const preview =
+              typeof label === "string" && label.length > 80
+                ? `${label.slice(0, 77)}...`
+                : label;
+
+            return [person.username, preview] as const;
+          })
+        );
+
+        const validPreviews = previews.filter(Boolean) as [string, string][];
+
+        if (validPreviews.length) {
+          setLatestMessages((prev) => ({ ...prev, ...Object.fromEntries(validPreviews) }));
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          console.error("Unable to fetch latest messages", error);
+        }
+      }
+    };
+
+    void fetchLatestMessages();
+
+    return () => controller.abort();
+  }, [isMobile, people, user]);
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
