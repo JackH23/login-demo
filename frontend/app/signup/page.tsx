@@ -111,12 +111,15 @@ export default function SignupPage() {
         {submitting ? (
           <>
             <span className="visually-hidden">Signing Up...</span>
-            <span aria-hidden="true" className="d-inline-flex align-items-center gap-1">
-              <span>Signing Up</span>
-              <span className="animated-ellipsis">
-                <span className="dot" />
-                <span className="dot" />
-                <span className="dot" />
+            <span aria-hidden="true" className="d-inline-flex align-items-center justify-content-center gap-2">
+              <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
+              <span className="d-inline-flex align-items-center gap-1">
+                <span>Signing Up</span>
+                <span className="animated-ellipsis">
+                  <span className="dot" />
+                  <span className="dot" />
+                  <span className="dot" />
+                </span>
               </span>
             </span>
           </>
