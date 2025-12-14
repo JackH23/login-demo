@@ -184,7 +184,12 @@ export default function FriendPage() {
       }
     };
 
-    fetchLastMessages();
+    fetchLastMessages().catch((error) => {
+      if (controller.signal.aborted) return;
+      console.error("Failed to fetch latest messages", error);
+      setLastMessages({});
+      setLoadingMessages(false);
+    });
 
     return () => controller.abort();
   }, [user, friends, loadingFriends]);
