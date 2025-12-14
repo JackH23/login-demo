@@ -203,10 +203,6 @@ function ChatPageContent() {
     router.push(`/user/${encodeURIComponent(chatUser)}`);
   };
 
-  const handleBackToList = () => {
-    router.replace("/friend");
-  };
-
   // Show the scroll-to-bottom button when the user scrolls away from the bottom
   // or when new messages arrive while not at the bottom
   useEffect(() => {
@@ -385,9 +381,10 @@ function ChatPageContent() {
     >
       <div className="mobile-header-actions">
         <Link
-          type="button"
+          href="/friend"
           className="mobile-back-button"
           prefetch
+          replace
           aria-label="Back to conversations"
         >
           ←
