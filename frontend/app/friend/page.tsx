@@ -87,7 +87,7 @@ export default function FriendPage() {
   const {
     data: users,
     setData: setUsers,
-    loading: loadingUsers,
+    loading: usersLoading,
   } = useCachedApi<User[]>(user ? "/api/users" : null, {
     fallback: [],
     transform: normalizeUsersResponse,
@@ -188,10 +188,17 @@ export default function FriendPage() {
 
     return () => controller.abort();
   }, [user, friends, loadingFriends]);
+  if (loading || usersLoading || !user) {
+    return (
+      <LoadingState
+        title="Preparing your profile"
+        subtitle="We’re loading your connections and preferences so everything is ready."
+        skeletonCount={2}
+      />
+    );
+  }
 
-  const isBootstrapping = loading || loadingUsers || loadingFriends || !user;
-
-  if (isBootstrapping) {
+  if (loadingFriends) {
     return <FriendListSkeleton theme={theme} />;
   }
 
