@@ -418,7 +418,7 @@ export default function FriendPage() {
                           </button>
                           <button
                             type="button"
-                            className="user-card-action user-card-action--secondary"
+                            className="user-card-action user-card-action--secondary d-none d-md-block"
                             onClick={() =>
                               router.push(`/chat?user=${f.username}`)
                             }
