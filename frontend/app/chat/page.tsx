@@ -387,7 +387,9 @@ function ChatPageContent() {
           replace
           aria-label="Back to conversations"
         >
-          ←
+          <span aria-hidden="true" className="mobile-back-button__icon">
+            ←
+          </span>
         </Link>
       </div>
       {chatUser ? (
