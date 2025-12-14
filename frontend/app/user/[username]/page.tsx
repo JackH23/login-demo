@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 
@@ -130,12 +131,9 @@ export default function UserProfilePage() {
               <p className="text-muted mb-4">
                 The profile you are looking for does not exist.
               </p>
-              <button
-                className="btn btn-primary"
-                onClick={() => router.push("/user")}
-              >
+              <Link href="/user" className="btn btn-primary">
                 Back to directory
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -145,14 +143,6 @@ export default function UserProfilePage() {
 
   const presenceLabel = profileUser.online ? "Online" : "Offline";
   const presenceClass = profileUser.online ? "bg-success" : "bg-secondary";
-
-  const handleBackNavigation = () => {
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      router.back();
-    } else {
-      router.push("/user");
-    }
-  };
 
   return (
     <div
@@ -235,24 +225,15 @@ export default function UserProfilePage() {
             </div>
 
             <div className="d-grid gap-2">
-              <button
-                type="button"
+              <Link
+                href={`/chat?user=${encodeURIComponent(profileUser.username)}`}
                 className="btn btn-primary"
-                onClick={() =>
-                  router.push(
-                    `/chat?user=${encodeURIComponent(profileUser.username)}`
-                  )
-                }
               >
                 Message
-              </button>
-              <button
-                type="button"
-                className="btn btn-outline-secondary"
-                onClick={handleBackNavigation}
-              >
+              </Link>
+              <Link href="/user" className="btn btn-outline-secondary">
                 Back to directory
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -306,24 +287,15 @@ export default function UserProfilePage() {
             </div>
 
             <div className="d-flex gap-2">
-              <button
-                type="button"
+              <Link
+                href={`/chat?user=${encodeURIComponent(profileUser.username)}`}
                 className="btn btn-outline-primary"
-                onClick={() =>
-                  router.push(
-                    `/chat?user=${encodeURIComponent(profileUser.username)}`
-                  )
-                }
               >
                 Message
-              </button>
-              <button
-                type="button"
-                className="btn btn-outline-secondary"
-                onClick={handleBackNavigation}
-              >
+              </Link>
+              <Link href="/user" className="btn btn-outline-secondary">
                 Back
-              </button>
+              </Link>
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useState, useEffect, CSSProperties, useCallback, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -58,7 +58,6 @@ export default function BlogCard({
   author?: AuthorData;
   onDelete?: (id: string) => void;
 }) {
-  const router = useRouter();
   const [likes, setLikes] = useState<number>(blog.likes ?? 0);
   const [dislikes, setDislikes] = useState<number>(blog.dislikes ?? 0);
   const [hasLikedPost, setHasLikedPost] = useState<boolean>(false);
@@ -119,6 +118,9 @@ export default function BlogCard({
       : "bg-white text-primary border border-primary border-opacity-25" // Light background for day mode
   }`;
 
+  const getProfileHref = (username?: string) =>
+    username ? `/user/${encodeURIComponent(username)}` : undefined;
+
   // Determine which author name to display
   // Priority: author.username → blog.author → empty string
   const displayAuthor = author?.username ?? blog.author ?? "";
@@ -127,6 +129,7 @@ export default function BlogCard({
   const authorInitial = displayAuthor.charAt(0).toUpperCase() || "?";
 
   const isProfileNavigable = Boolean(displayAuthor);
+  const authorProfileHref = getProfileHref(displayAuthor);
 
   const resolveAvatar = useCallback(
     (raw?: string | null, username?: string) => {
@@ -214,15 +217,6 @@ export default function BlogCard({
     [setCachedComments]
   );
 
-  const openAuthorProfile = () => {
-    if (!displayAuthor) return;
-    router.push(`/user/${encodeURIComponent(displayAuthor)}`);
-  };
-
-  const openUserProfile = (username?: string) => {
-    if (!username) return;
-    router.push(`/user/${encodeURIComponent(username)}`);
-  };
 
   // Count total number of comments for the blog post
   const totalComments = comments.length;
@@ -823,52 +817,80 @@ export default function BlogCard({
           <div className="blog-card__author-row d-flex align-items-center w-100 gap-3 flex-wrap">
             <div className="blog-card__author-info d-flex align-items-center gap-3">
               {/* If author has an image, display it */}
-              <button
-                className="blog-card__avatar p-0 border-0 bg-transparent"
-                aria-label={
-                  isProfileNavigable
-                    ? `View ${displayAuthor}'s profile`
-                    : undefined
-                }
-                onClick={isProfileNavigable ? openAuthorProfile : undefined}
-                disabled={!isProfileNavigable}
-                style={{ cursor: isProfileNavigable ? "pointer" : "default" }}
-                disabled={!displayAuthor}
-              >
-                {author?.image ? (
-                  <img
-                    src={author.image}
-                    alt={author.username}
-                    className="rounded-circle border border-3 border-white"
-                    style={{
-                      width: isMobile ? "40px" : "48px", // Avatar width
-                      height: isMobile ? "40px" : "48px", // Avatar height
-                      objectFit: "cover", // Ensures image fills the circle without distortion
-                    }}
-                  />
-                ) : (
-                  <div
-                    className="rounded-circle bg-white text-primary fw-semibold d-flex align-items-center justify-content-center"
-                    style={{
-                      width: isMobile ? "40px" : "48px",
-                      height: isMobile ? "40px" : "48px",
-                    }}
-                  >
-                    {authorInitial}
-                  </div>
-                )}
-              </button>
+              {authorProfileHref ? (
+                <Link
+                  href={authorProfileHref}
+                  className="blog-card__avatar p-0 border-0 bg-transparent"
+                  aria-label={`View ${displayAuthor}'s profile`}
+                >
+                  {author?.image ? (
+                    <img
+                      src={author.image}
+                      alt={author.username}
+                      className="rounded-circle border border-3 border-white"
+                      style={{
+                        width: isMobile ? "40px" : "48px", // Avatar width
+                        height: isMobile ? "40px" : "48px", // Avatar height
+                        objectFit: "cover", // Ensures image fills the circle without distortion
+                      }}
+                    />
+                  ) : (
+                    <div
+                      className="rounded-circle bg-white text-primary fw-semibold d-flex align-items-center justify-content-center"
+                      style={{
+                        width: isMobile ? "40px" : "48px",
+                        height: isMobile ? "40px" : "48px",
+                      }}
+                    >
+                      {authorInitial}
+                    </div>
+                  )}
+                </Link>
+              ) : (
+                <div
+                  className="blog-card__avatar p-0 border-0 bg-transparent"
+                  aria-hidden
+                  style={{ cursor: "default" }}
+                >
+                  {author?.image ? (
+                    <img
+                      src={author.image}
+                      alt={author.username}
+                      className="rounded-circle border border-3 border-white"
+                      style={{
+                        width: isMobile ? "40px" : "48px",
+                        height: isMobile ? "40px" : "48px",
+                        objectFit: "cover",
+                      }}
+                    />
+                  ) : (
+                    <div
+                      className="rounded-circle bg-white text-primary fw-semibold d-flex align-items-center justify-content-center"
+                      style={{
+                        width: isMobile ? "40px" : "48px",
+                        height: isMobile ? "40px" : "48px",
+                      }}
+                    >
+                      {authorInitial}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="blog-card__author-meta d-flex align-items-center gap-2 text-start">
                 <span className="small text-white-50">By</span>
-                <button
-                  type="button"
-                  className="btn btn-link p-0 align-baseline fw-semibold text-white text-start"
-                  onClick={openAuthorProfile}
-                  disabled={!displayAuthor}
-                >
-                  {displayAuthor || "Unknown"}
-                </button>
+                {authorProfileHref ? (
+                  <Link
+                    href={authorProfileHref}
+                    className="btn btn-link p-0 align-baseline fw-semibold text-white text-start"
+                  >
+                    {displayAuthor || "Unknown"}
+                  </Link>
+                ) : (
+                  <span className="btn btn-link p-0 align-baseline fw-semibold text-white text-start disabled pe-none">
+                    {displayAuthor || "Unknown"}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -1241,12 +1263,9 @@ export default function BlogCard({
                           <div className="conversation-comment">
                             <div className="conversation-comment__main">
                               <div className="conversation-comment__avatar">
-                                <button
-                                  type="button"
+                                <Link
+                                  href={`/user/${encodeURIComponent(comment.author)}`}
                                   className="p-0 border-0 bg-transparent"
-                                  onClick={() =>
-                                    openUserProfile(comment.author)
-                                  }
                                   aria-label={`View ${comment.author}'s profile`}
                                 >
                                   {commentAvatar ? (
@@ -1268,34 +1287,21 @@ export default function BlogCard({
                                         ?.toUpperCase() || "?"}
                                     </span>
                                   )}
-                                </button>
+                                </Link>
                               </div>
 
                               <div className="conversation-comment__body">
                                 <div className="conversation-comment__meta">
-                                  <span
+                                  <Link
+                                    href={`/user/${encodeURIComponent(comment.author)}`}
                                     className={`conversation-comment__author ${
                                       isNight
                                         ? "text-primary text-opacity-75"
                                         : "text-primary"
                                     }`}
-                                    role="button"
-                                    tabIndex={0}
-                                    onClick={() =>
-                                      openUserProfile(comment.author)
-                                    }
-                                    onKeyDown={(event) => {
-                                      if (
-                                        event.key === "Enter" ||
-                                        event.key === " "
-                                      ) {
-                                        event.preventDefault();
-                                        openUserProfile(comment.author);
-                                      }
-                                    }}
                                   >
                                     {comment.author}
-                                  </span>
+                                  </Link>
                                 </div>
 
                                 <p
@@ -1382,12 +1388,9 @@ export default function BlogCard({
                                         : "text-muted"
                                     } small mb-2`}
                                   >
-                                    <button
-                                      type="button"
+                                    <Link
+                                      href={`/user/${encodeURIComponent(reply.author)}`}
                                       className="conversation-reply__avatar p-0 border-0 bg-transparent"
-                                      onClick={() =>
-                                        openUserProfile(reply.author)
-                                      }
                                       aria-label={`View ${reply.author}'s profile`}
                                     >
                                       {replyAvatar ? (
@@ -1409,29 +1412,17 @@ export default function BlogCard({
                                             ?.toUpperCase() || "?"}
                                         </span>
                                       )}
-                                    </button>
+                                    </Link>
 
                                     <div className="conversation-reply__body">
                                       <div className="conversation-reply__header">
-                                        <button
-                                          type="button"
+                                        <Link
+                                          href={`/user/${encodeURIComponent(reply.author)}`}
                                           className="fw-semibold p-0 border-0 bg-transparent text-start conversation-reply__author"
-                                          onClick={() =>
-                                            openUserProfile(reply.author)
-                                          }
-                                          onKeyDown={(event) => {
-                                            if (
-                                              event.key === "Enter" ||
-                                              event.key === " "
-                                            ) {
-                                              event.preventDefault();
-                                              openUserProfile(reply.author);
-                                            }
-                                          }}
                                           aria-label={`View ${reply.author}'s profile`}
                                         >
                                           {reply.author}
-                                        </button>
+                                        </Link>
                                       </div>
                                       <div className="conversation-reply__text conversation-reply__bubble text-muted">
                                         {reply.text}
@@ -1647,12 +1638,9 @@ export default function BlogCard({
                           <div className="conversation-comment">
                             <div className="conversation-comment__main">
                               <div className="conversation-comment__avatar">
-                                <button
-                                  type="button"
+                                <Link
+                                  href={`/user/${encodeURIComponent(comment.author)}`}
                                   className="p-0 border-0 bg-transparent"
-                                  onClick={() =>
-                                    openUserProfile(comment.author)
-                                  }
                                   aria-label={`View ${comment.author}'s profile`}
                                 >
                                   {commentAvatar ? (
@@ -1674,33 +1662,20 @@ export default function BlogCard({
                                         ?.toUpperCase() || "?"}
                                     </span>
                                   )}
-                                </button>
+                                </Link>
                               </div>
                               <div className="conversation-comment__body">
                                 <div className="conversation-comment__meta">
-                                  <span
+                                  <Link
+                                    href={`/user/${encodeURIComponent(comment.author)}`}
                                     className={`conversation-comment__author ${
                                       theme === "night"
                                         ? "text-primary text-opacity-75"
                                         : "text-primary"
                                     }`}
-                                    role="button"
-                                    tabIndex={0}
-                                    onClick={() =>
-                                      openUserProfile(comment.author)
-                                    }
-                                    onKeyDown={(event) => {
-                                      if (
-                                        event.key === "Enter" ||
-                                        event.key === " "
-                                      ) {
-                                        event.preventDefault();
-                                        openUserProfile(comment.author);
-                                      }
-                                    }}
                                   >
                                     {comment.author}
-                                  </span>
+                                  </Link>
                                 </div>
                                 <p
                                   className={`conversation-comment__text ${
@@ -1787,12 +1762,9 @@ export default function BlogCard({
                                         : "text-muted"
                                     } small mb-2`}
                                   >
-                                    <button
-                                      type="button"
+                                    <Link
+                                      href={`/user/${encodeURIComponent(reply.author)}`}
                                       className="conversation-reply__avatar p-0 border-0 bg-transparent"
-                                      onClick={() =>
-                                        openUserProfile(reply.author)
-                                      }
                                       aria-label={`View ${reply.author}'s profile`}
                                     >
                                       {replyAvatar ? (
@@ -1814,29 +1786,17 @@ export default function BlogCard({
                                             ?.toUpperCase() || "?"}
                                         </span>
                                       )}
-                                    </button>
+                                    </Link>
 
                                     <div className="conversation-reply__body">
                                       <div className="conversation-reply__header">
-                                        <button
-                                          type="button"
+                                        <Link
+                                          href={`/user/${encodeURIComponent(reply.author)}`}
                                           className="fw-semibold p-0 border-0 bg-transparent text-start conversation-reply__author"
-                                          onClick={() =>
-                                            openUserProfile(reply.author)
-                                          }
-                                          onKeyDown={(event) => {
-                                            if (
-                                              event.key === "Enter" ||
-                                              event.key === " "
-                                            ) {
-                                              event.preventDefault();
-                                              openUserProfile(reply.author);
-                                            }
-                                          }}
                                           aria-label={`View ${reply.author}'s profile`}
                                         >
                                           {reply.author}
-                                        </button>
+                                        </Link>
                                       </div>
                                       <div className="conversation-reply__text conversation-reply__bubble text-muted">
                                         {reply.text}
