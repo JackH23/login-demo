@@ -1250,6 +1250,14 @@
   justify-content: flex-start;
 }
 
+.user-card-actions--inline-mobile {
+  width: 100%;
+  flex: 0 0 auto;
+  margin-left: auto;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
 .user-card-action {
   border: none;
   border-radius: 999px;
@@ -1373,6 +1381,11 @@
   .user-card-actions {
     width: 100%;
     justify-content: flex-start;
+  }
+
+  .user-card-actions--inline-mobile {
+    justify-content: flex-end;
+    flex-wrap: nowrap;
   }
 }
 

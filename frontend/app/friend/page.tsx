@@ -153,7 +153,7 @@ export default function FriendPage() {
     setLoadingMessages(true);
 
     const fetchLastMessages = async () => {
-      if (!user || friends.length === 0) {
+      if (!user || !friends || friends.length === 0) {
         setLastMessages({});
         setLoadingMessages(false);
         return;
@@ -165,6 +165,7 @@ export default function FriendPage() {
 
         for (let i = 0; i < friends.length; i += BATCH_SIZE) {
           const slice = friends.slice(i, i + BATCH_SIZE);
+
           const params = new URLSearchParams({
             user: user.username,
             targets: slice.join(","),
@@ -172,9 +173,7 @@ export default function FriendPage() {
 
           const res = await fetch(
             resolveApiUrl(`/api/messages/latest?${params.toString()}`),
-            {
-              signal: controller.signal,
-            }
+            { signal: controller.signal }
           );
 
           if (!res.ok) continue;
@@ -183,9 +182,14 @@ export default function FriendPage() {
           const latest = (data.latest ?? []) as LatestMessageResponse[];
 
           latestEntries.push(
-            ...latest
-              .map((item) => [item.partner, item as LastMessage])
-              .filter(Boolean)
+            ...latest.map((item): [string, LastMessage] => [
+              item.partner,
+              {
+                type: item.type,
+                content: item.content,
+                fileName: item.fileName,
+              },
+            ])
           );
         }
 
@@ -335,7 +339,7 @@ export default function FriendPage() {
                           <div
                             className="user-card-avatar user-card-avatar--focusable"
                             role="presentation"
-                            onClick={() => openProfile(f.username)}
+                            onClick={() => router.push(`/chat?user=${f.username}`)}
                             onKeyDown={(event) => {
                               if (event.key === "Enter" || event.key === " ") {
                                 event.preventDefault();
@@ -386,7 +390,7 @@ export default function FriendPage() {
                               </span>
                             </div>
                             <div className="user-card-status-row">
-                              <div className="user-card-status-badges">
+                              <div className="user-card-status-badges d-none d-md-block">
                                 <span
                                   className={presenceClass}
                                   data-variant="label"
@@ -403,14 +407,16 @@ export default function FriendPage() {
 
                         <div
                           className={`user-card-actions ${
-                            isCompactLayout ? "user-card-actions--stacked" : ""
+                            isCompactLayout
+                              ? "user-card-actions--inline-mobile"
+                              : ""
                           }`}
                           role="group"
                           aria-label={`Actions for ${f.username}`}
                         >
                           <button
                             type="button"
-                            className="user-card-action user-card-action--secondary"
+                            className="user-card-action user-card-action--secondary d-none d-md-inline-flex"
                             onClick={() => openProfile(f.username)}
                           >
                             <i className="bi bi-person" aria-hidden="true"></i>
@@ -418,7 +424,7 @@ export default function FriendPage() {
                           </button>
                           <button
                             type="button"
-                            className="user-card-action user-card-action--secondary d-none d-md-block"
+                            className="user-card-action user-card-action--secondary d-none d-md-inline-flex"
                             onClick={() =>
                               router.push(`/chat?user=${f.username}`)
                             }
