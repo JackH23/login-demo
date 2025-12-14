@@ -7,7 +7,7 @@ import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 import LoadingState from "../components/LoadingState";
 import { useCachedApi } from "../hooks/useCachedApi";
-import { apiUrl } from "@/app/lib/api";
+import { resolveApiUrl } from "@/app/lib/api";
 import { normalizeUsersResponse } from "@/app/lib/users";
 
 interface User {
@@ -150,7 +150,7 @@ export default function FriendPage() {
             targets: slice.join(","),
           });
 
-          const res = await fetch(apiUrl(`/api/messages/latest?${params.toString()}`), {
+          const res = await fetch(resolveApiUrl(`/api/messages/latest?${params.toString()}`), {
             signal: controller.signal,
           });
 
