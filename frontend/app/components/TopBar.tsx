@@ -25,6 +25,26 @@ import {
 import { ADMIN_USERNAME } from "@/lib/constants";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
+import { prefetchCachedApi } from "../hooks/useCachedApi";
+import { normalizeUsersResponse } from "../lib/users";
+
+type PrefetchUser = {
+  username: string;
+  image?: string | null;
+  online?: boolean;
+};
+
+type PrefetchPost = {
+  _id?: string;
+  title: string;
+  content: string;
+  image?: string | null;
+  author: string;
+  likes: number;
+  dislikes: number;
+  likedBy?: string[];
+  dislikedBy?: string[];
+};
 
 interface UserData {
   username: string;
@@ -91,6 +111,64 @@ export default function TopBar({
     router.push("/signin");
   }, [logout, router]);
 
+  const prefetchPosts = useCallback(
+    (endpoint: string) =>
+      prefetchCachedApi<PrefetchPost[]>(endpoint, {
+        transform: (payload) =>
+          (payload as { posts?: PrefetchPost[] | null })?.posts ?? [],
+      }),
+    [],
+  );
+
+  const prefetchUsers = useCallback(
+    () => prefetchCachedApi<PrefetchUser[]>("/api/users", { transform: normalizeUsersResponse }),
+    [],
+  );
+
+  const prefetchFriends = useCallback(
+    (username: string) =>
+      prefetchCachedApi<string[]>(`/api/friends?username=${encodeURIComponent(username)}`, {
+        transform: (payload) => (payload as { friends?: string[] | null })?.friends ?? [],
+      }),
+    [],
+  );
+
+  const prefetchDataForNav = useCallback(
+    (page: ActivePage) => {
+      if (!currentUser.username) return;
+
+      const pending: Promise<unknown>[] = [];
+      const postsByAuthor = `/api/posts?author=${encodeURIComponent(currentUser.username)}`;
+
+      switch (page) {
+        case "home":
+          pending.push(prefetchUsers(), prefetchPosts("/api/posts"));
+          break;
+        case "posts":
+          pending.push(prefetchUsers(), prefetchPosts(postsByAuthor));
+          break;
+        case "analysis":
+        case "admin":
+          pending.push(prefetchUsers(), prefetchPosts("/api/posts"));
+          break;
+        case "friend":
+          pending.push(prefetchUsers(), prefetchFriends(currentUser.username));
+          break;
+        case "user":
+        case "setting":
+          pending.push(prefetchUsers());
+          break;
+      }
+
+      if (pending.length === 0) return;
+
+      void Promise.all(pending).catch((error) => {
+        console.error("Failed to prefetch page data", error);
+      });
+    },
+    [currentUser.username, prefetchFriends, prefetchPosts, prefetchUsers],
+  );
+
   const navItems = useMemo(() => {
     const baseItems: NavItem[] = [
       { key: "home", label: "Home", href: "/home", icon: Home },
@@ -125,6 +203,10 @@ export default function TopBar({
       router.prefetch(item.href);
     });
   }, [navItems, router]);
+
+  useEffect(() => {
+    prefetchDataForNav(active);
+  }, [active, prefetchDataForNav]);
 
   useEffect(() => {
     const updateViewportFlags = () => {
@@ -188,6 +270,14 @@ export default function TopBar({
       router.prefetch(href);
     },
     [router],
+  );
+
+  const prefetchNavItem = useCallback(
+    (item: NavItem) => {
+      prefetchRoute(item.href);
+      prefetchDataForNav(item.key);
+    },
+    [prefetchDataForNav, prefetchRoute],
   );
 
   const handleNavClick = useCallback(
@@ -490,8 +580,8 @@ export default function TopBar({
                 className={`${baseClass} ${visualState}`}
                 style={style}
                 aria-current={isActive ? "page" : undefined}
-                onPointerEnter={() => prefetchRoute(item.href)}
-                onFocus={() => prefetchRoute(item.href)}
+                onPointerEnter={() => prefetchNavItem(item)}
+                onFocus={() => prefetchNavItem(item)}
                 onClick={(event) => handleNavClick(event, item)}
               >
                 <Icon size={18} />
