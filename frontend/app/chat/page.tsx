@@ -365,7 +365,7 @@ function ChatPageContent() {
 
   const handleBackToList = () => {
     if (isMobile) setShowChatThread(false);
-    router.replace("/chat");
+    router.replace("/friend");
   };
 
   const handleBackToProfile = () => {
@@ -485,19 +485,21 @@ function ChatPageContent() {
     }
   };
 
-  const handleSend = async () => {
+  const handleSend = () => {
     if (!user || !chatUser || !input.trim()) return;
+
+    const messageContent = input.trim();
 
     const payload = {
       from: user.username,
       to: chatUser,
       type: "text" as const,
-      content: input,
+      content: messageContent,
     };
 
     setInput("");
 
-    await postMessage(payload);
+    void postMessage(payload);
   };
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
