@@ -165,22 +165,44 @@ export function useCachedApi<T>(
   }, [url]);
 
   const refresh = useCallback(async () => {
-    const result = await performFetch();
-    if (!url) {
+    try {
+      const result = await performFetch();
+      if (!url) {
+        setState(result);
+        setError(null);
+        setLoading(false);
+        return result;
+      }
+      const entry = ensureEntry<T>(url);
+      entry.data = result;
+      entry.timestamp = Date.now();
+      entry.error = null;
+      entry.promise = null;
       setState(result);
       setError(null);
       setLoading(false);
       return result;
+      } catch (err) {
+      const errorObj = err instanceof Error ? err : new Error("Failed to refresh data");
+      const fallbackValue = (fallbackRef.current ?? (undefined as T)) as T;
+
+      if (!url) {
+        setError(errorObj);
+        setLoading(false);
+        setState((prev) => (prev == null ? fallbackValue : prev));
+        return fallbackValue;
+      }
+
+      const entry = ensureEntry<T>(url);
+      entry.error = errorObj;
+      entry.promise = null;
+
+      setError(errorObj);
+      setLoading(false);
+      setState((prev) => (prev ?? entry.data ?? fallbackValue));
+
+      return entry.data ?? fallbackValue;
     }
-    const entry = ensureEntry<T>(url);
-    entry.data = result;
-    entry.timestamp = Date.now();
-    entry.error = null;
-    entry.promise = null;
-    setState(result);
-    setError(null);
-    setLoading(false);
-    return result;
   }, [performFetch, url]);
 
   useEffect(() => {

@@ -2,15 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  Suspense,
-  useCallback,
-  useDeferredValue,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { Socket } from "socket.io-client";
@@ -33,11 +25,6 @@ interface ChatParticipant {
   online?: boolean;
   friends?: string[];
 }
-
-type LatestMessagePreview = Pick<
-  Message,
-  "type" | "content" | "fileName" | "createdAt"
-> & { partner: string };
 
 interface ChatEmoji {
   shortcode: string;
@@ -71,14 +58,7 @@ function ChatPageContent() {
   const [chatOnline, setChatOnline] = useState(false);
   const [participants, setParticipants] = useState<ChatParticipant[]>([]);
   const [emojiList, setEmojiList] = useState<ChatEmoji[]>([]);
-  const [people, setPeople] = useState<ChatParticipant[]>([]);
-  const [isFetchingPeople, setIsFetchingPeople] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
   const [isMobile, setIsMobile] = useState(false);
-  const [showChatThread, setShowChatThread] = useState(Boolean(chatUser));
-  const [latestMessages, setLatestMessages] = useState<Record<string, string>>(
-    {}
-  );
   const emojiLoadedRef = useRef(false);
 
   const chatDataUrl = useMemo(() => {
@@ -112,12 +92,6 @@ function ChatPageContent() {
   }, [chatUser]);
 
   useEffect(() => {
-    if (!people.length) {
-      setLatestMessages({});
-    }
-  }, [people.length]);
-
-  useEffect(() => {
     const updateBreakpoint = () => {
       if (typeof window === "undefined") return;
       setIsMobile(window.matchMedia("(max-width: 768px)").matches);
@@ -129,137 +103,8 @@ function ChatPageContent() {
   }, []);
 
   useEffect(() => {
-    setShowChatThread(Boolean(chatUser));
-  }, [chatUser]);
-
-  useEffect(() => {
     router.prefetch("/friend");
   }, [router]);
-
-  const appendPeopleIncrementally = useCallback(
-    async (users: ChatParticipant[], signal?: AbortSignal) => {
-      const CHUNK_SIZE = 15;
-      setIsFetchingPeople(true);
-      setPeople([]);
-
-      for (let i = 0; i < users.length; i += CHUNK_SIZE) {
-        if (signal?.aborted) return;
-        const slice = users.slice(i, i + CHUNK_SIZE);
-        setPeople((prev) => [...prev, ...slice]);
-        await new Promise((resolve) => requestAnimationFrame(resolve));
-      }
-
-      setIsFetchingPeople(false);
-    },
-    []
-  );
-
-  const fetchPeople = useCallback(
-    async (signal?: AbortSignal) => {
-      if (!user) return;
-
-      try {
-        setIsFetchingPeople(true);
-        const res = await fetch(apiUrl("/api/users"), {
-          signal,
-          headers: { Authorization: user.username },
-        });
-        if (!res.ok) throw new Error(`Failed to load users: ${res.status}`);
-
-        const data = (await res.json()) as { users?: ChatParticipant[] };
-        if (Array.isArray(data.users)) {
-          await appendPeopleIncrementally(data.users, signal);
-        } else {
-          setPeople([]);
-        }
-      } catch (error) {
-        if (signal?.aborted) return;
-        console.error("Unable to load people", error);
-      } finally {
-        setIsFetchingPeople(false);
-      }
-    },
-    [appendPeopleIncrementally, user]
-  );
-
-  useEffect(() => {
-    if (!user) return;
-
-    const controller = new AbortController();
-    void fetchPeople(controller.signal);
-
-    return () => controller.abort();
-  }, [user, fetchPeople, isMobile]);
-
-  useEffect(() => {
-    if (!user || !isMobile || people.length === 0) return;
-
-    const controller = new AbortController();
-    const fetchLatestMessages = async () => {
-      try {
-        const BATCH_SIZE = 30;
-        const previews: [string, string][] = [];
-
-        for (let i = 0; i < people.length; i += BATCH_SIZE) {
-          const slice = people
-            .slice(i, i + BATCH_SIZE)
-            .map((person) => person.username)
-            .filter((username) => username !== user.username);
-
-          if (slice.length === 0) continue;
-
-          const params = new URLSearchParams({
-            user: user.username,
-            targets: slice.join(","),
-          });
-
-          const res = await fetch(
-            apiUrl(`/api/messages/latest?${params.toString()}`),
-            {
-              signal: controller.signal,
-            }
-          );
-
-          if (!res.ok) continue;
-          const lastMessage = data.messages?.[data.messages.length - 1];
-
-          const data = (await res.json()) as {
-            latest?: LatestMessagePreview[];
-          };
-          const batchPreviews = (data.latest ?? []).map((item) => {
-            const label =
-              item.type === "text"
-                ? item.content
-                : item.fileName || (item.type === "image" ? "Photo" : "File");
-
-            const preview =
-              typeof label === "string" && label.length > 80
-                ? `${label.slice(0, 77)}...`
-                : label;
-
-            return [item.partner, preview] as const;
-          });
-
-          previews.push(...batchPreviews);
-        }
-
-        if (previews.length) {
-          setLatestMessages((prev) => ({
-            ...prev,
-            ...Object.fromEntries(previews),
-          }));
-        }
-      } catch (error) {
-        if (!controller.signal.aborted) {
-          console.error("Unable to fetch latest messages", error);
-        }
-      }
-    };
-
-    void fetchLatestMessages();
-
-    return () => controller.abort();
-  }, [isMobile, people, user]);
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -358,62 +203,9 @@ function ChatPageContent() {
     router.push(`/user/${encodeURIComponent(chatUser)}`);
   };
 
-  const handleSelectChat = (username: string) => {
-    router.push(`/chat?user=${encodeURIComponent(username)}`);
-    setShowChatThread(true);
-  };
-
   const handleBackToList = () => {
-    if (isMobile) setShowChatThread(false);
     router.replace("/friend");
   };
-
-  const handleBackToProfile = () => {
-    router.push("/friend");
-  };
-
-  const allChatPeople = useMemo(() => {
-    const uniquePeople = new Map<string, ChatParticipant>();
-
-    [...people, ...participants].forEach((person) => {
-      if (person.username === user?.username) return;
-      if (!uniquePeople.has(person.username)) {
-        uniquePeople.set(person.username, person);
-      }
-    });
-
-    if (
-      chatUser &&
-      chatUser !== user?.username &&
-      !uniquePeople.has(chatUser)
-    ) {
-      uniquePeople.set(chatUser, { username: chatUser });
-    }
-
-    return Array.from(uniquePeople.values()).sort((a, b) =>
-      a.username.localeCompare(b.username)
-    );
-  }, [people, participants, user?.username, chatUser]);
-
-  const mobilePeople = useMemo(() => {
-    if (!isMobile || !currentUsername) return allChatPeople;
-
-    return allChatPeople.filter((person) =>
-      Array.isArray(person.friends)
-        ? person.friends.includes(currentUsername)
-        : false
-    );
-  }, [allChatPeople, currentUsername, isMobile]);
-
-  const deferredSearch = useDeferredValue(searchTerm.trim().toLowerCase());
-
-  const filteredPeople = useMemo(() => {
-    if (!deferredSearch) return mobilePeople;
-
-    return mobilePeople.filter((person) =>
-      person.username.toLowerCase().includes(deferredSearch)
-    );
-  }, [deferredSearch, mobilePeople]);
 
   // Show the scroll-to-bottom button when the user scrolls away from the bottom
   // or when new messages arrive while not at the bottom
@@ -592,14 +384,14 @@ function ChatPageContent() {
       }`}
     >
       <div className="mobile-header-actions">
-        <button
+        <Link
           type="button"
           className="mobile-back-button"
-          onClick={handleBackToList}
+          prefetch
           aria-label="Back to conversations"
         >
           ←
-        </button>
+        </Link>
       </div>
       {chatUser ? (
         <div className="d-flex align-items-center gap-3">
@@ -911,96 +703,6 @@ function ChatPageContent() {
     </div>
   );
 
-  const mobileListLayout = (
-    <div className="chat-mobile-list-view">
-      <div className="mobile-list-header">
-        <button
-          type="button"
-          className="mobile-back-button"
-          onClick={handleBackToProfile}
-          aria-label="Back to user page"
-        >
-          ←
-        </button>
-        <div className="mobile-list-brand">
-          <span className="mobile-list-logo">💬</span>
-          <div className="d-flex flex-column">
-            <span className="mobile-list-title">PulseChat</span>
-            <span className="mobile-list-subtitle">Conversations</span>
-          </div>
-        </div>
-        {user && (
-          <a className="mobile-profile-pill" href="/user" aria-label="Profile">
-            {user.image ? (
-              <img src={user.image} alt="Your avatar" />
-            ) : (
-              <span>{user.username.charAt(0).toUpperCase()}</span>
-            )}
-          </a>
-        )}
-      </div>
-      <div className="mobile-list-search">
-        <input
-          type="search"
-          placeholder="Search people"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
-      <div className="mobile-conversation-list mobile-conversation-list--animated">
-        {isFetchingPeople && people.length === 0 && (
-          <>
-            {Array.from({ length: 6 }).map((_, idx) => (
-              <div
-                key={idx}
-                className="mobile-conversation-row mobile-conversation-row--skeleton"
-              >
-                <div className="mobile-conversation-avatar mobile-conversation-avatar--skeleton" />
-                <div className="mobile-conversation-meta">
-                  <span className="mobile-conversation-name mobile-conversation-name--skeleton" />
-                  <span className="mobile-conversation-status mobile-conversation-status--skeleton" />
-                </div>
-              </div>
-            ))}
-          </>
-        )}
-
-        {filteredPeople.map((person, index) => (
-          <button
-            key={person.username}
-            type="button"
-            className="mobile-conversation-row"
-            onClick={() => handleSelectChat(person.username)}
-            style={{ animationDelay: `${Math.min(index, 10) * 60}ms` }}
-          >
-            {person.image ? (
-              <img
-                src={person.image}
-                alt={`${person.username}'s avatar`}
-                className="mobile-conversation-avatar"
-              />
-            ) : (
-              <div className="mobile-conversation-avatar mobile-conversation-avatar--fallback">
-                {person.username.charAt(0).toUpperCase()}
-              </div>
-            )}
-            <div className="mobile-conversation-meta">
-              <span className="mobile-conversation-name">
-                {person.username}
-              </span>
-              <span className="mobile-conversation-status">
-                {person.online ? "Online" : "Offline"}
-              </span>
-            </div>
-            {person.online && (
-              <span className="mobile-online-dot" aria-hidden="true"></span>
-            )}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-
   const mobileThreadLayout = (
     <div className="chat-mobile-thread-view">
       {headerContent}
@@ -1013,9 +715,9 @@ function ChatPageContent() {
 
   return (
     <div className="chat-mobile-shell">
-      {!showChatThread && mobileListLayout}
-      {showChatThread && chatUser && mobileThreadLayout}
-      {!chatUser && showChatThread && (
+      {chatUser ? (
+        mobileThreadLayout
+      ) : (
         <div className="chat-mobile-thread-view">
           {headerContent}
           <div className="empty-thread-message">
