@@ -36,7 +36,7 @@ function FriendListSkeleton({ theme }: { theme: string }) {
 
   return (
     <div
-      className={`friend-page-shell container-fluid min-vh-100 p-4 ${baseClasses}`}
+      className={`friend-page-shell container-fluid min-vh-100 px-4 py-3 ${baseClasses}`}
     >
       <div className="friend-skeleton-topbar rounded-4 shadow-sm mb-3" />
       <div className="friend-panel card border-0 shadow-sm">
@@ -258,7 +258,7 @@ export default function FriendPage() {
 
   return (
     <div
-      className={`friend-page-shell container-fluid min-vh-100 p-4 ${
+      className={`friend-page-shell container-fluid min-vh-100 px-4 py-3 ${
         theme === "night" ? "bg-dark text-white" : "bg-light"
       }`}
     >
@@ -332,14 +332,33 @@ export default function FriendPage() {
                     return (
                       <li
                         key={f.username}
-                        className="user-card user-card--friend"
+                        className="user-card user-card--friend user-card--compact"
                         role="listitem"
                       >
-                        <div className="user-card-main">
+                        <div
+                          className="user-card-main"
+                          role={isCompactLayout ? "button" : undefined}
+                          tabIndex={isCompactLayout ? 0 : undefined}
+                          onClick={() => {
+                            if (isCompactLayout) {
+                              router.push(`/chat?user=${f.username}`);
+                            }
+                          }}
+                          onKeyDown={(event) => {
+                            if (!isCompactLayout) return;
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault();
+                              router.push(`/chat?user=${f.username}`);
+                            }
+                          }}
+                        >
                           <div
                             className="user-card-avatar user-card-avatar--focusable"
                             role="presentation"
-                            onClick={() => router.push(`/chat?user=${f.username}`)}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              openProfile(f.username);
+                            }}
                             onKeyDown={(event) => {
                               if (event.key === "Enter" || event.key === " ") {
                                 event.preventDefault();
@@ -376,11 +395,21 @@ export default function FriendPage() {
                             className="user-card-body"
                             role="button"
                             tabIndex={0}
-                            onClick={() => openProfile(f.username)}
+                            onClick={(event) => {
+                              if (isCompactLayout) {
+                                event.stopPropagation();
+                                router.push(`/chat?user=${f.username}`);
+                                return;
+                              }
+                              openProfile(f.username);
+                            }}
                             onKeyDown={(event) => {
                               if (event.key === "Enter" || event.key === " ") {
                                 event.preventDefault();
-                                openProfile(f.username);
+                                if (isCompactLayout) {
+                                  router.push(`/chat?user=${f.username}`);
+                                  return;
+                                }
                               }
                             }}
                           >

@@ -647,6 +647,19 @@
   --card-bg: rgba(255, 255, 255, 0.95);
 }
 
+.user-card--compact {
+  padding: 1.1rem clamp(0.9rem, 2vw, 1.3rem);
+}
+
+.user-card--compact .user-card-name {
+  font-size: 1rem;
+}
+
+.user-card--compact .user-card-substatus,
+.user-card--compact .user-card-status-row {
+  font-size: 0.86rem;
+}
+
 .bg-dark .user-card {
   --card-bg: rgba(15, 23, 42, 0.72);
   --card-border: rgba(148, 163, 184, 0.35);
@@ -1695,6 +1708,10 @@
     gap: 0.85rem;
   }
 
+  .user-card--compact {
+    padding: 0.78rem 0.9rem;
+  }
+
   .user-card-main {
     gap: 0.75rem;
     flex: 1 1 220px;
@@ -1736,10 +1753,19 @@
     font-size: 0.98rem;
   }
 
+  .user-card--compact .user-card-name {
+    font-size: 0.92rem;
+  }
+
   .user-card-subtext,
   .user-card-substatus,
   .user-card-status-row {
     font-size: 0.82rem;
+  }
+
+  .user-card--compact .user-card-substatus,
+  .user-card--compact .user-card-status-row {
+    font-size: 0.78rem;
   }
 
   .user-card-meta {
