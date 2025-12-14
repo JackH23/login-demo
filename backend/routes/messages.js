@@ -61,6 +61,57 @@ router.get('/', asyncHandler(async (req, res) => {
   return res.json({ messages, participants, emojis });
 }));
 
+router.get('/latest', asyncHandler(async (req, res) => {
+  const { user, targets } = req.query;
+
+  const targetList = typeof targets === 'string'
+    ? targets
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean)
+    : [];
+
+  if (!user || targetList.length === 0) {
+    return res.status(400).json({ error: 'Missing user or targets' });
+  }
+
+  const pipeline = [
+    {
+      $match: {
+        $or: [
+          { from: user, to: { $in: targetList } },
+          { to: user, from: { $in: targetList } },
+        ],
+      },
+    },
+    { $sort: { createdAt: -1 } },
+    {
+      $addFields: {
+        partner: { $cond: [{ $eq: ['$from', user] }, '$to', '$from'] },
+      },
+    },
+    {
+      $group: {
+        _id: '$partner',
+        message: { $first: '$$ROOT' },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        partner: '$_id',
+        type: '$message.type',
+        content: '$message.content',
+        fileName: '$message.fileName',
+        createdAt: '$message.createdAt',
+      },
+    },
+  ];
+
+  const latest = await Message.aggregate(pipeline);
+  return res.json({ latest });
+}));
+
 router.post('/', asyncHandler(async (req, res) => {
   const { from, to, type, content, fileName } = req.body;
   const message = await Message.create({ from, to, type, content, fileName });

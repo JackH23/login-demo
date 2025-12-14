@@ -32,6 +32,11 @@ interface ChatParticipant {
   friends?: string[];
 }
 
+type LatestMessagePreview = Pick<
+  Message,
+  "type" | "content" | "fileName" | "createdAt"
+> & { partner: string };
+
 interface ChatEmoji {
   shortcode: string;
   unicode: string;
@@ -154,43 +159,49 @@ function ChatPageContent() {
     const controller = new AbortController();
     const fetchLatestMessages = async () => {
       try {
-        const previews = await Promise.all(
-          people.map(async (person) => {
+        const BATCH_SIZE = 30;
+        const previews: [string, string][] = [];
+
+        for (let i = 0; i < people.length; i += BATCH_SIZE) {
+          const slice = people
+            .slice(i, i + BATCH_SIZE)
+            .map((person) => person.username)
+            .filter((username) => username !== user.username);
+
+          if (slice.length === 0) continue;
+
             const params = new URLSearchParams({
-              user1: user.username,
-              user2: person.username,
-              limit: "1",
-            });
+            user: user.username,
+            targets: slice.join(","),
+          });
 
-            const res = await fetch(apiUrl(`/api/messages?${params.toString()}`), {
-              signal: controller.signal,
-            });
+            const res = await fetch(apiUrl(`/api/messages/latest?${params.toString()}`), {
+            signal: controller.signal,
+          });
 
-            if (!res.ok) return null;
-
-            const data = (await res.json()) as { messages?: Message[] };
+            if (!res.ok) continue;
             const lastMessage = data.messages?.[data.messages.length - 1];
 
-            if (!lastMessage) return null;
-
+            const data = (await res.json()) as { latest?: LatestMessagePreview[] };
+            const batchPreviews = (data.latest ?? []).map((item) => {
             const label =
-              lastMessage.type === "text"
-                ? lastMessage.content
-                : lastMessage.fileName || (lastMessage.type === "image" ? "Photo" : "File");
+              item.type === "text"
+                ? item.content
+                : item.fileName || (item.type === "image" ? "Photo" : "File");
 
             const preview =
               typeof label === "string" && label.length > 80
                 ? `${label.slice(0, 77)}...`
                 : label;
 
-            return [person.username, preview] as const;
-          })
-        );
+            return [item.partner, preview] as const;
+          });
 
-        const validPreviews = previews.filter(Boolean) as [string, string][];
+        previews.push(...batchPreviews);
+        }
 
-        if (validPreviews.length) {
-          setLatestMessages((prev) => ({ ...prev, ...Object.fromEntries(validPreviews) }));
+        if (previews.length) {
+          setLatestMessages((prev) => ({ ...prev, ...Object.fromEntries(previews) }));
         }
       } catch (error) {
         if (!controller.signal.aborted) {

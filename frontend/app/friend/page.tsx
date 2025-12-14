@@ -23,6 +23,11 @@ interface LastMessage {
   fileName?: string;
 }
 
+interface LatestMessageResponse extends LastMessage {
+  partner: string;
+  createdAt: string;
+}
+
 function FriendListSkeleton({ theme }: { theme: string }) {
   const baseClasses =
     theme === "night"
@@ -124,6 +129,9 @@ export default function FriendPage() {
       return;
     }
 
+    const controller = new AbortController();
+    setLoadingMessages(true);
+
     const fetchLastMessages = async () => {
       if (!user || friends.length === 0) {
         setLastMessages({});
@@ -132,23 +140,44 @@ export default function FriendPage() {
       }
 
       try {
-        const results = await Promise.all(
-          friends.map(async (friend) => {
-            const res = await fetch(
-              apiUrl(`/api/messages?user1=${user.username}&user2=${friend}&limit=1`)
-            );
-            const data = await res.json();
-            const msgs = data.messages ?? [];
-            return { friend, msg: msgs[msgs.length - 1] as LastMessage | undefined };
-          })
-        );
+        const BATCH_SIZE = 40;
+        const latestEntries: [string, LastMessage | null][] = [];
+
+        for (let i = 0; i < friends.length; i += BATCH_SIZE) {
+          const slice = friends.slice(i, i + BATCH_SIZE);
+          const params = new URLSearchParams({
+            user: user.username,
+            targets: slice.join(","),
+          });
+
+          const res = await fetch(apiUrl(`/api/messages/latest?${params.toString()}`), {
+            signal: controller.signal,
+          });
+
+          if (!res.ok) continue;
+
+          const data = await res.json();
+          const latest = (data.latest ?? []) as LatestMessageResponse[];
+
+          latestEntries.push(
+            ...latest.map((item) => [item.partner, item as LastMessage]).filter(Boolean)
+          );
+        }
 
         const map: Record<string, LastMessage | null> = {};
-        results.forEach(({ friend, msg }) => {
-          map[friend] = msg ?? null;
+        friends.forEach((friend) => {
+          map[friend] = null;
         });
+
+        latestEntries.forEach(([friend, msg]) => {
+          map[friend] = msg;
+        });
+        
         setLastMessages(map);
-      } catch {
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          console.error("Unable to fetch latest messages", error);
+        }
         setLastMessages({});
       } finally {
         setLoadingMessages(false);
@@ -156,6 +185,8 @@ export default function FriendPage() {
     };
 
     fetchLastMessages();
+
+    return () => controller.abort();
   }, [user, friends, loadingFriends]);
 
   const isBootstrapping = loading || loadingUsers || loadingFriends || !user;
