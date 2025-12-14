@@ -61,6 +61,8 @@ function ChatPageContent() {
   const [isMobile, setIsMobile] = useState(false);
   const emojiLoadedRef = useRef(false);
 
+  const POLL_INTERVAL_MS = 1_000;
+
   const chatDataUrl = useMemo(() => {
     if (!user || !chatUser) return null;
     return `/api/messages?${new URLSearchParams({
@@ -160,12 +162,14 @@ function ChatPageContent() {
   useEffect(() => {
     if (!user || !chatUser) return;
 
+    void refreshChatData();
+
     const interval = setInterval(() => {
       void refreshChatData();
-    }, 3000);
+    }, POLL_INTERVAL_MS);
 
     return () => clearInterval(interval);
-  }, [chatUser, refreshChatData, user]);
+  }, [POLL_INTERVAL_MS, chatUser, refreshChatData, user]);
 
   // Scroll when a new message arrives or when opening the chat
   useEffect(() => {
