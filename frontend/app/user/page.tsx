@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ReactNode, useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -643,13 +644,9 @@ export default function UserPage() {
               <p className="text-muted mb-3">
                 Invite teammates to join or adjust your filters to see more people.
               </p>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => router.push("/signup")}
-              >
+              <Link href="/signup" className="btn btn-primary">
                 Invite teammates
-              </button>
+              </Link>
             </div>
           )}
         </div>

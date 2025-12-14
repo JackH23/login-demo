@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import TopBar from "@/app/components/TopBar";
@@ -113,13 +114,12 @@ export default function AdminUserProfilePage() {
       />
 
       <div className="container mt-4" style={{ maxWidth: "1100px" }}>
-        <button
-          type="button"
+        <Link
+          href="/admin"
           className="btn btn-link px-0 d-inline-flex align-items-center gap-2"
-          onClick={() => router.push("/admin")}
         >
           ← Back to dashboard
-        </button>
+        </Link>
 
         <div className="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-md-center mb-4 mt-2">
           <div>

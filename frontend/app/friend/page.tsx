@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
@@ -451,19 +452,16 @@ export default function FriendPage() {
                             <i className="bi bi-person" aria-hidden="true"></i>
                             View profile
                           </button>
-                          <button
-                            type="button"
+                          <Link
+                            href={`/chat?user=${f.username}`}
                             className="user-card-action user-card-action--secondary d-none d-md-inline-flex"
-                            onClick={() =>
-                              router.push(`/chat?user=${f.username}`)
-                            }
                           >
                             <i
                               className="bi bi-chat-dots"
                               aria-hidden="true"
                             ></i>
                             Message
-                          </button>
+                          </Link>
                         </div>
                       </li>
                     );
@@ -478,13 +476,9 @@ export default function FriendPage() {
                     Try a different name or explore the directory to find more
                     people.
                   </p>
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={() => router.push("/user")}
-                  >
+                  <Link href="/user" className="btn btn-primary">
                     Find friends
-                  </button>
+                  </Link>
                 </div>
               )}
             </>
@@ -498,13 +492,9 @@ export default function FriendPage() {
                 Start building your circle. Search for people you know or invite
                 them to chat.
               </p>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => router.push("/user")}
-              >
+              <Link href="/user" className="btn btn-primary">
                 Find friends
-              </button>
+              </Link>
             </div>
           )}
         </div>
