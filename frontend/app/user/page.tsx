@@ -506,7 +506,7 @@ export default function UserPage() {
                             className={presenceClass}
                             aria-hidden="true"
                           ></span>
-                            <span className="visually-hidden">
+                            <span className="visually-hidden d-none d-md-block">
                               {u.online ? "Online" : "Offline"}
                             </span>
                           </div>
@@ -543,7 +543,7 @@ export default function UserPage() {
                       </div>
                       <div
                         className={`user-card-actions ${
-                          isCompactLayout ? "user-card-actions--stacked" : ""
+                          isCompactLayout ? "user-card-actions--inline-mobile" : ""
                         }`}
                         role="group"
                         aria-label={`Actions for ${u.username}`}
