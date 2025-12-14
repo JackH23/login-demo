@@ -14,6 +14,7 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { Socket } from "socket.io-client";
 import { apiUrl } from "@/app/lib/api";
+import { useCachedApi } from "../hooks/useCachedApi";
 
 interface Message {
   _id: string;
@@ -44,6 +45,12 @@ interface ChatEmoji {
   hasSkinTones?: boolean;
 }
 
+interface ChatData {
+  messages: Message[];
+  participants: ChatParticipant[];
+  emojis: ChatEmoji[];
+}
+
 function ChatPageContent() {
   const searchParams = useSearchParams();
   const chatUser = searchParams.get("user") ?? "";
@@ -68,9 +75,35 @@ function ChatPageContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isMobile, setIsMobile] = useState(false);
   const [showChatThread, setShowChatThread] = useState(Boolean(chatUser));
-  const [latestMessages, setLatestMessages] = useState<Record<string, string>>({});
+  const [latestMessages, setLatestMessages] = useState<Record<string, string>>(
+    {}
+  );
   const emojiLoadedRef = useRef(false);
-  const fetchingMessagesRef = useRef(false);
+
+  const chatDataUrl = useMemo(() => {
+    if (!user || !chatUser) return null;
+    return `/api/messages?${new URLSearchParams({
+      user1: user.username,
+      user2: chatUser,
+      limit: "200",
+    }).toString()}`;
+  }, [chatUser, user]);
+
+  const {
+    data: chatData,
+    setData: setChatData,
+    refresh: refreshChatData,
+  } = useCachedApi<ChatData>(chatDataUrl, {
+    fallback: { messages: [], participants: [], emojis: [] },
+    transform: (payload) => {
+      const raw = payload as Partial<ChatData>;
+      return {
+        messages: Array.isArray(raw.messages) ? raw.messages : [],
+        participants: Array.isArray(raw.participants) ? raw.participants : [],
+        emojis: Array.isArray(raw.emojis) ? raw.emojis : [],
+      };
+    },
+  });
 
   useEffect(() => {
     setParticipants([]);
@@ -170,20 +203,25 @@ function ChatPageContent() {
 
           if (slice.length === 0) continue;
 
-            const params = new URLSearchParams({
+          const params = new URLSearchParams({
             user: user.username,
             targets: slice.join(","),
           });
 
-            const res = await fetch(apiUrl(`/api/messages/latest?${params.toString()}`), {
-            signal: controller.signal,
-          });
+          const res = await fetch(
+            apiUrl(`/api/messages/latest?${params.toString()}`),
+            {
+              signal: controller.signal,
+            }
+          );
 
-            if (!res.ok) continue;
-            const lastMessage = data.messages?.[data.messages.length - 1];
+          if (!res.ok) continue;
+          const lastMessage = data.messages?.[data.messages.length - 1];
 
-            const data = (await res.json()) as { latest?: LatestMessagePreview[] };
-            const batchPreviews = (data.latest ?? []).map((item) => {
+          const data = (await res.json()) as {
+            latest?: LatestMessagePreview[];
+          };
+          const batchPreviews = (data.latest ?? []).map((item) => {
             const label =
               item.type === "text"
                 ? item.content
@@ -197,11 +235,14 @@ function ChatPageContent() {
             return [item.partner, preview] as const;
           });
 
-        previews.push(...batchPreviews);
+          previews.push(...batchPreviews);
         }
 
         if (previews.length) {
-          setLatestMessages((prev) => ({ ...prev, ...Object.fromEntries(previews) }));
+          setLatestMessages((prev) => ({
+            ...prev,
+            ...Object.fromEntries(previews),
+          }));
         }
       } catch (error) {
         if (!controller.signal.aborted) {
@@ -236,63 +277,45 @@ function ChatPageContent() {
     socketRef.current = socket || null;
   }, [socket]);
 
+  // Sync conversation data from cached API and refresh periodically
+  useEffect(() => {
+    if (!user || !chatUser) {
+      setMessages([]);
+      setParticipants([]);
+      return;
+    }
 
-  // Fetch messages
+    const normalized: ChatData = {
+      messages: chatData.messages ?? [],
+      participants: chatData.participants ?? [],
+      emojis: chatData.emojis ?? [],
+    };
+
+    setMessages(normalized.messages);
+    setParticipants(normalized.participants);
+
+    const partner = normalized.participants.find(
+      (p) => p.username === chatUser
+    );
+    if (partner && typeof partner.online === "boolean") {
+      setChatOnline(partner.online);
+    }
+
+    if (!emojiLoadedRef.current && normalized.emojis.length) {
+      setEmojiList(normalized.emojis);
+      emojiLoadedRef.current = true;
+    }
+  }, [chatData, chatUser, user]);
+
   useEffect(() => {
     if (!user || !chatUser) return;
 
-    const fetchMessages = async () => {
-      if (fetchingMessagesRef.current) return;
-      fetchingMessagesRef.current = true;
-      try {
-        const params = new URLSearchParams({
-          user1: user.username,
-          user2: chatUser,
-          limit: "200",
-        });
-        const res = await fetch(apiUrl(`/api/messages?${params.toString()}`));
-        if (!res.ok) {
-          throw new Error(`Failed to fetch messages: ${res.status}`);
-        }
-        const data = (await res.json()) as {
-          messages?: Message[];
-          participants?: ChatParticipant[];
-          emojis?: ChatEmoji[];
-        };
-
-        if (Array.isArray(data.messages)) {
-          setMessages(data.messages);
-        } else {
-          setMessages([]);
-        }
-
-        if (Array.isArray(data.participants)) {
-          setParticipants(data.participants);
-          const partner = data.participants.find((p) => p.username === chatUser);
-          if (partner && typeof partner.online === "boolean") {
-            setChatOnline(partner.online);
-          }
-        }
-
-        if (!emojiLoadedRef.current && Array.isArray(data.emojis)) {
-          setEmojiList(data.emojis);
-          emojiLoadedRef.current = true;
-        }
-      } catch (error) {
-        console.error("Unable to fetch conversation", error);
-        setMessages([]);
-      } finally {
-        fetchingMessagesRef.current = false;
-      }
-    };
-
-    void fetchMessages(); // Initial load
-
     const interval = setInterval(() => {
-      void fetchMessages();
-    }, 3000); // Poll for new messages
-    return () => clearInterval(interval); // Cleanup
-  }, [user, chatUser]);
+      void refreshChatData();
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [chatUser, refreshChatData, user]);
 
   // Scroll when a new message arrives or when opening the chat
   useEffect(() => {
@@ -324,7 +347,7 @@ function ChatPageContent() {
     : "Add emoji";
 
   const currentUsername = user?.username ?? "";
-    
+
   const openProfile = () => {
     if (!chatUser) return;
     router.push(`/user/${encodeURIComponent(chatUser)}`);
@@ -354,7 +377,11 @@ function ChatPageContent() {
       }
     });
 
-    if (chatUser && chatUser !== user?.username && !uniquePeople.has(chatUser)) {
+    if (
+      chatUser &&
+      chatUser !== user?.username &&
+      !uniquePeople.has(chatUser)
+    ) {
       uniquePeople.set(chatUser, { username: chatUser });
     }
 
@@ -376,7 +403,7 @@ function ChatPageContent() {
   const deferredSearch = useDeferredValue(searchTerm.trim().toLowerCase());
 
   const filteredPeople = useMemo(() => {
-  if (!deferredSearch) return mobilePeople;
+    if (!deferredSearch) return mobilePeople;
 
     return mobilePeople.filter((person) =>
       person.username.toLowerCase().includes(deferredSearch)
@@ -414,6 +441,10 @@ function ChatPageContent() {
     };
 
     setMessages((prev) => [...prev, optimisticMessage]);
+    setChatData((prev) => ({
+      ...prev,
+      messages: [...prev.messages, optimisticMessage],
+    }));
     scrollToBottom();
 
     try {
@@ -431,11 +462,21 @@ function ChatPageContent() {
       setMessages((prev) =>
         prev.map((m) => (m._id === tempId ? data.message : m))
       );
+      setChatData((prev) => ({
+        ...prev,
+        messages: prev.messages.map((m) =>
+          m._id === tempId ? data.message : m
+        ),
+      }));
       socketRef.current?.emit("send-message", data.message);
       scrollToBottom();
     } catch (error) {
       console.error("Unable to send message", error);
       setMessages((prev) => prev.filter((m) => m._id !== tempId));
+      setChatData((prev) => ({
+        ...prev,
+        messages: prev.messages.filter((m) => m._id !== tempId),
+      }));
     }
   };
 
@@ -483,9 +524,15 @@ function ChatPageContent() {
   };
 
   const handleDelete = async (id: string) => {
-    const res = await fetch(apiUrl(`/api/messages/${id}`), { method: "DELETE" });
+    const res = await fetch(apiUrl(`/api/messages/${id}`), {
+      method: "DELETE",
+    });
     if (res.ok) {
       setMessages((prev) => prev.filter((m) => m._id !== id));
+      setChatData((prev) => ({
+        ...prev,
+        messages: prev.messages.filter((m) => m._id !== id),
+      }));
     }
   };
 
@@ -502,6 +549,12 @@ function ChatPageContent() {
       setMessages((prev) =>
         prev.map((m) => (m._id === msg._id ? data.message : m))
       );
+      setChatData((prev) => ({
+        ...prev,
+        messages: prev.messages.map((m) =>
+          m._id === msg._id ? (data.message as Message) : m
+        ),
+      }));
     }
   };
 
@@ -563,7 +616,9 @@ function ChatPageContent() {
         </div>
       ) : (
         <div className="d-flex align-items-center gap-2">
-          <div className="mobile-thread-avatar mobile-thread-avatar--fallback">💬</div>
+          <div className="mobile-thread-avatar mobile-thread-avatar--fallback">
+            💬
+          </div>
           <div className="d-flex flex-column">
             <span className="mobile-thread-name">PulseChat</span>
             <span className="mobile-thread-status">Pick a chat to start</span>
@@ -585,7 +640,9 @@ function ChatPageContent() {
         </div>
         <div className="d-flex flex-column flex-sm-row align-items-sm-center gap-1 gap-sm-3">
           <span className="brand-name">PulseChat</span>
-          <span className="brand-tagline">Conversations that keep you close.</span>
+          <span className="brand-tagline">
+            Conversations that keep you close.
+          </span>
         </div>
       </div>
 
@@ -615,7 +672,9 @@ function ChatPageContent() {
               </div>
             )}
             <div
-              className={`status-dot ${chatOnline ? "status-dot-online" : "status-dot-offline"}`}
+              className={`status-dot ${
+                chatOnline ? "status-dot-online" : "status-dot-offline"
+              }`}
               aria-hidden="true"
             ></div>
             <div className="d-flex flex-column">
@@ -644,7 +703,11 @@ function ChatPageContent() {
         >
           {theme === "night" ? "🌞" : "🌙"}
         </button>
-        <a href="/friend" className="chat-header-action" aria-label="Back to home">
+        <a
+          href="/friend"
+          className="chat-header-action"
+          aria-label="Back to home"
+        >
           🏠
         </a>
       </div>
@@ -880,7 +943,10 @@ function ChatPageContent() {
         {isFetchingPeople && people.length === 0 && (
           <>
             {Array.from({ length: 6 }).map((_, idx) => (
-              <div key={idx} className="mobile-conversation-row mobile-conversation-row--skeleton">
+              <div
+                key={idx}
+                className="mobile-conversation-row mobile-conversation-row--skeleton"
+              >
                 <div className="mobile-conversation-avatar mobile-conversation-avatar--skeleton" />
                 <div className="mobile-conversation-meta">
                   <span className="mobile-conversation-name mobile-conversation-name--skeleton" />
@@ -911,12 +977,16 @@ function ChatPageContent() {
               </div>
             )}
             <div className="mobile-conversation-meta">
-              <span className="mobile-conversation-name">{person.username}</span>
+              <span className="mobile-conversation-name">
+                {person.username}
+              </span>
               <span className="mobile-conversation-status">
                 {person.online ? "Online" : "Offline"}
               </span>
             </div>
-            {person.online && <span className="mobile-online-dot" aria-hidden="true"></span>}
+            {person.online && (
+              <span className="mobile-online-dot" aria-hidden="true"></span>
+            )}
           </button>
         ))}
       </div>
@@ -940,7 +1010,9 @@ function ChatPageContent() {
       {!chatUser && showChatThread && (
         <div className="chat-mobile-thread-view">
           {headerContent}
-          <div className="empty-thread-message">Choose a conversation to start chatting.</div>
+          <div className="empty-thread-message">
+            Choose a conversation to start chatting.
+          </div>
         </div>
       )}
     </div>
