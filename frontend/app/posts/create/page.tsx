@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiUrl } from "@/app/lib/api";
@@ -164,13 +163,13 @@ export default function CreateBlogPage() {
                     Fill in the details below and watch your narrative come alive.
                   </p>
                 </div>
-                <Link
-                  href="/home"
+                <button
+                  type="button"
                   className="btn btn-outline-secondary"
-                  aria-label="Back to home"
+                  onClick={() => router.push("/home")}
                 >
                   ⬅
-                </Link>
+                </button>
               </div>
 
               {/* Title Input */}
