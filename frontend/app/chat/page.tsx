@@ -1,7 +1,15 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { Socket } from "socket.io-client";
@@ -344,23 +352,25 @@ function ChatPageContent() {
     );
   }, [people, participants, user?.username, chatUser]);
 
-  const filteredPeople = useMemo(() => {
-    const normalizedTerm = searchTerm.trim().toLowerCase();
-    const baseList =
-      isMobile && currentUsername
-        ? allChatPeople.filter((person) =>
-            Array.isArray(person.friends)
-              ? person.friends.includes(currentUsername)
-              : false
-          )
-        : allChatPeople;
+  const mobilePeople = useMemo(() => {
+    if (!isMobile || !currentUsername) return allChatPeople;
 
-    if (!normalizedTerm) return baseList;
-
-    return baseList.filter((person) =>
-      person.username.toLowerCase().includes(normalizedTerm)
+    return allChatPeople.filter((person) =>
+      Array.isArray(person.friends)
+        ? person.friends.includes(currentUsername)
+        : false
     );
-  }, [allChatPeople, currentUsername, isMobile, searchTerm]);
+  }, [allChatPeople, currentUsername, isMobile]);
+
+  const deferredSearch = useDeferredValue(searchTerm.trim().toLowerCase());
+
+  const filteredPeople = useMemo(() => {
+  if (!deferredSearch) return mobilePeople;
+
+    return mobilePeople.filter((person) =>
+      person.username.toLowerCase().includes(deferredSearch)
+    );
+  }, [deferredSearch, mobilePeople]);
 
   // Show the scroll-to-bottom button when the user scrolls away from the bottom
   // or when new messages arrive while not at the bottom
