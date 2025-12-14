@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Suspense,
@@ -130,6 +131,10 @@ function ChatPageContent() {
   useEffect(() => {
     setShowChatThread(Boolean(chatUser));
   }, [chatUser]);
+
+  useEffect(() => {
+    router.prefetch("/friend");
+  }, [router]);
 
   const appendPeopleIncrementally = useCallback(
     async (users: ChatParticipant[], signal?: AbortSignal) => {
@@ -703,13 +708,14 @@ function ChatPageContent() {
         >
           {theme === "night" ? "🌞" : "🌙"}
         </button>
-        <a
+        <link
           href="/friend"
           className="chat-header-action"
           aria-label="Back to home"
+          prefetch
         >
           🏠
-        </a>
+        </link>
       </div>
     </header>
   );
