@@ -39,36 +39,38 @@ export default function UserProfilePage() {
   const usernameParam = Array.isArray(params?.username)
     ? params?.username?.[0]
     : (params?.username as string | undefined);
-  const profileUsername = usernameParam ? decodeURIComponent(usernameParam) : "";
+  const profileUsername = usernameParam
+    ? decodeURIComponent(usernameParam)
+    : "";
 
-  const {
-    data: users,
-    loading: loadingUsers,
-  } = useCachedApi<UserProfile[]>(user ? "/api/users" : null, {
-    fallback: [],
-    transform: normalizeUsersResponse,
-  });
-
-  const {
-    data: profileUser,
-    loading: loadingProfile,
-  } = useCachedApi<UserProfile | null>(
-    user && profileUsername ? `/api/users/${encodeURIComponent(profileUsername)}` : null,
-    {
-      fallback: null,
-      transform: normalizeUserResponse,
-    },
-  );
-
-  const {
-    data: posts,
-    loading: loadingPosts,
-  } = useCachedApi<BlogPost[]>(
-    user && profileUsername ? `/api/posts?author=${encodeURIComponent(profileUsername)}` : null,
+  const { data: users, loading: loadingUsers } = useCachedApi<UserProfile[]>(
+    user ? "/api/users" : null,
     {
       fallback: [],
-      transform: (payload) => (payload as { posts?: BlogPost[] | null })?.posts ?? [],
-    },
+      transform: normalizeUsersResponse,
+    }
+  );
+
+  const { data: profileUser, loading: loadingProfile } =
+    useCachedApi<UserProfile | null>(
+      user && profileUsername
+        ? `/api/users/${encodeURIComponent(profileUsername)}`
+        : null,
+      {
+        fallback: null,
+        transform: normalizeUserResponse,
+      }
+    );
+
+  const { data: posts, loading: loadingPosts } = useCachedApi<BlogPost[]>(
+    user && profileUsername
+      ? `/api/posts?author=${encodeURIComponent(profileUsername)}`
+      : null,
+    {
+      fallback: [],
+      transform: (payload) =>
+        (payload as { posts?: BlogPost[] | null })?.posts ?? [],
+    }
   );
 
   useEffect(() => {
@@ -78,7 +80,12 @@ export default function UserProfilePage() {
   }, [loading, user, router]);
 
   const isLoading =
-    loading || !user || loadingUsers || loadingProfile || loadingPosts || !profileUsername;
+    loading ||
+    !user ||
+    loadingUsers ||
+    loadingProfile ||
+    loadingPosts ||
+    !profileUsername;
 
   if (isLoading) {
     return (
@@ -111,14 +118,22 @@ export default function UserProfilePage() {
         <TopBar
           title="Profile"
           active="user"
-          currentUser={{ username: currentUserData.username, image: currentUserData.image }}
+          currentUser={{
+            username: currentUserData.username,
+            image: currentUserData.image,
+          }}
         />
         <div className="container mt-5">
           <div className="card shadow-sm text-center">
             <div className="card-body py-5">
               <h2 className="h4 mb-2">User not found</h2>
-              <p className="text-muted mb-4">The profile you are looking for does not exist.</p>
-              <button className="btn btn-primary" onClick={() => router.push("/user")}>
+              <p className="text-muted mb-4">
+                The profile you are looking for does not exist.
+              </p>
+              <button
+                className="btn btn-primary"
+                onClick={() => router.push("/user")}
+              >
                 Back to directory
               </button>
             </div>
@@ -141,14 +156,17 @@ export default function UserProfilePage() {
 
   return (
     <div
-      className={`container-fluid min-vh-100 py-4 ${
+      className={`container-fluid min-vh-100 p-4 ${
         theme === "night" ? "bg-dark text-white" : "bg-light"
       }`}
     >
       <TopBar
         title="Profile"
         active="user"
-        currentUser={{ username: currentUserData.username, image: currentUserData.image }}
+        currentUser={{
+          username: currentUserData.username,
+          image: currentUserData.image,
+        }}
       />
 
       <div className="container mt-4">
@@ -161,12 +179,20 @@ export default function UserProfilePage() {
                     src={profileUser.image}
                     alt={`${profileUser.username} profile`}
                     className="rounded-circle border"
-                    style={{ width: "72px", height: "72px", objectFit: "cover" }}
+                    style={{
+                      width: "72px",
+                      height: "72px",
+                      objectFit: "cover",
+                    }}
                   />
                 ) : (
                   <div
                     className="rounded-circle d-flex align-items-center justify-content-center border"
-                    style={{ width: "72px", height: "72px", fontSize: "1.5rem" }}
+                    style={{
+                      width: "72px",
+                      height: "72px",
+                      fontSize: "1.5rem",
+                    }}
                   >
                     {profileUser.username.charAt(0).toUpperCase()}
                   </div>
@@ -181,9 +207,13 @@ export default function UserProfilePage() {
               </div>
 
               <div className="flex-grow-1">
-                <p className="text-uppercase text-muted small mb-1">Public profile</p>
+                <p className="text-uppercase text-muted small mb-1">
+                  Public profile
+                </p>
                 <h1 className="h5 mb-1">{profileUser.username}</h1>
-                <span className={`badge ${presenceClass} bg-opacity-10 text-uppercase fw-semibold`}>
+                <span
+                  className={`badge ${presenceClass} bg-opacity-10 text-uppercase fw-semibold`}
+                >
                   {presenceLabel}
                 </span>
               </div>
@@ -208,7 +238,11 @@ export default function UserProfilePage() {
               <button
                 type="button"
                 className="btn btn-primary"
-                onClick={() => router.push(`/chat?user=${encodeURIComponent(profileUser.username)}`)}
+                onClick={() =>
+                  router.push(
+                    `/chat?user=${encodeURIComponent(profileUser.username)}`
+                  )
+                }
               >
                 Message
               </button>
@@ -251,7 +285,9 @@ export default function UserProfilePage() {
             </div>
 
             <div className="flex-grow-1">
-              <p className="text-uppercase text-muted small mb-1">Public profile</p>
+              <p className="text-uppercase text-muted small mb-1">
+                Public profile
+              </p>
               <h1 className="h4 mb-2">{profileUser.username}</h1>
               <div className="d-flex flex-wrap gap-3 text-muted small">
                 <span className="d-inline-flex align-items-center gap-2">
@@ -273,7 +309,11 @@ export default function UserProfilePage() {
               <button
                 type="button"
                 className="btn btn-outline-primary"
-                onClick={() => router.push(`/chat?user=${encodeURIComponent(profileUser.username)}`)}
+                onClick={() =>
+                  router.push(
+                    `/chat?user=${encodeURIComponent(profileUser.username)}`
+                  )
+                }
               >
                 Message
               </button>
@@ -287,23 +327,24 @@ export default function UserProfilePage() {
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="d-flex align-items-center justify-content-between mb-3">
-          <div>
-            <h2 className="h5 mb-1">Posts by {profileUser.username}</h2>
-            <p className="text-muted mb-0">All stories created by this user.</p>
-          </div>
-        </div>
-
+      <div className="mt-4">
         {posts.length === 0 ? (
-          <div className="card shadow-sm">
+          <div className="card shadow-sm w-100 mx-auto">
             <div className="card-body text-center py-5">
-              <p className="text-muted mb-0">{profileUser.username} hasn’t shared any posts yet.</p>
+              <p className="text-muted mb-0">
+                {profileUser.username} hasn’t shared any posts yet.
+              </p>
             </div>
           </div>
         ) : (
           posts.map((post) => (
-            <BlogCard key={post._id ?? post.title} blog={post} author={profileUser} />
+            <BlogCard
+              key={post._id ?? post.title}
+              blog={post}
+              author={profileUser}
+            />
           ))
         )}
       </div>
