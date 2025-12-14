@@ -708,14 +708,14 @@ function ChatPageContent() {
         >
           {theme === "night" ? "🌞" : "🌙"}
         </button>
-        <link
+        <Link
           href="/friend"
           className="chat-header-action"
           aria-label="Back to home"
           prefetch
         >
           🏠
-        </link>
+        </Link>
       </div>
     </header>
   );
