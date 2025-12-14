@@ -131,6 +131,14 @@ export default function UserProfilePage() {
   const presenceLabel = profileUser.online ? "Online" : "Offline";
   const presenceClass = profileUser.online ? "bg-success" : "bg-secondary";
 
+  const handleBackNavigation = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/user");
+    }
+  };
+
   return (
     <div
       className={`container-fluid min-vh-100 py-4 ${
@@ -204,7 +212,11 @@ export default function UserProfilePage() {
               >
                 Message
               </button>
-              <button type="button" className="btn btn-outline-secondary" onClick={() => router.push("/user")}>
+              <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={handleBackNavigation}
+              >
                 Back to directory
               </button>
             </div>
@@ -268,7 +280,7 @@ export default function UserProfilePage() {
               <button
                 type="button"
                 className="btn btn-outline-secondary"
-                onClick={() => router.push("/user")}
+                onClick={handleBackNavigation}
               >
                 Back
               </button>
