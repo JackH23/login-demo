@@ -83,7 +83,9 @@ function ChatPageContent() {
     (node: HTMLDivElement | null) => {
       messagesContainerNodeRef.current = node;
       if (node && chatDataUrl) {
-        void prefetchCachedApi<ChatData>(chatDataUrl);
+        void prefetchCachedApi<ChatData>(chatDataUrl).catch((error) => {
+          console.warn("Failed to prefetch chat data", error);
+        });
       }
     },
     [chatDataUrl]
