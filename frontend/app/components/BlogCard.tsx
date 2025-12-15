@@ -905,11 +905,14 @@ export default function BlogCard({
           className="blog-card__media position-relative overflow-hidden"
           style={{
             cursor: "pointer",
-            aspectRatio: isMobile ? "3 / 4" : "16 / 9", // Keeps a predictable viewport without forcing the image to stretch
+            width: "100%",
             maxHeight: isMobile ? "200px" : "360px",
             backgroundColor: isNight ? "#0f172a" : "#f8fafc",
             borderBottomLeftRadius: "0px",
             borderBottomRightRadius: "0px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           {/* Image container section with clickable behavior */}
@@ -919,9 +922,10 @@ export default function BlogCard({
             className="card-img-top"
             style={{
               width: "100%",
-              height: "100%",
+              height: "auto",
+              maxHeight: "100%",
               display: "block", // Removes inline-gap artifacts so the image fills the wrapper cleanly
-              objectFit: "cover", // Preserves aspect ratio without distortion while filling the frame
+              objectFit: "contain", // Preserves aspect ratio while fitting within the card's boundaries
               objectPosition: "center",
               filter: isNight ? "brightness(0.9)" : "saturate(1.05)",
             }}
