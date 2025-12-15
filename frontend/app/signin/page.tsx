@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import AuthLayout from "../components/AuthLayout";
@@ -33,6 +33,18 @@ export default function SigninPage() {
   const { signin } = useAuth();
   const router = useRouter();
 
+  const warmHomeData = useCallback(() => {
+    const warmUsers = prefetchCachedApi<PrefetchUser[]>("/api/users", {
+      transform: normalizeUsersResponse,
+    });
+    const warmPosts = prefetchCachedApi<PrefetchPost[]>("/api/posts", {
+      transform: (payload) =>
+        (payload as { posts?: PrefetchPost[] | null })?.posts ?? [],
+    });
+
+    return Promise.all([warmUsers, warmPosts]);
+  }, []);
+
   useEffect(() => {
     void router.prefetch("/home");
   }, [router]);
@@ -43,15 +55,9 @@ export default function SigninPage() {
     try {
       const result = await signin(email, password);
       if (result.success) {
-        const warmUsers = prefetchCachedApi<PrefetchUser[]>("/api/users", {
-          transform: normalizeUsersResponse,
-        });
-        const warmPosts = prefetchCachedApi<PrefetchPost[]>("/api/posts", {
-          transform: (payload) =>
-            (payload as { posts?: PrefetchPost[] | null })?.posts ?? [],
-        });
-        router.push("/home");
-        void Promise.all([warmUsers, warmPosts]).catch((prefetchError) => {
+        const warmup = warmHomeData();
+        router.replace("/home");
+        void warmup.catch((prefetchError) => {
           console.error("Failed to prefetch home data", prefetchError);
         });
       } else {
