@@ -57,15 +57,7 @@ function ChatPageContent() {
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const messagesContainerNodeRef = useRef<HTMLDivElement | null>(null);
-  const messagesContainerRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      messagesContainerNodeRef.current = node;
-      if (node && chatDataUrl) {
-        void prefetchCachedApi<ChatData>(chatDataUrl);
-      }
-    },
-    [chatDataUrl]
-  );
+  
   const socketRef = useRef<Socket | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const prevLengthRef = useRef(0); // Initialize ref here
@@ -87,7 +79,15 @@ function ChatPageContent() {
       limit: "200",
     }).toString()}`;
   }, [chatUser, user]);
-
+  const messagesContainerRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      messagesContainerNodeRef.current = node;
+      if (node && chatDataUrl) {
+        void prefetchCachedApi<ChatData>(chatDataUrl);
+      }
+    },
+    [chatDataUrl]
+  );
   const {
     data: chatData,
     setData: setChatData,
