@@ -906,7 +906,7 @@ export default function BlogCard({
           style={{
             cursor: "pointer",
             width: "100%",
-            maxHeight: isMobile ? "200px" : "360px",
+            maxHeight: isMobile ? "240px" : "360px",
             aspectRatio: "16 / 9",
             backgroundColor: isNight ? "#0f172a" : "#f8fafc",
             borderBottomLeftRadius: "0px",
@@ -983,7 +983,13 @@ export default function BlogCard({
 
       <div
         className="blog-card__body card-body p-3"
-        style={{ padding: isMobile ? "0.75rem 0.9rem" : "1rem 1.25rem" }}
+        style={{
+          padding: isMobile
+            ? blog.image
+              ? "0.5rem 0.9rem 0.95rem"
+              : "0.75rem 0.9rem"
+            : "1rem 1.25rem",
+        }}
       >
         <p
           className="card-text fs-6 mb-2"
