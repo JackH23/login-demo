@@ -2,12 +2,19 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { Socket } from "socket.io-client";
 import { apiUrl } from "@/app/lib/api";
-import { useCachedApi } from "../hooks/useCachedApi";
+import { prefetchCachedApi, useCachedApi } from "../hooks/useCachedApi";
 
 interface Message {
   _id: string;
@@ -49,7 +56,16 @@ function ChatPageContent() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement | null>(null);
-  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+  const messagesContainerNodeRef = useRef<HTMLDivElement | null>(null);
+  const messagesContainerRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      messagesContainerNodeRef.current = node;
+      if (node && chatDataUrl) {
+        void prefetchCachedApi<ChatData>(chatDataUrl);
+      }
+    },
+    [chatDataUrl]
+  );
   const socketRef = useRef<Socket | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const prevLengthRef = useRef(0); // Initialize ref here
@@ -219,7 +235,7 @@ function ChatPageContent() {
   // Show the scroll-to-bottom button when the user scrolls away from the bottom
   // or when new messages arrive while not at the bottom
   useEffect(() => {
-    const container = messagesContainerRef.current;
+    const container = messagesContainerNodeRef.current;
     if (!container) return;
 
     const handleScroll = () => {
