@@ -102,7 +102,8 @@ export default function TopBar({
   const router = useRouter();
   const greeting = getGreeting();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [navVariant, setNavVariant] = useState<TopBarLayoutVariant>(layoutVariant);
+  const [navVariant, setNavVariant] =
+    useState<TopBarLayoutVariant>(layoutVariant);
   const [isCompactMobile, setIsCompactMobile] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
 
@@ -117,20 +118,27 @@ export default function TopBar({
         transform: (payload) =>
           (payload as { posts?: PrefetchPost[] | null })?.posts ?? [],
       }),
-    [],
+    []
   );
 
   const prefetchUsers = useCallback(
-    () => prefetchCachedApi<PrefetchUser[]>("/api/users", { transform: normalizeUsersResponse }),
-    [],
+    () =>
+      prefetchCachedApi<PrefetchUser[]>("/api/users", {
+        transform: normalizeUsersResponse,
+      }),
+    []
   );
 
   const prefetchFriends = useCallback(
     (username: string) =>
-      prefetchCachedApi<string[]>(`/api/friends?username=${encodeURIComponent(username)}`, {
-        transform: (payload) => (payload as { friends?: string[] | null })?.friends ?? [],
-      }),
-    [],
+      prefetchCachedApi<string[]>(
+        `/api/friends?username=${encodeURIComponent(username)}`,
+        {
+          transform: (payload) =>
+            (payload as { friends?: string[] | null })?.friends ?? [],
+        }
+      ),
+    []
   );
 
   const prefetchDataForNav = useCallback(
@@ -138,7 +146,9 @@ export default function TopBar({
       if (!currentUser.username) return;
 
       const pending: Promise<unknown>[] = [];
-      const postsByAuthor = `/api/posts?author=${encodeURIComponent(currentUser.username)}`;
+      const postsByAuthor = `/api/posts?author=${encodeURIComponent(
+        currentUser.username
+      )}`;
 
       switch (page) {
         case "home":
@@ -166,7 +176,7 @@ export default function TopBar({
         console.error("Failed to prefetch page data", error);
       });
     },
-    [currentUser.username, prefetchFriends, prefetchPosts, prefetchUsers],
+    [currentUser.username, prefetchFriends, prefetchPosts, prefetchUsers]
   );
 
   const navItems = useMemo(() => {
@@ -174,7 +184,12 @@ export default function TopBar({
       { key: "home", label: "Home", href: "/home", icon: Home },
       { key: "posts", label: "All Posts", href: "/posts", icon: FileText },
       { key: "user", label: "Profile", href: "/user", icon: UserCircle2 },
-      { key: "analysis", label: "Analysis", href: "/analysis", icon: BarChart3 },
+      {
+        key: "analysis",
+        label: "Analysis",
+        href: "/analysis",
+        icon: BarChart3,
+      },
       { key: "friend", label: "Friends", href: "/friend", icon: Users },
       { key: "setting", label: "Settings", href: "/setting", icon: Settings2 },
     ];
@@ -254,9 +269,7 @@ export default function TopBar({
         return {
           wrapperClassName:
             `${sharedWrapper} shadow-lg` +
-            (theme === "night"
-              ? " bg-opacity-75"
-              : " bg-white bg-opacity-75"),
+            (theme === "night" ? " bg-opacity-75" : " bg-white bg-opacity-75"),
           inactiveStyle:
             theme === "night"
               ? { background: "rgba(148, 163, 184, 0.12)" }
@@ -269,7 +282,7 @@ export default function TopBar({
     (href: string) => {
       router.prefetch(href);
     },
-    [router],
+    [router]
   );
 
   const prefetchNavItem = useCallback(
@@ -277,7 +290,7 @@ export default function TopBar({
       prefetchRoute(item.href);
       prefetchDataForNav(item.key);
     },
-    [prefetchDataForNav, prefetchRoute],
+    [prefetchDataForNav, prefetchRoute]
   );
 
   const handleNavClick = useCallback(
@@ -302,7 +315,7 @@ export default function TopBar({
         router.push(item.href);
       });
     },
-    [optimisticActive, router, startTransition],
+    [optimisticActive, router, startTransition]
   );
 
   const containerStyle: React.CSSProperties = {
@@ -319,21 +332,36 @@ export default function TopBar({
       : "linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(241, 245, 249, 0.95) 100%)",
     backdropFilter: isMobileViewport ? undefined : "blur(12px)",
     WebkitBackdropFilter: isMobileViewport ? undefined : "blur(12px)",
-    boxShadow:
-      isMobileViewport
-        ? "0 1px 0 rgba(0,0,0,0.06)"
-        : theme === "night"
-        ? "0 18px 45px -20px rgba(15, 23, 42, 0.9)"
-        : "0 18px 45px -20px rgba(100, 116, 139, 0.35)",
+    boxShadow: isMobileViewport
+      ? "0 1px 0 rgba(0,0,0,0.06)"
+      : theme === "night"
+      ? "0 18px 45px -20px rgba(15, 23, 42, 0.9)"
+      : "0 18px 45px -20px rgba(100, 116, 139, 0.35)",
   };
 
   const themeToggleLabel =
     theme === "night" ? "Switch to light mode" : "Switch to dark mode";
 
+  const mobileSidebarClassName = `sidebar d-lg-none ${
+    mobileNavOpen ? "translate-none" : "translate-n100"
+  } ${theme === "night" ? "bg-dark text-white" : "bg-white text-dark"}`;
+
+  const mobileNavItemClassName = (isActive: boolean) =>
+    `d-flex align-items-center gap-3 rounded-3 px-3 py-2 text-decoration-none ${
+      isActive
+        ? "bg-primary text-white"
+        : theme === "night"
+        ? "bg-white bg-opacity-10 text-white"
+        : "bg-light text-dark border border-light-subtle"
+    }`;
+
   const avatarNode = (
     <div
       className="rounded-circle border border-primary-subtle bg-primary bg-opacity-25 d-flex align-items-center justify-content-center shadow-sm"
-      style={{ width: isCompactMobile ? "32px" : "36px", height: isCompactMobile ? "32px" : "36px" }}
+      style={{
+        width: isCompactMobile ? "32px" : "36px",
+        height: isCompactMobile ? "32px" : "36px",
+      }}
       aria-label="Profile"
     >
       {currentUser.image ? (
@@ -373,14 +401,18 @@ export default function TopBar({
       <div className="d-flex flex-wrap gap-2">
         <button
           type="button"
-          className={`btn btn-sm ${navVariant === "toolbar" ? "btn-primary" : "btn-outline-primary"}`}
+          className={`btn btn-sm ${
+            navVariant === "toolbar" ? "btn-primary" : "btn-outline-primary"
+          }`}
           onClick={() => setNavVariant("toolbar")}
         >
           Minimal mode
         </button>
         <button
           type="button"
-          className={`btn btn-sm ${navVariant === "floating" ? "btn-primary" : "btn-outline-primary"}`}
+          className={`btn btn-sm ${
+            navVariant === "floating" ? "btn-primary" : "btn-outline-primary"
+          }`}
           onClick={() => setNavVariant("floating")}
         >
           Floating mode
@@ -408,16 +440,25 @@ export default function TopBar({
             <button
               type="button"
               className="btn btn-sm btn-outline-primary d-flex align-items-center gap-2"
-              onClick={() => setTheme(theme === "night" ? "brightness" : "night")}
+              onClick={() =>
+                setTheme(theme === "night" ? "brightness" : "night")
+              }
               aria-label={themeToggleLabel}
               title={themeToggleLabel}
             >
-              {theme === "night" ? <SunMedium size={18} /> : <MoonStar size={18} />}
+              {theme === "night" ? (
+                <SunMedium size={18} />
+              ) : (
+                <MoonStar size={18} />
+              )}
               <span className="d-none d-sm-inline">
                 {theme === "night" ? "Light mode" : "Dark mode"}
               </span>
             </button>
-            <Link href="/posts/create" className="btn btn-sm btn-primary d-flex align-items-center gap-2">
+            <Link
+              href="/posts/create"
+              className="btn btn-sm btn-primary d-flex align-items-center gap-2"
+            >
               <FileText size={18} />
               <span>New Post</span>
             </Link>
@@ -453,7 +494,9 @@ export default function TopBar({
             >
               <Menu size={18} />
             </button>
-            <h1 className="mb-0 flex-grow-1 text-center h6 fw-semibold text-truncate">{title}</h1>
+            <h1 className="mb-0 flex-grow-1 text-center h6 fw-semibold text-truncate">
+              {title}
+            </h1>
             {avatarNode}
           </div>
 
@@ -464,9 +507,7 @@ export default function TopBar({
           />
 
           <div
-            className={`sidebar bg-dark text-white d-lg-none ${
-              mobileNavOpen ? "translate-none" : "translate-n100"
-            }`}
+            className={mobileSidebarClassName}
             style={{
               transform: mobileNavOpen ? "translateX(0)" : "translateX(-100%)",
               transition: "transform 0.25s ease",
@@ -480,13 +521,19 @@ export default function TopBar({
               <div className="d-flex align-items-center gap-2">
                 {avatarNode}
                 <div className="d-none d-sm-block">
-                  <p className="mb-0 small text-secondary-emphasis">{greeting}</p>
+                  <p className="mb-0 small text-secondary-emphasis">
+                    {greeting}
+                  </p>
                   <strong>{currentUser.username}</strong>
                 </div>
               </div>
               <button
                 type="button"
-                className="btn btn-sm btn-outline-light rounded-pill"
+                className={`btn btn-sm rounded-pill ${
+                  theme === "night"
+                    ? "btn-outline-light"
+                    : "btn-outline-secondary"
+                }`}
                 onClick={() => setMobileNavOpen(false)}
                 aria-label="Close navigation"
               >
@@ -495,7 +542,10 @@ export default function TopBar({
             </div>
 
             <div className="px-3 pb-4 h-100 d-flex flex-column">
-              <nav className="d-flex flex-column gap-2 flex-grow-1" aria-label="Mobile navigation">
+              <nav
+                className="d-flex flex-column gap-2 flex-grow-1"
+                aria-label="Mobile navigation"
+              >
                 {navItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = optimisticActive === item.key;
@@ -503,9 +553,7 @@ export default function TopBar({
                     <Link
                       key={item.key}
                       href={item.href}
-                      className={`d-flex align-items-center gap-3 rounded-3 px-3 py-2 text-decoration-none ${
-                        isActive ? "bg-primary text-white" : "bg-white bg-opacity-10 text-white"
-                      }`}
+                      className={mobileNavItemClassName(isActive)}
                       onClick={(event) => {
                         handleNavClick(event, item);
                         setMobileNavOpen(false);
@@ -513,7 +561,11 @@ export default function TopBar({
                     >
                       <Icon size={18} />
                       <span className="flex-grow-1">{item.label}</span>
-                      {isActive && <span className="badge bg-primary-subtle text-primary">Active</span>}
+                      {isActive && (
+                        <span className="badge bg-primary-subtle text-primary">
+                          Active
+                        </span>
+                      )}
                     </Link>
                   );
                 })}
@@ -542,7 +594,9 @@ export default function TopBar({
             const Icon = item.icon;
             const isActive = optimisticActive === item.key;
             const isPendingSelection =
-              isNavigating && active !== item.key && optimisticActive === item.key;
+              isNavigating &&
+              active !== item.key &&
+              optimisticActive === item.key;
             const baseClass =
               "nav-link d-flex align-items-center gap-2 px-3 py-2 rounded-pill border-0 fw-semibold";
             const visualState = isActive
