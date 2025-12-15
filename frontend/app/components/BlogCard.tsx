@@ -907,6 +907,7 @@ export default function BlogCard({
             cursor: "pointer",
             width: "100%",
             maxHeight: isMobile ? "200px" : "360px",
+            aspectRatio: "16 / 9",
             backgroundColor: isNight ? "#0f172a" : "#f8fafc",
             borderBottomLeftRadius: "0px",
             borderBottomRightRadius: "0px",
@@ -922,7 +923,8 @@ export default function BlogCard({
             className="card-img-top"
             style={{
               width: "100%",
-              height: "auto",
+              height: "100%",
+              maxWidth: "100%",
               maxHeight: "100%",
               display: "block", // Removes inline-gap artifacts so the image fills the wrapper cleanly
               objectFit: "contain", // Preserves aspect ratio while fitting within the card's boundaries
