@@ -116,6 +116,15 @@ function ChatPageContent() {
     setTheme(theme === "night" ? "brightness" : "night");
   };
 
+  const handleBackNavigation = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+      return;
+    }
+
+    router.push("/friend");
+  };
+
   // Request browser notification permission on mount
   useEffect(() => {
     if (typeof window === "undefined" || !("Notification" in window)) return;
@@ -505,14 +514,14 @@ function ChatPageContent() {
         >
           {theme === "night" ? "🌞" : "🌙"}
         </button>
-        <Link
-          href="/friend"
+        <button
+          type="button"
           className="chat-header-action"
+          onClick={handleBackNavigation}
           aria-label="Back to home"
-          prefetch
         >
           🏠
-        </Link>
+        </button>
       </div>
     </header>
   );
