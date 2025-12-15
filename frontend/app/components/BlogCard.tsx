@@ -1026,8 +1026,8 @@ export default function BlogCard({
 
         <div className="blog-card__footer d-flex flex-column flex-md-row gap-3 mt-4 align-items-start align-items-md-center w-100">
           {isMobile ? (
-            <div className="w-100 d-flex flex-column gap-2">
-              <div className="blog-card__actions-mobile d-flex flex-wrap gap-2">
+            <div className="blog-card__mobile-cta w-100">
+              <div className="blog-card__mobile-actions-grid">
                 <button
                   className={`btn btn-sm btn-success rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
                   onClick={handleLikePost}
@@ -1079,13 +1079,13 @@ export default function BlogCard({
                   <span>⤴</span>
                   <span>Share</span>
                 </button>
-              </div>
+              
 
-              <div className="blog-card__comments-action w-100">
+              
                 <button
                   className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
                     isNight ? "btn-outline-light" : "btn-outline-secondary"
-                  } w-100 justify-content-center`}
+                  }`}
                   onClick={() => setShowConversation((prev) => !prev)}
                   style={{ fontSize: "0.95rem" }}
                   aria-pressed={showConversation}
@@ -2628,34 +2628,60 @@ export default function BlogCard({
             gap: 0.4rem !important;
           }
 
-          .blog-card__actions-mobile {
-            gap: 0.25rem !important;
-            margin-bottom: 0.25rem !important;
+          .blog-card__mobile-cta {
+            gap: 0.35rem !important;
           }
 
-          .blog-card__comments-action {
-            margin-top: 0.1rem !important;
+          .blog-card__mobile-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.35rem !important;
+            width: 100%;
           }
 
-          /* Buttons smaller */
-          .blog-card__footer .btn,
-          .blog-card__actions-mobile .btn,
-          .blog-card__comments-action .btn {
-            padding: 0.25rem 0.55rem !important;
-            font-size: 0.75rem !important;
-            min-height: 32px !important;
+          .blog-card__mobile-actions-grid .btn {
+            width: 100%;
+            justify-content: center;
+            padding: 0.3rem 0.65rem !important;
+            font-size: 0.8rem !important;
+            min-height: 36px !important;
+            border-radius: 14px !important;
+            box-shadow: 0 10px 18px ${
+              isNight ? "rgba(0,0,0,0.28)" : "rgba(15,23,42,0.08)"
+            },
+              inset 0 0 0 1px ${
+                isNight ? "rgba(255,255,255,0.08)" : "rgba(59,130,246,0.15)"
+              };
+          }
+
+          .blog-card__mobile-actions-grid .btn span {
+            font-size: 0.9rem !important;
+          }
+
+          .blog-card__mobile-actions-grid .badge {
+            font-size: 0.72rem !important;
+            padding: 0.15rem 0.5rem !important;
+            min-width: 42px;
+          }
+
+          .blog-card__mobile-hint {
+            padding-inline: 0.1rem;
+          }
+
+          .blog-card__footer .btn {
+            padding: 0.3rem 0.65rem !important;
+            font-size: 0.8rem !important;
+            min-height: 36px !important;
             border-radius: 14px !important;
           }
 
-          .blog-card__actions-mobile .btn span,
           .blog-card__footer .btn span {
-            font-size: 0.85rem !important;
+            font-size: 0.9rem !important;
           }
 
-          .blog-card__actions-mobile .badge,
           .blog-card__footer .badge {
-            font-size: 0.7rem !important;
-            padding: 0.15rem 0.45rem !important;
+            font-size: 0.72rem !important;
+            padding: 0.15rem 0.5rem !important;
           }
 
           /* ----------------------------------
