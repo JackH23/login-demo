@@ -906,8 +906,9 @@ export default function BlogCard({
           style={{
             cursor: "pointer",
             width: "100%",
-            maxHeight: isMobile ? "240px" : "360px",
-            aspectRatio: "16 / 9",
+            maxHeight: isMobile ? "320px" : "360px",
+            minHeight: isMobile ? "280px" : undefined,
+            aspectRatio: isMobile ? "4 / 3" : "16 / 9",
             backgroundColor: isNight ? "#0f172a" : "#f8fafc",
             borderBottomLeftRadius: "0px",
             borderBottomRightRadius: "0px",
@@ -927,7 +928,7 @@ export default function BlogCard({
               maxWidth: "100%",
               maxHeight: "100%",
               display: "block", // Removes inline-gap artifacts so the image fills the wrapper cleanly
-              objectFit: "contain", // Preserves aspect ratio while fitting within the card's boundaries
+              objectFit: isMobile ? "cover" : "contain", // Preserve aspect ratio; fill more space on mobile
               objectPosition: "center",
               filter: isNight ? "brightness(0.9)" : "saturate(1.05)",
             }}
