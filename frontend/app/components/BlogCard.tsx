@@ -2739,6 +2739,12 @@ export default function BlogCard({
           .blog-card__title h3 {
             font-size: 1.05rem;
             line-height: 1.2;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-break: break-word;
           }
 
           .blog-card__stats {
