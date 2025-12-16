@@ -1945,6 +1945,8 @@ export default function BlogCard({
           tabIndex={-1}
           role="dialog"
           style={{ backgroundColor: "rgba(0,0,0,0.85)" }}
+          aria-modal="true"
+          aria-labelledby="expanded-image-title"
           onClick={() => setShowImageModal(false)}
         >
           <div
@@ -1953,18 +1955,28 @@ export default function BlogCard({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="modal-content bg-black text-white border-0">
-              <div className="modal-header border-0">
+              <div className="modal-header border-0 align-items-start gap-3 px-4 px-md-5 pt-4 pb-0">
+                <div className="d-flex flex-column gap-1">
+                  <h2
+                    id="expanded-image-title"
+                    className="h5 mb-0 text-white"
+                    style={{ lineHeight: 1.35 }}
+                  >
+                    {blog.title}
+                  </h2>
+                </div>
                 <button
                   type="button"
-                  className="btn-close btn-close-white"
+                  className="btn-close btn-close-white ms-auto"
                   onClick={() => setShowImageModal(false)}
+                  aria-label="Close expanded image"
                 />
               </div>
               <div className="modal-body p-0 position-relative bg-black d-flex justify-content-center align-items-center">
                 <img
                   src={blog.image}
-                  alt="Full Blog View"
-                  className="w-100 h-100"
+                  alt={blog.title || "Full Blog View"}
+                  className="expanded-image"
                   style={{
                     objectFit: "contain",
                   }}
@@ -2226,6 +2238,35 @@ export default function BlogCard({
           clip: rect(0, 0, 0, 0);
           border: 0;
           white-space: nowrap;
+        }
+
+        .expanded-image {
+          width: 100%;
+          height: 100%;
+          max-height: calc(100vh - 160px);
+          background-color: #000;
+        }
+
+        .expanded-image__caption {
+          position: absolute;
+          inset: auto 0 0 0;
+          background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.75) 60%);
+          padding: 1rem 1.25rem 1.5rem;
+          display: flex;
+          justify-content: center;
+        }
+
+        .expanded-image__caption-inner {
+          width: min(1040px, 100%);
+          color: #e2e8f0;
+          text-align: center;
+          letter-spacing: 0.02em;
+        }
+
+        .expanded-image__hint {
+          color: #e2e8f0;
+          letter-spacing: 0.05em;
+          opacity: 0.85;
         }
 
         @media (min-width: 577px) {
