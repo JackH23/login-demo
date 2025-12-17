@@ -25,6 +25,16 @@ const readStoredTheme = (): Theme => {
   return prefersDark ? "night" : "brightness";
 };
 
+const readDomTheme = (): Theme => {
+  if (typeof document === "undefined") return "brightness";
+
+  const current = document.documentElement.getAttribute("data-bs-theme");
+  if (current === "dark") return "night";
+  if (current === "light") return "brightness";
+
+  return readStoredTheme();
+};
+
 const applyThemeToDom = (value: Theme) => {
   if (typeof document === "undefined") return;
 
@@ -41,11 +51,10 @@ const applyThemeToDom = (value: Theme) => {
 };
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Default to brightness during SSR to avoid hydration mismatch. Sync with the
-  // stored preference on mount so the client can update once it knows the
-  // user's choice.
-  const [theme, setThemeState] = useState<Theme>("brightness");
-  const [hasHydrated, setHasHydrated] = useState(false);
+  // Default to the theme already applied to the DOM (set by the inline script
+  // in app/layout) so client and server markup stay in sync after refreshes.
+  const [theme, setThemeState] = useState<Theme>(() => readDomTheme());
+  const [hasHydrated, setHasHydrated] = useState(() => typeof document !== "undefined");
 
   const setTheme = (value: Theme) => {
     setThemeState(value);
