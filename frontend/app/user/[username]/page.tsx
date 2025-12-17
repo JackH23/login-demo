@@ -90,6 +90,19 @@ export default function UserProfilePage() {
     }
   }, [loading, user, router]);
 
+  useEffect(() => {
+    if (!isImageModalOpen) return;
+
+    const handleKeydown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsImageModalOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeydown);
+    return () => window.removeEventListener("keydown", handleKeydown);
+  }, [isImageModalOpen]);
+
   const isLoading =
     loading ||
     !user ||
@@ -156,19 +169,6 @@ export default function UserProfilePage() {
 
   const presenceLabel = profileUser.online ? "Online" : "Offline";
   const presenceClass = profileUser.online ? "bg-success" : "bg-secondary";
-
-  useEffect(() => {
-    if (!isImageModalOpen) return;
-
-    const handleKeydown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsImageModalOpen(false);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeydown);
-    return () => window.removeEventListener("keydown", handleKeydown);
-  }, [isImageModalOpen]);
 
   const handleBackNavigation = () => {
     if (typeof window !== "undefined" && window.history.length > 1) {
