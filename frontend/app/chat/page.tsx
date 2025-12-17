@@ -54,6 +54,7 @@ function ChatPageContent() {
   const { theme, setTheme } = useTheme();
 
   const [messages, setMessages] = useState<Message[]>([]);
+  const [lastFetchTime, setLastFetchTime] = useState<number>(() => Date.now());
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const messagesContainerNodeRef = useRef<HTMLDivElement | null>(null);
@@ -170,6 +171,7 @@ function ChatPageContent() {
       emojis: chatData.emojis ?? [],
     };
 
+    setLastFetchTime(Date.now());
     setMessages(normalized.messages);
     setParticipants(normalized.participants);
 
@@ -384,8 +386,17 @@ function ChatPageContent() {
     }
   };
 
-  function formatDateLabel(dateStr: string) {
-    const date = new Date(dateStr);
+  function resolveMessageDate(rawDate: string) {
+    const parsed = new Date(rawDate);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed;
+    }
+
+    return new Date(lastFetchTime);
+  }
+
+  function formatDateLabel(dateInput: string | Date) {
+    const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
     const today = new Date();
     const yesterday = new Date();
     yesterday.setDate(today.getDate() - 1);
@@ -553,7 +564,8 @@ function ChatPageContent() {
       }`}
     >
       {messages.map((msg, idx) => {
-        const msgDate = new Date(msg.createdAt).toDateString();
+        const createdAt = resolveMessageDate(msg.createdAt);
+        const msgDate = createdAt.toDateString();
         const isSender = msg.from === user?.username;
 
         const showDateLabel = msgDate !== lastDateLabel;
@@ -564,7 +576,7 @@ function ChatPageContent() {
             {showDateLabel && (
               <div className="text-center text-muted small my-3">
                 <span className="badge bg-secondary">
-                  {formatDateLabel(msg.createdAt)}
+                  {formatDateLabel(createdAt)}
                 </span>
               </div>
             )}
@@ -592,8 +604,11 @@ function ChatPageContent() {
                   {!isSender && (
                     <span className="chat-message-sender">{msg.from}</span>
                   )}
-                  <time className="chat-message-time" dateTime={msg.createdAt}>
-                    {new Date(msg.createdAt).toLocaleTimeString([], {
+                  <time
+                    className="chat-message-time"
+                    dateTime={createdAt.toISOString()}
+                  >
+                    {createdAt.toLocaleTimeString([], {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
