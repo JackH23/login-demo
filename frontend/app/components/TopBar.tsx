@@ -115,6 +115,7 @@ export default function TopBar({
   const prefetchPosts = useCallback(
     (endpoint: string) =>
       prefetchCachedApi<PrefetchPost[]>(endpoint, {
+        fallback: [],
         transform: (payload) =>
           (payload as { posts?: PrefetchPost[] | null })?.posts ?? [],
       }),
@@ -124,6 +125,7 @@ export default function TopBar({
   const prefetchUsers = useCallback(
     () =>
       prefetchCachedApi<PrefetchUser[]>("/api/users", {
+        fallback: [],
         transform: normalizeUsersResponse,
       }),
     []
@@ -134,6 +136,7 @@ export default function TopBar({
       prefetchCachedApi<string[]>(
         `/api/friends?username=${encodeURIComponent(username)}`,
         {
+          fallback: [],
           transform: (payload) =>
             (payload as { friends?: string[] | null })?.friends ?? [],
         }

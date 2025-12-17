@@ -35,9 +35,11 @@ export default function SigninPage() {
 
   const warmHomeData = useCallback(() => {
     const warmUsers = prefetchCachedApi<PrefetchUser[]>("/api/users", {
+      fallback: [],
       transform: normalizeUsersResponse,
     });
     const warmPosts = prefetchCachedApi<PrefetchPost[]>("/api/posts", {
+      fallback: [],
       transform: (payload) =>
         (payload as { posts?: PrefetchPost[] | null })?.posts ?? [],
     });

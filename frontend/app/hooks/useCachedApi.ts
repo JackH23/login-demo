@@ -37,11 +37,16 @@ interface UseCachedApiOptions<T> {
 interface PrefetchOptions<T> {
   staleTime?: number;
   transform?: (payload: unknown) => T;
+  fallback?: T,
 }
 
 export function prefetchCachedApi<T>(
   url: string,
-  { staleTime = DEFAULT_STALE_TIME, transform }: PrefetchOptions<T> = {}
+  {
+    staleTime = DEFAULT_STALE_TIME,
+    transform,
+    fallback,
+  }: PrefetchOptions<T> = {}
 ): Promise<T> {
   const entry = ensureEntry<T>(url);
   const now = Date.now();
@@ -72,6 +77,14 @@ export function prefetchCachedApi<T>(
     .catch((err) => {
       const errorObj = err instanceof Error ? err : new Error("Failed to prefetch data");
       entry.error = errorObj;
+      
+      if (fallback !== undefined) {
+        console.warn(`Prefetch for ${url} failed; using fallback value.`, errorObj);
+        entry.data = fallback;
+        entry.timestamp = Date.now();
+        return fallback;
+      }
+
       throw errorObj;
     })
     .finally(() => {
