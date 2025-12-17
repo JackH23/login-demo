@@ -37,6 +37,16 @@ export default function AdminUserProfilePage() {
     return Array.isArray(raw) ? raw[0] : raw;
   }, [params]);
 
+  const formatDateTime = useMemo(
+    () =>
+      new Intl.DateTimeFormat("en-US", {
+        dateStyle: "medium",
+        timeStyle: "short",
+        timeZone: "UTC",
+      }),
+    []
+  );
+
   useEffect(() => {
     if (!loading && !user) {
       router.push("/signin");
@@ -244,7 +254,7 @@ export default function AdminUserProfilePage() {
                         <h4 className="h6 mb-1">{post.title}</h4>
                         <p className={`mb-1 ${mutedTextClass}`}>
                           {post.createdAt
-                            ? new Date(post.createdAt).toLocaleString()
+                            ? formatDateTime.format(new Date(post.createdAt))
                             : "Recently created"}
                         </p>
                         <p className={`mb-0 ${mutedTextClass}`}>

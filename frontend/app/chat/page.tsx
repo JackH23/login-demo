@@ -58,7 +58,7 @@ function ChatPageContent() {
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const messagesContainerNodeRef = useRef<HTMLDivElement | null>(null);
-  
+
   const socketRef = useRef<Socket | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const prevLengthRef = useRef(0); // Initialize ref here
@@ -395,20 +395,46 @@ function ChatPageContent() {
     return new Date(lastFetchTime);
   }
 
+  const formatTime = useMemo(
+    () =>
+      new Intl.DateTimeFormat("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+        timeZone: "UTC",
+      }),
+    []
+  );
+
+  const formatDate = useMemo(
+    () =>
+      new Intl.DateTimeFormat("en-US", {
+        weekday: "long",
+        month: "short",
+        day: "numeric",
+        timeZone: "UTC",
+      }),
+    []
+  );
+
+  const getUtcDateKey = (date: Date) =>
+    `${date.getUTCFullYear()}-${date.getUTCMonth()}-${date.getUTCDate()}`;
+
   function formatDateLabel(dateInput: string | Date) {
-    const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
-    const today = new Date();
-    const yesterday = new Date();
-    yesterday.setDate(today.getDate() - 1);
+    const date =
+      typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+    const now = new Date();
 
-    if (date.toDateString() === today.toDateString()) return "Today";
-    if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
+    const todayKey = getUtcDateKey(now);
+    const yesterday = new Date(now);
+    yesterday.setUTCDate(now.getUTCDate() - 1);
+    const yesterdayKey = getUtcDateKey(yesterday);
+    const dateKey = getUtcDateKey(date);
 
-    return date.toLocaleDateString(undefined, {
-      weekday: "long",
-      month: "short",
-      day: "numeric",
-    });
+    if (dateKey === todayKey) return "Today";
+    if (dateKey === yesterdayKey) return "Yesterday";
+
+    return formatDate.format(date);
   }
 
   let lastDateLabel = "";
@@ -608,10 +634,7 @@ function ChatPageContent() {
                     className="chat-message-time"
                     dateTime={createdAt.toISOString()}
                   >
-                    {createdAt.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {formatTime.format(createdAt)}
                   </time>
                 </div>
 
