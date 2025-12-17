@@ -424,11 +424,13 @@ export default function UserProfilePage() {
             >
               Close
             </button>
-            <img
-              src={profileUser.image}
-              alt={`${profileUser.username} profile enlarged`}
-              className="profile-image-modal__img"
-            />
+            <div className="profile-image-modal__frame">
+              <img
+                src={profileUser.image}
+                alt={`${profileUser.username} profile enlarged`}
+                className="profile-image-modal__img"
+              />
+            </div>
           </div>
         </div>
       )}
