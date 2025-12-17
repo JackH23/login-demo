@@ -7,6 +7,7 @@ const PostSchema = new Schema(
     image: { type: String },
     imageData: { type: Buffer },
     imageContentType: { type: String },
+    imageEdits: { type: Schema.Types.Mixed, default: null },
     author: { type: String, required: true },
     likes: { type: Number, default: 0 },
     dislikes: { type: Number, default: 0 },

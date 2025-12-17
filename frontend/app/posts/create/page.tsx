@@ -13,6 +13,9 @@ type ImageEdits = {
   saturation: number;
   grayscale: number;
   rotation: number;
+  hue: number;
+  blur: number;
+  sepia: number;
 };
 
 const IMAGE_EDIT_DEFAULTS: ImageEdits = {
@@ -21,6 +24,9 @@ const IMAGE_EDIT_DEFAULTS: ImageEdits = {
   saturation: 110,
   grayscale: 0,
   rotation: 0,
+  hue: 0,
+  blur: 0,
+  sepia: 0,
 };
 
 export default function CreateBlogPage() {
@@ -81,7 +87,7 @@ export default function CreateBlogPage() {
 
   const handleRemoveImage = () => {
     setImage(null);
-    resetImageEdits;
+    resetImageEdits();
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -100,6 +106,7 @@ export default function CreateBlogPage() {
         title,
         content,
         image,
+        imageEdits,
         author: user.username,
       }),
     });
@@ -112,7 +119,15 @@ export default function CreateBlogPage() {
   };
 
   const decoratedImageStyles = useMemo<CSSProperties>(() => {
-    const filter = `brightness(${imageEdits.brightness}%) contrast(${imageEdits.contrast}%) saturate(${imageEdits.saturation}%) grayscale(${imageEdits.grayscale}%)`;
+    const filter = [
+      `brightness(${imageEdits.brightness}%)`,
+      `contrast(${imageEdits.contrast}%)`,
+      `saturate(${imageEdits.saturation}%)`,
+      `grayscale(${imageEdits.grayscale}%)`,
+      `sepia(${imageEdits.sepia}%)`,
+      `hue-rotate(${imageEdits.hue}deg)`,
+      `blur(${imageEdits.blur}px)`,
+    ].join(" ");
     const transform = `rotate(${imageEdits.rotation}deg)`;
     const base: CSSProperties = {
       filter,
@@ -449,6 +464,44 @@ export default function CreateBlogPage() {
                                 }
                               />
                             </div>
+                            <div className="col-md-6">
+                              <div className="small d-flex justify-content-between mb-1">
+                                <span>Hue shift</span>
+                                <span>{imageEdits.hue}°</span>
+                              </div>
+                              <input
+                                type="range"
+                                className="form-range"
+                                min={-90}
+                                max={90}
+                                value={imageEdits.hue}
+                                onChange={(e) =>
+                                  handleImageAdjustment(
+                                    "hue",
+                                    Number(e.target.value)
+                                  )
+                                }
+                              />
+                            </div>
+                            <div className="col-md-6">
+                              <div className="small d-flex justify-content-between mb-1">
+                                <span>Sepia tone</span>
+                                <span>{imageEdits.sepia}%</span>
+                              </div>
+                              <input
+                                type="range"
+                                className="form-range"
+                                min={0}
+                                max={60}
+                                value={imageEdits.sepia}
+                                onChange={(e) =>
+                                  handleImageAdjustment(
+                                    "sepia",
+                                    Number(e.target.value)
+                                  )
+                                }
+                              />
+                            </div>
                           </div>
                           <div>
                             <div className="small d-flex justify-content-between mb-1">
@@ -465,6 +518,26 @@ export default function CreateBlogPage() {
                               onChange={(e) =>
                                 handleImageAdjustment(
                                   "rotation",
+                                  Number(e.target.value)
+                                )
+                              }
+                            />
+                          </div>
+                          <div>
+                            <div className="small d-flex justify-content-between mb-1">
+                              <span>Soft blur</span>
+                              <span>{imageEdits.blur}px</span>
+                            </div>
+                            <input
+                              type="range"
+                              className="form-range"
+                              min={0}
+                              max={8}
+                              step={0.2}
+                              value={imageEdits.blur}
+                              onChange={(e) =>
+                                handleImageAdjustment(
+                                  "blur",
                                   Number(e.target.value)
                                 )
                               }

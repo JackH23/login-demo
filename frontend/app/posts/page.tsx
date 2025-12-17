@@ -24,6 +24,16 @@ interface BlogPost {
   title: string;
   content: string;
   image?: string | null;
+  imageEdites?: {
+    brightness?: number;
+    contrast?: number;
+    saturation?: number;
+    grayscale?: number;
+    rotation?: number;
+    hue?: number;
+    blur?: number;
+    sepia?: number;
+  } | null;
   author: string;
   likes: number;
   dislikes: number;

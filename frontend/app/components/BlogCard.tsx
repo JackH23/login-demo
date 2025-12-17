@@ -1,7 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useEffect, CSSProperties, useCallback, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  CSSProperties,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { useCachedApi } from "../hooks/useCachedApi";
@@ -13,6 +20,16 @@ interface BlogPost {
   title: string;
   content: string;
   image?: string | null;
+  imageEdits?: {
+    brightness?: number;
+    contrast?: number;
+    saturation?: number;
+    grayscale?: number;
+    rotation?: number;
+    hue?: number;
+    blur?: number;
+    sepia?: number;
+  } | null;
   author: string;
   likes: number;
   dislikes: number;
@@ -33,6 +50,55 @@ interface Reply {
   tempId?: string;
   isPending?: boolean;
 }
+
+type ImageEditState = {
+  brightness: number;
+  contrast: number;
+  saturation: number;
+  grayscale: number;
+  rotation: number;
+  hue: number;
+  blur: number;
+  sepia: number;
+};
+
+const DEFAULT_IMAGE_EDITS: ImageEditState = {
+  brightness: 100,
+  contrast: 102,
+  saturation: 110,
+  grayscale: 0,
+  rotation: 0,
+  hue: 0,
+  blur: 0,
+  sepia: 0,
+};
+
+const buildImageStyle = (
+  edits?: BlogPost["imageEdits"],
+  additionalStyles?: CSSProperties
+): CSSProperties => {
+  const merged: ImageEditState = {
+    ...DEFAULT_IMAGE_EDITS,
+    ...(edits ?? {}),
+  } as ImageEditState;
+
+  const filter = [
+    `brightness(${merged.brightness}%)`,
+    `contrast(${merged.contrast}%)`,
+    `saturate(${merged.saturation}%)`,
+    `grayscale(${merged.grayscale}%)`,
+    `sepia(${merged.sepia}%)`,
+    `hue-rotate(${merged.hue}deg)`,
+    `blur(${merged.blur}px)`,
+  ].join(" ");
+
+  return {
+    filter,
+    transform: `rotate(${merged.rotation}deg)`,
+    transition: "filter 0.2s ease, transform 0.2s ease",
+    ...additionalStyles,
+  };
+};
 
 interface Comment {
   _id?: string;
@@ -231,6 +297,28 @@ export default function BlogCard({
   const collapsedLines = isMobile ? 3 : 5;
   const collapsedMaxHeight = `${(1.65 * collapsedLines).toFixed(1)}em`;
   const actionButtonPadding = isMobile ? "px-2 py-1" : "px-3 py-2";
+
+  const coverImageBaseStyle = useMemo(
+    () => buildImageStyle(blog.imageEdits),
+    [blog.imageEdits]
+  );
+
+  const coverImageStyle = useMemo(
+    () => ({
+      ...coverImageBaseStyle,
+      width: "100%",
+      height: "100%",
+      maxWidth: "100%",
+      maxHeight: "100%",
+      display: "block",
+      objectFit: isMobile ? "cover" : "contain",
+      objectPosition: "center",
+      filter: `${coverImageBaseStyle.filter ?? ""} ${
+        isNight ? "brightness(0.95)" : "saturate(1.05)"
+      }`.trim(),
+    }),
+    [coverImageBaseStyle, isMobile, isNight]
+  );
 
   const contentStyle: CSSProperties = {
     fontSize: isMobile ? "0.95rem" : undefined,
@@ -922,16 +1010,7 @@ export default function BlogCard({
             src={blog.image}
             alt="Blog Visual"
             className="card-img-top"
-            style={{
-              width: "100%",
-              height: "100%",
-              maxWidth: "100%",
-              maxHeight: "100%",
-              display: "block", // Removes inline-gap artifacts so the image fills the wrapper cleanly
-              objectFit: isMobile ? "cover" : "contain", // Preserve aspect ratio; fill more space on mobile
-              objectPosition: "center",
-              filter: isNight ? "brightness(0.9)" : "saturate(1.05)",
-            }}
+            style={coverImageStyle}
             onClick={() => setShowImageModal(true)}
           />
 
@@ -1978,7 +2057,10 @@ export default function BlogCard({
                   alt={blog.title || "Full Blog View"}
                   className="expanded-image"
                   style={{
+                    ...coverImageBaseStyle,
                     objectFit: "contain",
+                    width: "100%",
+                    height: "100%",
                   }}
                 />
               </div>

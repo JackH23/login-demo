@@ -11,6 +11,33 @@ const {
 
 const router = express.Router();
 
+const DEFAULT_IMAGE_EDITS = {
+  brightness: 100,
+  contrast: 102,
+  saturation: 110,
+  grayscale: 0,
+  rotation: 0,
+  hue: 0,
+  blur: 0,
+  sepia: 0,
+};
+
+const parseImageEdits = (value) => {
+  if (!value || typeof value !== 'object') return undefined;
+
+  return Object.entries(DEFAULT_IMAGE_EDITS).reduce((acc, [key, defaultValue]) => {
+    const numericValue = Number(value[key]);
+    if (Number.isFinite(numericValue)) {
+      acc[key] = numericValue;
+    } else if (value[key] === 0) {
+      acc[key] = 0;
+    } else if (defaultValue !== undefined && value[key] === undefined) {
+      acc[key] = defaultValue;
+    }
+    return acc;
+  }, {});
+};
+
 const asyncHandler = (handler) =>
   (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
 
@@ -42,7 +69,7 @@ function serializePost(post) {
 }
 
 router.post('/', asyncHandler(async (req, res) => {
-  const { title, content, image, author } = req.body;
+  const { title, content, image, author, imageEdits } = req.body;
 
   const imagePayload = extractImagePayload({ file: req.file, imageString: image });
 
@@ -63,7 +90,13 @@ router.post('/', asyncHandler(async (req, res) => {
         }
       : {};
 
-    const post = await Post.create({ title, content, author, ...imageFields });
+    const post = await Post.create({
+      title,
+      content,
+      author,
+      imageEdits: parseImageEdits(imageEdits),
+      ...imageFields,
+    });
     const serialized = serializePost(post);
 
     emitPostCreated(serialized);
@@ -79,7 +112,7 @@ router.get('/', asyncHandler(async (req, res) => {
 
   const query = author ? { author } : {};
   let finder = Post.find(query)
-    .select('title content image imageData imageContentType author likes dislikes likedBy dislikedBy createdAt updatedAt')
+    .select('title content image imageData imageContentType imageEdits author likes dislikes likedBy dislikedBy createdAt updatedAt')
     .sort({ createdAt: -1 });
 
   const limit = limitParam ? Number.parseInt(limitParam, 10) : undefined;
