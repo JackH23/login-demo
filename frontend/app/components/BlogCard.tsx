@@ -2031,7 +2031,7 @@ export default function BlogCard({
           <div
             className="modal-dialog modal-fullscreen"
             role="document"
-            onClick={(e) => e.stopPropagation()}
+            
           >
             <div className="modal-content bg-black text-white border-0">
               <div className="modal-header border-0 align-items-start gap-3 px-4 px-md-5 pt-4 pb-0">
