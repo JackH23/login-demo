@@ -417,13 +417,17 @@ export default function UserProfilePage() {
             className="profile-image-modal__content"
             onClick={(event) => event.stopPropagation()}
           >
-            <button
-              type="button"
-              className="btn btn-light profile-image-modal__close"
-              onClick={closeImageModal}
-            >
-              Close
-            </button>
+            <div className="profile-image-modal__header">
+              <div className="profile-image-modal__title">Profile photo</div>
+              <button
+                type="button"
+                className="profile-image-modal__close"
+                onClick={closeImageModal}
+                aria-label="Close image modal"
+              >
+                <span aria-hidden="true">×</span>
+              </button>
+            </div>
             <div className="profile-image-modal__frame">
               <img
                 src={profileUser.image}
