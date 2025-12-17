@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 import BlogCard from "@/app/components/BlogCard";
@@ -45,6 +45,7 @@ export default function UserProfilePage() {
   const { theme } = useTheme();
   const router = useRouter();
   const params = useParams();
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   const usernameParam = Array.isArray(params?.username)
     ? params?.username?.[0]
@@ -156,6 +157,19 @@ export default function UserProfilePage() {
   const presenceLabel = profileUser.online ? "Online" : "Offline";
   const presenceClass = profileUser.online ? "bg-success" : "bg-secondary";
 
+  useEffect(() => {
+    if (!isImageModalOpen) return;
+
+    const handleKeydown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsImageModalOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeydown);
+    return () => window.removeEventListener("keydown", handleKeydown);
+  }, [isImageModalOpen]);
+
   const handleBackNavigation = () => {
     if (typeof window !== "undefined" && window.history.length > 1) {
       router.back();
@@ -163,6 +177,14 @@ export default function UserProfilePage() {
       router.push("/user");
     }
   };
+
+  const enableImageModal = () => {
+    if (profileUser.image) {
+      setIsImageModalOpen(true);
+    }
+  };
+
+  const closeImageModal = () => setIsImageModalOpen(false);
 
   return (
     <div
@@ -189,10 +211,20 @@ export default function UserProfilePage() {
                     src={profileUser.image}
                     alt={`${profileUser.username} profile`}
                     className="rounded-circle border"
+                    role="button"
+                    tabIndex={0}
+                    onClick={enableImageModal}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        enableImageModal();
+                      }
+                    }}
                     style={{
                       width: "72px",
                       height: "72px",
                       objectFit: "cover",
+                      cursor: profileUser.image ? "zoom-in" : "default",
                     }}
                   />
                 ) : (
@@ -275,7 +307,21 @@ export default function UserProfilePage() {
                   src={profileUser.image}
                   alt={`${profileUser.username} profile`}
                   className="rounded-circle border"
-                  style={{ width: "96px", height: "96px", objectFit: "cover" }}
+                  role="button"
+                  tabIndex={0}
+                  onClick={enableImageModal}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      enableImageModal();
+                    }
+                  }}
+                  style={{
+                    width: "96px",
+                    height: "96px",
+                    objectFit: "cover",
+                    cursor: profileUser.image ? "zoom-in" : "default",
+                  }}
                 />
               ) : (
                 <div
@@ -358,6 +404,34 @@ export default function UserProfilePage() {
           ))
         )}
       </div>
+
+      {isImageModalOpen && profileUser.image && (
+        <div
+          className="profile-image-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${profileUser.username}'s profile picture in full view`}
+          onClick={closeImageModal}
+        >
+          <div
+            className="profile-image-modal__content"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="btn btn-light profile-image-modal__close"
+              onClick={closeImageModal}
+            >
+              Close
+            </button>
+            <img
+              src={profileUser.image}
+              alt={`${profileUser.username} profile enlarged`}
+              className="profile-image-modal__img"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
