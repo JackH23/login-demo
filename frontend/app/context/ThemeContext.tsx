@@ -51,10 +51,10 @@ const applyThemeToDom = (value: Theme) => {
 };
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Default to the theme already applied to the DOM (set by the inline script
-  // in app/layout) so client and server markup stay in sync after refreshes.
-  const [theme, setThemeState] = useState<Theme>(() => readDomTheme());
-  const [hasHydrated, setHasHydrated] = useState(() => typeof document !== "undefined");
+  // Default to brightness during SSR to keep server and client markup aligned.
+  // The stored or preferred theme will be applied immediately after hydration.
+  const [theme, setThemeState] = useState<Theme>("brightness");
+  const [hasHydrated, setHasHydrated] = useState(false);
 
   const setTheme = (value: Theme) => {
     setThemeState(value);
@@ -63,7 +63,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Read the stored theme once we're on the client to avoid SSR/client
   // mismatches during hydration.
   useEffect(() => {
-    const storedTheme = readStoredTheme();
+    const storedTheme = readDomTheme();
     setThemeState(storedTheme);
     setHasHydrated(true);
   }, []);
