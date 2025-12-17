@@ -29,6 +29,55 @@ const IMAGE_EDIT_DEFAULTS: ImageEdits = {
   sepia: 0,
 };
 
+const buildImageFilter = (edits: ImageEdits) =>
+  [
+    `brightness(${edits.brightness}%)`,
+    `contrast(${edits.contrast}%)`,
+    `saturate(${edits.saturation}%)`,
+    `grayscale(${edits.grayscale}%)`,
+    `sepia(${edits.sepia}%)`,
+    `hue-rotate(${edits.hue}deg)`,
+    `blur(${edits.blur}px)`,
+  ].join(" ");
+
+const renderEditedImage = (imageSrc: string, edits: ImageEdits) =>
+  new Promise<string>((resolve, reject) => {
+    const imageElement = new Image();
+
+    imageElement.onload = () => {
+      const radians = (edits.rotation * Math.PI) / 180;
+      const sin = Math.abs(Math.sin(radians));
+      const cos = Math.abs(Math.cos(radians));
+
+      const width = imageElement.width * cos + imageElement.height * sin;
+      const height = imageElement.width * sin + imageElement.height * cos;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject(new Error("Failed to create canvas context"));
+        return;
+      }
+
+      ctx.filter = buildImageFilter(edits);
+      ctx.translate(width / 2, height / 2);
+      ctx.rotate(radians);
+      ctx.drawImage(
+        imageElement,
+        -imageElement.width / 2,
+        -imageElement.height / 2
+      );
+
+      resolve(canvas.toDataURL("image/png"));
+    };
+
+    imageElement.onerror = () => reject(new Error("Failed to load image"));
+    imageElement.src = imageSrc;
+  });
+
 export default function CreateBlogPage() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -99,35 +148,35 @@ export default function CreateBlogPage() {
       return;
     }
 
-    const res = await fetch(apiUrl("/api/posts"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title,
-        content,
-        image,
-        imageEdits,
-        author: user.username,
-      }),
-    });
+    try {
+      const editedImage = image
+        ? await renderEditedImage(image, imageEdits)
+        : null;
 
-    if (res.ok) {
-      router.push("/home");
+      const res = await fetch(apiUrl("/api/posts"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          content,
+          image: editedImage,
+          imageEdits,
+          author: user.username,
+        }),
+      });
+
+      if (res.ok) {
+        router.push("/home");
+      }
+    } catch (error) {
+      console.error("Failed to publish post", error);
+    } finally {
+      setIsPublishing(false);
     }
-
-    setIsPublishing(false);
   };
 
   const decoratedImageStyles = useMemo<CSSProperties>(() => {
-    const filter = [
-      `brightness(${imageEdits.brightness}%)`,
-      `contrast(${imageEdits.contrast}%)`,
-      `saturate(${imageEdits.saturation}%)`,
-      `grayscale(${imageEdits.grayscale}%)`,
-      `sepia(${imageEdits.sepia}%)`,
-      `hue-rotate(${imageEdits.hue}deg)`,
-      `blur(${imageEdits.blur}px)`,
-    ].join(" ");
+    const filter = buildImageFilter(imageEdits);
     const transform = `rotate(${imageEdits.rotation}deg)`;
     const base: CSSProperties = {
       filter,
