@@ -407,7 +407,9 @@ export default function UserProfilePage() {
 
       {isImageModalOpen && profileUser.image && (
         <div
-          className="profile-image-modal"
+          className={`profile-image-modal ${
+            theme === "night" ? "profile-image-modal--dark" : ""
+          }`}
           role="dialog"
           aria-modal="true"
           aria-label={`${profileUser.username}'s profile picture in full view`}

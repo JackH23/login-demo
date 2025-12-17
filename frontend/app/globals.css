@@ -3121,6 +3121,15 @@
   overflow: auto;
 }
 
+.profile-image-modal--dark {
+  background: radial-gradient(
+      circle at 20% 20%,
+      rgba(15, 23, 42, 0.4),
+      rgba(8, 47, 73, 0.85)
+    )
+    fixed;
+}
+
 .profile-image-modal__content {
   position: relative;
   background: rgba(255, 255, 255, 0.9);
@@ -3133,6 +3142,12 @@
   flex-direction: column;
   gap: 0.5rem;
   border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.profile-image-modal--dark .profile-image-modal__content {
+  background: rgba(15, 23, 42, 0.9);
+  border-color: rgba(148, 163, 184, 0.25);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
 }
 
 .profile-image-modal__header {
@@ -3148,6 +3163,10 @@
   color: #0f172a;
 }
 
+.profile-image-modal--dark .profile-image-modal__title {
+  color: #e2e8f0;
+}
+
 .profile-image-modal__frame {
   position: relative;
   padding: clamp(0.35rem, 1vw, 0.75rem);
@@ -3155,6 +3174,12 @@
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(241, 245, 249, 0.92));
   border: 1px solid rgba(148, 163, 184, 0.25);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 12px 32px rgba(15, 23, 42, 0.12);
+}
+
+.profile-image-modal--dark .profile-image-modal__frame {
+  background: linear-gradient(145deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.92));
+  border-color: rgba(71, 85, 105, 0.5);
+  box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.2), 0 12px 32px rgba(0, 0, 0, 0.5);
 }
 
 .profile-image-modal__img {
@@ -3166,6 +3191,16 @@
   border: 1px solid rgba(15, 23, 42, 0.08);
   background: radial-gradient(circle at 50% 45%, rgba(226, 232, 240, 0.65), rgba(248, 250, 252, 0.8));
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.22);
+}
+
+.profile-image-modal--dark .profile-image-modal__img {
+  background: radial-gradient(
+    circle at 50% 45%,
+    rgba(51, 65, 85, 0.7),
+    rgba(15, 23, 42, 0.85)
+  );
+  border-color: rgba(226, 232, 240, 0.1);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
 }
 
 .profile-image-modal__close {
@@ -3183,6 +3218,12 @@
   cursor: pointer;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
   transition: transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+
+.profile-image-modal--dark .profile-image-modal__close {
+  background: rgba(30, 41, 59, 0.9);
+  color: #e2e8f0;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
 }
 
 .profile-image-modal__close:focus-visible {
