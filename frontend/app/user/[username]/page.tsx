@@ -417,44 +417,18 @@ export default function UserProfilePage() {
             className="profile-image-modal__content"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="profile-image-modal__header">
-              <div className="d-flex align-items-center gap-3">
-                <div className="profile-image-modal__avatar">
-                  <img
-                    src={profileUser.image}
-                    alt={`${profileUser.username} avatar`}
-                    className="profile-image-modal__avatar-img"
-                  />
-                </div>
-                <div>
-                  <p className="text-uppercase text-muted small mb-1">Profile photo</p>
-                  <h2 className="h5 mb-0">{profileUser.username}</h2>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                className="profile-image-modal__close"
-                onClick={closeImageModal}
-                aria-label="Close profile photo"
-              >
-                <i className="bi bi-x-lg" aria-hidden="true"></i>
-              </button>
-            </div>
-
-            <div className="profile-image-modal__preview" role="presentation">
-              <img
-                src={profileUser.image}
-                alt={`${profileUser.username} profile enlarged`}
-                className="profile-image-modal__img"
-              />
-            </div>
-
-            <div className="profile-image-modal__footer">
-              <p className="small text-muted mb-0">
-                Press Esc or click outside the frame to close the preview.
-              </p>
-            </div>
+            <button
+              type="button"
+              className="btn btn-light profile-image-modal__close"
+              onClick={closeImageModal}
+            >
+              Close
+            </button>
+            <img
+              src={profileUser.image}
+              alt={`${profileUser.username} profile enlarged`}
+              className="profile-image-modal__img"
+            />
           </div>
         </div>
       )}
