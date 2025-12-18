@@ -13,7 +13,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { Socket } from "socket.io-client";
-import { apiUrl } from "@/app/lib/api";
+import { apiUrl, resolveApiUrl } from "@/app/lib/api";
 import { prefetchCachedApi, useCachedApi } from "../hooks/useCachedApi";
 
 interface Message {
@@ -291,7 +291,7 @@ function ChatPageContent() {
     scrollToBottom();
 
     try {
-      const res = await fetch(apiUrl("/api/messages"), {
+      const res = await fetch(resolveApiUrl("/api/messages"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
