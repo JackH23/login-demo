@@ -172,7 +172,24 @@ function ChatPageContent() {
     };
 
     setLastFetchTime(Date.now());
-    setMessages(normalized.messages);
+    setMessages((prev) => {
+      const optimisticMessages = prev.filter(
+        (msg) =>
+          msg._id.startsWith("temp-") &&
+          msg.from === user.username &&
+          msg.to === chatUser
+      );
+
+      const merged = [...normalized.messages];
+
+      for (const optimistic of optimisticMessages) {
+        if (!merged.some((msg) => msg._id === optimistic._id)) {
+          merged.push(optimistic);
+        }
+      }
+
+      return merged;
+    });
     setParticipants(normalized.participants);
 
     const partner = normalized.participants.find(
