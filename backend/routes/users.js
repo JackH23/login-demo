@@ -11,6 +11,7 @@ const {
   extractImagePayload,
   encodeImageToDataUrl,
 } = require('./utils/image');
+const authMiddleware = require('../middleware/auth');
 
 const ADMIN_USERNAME =
   process.env.ADMIN_USERNAME || process.env.NEXT_PUBLIC_ADMIN_USERNAME || 'Jackie';
@@ -116,6 +117,37 @@ router.get('/:username', asyncHandler(async (req, res) => {
 
   return res.json({ user: serializeUser(user) });
 }));
+
+router.patch(
+  '/status',
+  authMiddleware,
+  asyncHandler(async (req, res) => {
+    const { online } = req.body ?? {};
+
+    if (typeof online !== 'boolean') {
+      return res.status(400).json({ message: 'Invalid online value' });
+    }
+
+    if (!req.user?.id) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { online },
+      { new: true }
+    ).lean();
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (online) emitUserOnline(user.username);
+    else emitUserOffline(user.username);
+
+    res.json({ success: true, online: user.online });
+  })
+);
 
 router.put('/:username', maybeHandleUpload, asyncHandler(async (req, res) => {
   const { username: target } = req.params;

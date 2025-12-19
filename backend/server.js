@@ -27,6 +27,32 @@ if (!fs.existsSync(uploadsDir)) {
 app.use(cors());
 app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ extended: true, limit: "5mb" }));
+// Lightweight cookie parser to surface cookies on req.cookies without adding
+// an extra dependency.
+app.use((req, _res, next) => {
+  if (req.cookies) return next();
+
+  const raw = req.headers.cookie;
+  if (!raw) {
+    req.cookies = {};
+    return next();
+  }
+
+  const pairs = raw.split(";").map((part) => part.trim()).filter(Boolean);
+  const cookies = {};
+  for (const pair of pairs) {
+    const [name, ...valueParts] = pair.split("=");
+    if (!name) continue;
+    const value = valueParts.join("=") || "";
+    try {
+      cookies[name] = decodeURIComponent(value);
+    } catch {
+      cookies[name] = value;
+    }
+  }
+  req.cookies = cookies;
+  next();
+});
 app.use("/uploads", express.static(uploadsDir));
 
 // Ensure MongoDB is connected before handling requests so transient connection
