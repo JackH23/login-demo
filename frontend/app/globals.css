@@ -497,6 +497,47 @@
   letter-spacing: 0.08em;
 }
 
+.chat-message-upload-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  background: rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  width: fit-content;
+}
+
+.chat-message-bubble--sent .chat-message-upload-status {
+  background: rgba(15, 23, 42, 0.18);
+  border-color: rgba(226, 232, 240, 0.25);
+}
+
+.chat-message-upload-status--uploading {
+  color: inherit;
+}
+
+.chat-message-upload-status--failed {
+  color: #dc2626;
+  background: rgba(248, 113, 113, 0.08);
+  border-color: rgba(248, 113, 113, 0.18);
+}
+
+.chat-message-upload-status--complete {
+  color: #22d3ee;
+  background: rgba(34, 211, 238, 0.08);
+  border-color: rgba(34, 211, 238, 0.25);
+}
+
+.chat-message-upload-success {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  letter-spacing: -0.08em;
+}
+
 .chat-message-actions {
   display: flex;
   flex-wrap: wrap;

@@ -501,9 +501,11 @@ function ChatPageContent() {
         sortMessagesByDate(prev.map((m) => (m._id === tempId ? confirmed : m)))
       );
       setUploadStates((prev) => {
-        if (!prev[tempId]) return prev;
+        const current = prev[tempId];
+        if (!current) return prev;
         const next = { ...prev };
         delete next[tempId];
+        next[confirmed._id] = current;
         return next;
       });
     },
@@ -716,7 +718,7 @@ function ChatPageContent() {
       try {
         const confirmed = await sendMessageViaSocket(payload, tempId);
         replaceTempMessage(tempId, confirmed);
-        return;
+        return confirmed;
       } catch (error) {
         console.warn("Socket delivery failed; attempting HTTP fallback", error);
       }
@@ -730,7 +732,7 @@ function ChatPageContent() {
         );
         if (persisted) {
           replaceTempMessage(tempId, persisted);
-          return;
+          return persisted;
         }
       } catch (error) {
         console.warn("Unable to refresh chat data after socket failure", error);
@@ -739,6 +741,7 @@ function ChatPageContent() {
       try {
         const confirmed = await sendMessageViaHttp(payload);
         replaceTempMessage(tempId, confirmed);
+        return confirmed;
       } catch (error) {
         console.error("Unable to send message", error);
         setUploadStates((prev) => ({
@@ -750,6 +753,7 @@ function ChatPageContent() {
               error instanceof Error ? error.message : "Failed to send message",
           },
         }));
+        throw error;
       }
     },
     [
@@ -853,14 +857,25 @@ function ChatPageContent() {
           fileName: name ?? optimisticMessage.fileName,
         };
 
-        await confirmOptimisticMessage(
+        const confirmedMessage = await confirmOptimisticMessage(
           tempId,
           { ...optimisticMessage, content: resolvedUrl },
           payload
         );
         setUploadStates((prev) => ({
           ...prev,
-          [tempId]: { progress: 100, status: "complete" },
+          ...(confirmedMessage?._id && prev[confirmedMessage._id]
+            ? {
+                [confirmedMessage._id]: {
+                  ...prev[confirmedMessage._id],
+                  progress: 100,
+                  status: "complete",
+                },
+              }
+            : {}),
+          ...(prev[tempId] && !confirmedMessage?._id
+            ? { [tempId]: { ...prev[tempId], progress: 100, status: "complete" } }
+            : {}),
         }));
       } catch (error) {
         console.error("File upload failed", error);
@@ -1271,8 +1286,10 @@ function ChatPageContent() {
                   </div>
                 )}
 
-                {uploadState && uploadState.status !== "complete" && (
-                  <div className="chat-message-upload-status">
+                {uploadState && (
+                  <div
+                    className={`chat-message-upload-status chat-message-upload-status--${uploadState.status}`}
+                  >
                     {uploadState.status === "uploading" ? (
                       <span>
                         Uploading…{" "}
@@ -1280,10 +1297,19 @@ function ChatPageContent() {
                           ? `${uploadState.progress}%`
                           : ""}
                       </span>
-                    ) : (
+                    ) : uploadState.status === "failed" ? (
                       <span className="text-danger">
                         Upload failed
                         {uploadState.error ? `: ${uploadState.error}` : ""}
+                      </span>
+                    ) : (
+                      <span
+                        className="chat-message-upload-success"
+                        aria-label="Upload complete"
+                      >
+                        <span aria-hidden="true">✓</span>
+                        <span aria-hidden="true">✓</span>
+                        <span className="visually-hidden">Upload complete</span>
                       </span>
                     )}
                   </div>
