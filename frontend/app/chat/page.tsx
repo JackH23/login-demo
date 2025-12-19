@@ -481,7 +481,39 @@ function ChatPageContent() {
 
       return data.message as Message;
     },
-    []
+    [resolveMessageDate]
+  );
+
+  const findMatchingPersistedMessage = useCallback(
+    (
+      list: Message[],
+      optimistic: Message,
+      payload: Omit<Message, "_id" | "createdAt">
+    ) => {
+      const normalizedContent = payload.content.trim();
+      const optimisticTime =
+        resolveMessageDate(optimistic.createdAt).getTime() - 1000;
+
+      return list.find((msg) => {
+        if (
+          msg.from !== payload.from ||
+          msg.to !== payload.to ||
+          msg.type !== payload.type
+        ) {
+          return false;
+        }
+
+        const messageTime = resolveMessageDate(msg.createdAt).getTime();
+        if (messageTime < optimisticTime) return false;
+
+        if (payload.type === "text") {
+          return msg.content.trim() === normalizedContent;
+        }
+
+        return msg.fileName === payload.fileName;
+      });
+    },
+    [resolveMessageDate]
   );
 
   const postMessage = async (payload: Omit<Message, "_id" | "createdAt">) => {
@@ -505,6 +537,21 @@ function ChatPageContent() {
       return;
     } catch (error) {
       console.warn("Socket delivery failed; attempting HTTP fallback", error);
+    }
+
+    try {
+      const latest = await refreshChatData();
+      const persisted = findMatchingPersistedMessage(
+        latest.messages ?? [],
+        optimisticMessage,
+        payload
+      );
+      if (persisted) {
+        replaceTempMessage(tempId, persisted);
+        return;
+      }
+    } catch (error) {
+      console.warn("Unable to refresh chat data after socket failure", error);
     }
 
     try {
