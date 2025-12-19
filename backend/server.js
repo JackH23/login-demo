@@ -54,9 +54,7 @@ const server = http.createServer(app);
 const io = createSocketServer(server);
 app.set("io", io);
 
-const isProduction =
-  process.env.NODE_ENV === "production" || process.env.npm_lifecycle_event === "start";
-const PORT = process.env.PORT || (isProduction ? 3000 : 8000);
+const PORT = Number(process.env.PORT) || 8000;
 
 const startServer = async () => {
   try {
