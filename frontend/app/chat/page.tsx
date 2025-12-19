@@ -912,27 +912,75 @@ function ChatPageContent() {
   };
 
   const handleDelete = async (id: string) => {
-    const res = await fetch(apiUrl(`/api/messages/${id}`), {
-      method: "DELETE",
+    let removedMessage: Message | undefined;
+    setMessages((prev) => {
+      removedMessage = prev.find((m) => m._id === id);
+      return prev.filter((m) => m._id !== id);
     });
-    if (res.ok) {
-      setMessages((prev) => prev.filter((m) => m._id !== id));
+    setUploadStates((prev) => {
+      if (!prev[id]) return prev;
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+
+    try {
+      const res = await fetch(apiUrl(`/api/messages/${id}`), {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || "Failed to delete message");
+      }
+    } catch (error) {
+      console.error("Unable to delete message", error);
+      if (removedMessage) {
+        setMessages((prev) =>
+          sortMessagesByDate([...prev, removedMessage as Message])
+        );
+      }
+      alert("Failed to delete message. Please try again.");
     }
   };
 
   const handleEdit = async (msg: Message) => {
     const newContent = prompt("Edit message", msg.content);
-    if (newContent === null || newContent.trim() === "") return;
-    const res = await fetch(apiUrl(`/api/messages/${msg._id}`), {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: newContent }),
-    });
-    if (res.ok) {
+    if (newContent === null) return;
+    const trimmed = newContent.trim();
+    if (!trimmed) return;
+
+    const previousContent = msg.content;
+    setMessages((prev) =>
+      prev.map((m) => (m._id === msg._id ? { ...m, content: trimmed } : m))
+    );
+
+    try {
+      const res = await fetch(apiUrl(`/api/messages/${msg._id}`), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: trimmed }),
+      });
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || "Failed to edit message");
+      }
+
       const data = await res.json();
+      if (data?.message) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m._id === msg._id ? normalizeMessageMedia(data.message) : m
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Unable to edit message", error);
       setMessages((prev) =>
-        prev.map((m) => (m._id === msg._id ? data.message : m))
+        prev.map((m) =>
+          m._id === msg._id ? { ...m, content: previousContent } : m
+        )
       );
+      alert("Failed to update message. Please try again.");
     }
   };
 
