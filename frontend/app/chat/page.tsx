@@ -276,17 +276,25 @@ function ChatPageContent() {
   }, [messages]);
 
   const postMessage = async (payload: Omit<Message, "_id" | "createdAt">) => {
-    const encodePayload = () => {
-      const params = new URLSearchParams();
-      params.set("from", payload.from);
-      params.set("to", payload.to);
-      params.set("type", payload.type);
-      params.set("content", payload.content);
-      if (payload.fileName) {
-        params.set("fileName", payload.fileName);
-      }
-      return params;
-    };
+    const params = new URLSearchParams();
+    params.set("from", payload.from);
+    params.set("to", payload.to);
+    params.set("type", payload.type);
+    params.set("content", payload.content);
+    if (payload.fileName) {
+      params.set("fileName", payload.fileName);
+    }
+
+    // Kick off the network request before React state updates to push data to
+    // the backend faster.
+    const sendPromise = fetch(apiUrl("/api/messages"), {
+      method: "POST",
+      body: params,
+      keepalive: true,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+      },
+    });
     const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const optimisticMessage: Message = {
       _id: tempId,
@@ -302,13 +310,7 @@ function ChatPageContent() {
     scrollToBottom();
 
     try {
-      const res = await fetch(apiUrl("/api/messages"), {
-        method: "POST",
-        // Use form encoding to avoid CORS preflight and shave latency off the
-        // message send path.
-        body: encodePayload(),
-        keepalive: true,
-      });
+      const res = await sendPromise;
 
       if (!res.ok) {
         throw new Error(`Failed to send message: ${res.status}`);
