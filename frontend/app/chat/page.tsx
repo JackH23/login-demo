@@ -666,7 +666,7 @@ function ChatPageContent() {
 
   const uploadFileWithProgress = useCallback(
     (file: File, tempId: string) =>
-      new Promise<{ url: string; name: string }>((resolve, reject) => {
+      new Promise<{ dataUrl: string; name: string }>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open("POST", apiUrl("/api/uploads"));
 
@@ -687,8 +687,11 @@ function ChatPageContent() {
           if (xhr.status >= 200 && xhr.status < 300) {
             try {
               const data = JSON.parse(xhr.responseText);
-              if (data?.url) {
-                resolve({ url: data.url as string, name: data.name as string });
+              if (data?.dataUrl) {
+                resolve({
+                  dataUrl: data.dataUrl as string,
+                  name: data.name as string,
+                });
                 return;
               }
             } catch {
@@ -827,11 +830,10 @@ function ChatPageContent() {
   const processUploadedFile = useCallback(
     async (file: File, tempId: string, optimisticMessage: Message) => {
       try {
-        const { url: serverUrl, name } = await uploadFileWithProgress(
+        const { dataUrl, name } = await uploadFileWithProgress(
           file,
           tempId
         );
-        const resolvedUrl = resolveAttachmentUrl(serverUrl);
         setUploadStates((prev) => ({
           ...prev,
           [tempId]: { progress: 100, status: "uploading" },
@@ -842,7 +844,7 @@ function ChatPageContent() {
             m._id === tempId
               ? {
                   ...m,
-                  content: resolvedUrl,
+                  content: dataUrl,
                   fileName: name ?? optimisticMessage.fileName,
                 }
               : m
@@ -853,13 +855,13 @@ function ChatPageContent() {
           from: optimisticMessage.from,
           to: optimisticMessage.to,
           type: optimisticMessage.type,
-          content: serverUrl,
+          content: dataUrl,
           fileName: name ?? optimisticMessage.fileName,
         };
 
         const confirmedMessage = await confirmOptimisticMessage(
           tempId,
-          { ...optimisticMessage, content: resolvedUrl },
+          { ...optimisticMessage, content: dataUrl },
           payload
         );
         setUploadStates((prev) => ({
