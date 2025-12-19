@@ -7,17 +7,24 @@ function resolveBaseUrl() {
   const envBase = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
   if (envBase) return normalizeBaseUrl(envBase);
 
-  // In the browser, prefer same-origin requests so Next.js rewrites can proxy
-  // to the backend without cross-origin fetch failures when the API base URL
-  // is not explicitly configured.
+  const defaultDevBase = normalizeBaseUrl("http://localhost:8000");
+
+  // In the browser during local development, default to the backend port so
+  // client-side requests do not accidentally target the Next.js dev server.
   if (typeof window !== "undefined") {
+    if (
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1"
+    ) {
+      return defaultDevBase;
+    }
     return "";
   }
 
   // In development server-side code (e.g., during Next.js rendering), fall back
   // to the local backend to preserve behavior when no env override is present.
   if (process.env.NODE_ENV === "development") {
-    return normalizeBaseUrl("http://localhost:8000");
+    return defaultDevBase;
   }
 
   // In production, rely on the same-origin Next.js server and let rewrites

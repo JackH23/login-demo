@@ -24,7 +24,22 @@ if (!fs.existsSync(uploadsDir)) {
 }
 
 // Middlewares
-app.use(cors());
+const allowedOrigins = (
+  process.env.CLIENT_ORIGINS ||
+  process.env.CLIENT_ORIGIN ||
+  process.env.FRONTEND_ORIGIN ||
+  "http://localhost:3000,http://127.0.0.1:3000"
+)
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  })
+);
 app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 // Lightweight cookie parser to surface cookies on req.cookies without adding
