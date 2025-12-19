@@ -49,6 +49,12 @@ interface ChatData {
   hasMore?: boolean;
 }
 
+type UploadState = {
+  progress: number;
+  status: "uploading" | "failed" | "complete";
+  error?: string;
+};
+
 function ChatPageContent() {
   const searchParams = useSearchParams();
   const chatUser = searchParams.get("user") ?? "";
@@ -76,6 +82,9 @@ function ChatPageContent() {
   const [emojiList, setEmojiList] = useState<ChatEmoji[]>([]);
   const [isMobile, setIsMobile] = useState(false);
   const emojiLoadedRef = useRef(false);
+  const [uploadStates, setUploadStates] = useState<Record<string, UploadState>>(
+    {}
+  );
 
   const cacheKey = useMemo(() => {
     if (!user || !chatUser) return null;
@@ -472,6 +481,12 @@ function ChatPageContent() {
       setMessages((prev) =>
         sortMessagesByDate(prev.map((m) => (m._id === tempId ? confirmed : m)))
       );
+      setUploadStates((prev) => {
+        if (!prev[tempId]) return prev;
+        const next = { ...prev };
+        delete next[tempId];
+        return next;
+      });
     },
     [sortMessagesByDate]
   );
@@ -479,6 +494,12 @@ function ChatPageContent() {
   const removeTempMessage = useCallback(
     (tempId: string) => {
       setMessages((prev) => prev.filter((m) => m._id !== tempId));
+      setUploadStates((prev) => {
+        if (!prev[tempId]) return prev;
+        const next = { ...prev };
+        delete next[tempId];
+        return next;
+      });
     },
     []
   );
@@ -625,6 +646,105 @@ function ChatPageContent() {
     [resolveMessageDate]
   );
 
+  const uploadFileWithProgress = useCallback(
+    (file: File, tempId: string) =>
+      new Promise<{ url: string; name: string }>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", apiUrl("/api/uploads"));
+
+        xhr.upload.onprogress = (event) => {
+          if (!event.lengthComputable) return;
+          const progress = Math.round((event.loaded / event.total) * 100);
+          setUploadStates((prev) => ({
+            ...prev,
+            [tempId]: {
+              progress,
+              status: "uploading",
+            },
+          }));
+        };
+
+        xhr.onreadystatechange = () => {
+          if (xhr.readyState !== XMLHttpRequest.DONE) return;
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const data = JSON.parse(xhr.responseText);
+              if (data?.url) {
+                resolve({ url: data.url as string, name: data.name as string });
+                return;
+              }
+            } catch {
+              /* ignore */
+            }
+            reject(new Error("Unexpected upload response"));
+            return;
+          }
+          reject(new Error(`Upload failed with status ${xhr.status}`));
+        };
+
+        xhr.onerror = () => reject(new Error("Upload failed"));
+
+        const formData = new FormData();
+        formData.append("file", file);
+        xhr.send(formData);
+      }),
+    []
+  );
+
+  const confirmOptimisticMessage = useCallback(
+    async (
+      tempId: string,
+      optimisticMessage: Message,
+      payload: Omit<Message, "_id" | "createdAt">
+    ) => {
+      try {
+        const confirmed = await sendMessageViaSocket(payload, tempId);
+        replaceTempMessage(tempId, confirmed);
+        return;
+      } catch (error) {
+        console.warn("Socket delivery failed; attempting HTTP fallback", error);
+      }
+
+      try {
+        const latest = await fetchChatData();
+        const persisted = findMatchingPersistedMessage(
+          latest.messages ?? [],
+          optimisticMessage,
+          payload
+        );
+        if (persisted) {
+          replaceTempMessage(tempId, persisted);
+          return;
+        }
+      } catch (error) {
+        console.warn("Unable to refresh chat data after socket failure", error);
+      }
+
+      try {
+        const confirmed = await sendMessageViaHttp(payload);
+        replaceTempMessage(tempId, confirmed);
+      } catch (error) {
+        console.error("Unable to send message", error);
+        setUploadStates((prev) => ({
+          ...prev,
+          [tempId]: {
+            progress: prev[tempId]?.progress ?? 0,
+            status: "failed",
+            error:
+              error instanceof Error ? error.message : "Failed to send message",
+          },
+        }));
+      }
+    },
+    [
+      fetchChatData,
+      findMatchingPersistedMessage,
+      replaceTempMessage,
+      sendMessageViaHttp,
+      sendMessageViaSocket,
+    ]
+  );
+
   const postMessage = async (payload: Omit<Message, "_id" | "createdAt">) => {
     const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const optimisticMessage: Message = {
@@ -684,32 +804,77 @@ function ChatPageContent() {
     void postMessage(payload);
   };
 
+  const processUploadedFile = useCallback(
+    async (file: File, tempId: string, optimisticMessage: Message) => {
+      try {
+        const { url } = await uploadFileWithProgress(file, tempId);
+        setUploadStates((prev) => ({
+          ...prev,
+          [tempId]: { progress: 100, status: "uploading" },
+        }));
+
+        setMessages((prev) =>
+          prev.map((m) => (m._id === tempId ? { ...m, content: url } : m))
+        );
+
+        const payload: Omit<Message, "_id" | "createdAt"> = {
+          from: optimisticMessage.from,
+          to: optimisticMessage.to,
+          type: optimisticMessage.type,
+          content: url,
+          fileName: optimisticMessage.fileName,
+        };
+
+        await confirmOptimisticMessage(tempId, optimisticMessage, payload);
+      } catch (error) {
+        console.error("File upload failed", error);
+        setUploadStates((prev) => ({
+          ...prev,
+          [tempId]: {
+            progress: prev[tempId]?.progress ?? 0,
+            status: "failed",
+            error:
+              error instanceof Error ? error.message : "Failed to upload file",
+          },
+        }));
+      } finally {
+        if (optimisticMessage.content.startsWith("blob:")) {
+          URL.revokeObjectURL(optimisticMessage.content);
+        }
+      }
+    },
+    [confirmOptimisticMessage, uploadFileWithProgress]
+  );
+
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user || !chatUser) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result !== "string") {
-        console.error("Unsupported file result type", reader.result);
-        return;
-      }
+    const tempId = `temp-${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2)}`;
+    const isImage = file.type.startsWith("image/");
+    const previewUrl = URL.createObjectURL(file);
 
-      const isImage = file.type.startsWith("image/");
-      const payload: Omit<Message, "_id" | "createdAt"> = {
-        from: user.username,
-        to: chatUser,
-        type: isImage ? "image" : "file",
-        content: reader.result,
-        fileName: file.name,
-      };
+    const optimisticMessage: Message = {
+      _id: tempId,
+      from: user.username,
+      to: chatUser,
+      type: isImage ? "image" : "file",
+      content: previewUrl,
+      fileName: file.name,
+      createdAt: new Date().toISOString(),
+    };
 
-      void postMessage(payload);
-    };
-    reader.onerror = () => {
-      console.error("Failed to read file", reader.error);
-    };
-    reader.readAsDataURL(file);
+    setMessages((prev) => sortMessagesByDate([...prev, optimisticMessage]));
+    setUploadStates((prev) => ({
+      ...prev,
+      [tempId]: { progress: 0, status: "uploading" },
+    }));
+    scrollToBottom();
+    e.target.value = "";
+
+    void processUploadedFile(file, tempId, optimisticMessage);
   };
 
   const handleDelete = async (id: string) => {
@@ -944,6 +1109,7 @@ function ChatPageContent() {
         const createdAt = resolveMessageDate(msg.createdAt);
         const msgDate = createdAt.toDateString();
         const isSender = msg.from === user?.username;
+        const uploadState = uploadStates[msg._id];
 
         const showDateLabel = msgDate !== lastDateLabel;
         if (showDateLabel) lastDateLabel = msgDate;
@@ -1020,6 +1186,23 @@ function ChatPageContent() {
                         {msg.fileName?.split(".").pop()?.toUpperCase()} File
                       </span>
                     </div>
+                  </div>
+                )}
+
+                {uploadState && uploadState.status !== "complete" && (
+                  <div className="chat-message-upload-status">
+                    {uploadState.status === "uploading" ? (
+                      <span>
+                        Uploading… {Number.isFinite(uploadState.progress)
+                          ? `${uploadState.progress}%`
+                          : ""}
+                      </span>
+                    ) : (
+                      <span className="text-danger">
+                        Upload failed
+                        {uploadState.error ? `: ${uploadState.error}` : ""}
+                      </span>
+                    )}
                   </div>
                 )}
 
