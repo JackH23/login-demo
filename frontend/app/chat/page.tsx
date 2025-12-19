@@ -276,6 +276,17 @@ function ChatPageContent() {
   }, [messages]);
 
   const postMessage = async (payload: Omit<Message, "_id" | "createdAt">) => {
+    const encodePayload = () => {
+      const params = new URLSearchParams();
+      params.set("from", payload.from);
+      params.set("to", payload.to);
+      params.set("type", payload.type);
+      params.set("content", payload.content);
+      if (payload.fileName) {
+        params.set("fileName", payload.fileName);
+      }
+      return params;
+    };
     const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const optimisticMessage: Message = {
       _id: tempId,
@@ -293,8 +304,10 @@ function ChatPageContent() {
     try {
       const res = await fetch(apiUrl("/api/messages"), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        // Use form encoding to avoid CORS preflight and shave latency off the
+        // message send path.
+        body: encodePayload(),
+        keepalive: true,
       });
 
       if (!res.ok) {
