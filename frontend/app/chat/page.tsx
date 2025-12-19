@@ -72,6 +72,30 @@ function ChatPageContent() {
 
   const POLL_INTERVAL_MS = 10_000;
 
+  useEffect(() => {
+    if (!selectedMsgId) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!messagesContainerNodeRef.current) return;
+      if (!(event.target instanceof Node)) return;
+
+      const selectedMessageNode =
+        messagesContainerNodeRef.current.querySelector(
+          `[data-message-id="${selectedMsgId}"]`
+        );
+
+      if (selectedMessageNode && !selectedMessageNode.contains(event.target)) {
+        setSelectedMsgId(null);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [selectedMsgId]);
+
   const chatDataUrl = useMemo(() => {
     if (!user || !chatUser) return null;
     return `/api/messages?${new URLSearchParams({
@@ -864,6 +888,13 @@ function ChatPageContent() {
             )}
 
             <div
+              onClick={() => {
+                if (isSender) {
+                  setSelectedMsgId((current) =>
+                    current === msg._id ? null : msg._id
+                  );
+                }
+              }}
               onContextMenu={(e) => {
                 e.preventDefault();
                 if (isSender) setSelectedMsgId(msg._id);
@@ -872,6 +903,7 @@ function ChatPageContent() {
               className={`chat-message ${
                 isSender ? "chat-message--sent" : "chat-message--received"
               }`}
+              data-message-id={msg._id}
             >
               <div
                 className={`chat-message-bubble ${
