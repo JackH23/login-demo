@@ -2,6 +2,7 @@ const express = require("express");
 const http = require("http");
 const cors = require("cors");
 const path = require("path");
+const fs = require("fs");
 
 require("dotenv").config({ path: path.join(__dirname, ".env") });
 
@@ -12,14 +13,21 @@ const postRoutes = require("./routes/posts");
 const commentRoutes = require("./routes/comments");
 const messageRoutes = require("./routes/messages");
 const friendRoutes = require("./routes/friends");
+const uploadRoutes = require("./routes/uploads");
 const { createSocketServer } = require("./socket");
 
 const app = express();
+
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 // Middlewares
 app.use(cors());
 app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ extended: true, limit: "5mb" }));
+app.use("/uploads", express.static(uploadsDir));
 
 // Health check route
 app.get("/", (req, res) => {
@@ -33,6 +41,7 @@ app.use("/api/posts", postRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/friends", friendRoutes);
+app.use("/api/uploads", uploadRoutes);
 
 // Global error handler
 app.use((error, _req, res, _next) => {
