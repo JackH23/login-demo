@@ -54,7 +54,7 @@ function ChatPageContent() {
   const { theme, setTheme } = useTheme();
 
   const [messages, setMessages] = useState<Message[]>([]);
-  const [lastFetchTime, setLastFetchTime] = useState<number>(() => Date.now());
+  const lastFetchTimeRef = useRef<number>(Date.now());
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const messagesContainerNodeRef = useRef<HTMLDivElement | null>(null);
@@ -107,15 +107,13 @@ function ChatPageContent() {
     },
   });
 
-  const sortMessagesByDate = useCallback(
-    (list: Message[]) =>
-      [...list].sort(
-        (a, b) =>
-          resolveMessageDate(a.createdAt).getTime() -
-          resolveMessageDate(b.createdAt).getTime()
-      ),
-    [lastFetchTime]
-  );
+  const sortMessagesByDate = useCallback((list: Message[]) => {
+    return [...list].sort(
+      (a, b) =>
+        resolveMessageDate(a.createdAt).getTime() -
+        resolveMessageDate(b.createdAt).getTime()
+    );
+  }, []);
 
   useEffect(() => {
     setParticipants([]);
@@ -181,7 +179,7 @@ function ChatPageContent() {
       emojis: chatData.emojis ?? [],
     };
 
-    setLastFetchTime(Date.now());
+    lastFetchTimeRef.current = Date.now();
     setMessages((prev) => {
       const optimisticMessages = prev.filter(
         (msg) =>
@@ -436,7 +434,7 @@ function ChatPageContent() {
       return parsed;
     }
 
-    return new Date(lastFetchTime);
+    return new Date(lastFetchTimeRef.current);
   }
 
   const formatTime = useMemo(
