@@ -29,6 +29,18 @@ app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 app.use("/uploads", express.static(uploadsDir));
 
+// Ensure MongoDB is connected before handling requests so transient connection
+// issues surface as a clear 503 response instead of uncaught 500 errors later.
+app.use(async (_req, res, next) => {
+  try {
+    await dbConnect();
+    next();
+  } catch (error) {
+    console.error("Unable to connect to MongoDB for request", error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
 // Health check route
 app.get("/", (req, res) => {
   res.send("API is running — Connected to MongoDB.");
