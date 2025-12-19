@@ -13,7 +13,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import type { Socket } from "socket.io-client";
-import { apiUrl } from "@/app/lib/api";
+import { apiUrl, resolveApiUrl } from "@/app/lib/api";
 
 const PAGE_SIZE = 50;
 const CHAT_CACHE_PREFIX = "chat-cache:";
@@ -54,6 +54,22 @@ type UploadState = {
   status: "uploading" | "failed" | "complete";
   error?: string;
 };
+
+const ABSOLUTE_MEDIA_URL = /^(https?:|data:|blob:)/i;
+
+function resolveAttachmentUrl(value: string) {
+  if (!value || ABSOLUTE_MEDIA_URL.test(value)) return value;
+  const normalizedPath = value.startsWith("/") ? value : `/${value}`;
+  return resolveApiUrl(normalizedPath);
+}
+
+function normalizeMessageMedia(message: Message): Message {
+  if (message.type === "text") return message;
+  return {
+    ...message,
+    content: resolveAttachmentUrl(message.content),
+  };
+}
 
 function ChatPageContent() {
   const searchParams = useSearchParams();
@@ -169,7 +185,9 @@ function ChatPageContent() {
       const raw = payload as Partial<ChatData> & { hasMore?: boolean };
 
       return {
-        messages: Array.isArray(raw.messages) ? raw.messages : [],
+        messages: Array.isArray(raw.messages)
+          ? raw.messages.map(normalizeMessageMedia)
+          : [],
         participants: Array.isArray(raw.participants) ? raw.participants : [],
         emojis: Array.isArray(raw.emojis) ? raw.emojis : [],
         hasMore: Boolean(raw.hasMore),
@@ -255,7 +273,7 @@ function ChatPageContent() {
         oldestCursor?: string;
       };
       const cachedMessages = Array.isArray(cached.messages)
-        ? cached.messages
+        ? cached.messages.map(normalizeMessageMedia)
         : [];
       setMessages(sortMessagesByDate(cachedMessages));
       setParticipants(
@@ -400,11 +418,12 @@ function ChatPageContent() {
         (msg.to === chatUser && msg.from === user.username);
       if (!isPartnerMessage) return;
 
+      const normalizedMessage = normalizeMessageMedia(msg);
       setMessages((prev) => {
         const withoutTemp = msg.clientMessageId
           ? prev.filter((m) => m._id !== msg.clientMessageId)
           : prev;
-        return sortMessagesByDate([...withoutTemp, msg]);
+        return sortMessagesByDate([...withoutTemp, normalizedMessage]);
       });
 
       if (msg.from === chatUser) {
@@ -562,7 +581,7 @@ function ChatPageContent() {
                 return;
               }
 
-              resolve(response.message);
+              resolve(normalizeMessageMedia(response.message));
             }
           );
       });
@@ -606,7 +625,7 @@ function ChatPageContent() {
         throw new Error("Unexpected response from the server");
       }
 
-      return data.message as Message;
+      return normalizeMessageMedia(data.message as Message);
     },
     [resolveMessageDate]
   );
@@ -804,7 +823,11 @@ function ChatPageContent() {
   const processUploadedFile = useCallback(
     async (file: File, tempId: string, optimisticMessage: Message) => {
       try {
-        const { url, name } = await uploadFileWithProgress(file, tempId);
+        const { url: serverUrl, name } = await uploadFileWithProgress(
+          file,
+          tempId
+        );
+        const resolvedUrl = resolveAttachmentUrl(serverUrl);
         setUploadStates((prev) => ({
           ...prev,
           [tempId]: { progress: 100, status: "uploading" },
@@ -815,7 +838,7 @@ function ChatPageContent() {
             m._id === tempId
               ? {
                   ...m,
-                  content: url,
+                  content: resolvedUrl,
                   fileName: name ?? optimisticMessage.fileName,
                 }
               : m
@@ -826,11 +849,15 @@ function ChatPageContent() {
           from: optimisticMessage.from,
           to: optimisticMessage.to,
           type: optimisticMessage.type,
-          content: url,
+          content: serverUrl,
           fileName: name ?? optimisticMessage.fileName,
         };
 
-        await confirmOptimisticMessage(tempId, optimisticMessage, payload);
+        await confirmOptimisticMessage(
+          tempId,
+          { ...optimisticMessage, content: resolvedUrl },
+          payload
+        );
         setUploadStates((prev) => ({
           ...prev,
           [tempId]: { progress: 100, status: "complete" },
