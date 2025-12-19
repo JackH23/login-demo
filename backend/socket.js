@@ -1,6 +1,7 @@
 const { Server } = require('socket.io');
 
 const Message = require('./models/Message');
+const dbConnect = require('./mongodb');
 
 let ioInstance = null;
 
@@ -47,6 +48,8 @@ function createSocketServer(server) {
 
     socket.on('chat:send', async (payload, callback) => {
       try {
+        await dbConnect();
+
         const { from, to, type, content, fileName, clientMessageId } =
           payload || {};
 
@@ -69,7 +72,11 @@ function createSocketServer(server) {
         }
       } catch (error) {
         console.error('Unable to persist socket message', error);
-        callback?.({ ok: false, error: 'Failed to send message' });
+        const friendlyMessage =
+          error instanceof Error && error.message
+            ? `Failed to send message: ${error.message}`
+            : 'Failed to send message';
+        callback?.({ ok: false, error: friendlyMessage });
       }
     });
 

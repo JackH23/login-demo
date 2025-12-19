@@ -292,9 +292,7 @@ function ChatPageContent() {
 
     const handlePresence = (username: string, online: boolean) => {
       setParticipants((prev) =>
-        prev.map((p) =>
-          p.username === username ? { ...p, online } : p
-        )
+        prev.map((p) => (p.username === username ? { ...p, online } : p))
       );
       if (username === chatUser) {
         setChatOnline(online);
@@ -350,6 +348,142 @@ function ChatPageContent() {
     // content while the user is scrolled up
   }, [messages]);
 
+  const replaceTempMessage = useCallback(
+    (tempId: string, confirmed: Message) => {
+      setMessages((prev) =>
+        sortMessagesByDate(prev.map((m) => (m._id === tempId ? confirmed : m)))
+      );
+      setChatData((prev) => ({
+        ...prev,
+        messages: sortMessagesByDate(
+          prev.messages.map((m) => (m._id === tempId ? confirmed : m))
+        ),
+      }));
+    },
+    [setChatData, sortMessagesByDate]
+  );
+
+  const removeTempMessage = useCallback(
+    (tempId: string) => {
+      setMessages((prev) => prev.filter((m) => m._id !== tempId));
+      setChatData((prev) => ({
+        ...prev,
+        messages: prev.messages.filter((m) => m._id !== tempId),
+      }));
+    },
+    [setChatData]
+  );
+
+  const waitForSocketConnection = useCallback((client: Socket) => {
+    if (client.connected) return Promise.resolve();
+
+    return new Promise<void>((resolve, reject) => {
+      const handleConnect = () => {
+        cleanup();
+        resolve();
+      };
+      const handleError = (error: Error) => {
+        cleanup();
+        reject(error);
+      };
+      const cleanup = () => {
+        clearTimeout(timeoutId);
+        client.off("connect", handleConnect);
+        client.off("connect_error", handleError);
+      };
+
+      const timeoutId = window.setTimeout(() => {
+        cleanup();
+        reject(new Error("Socket connection timed out"));
+      }, 3000);
+
+      client.once("connect", handleConnect);
+      client.once("connect_error", handleError);
+      client.connect();
+    });
+  }, []);
+
+  const sendMessageViaSocket = useCallback(
+    async (
+      payload: Omit<Message, "_id" | "createdAt">,
+      tempId: string
+    ): Promise<Message> => {
+      const client = socketRef.current;
+      if (!client) throw new Error("Socket not connected");
+
+      await waitForSocketConnection(client);
+
+      return await new Promise<Message>((resolve, reject) => {
+        client
+          .timeout(4000)
+          .emit(
+            "chat:send",
+            { ...payload, clientMessageId: tempId },
+            (
+              response:
+                | { ok?: boolean; message?: Message; error?: string }
+                | Error
+                | undefined
+            ) => {
+              if (response instanceof Error) {
+                reject(response);
+                return;
+              }
+
+              if (!response?.ok || !response.message) {
+                reject(new Error(response?.error || "Failed to send"));
+                return;
+              }
+
+              resolve(response.message);
+            }
+          );
+      });
+    },
+    [waitForSocketConnection]
+  );
+
+  const sendMessageViaHttp = useCallback(
+    async (payload: Omit<Message, "_id" | "createdAt">): Promise<Message> => {
+      const res = await fetch(apiUrl("/api/messages"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        let message = `Request failed with status ${res.status}`;
+        try {
+          const bodyText = await res.text();
+          if (bodyText.trim()) {
+            try {
+              const data = JSON.parse(bodyText);
+              if (typeof data?.error === "string" && data.error.trim()) {
+                message = data.error;
+              } else {
+                message = bodyText;
+              }
+            } catch {
+              message = bodyText;
+            }
+          }
+        } catch {
+          // Swallow body read errors and fall back to the default message
+        }
+
+        throw new Error(message);
+      }
+
+      const data = await res.json();
+      if (!data?.message) {
+        throw new Error("Unexpected response from the server");
+      }
+
+      return data.message as Message;
+    },
+    []
+  );
+
   const postMessage = async (payload: Omit<Message, "_id" | "createdAt">) => {
     const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const optimisticMessage: Message = {
@@ -366,43 +500,18 @@ function ChatPageContent() {
     scrollToBottom();
 
     try {
-      if (!socketRef.current) {
-        throw new Error("Socket not connected");
-      }
+      const confirmed = await sendMessageViaSocket(payload, tempId);
+      replaceTempMessage(tempId, confirmed);
+      return;
+    } catch (error) {
+      console.warn("Socket delivery failed; attempting HTTP fallback", error);
+    }
 
-      await new Promise<void>((resolve, reject) => {
-        socketRef.current?.timeout(4000).emit(
-          "chat:send",
-          { ...payload, clientMessageId: tempId },
-          (response: { ok: boolean; message?: Message; error?: string }) => {
-            if (!response?.ok || !response.message) {
-              reject(new Error(response?.error || "Failed to send"));
-              return;
-            }
-
-            const confirmed = response.message;
-            setMessages((prev) =>
-              sortMessagesByDate(
-                prev.map((m) => (m._id === tempId ? confirmed : m))
-              )
-            );
-            setChatData((prev) => ({
-              ...prev,
-              messages: sortMessagesByDate(
-                prev.messages.map((m) => (m._id === tempId ? confirmed : m))
-              ),
-            }));
-            resolve();
-          }
-        );
-      });
+    try {
+      const confirmed = await sendMessageViaHttp(payload);
+      replaceTempMessage(tempId, confirmed);
     } catch (error) {
       console.error("Unable to send message", error);
-      setMessages((prev) => prev.filter((m) => m._id !== tempId));
-      setChatData((prev) => ({
-        ...prev,
-        messages: prev.messages.filter((m) => m._id !== tempId),
-      }));
     }
   };
 
