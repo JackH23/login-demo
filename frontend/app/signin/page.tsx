@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import AuthLayout from "../components/AuthLayout";
@@ -47,9 +47,27 @@ export default function SigninPage() {
     return Promise.all([warmUsers, warmPosts]);
   }, []);
 
+  const homeWarmupRef = useRef<Promise<[PrefetchUser[], PrefetchPost[]]> | null>(
+    null
+  );
+
+  const ensureHomeWarmup = useCallback(() => {
+    if (!homeWarmupRef.current) {
+      homeWarmupRef.current = warmHomeData().catch((error) => {
+        homeWarmupRef.current = null;
+        throw error;
+      });
+    }
+    return homeWarmupRef.current;
+  }, [warmHomeData]);
+
   useEffect(() => {
     void router.prefetch("/home");
-  }, [router]);
+  const warmup = ensureHomeWarmup();
+    void warmup.catch((prefetchError) => {
+      console.error("Failed to prefetch home data", prefetchError);
+    });
+  }, [ensureHomeWarmup, router]);
 
   const handleSignin = async () => {
     setError("");
@@ -57,7 +75,7 @@ export default function SigninPage() {
     try {
       const result = await signin(email, password);
       if (result.success) {
-        const warmup = warmHomeData();
+        const warmup = ensureHomeWarmup();
         router.replace("/home");
         void warmup.catch((prefetchError) => {
           console.error("Failed to prefetch home data", prefetchError);
