@@ -664,6 +664,52 @@ function ChatPageContent() {
     [resolveMessageDate]
   );
 
+  const normalizeUploadResponse = useCallback(
+    (data: unknown): { dataUrl: string; name?: string } | null => {
+      if (!data || typeof data !== "object") return null;
+
+      const record = data as Record<string, unknown>;
+      const file =
+        record.file && typeof record.file === "object"
+          ? (record.file as Record<string, unknown>)
+          : null;
+
+      const name =
+        typeof record.name === "string"
+          ? record.name
+          : typeof file?.name === "string"
+          ? file.name
+          : undefined;
+
+      const directDataUrl =
+        typeof record.dataUrl === "string" && record.dataUrl.trim()
+          ? record.dataUrl
+          : typeof record.url === "string" && record.url.trim()
+          ? record.url
+          : null;
+
+      const fileDataUrl = (() => {
+        if (!file) return null;
+        if (typeof file.url === "string" && file.url.trim()) return file.url;
+        if (typeof file.base64 !== "string" || !file.base64.trim()) return null;
+
+        if (file.base64.startsWith("data:")) return file.base64;
+
+        const contentType =
+          typeof file.contentType === "string" && file.contentType.trim()
+            ? file.contentType
+            : "application/octet-stream";
+        return `data:${contentType};base64,${file.base64}`;
+      })();
+
+      const dataUrl = directDataUrl ?? fileDataUrl;
+      if (!dataUrl) return null;
+
+      return { dataUrl, name };
+    },
+    []
+  );
+
   const uploadFileWithProgress = useCallback(
     (file: File, tempId: string) =>
       new Promise<{ dataUrl: string; name: string }>((resolve, reject) => {
@@ -687,13 +733,15 @@ function ChatPageContent() {
           if (xhr.status >= 200 && xhr.status < 300) {
             try {
               const data = JSON.parse(xhr.responseText);
-              if (data?.dataUrl) {
+              const normalized = normalizeUploadResponse(data);
+              if (normalized?.dataUrl) {
                 resolve({
-                  dataUrl: data.dataUrl as string,
-                  name: data.name as string,
+                  dataUrl: normalized.dataUrl,
+                  name: normalized.name ?? file.name,
                 });
                 return;
               }
+              console.warn("Unexpected upload response", data);
             } catch {
               /* ignore */
             }
@@ -709,7 +757,7 @@ function ChatPageContent() {
         formData.append("file", file);
         xhr.send(formData);
       }),
-    []
+    [normalizeUploadResponse]
   );
 
   const confirmOptimisticMessage = useCallback(
@@ -830,10 +878,7 @@ function ChatPageContent() {
   const processUploadedFile = useCallback(
     async (file: File, tempId: string, optimisticMessage: Message) => {
       try {
-        const { dataUrl, name } = await uploadFileWithProgress(
-          file,
-          tempId
-        );
+        const { dataUrl, name } = await uploadFileWithProgress(file, tempId);
         setUploadStates((prev) => ({
           ...prev,
           [tempId]: { progress: 100, status: "uploading" },
@@ -876,7 +921,13 @@ function ChatPageContent() {
               }
             : {}),
           ...(prev[tempId] && !confirmedMessage?._id
-            ? { [tempId]: { ...prev[tempId], progress: 100, status: "complete" } }
+            ? {
+                [tempId]: {
+                  ...prev[tempId],
+                  progress: 100,
+                  status: "complete",
+                },
+              }
             : {}),
         }));
       } catch (error) {
