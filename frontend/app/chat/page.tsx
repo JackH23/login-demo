@@ -12,7 +12,7 @@ import {
 } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
-import { Socket } from "socket.io-client";
+import type { Socket } from "socket.io-client";
 import { apiUrl } from "@/app/lib/api";
 import { prefetchCachedApi, useCachedApi } from "../hooks/useCachedApi";
 
@@ -70,7 +70,7 @@ function ChatPageContent() {
   const [isMobile, setIsMobile] = useState(false);
   const emojiLoadedRef = useRef(false);
 
-  const POLL_INTERVAL_MS = 1_000;
+  const POLL_INTERVAL_MS = 10_000;
 
   const chatDataUrl = useMemo(() => {
     if (!user || !chatUser) return null;
@@ -165,6 +165,17 @@ function ChatPageContent() {
     socketRef.current = socket || null;
   }, [socket]);
 
+  // Join/leave socket room for current chat partner
+  useEffect(() => {
+    if (!socketRef.current || !user || !chatUser) return;
+    const payload = { user: user.username, partner: chatUser };
+    socketRef.current.emit("chat:join", payload);
+
+    return () => {
+      socketRef.current?.emit("chat:leave", payload);
+    };
+  }, [chatUser, user]);
+
   // Sync conversation data from cached API and refresh periodically
   useEffect(() => {
     if (!user || !chatUser) {
@@ -216,13 +227,18 @@ function ChatPageContent() {
   useEffect(() => {
     if (!user || !chatUser) return;
 
+    let abort = false;
     void refreshChatData();
 
     const interval = setInterval(() => {
+      if (abort) return;
       void refreshChatData();
     }, POLL_INTERVAL_MS);
 
-    return () => clearInterval(interval);
+    return () => {
+      abort = true;
+      clearInterval(interval);
+    };
   }, [POLL_INTERVAL_MS, chatUser, refreshChatData, user]);
 
   // Scroll when a new message arrives or when opening the chat
@@ -244,10 +260,61 @@ function ChatPageContent() {
     return () => window.removeEventListener("click", clearSelection);
   }, []);
 
-  // Socket real-time listeners disabled
   useEffect(() => {
-    setChatOnline(false);
-  }, [socket, chatUser]);
+    if (!socketRef.current || !user) return;
+
+    const handleIncoming = (msg: Message & { clientMessageId?: string }) => {
+      const isPartnerMessage =
+        (msg.from === chatUser && msg.to === user.username) ||
+        (msg.to === chatUser && msg.from === user.username);
+      if (!isPartnerMessage) return;
+
+      setMessages((prev) => {
+        const withoutTemp = msg.clientMessageId
+          ? prev.filter((m) => m._id !== msg.clientMessageId)
+          : prev;
+        return sortMessagesByDate([...withoutTemp, msg]);
+      });
+      setChatData((prev) => {
+        const withoutTemp = msg.clientMessageId
+          ? prev.messages.filter((m) => m._id !== msg.clientMessageId)
+          : prev.messages;
+        return {
+          ...prev,
+          messages: sortMessagesByDate([...withoutTemp, msg]),
+        };
+      });
+
+      if (msg.from === chatUser) {
+        scrollToBottom();
+      }
+    };
+
+    const handlePresence = (username: string, online: boolean) => {
+      setParticipants((prev) =>
+        prev.map((p) =>
+          p.username === username ? { ...p, online } : p
+        )
+      );
+      if (username === chatUser) {
+        setChatOnline(online);
+      }
+    };
+
+    socketRef.current.on("chat:message", handleIncoming);
+    socketRef.current.on("user-online", (username) =>
+      handlePresence(username, true)
+    );
+    socketRef.current.on("user-offline", (username) =>
+      handlePresence(username, false)
+    );
+
+    return () => {
+      socketRef.current?.off("chat:message", handleIncoming);
+      socketRef.current?.off("user-online");
+      socketRef.current?.off("user-offline");
+    };
+  }, [chatDataUrl, chatUser, setChatData, sortMessagesByDate, user]);
 
   const chatPartner = participants.find((p) => p.username === chatUser);
   const emojiButtonTitle = emojiList.length
@@ -284,25 +351,6 @@ function ChatPageContent() {
   }, [messages]);
 
   const postMessage = async (payload: Omit<Message, "_id" | "createdAt">) => {
-    const params = new URLSearchParams();
-    params.set("from", payload.from);
-    params.set("to", payload.to);
-    params.set("type", payload.type);
-    params.set("content", payload.content);
-    if (payload.fileName) {
-      params.set("fileName", payload.fileName);
-    }
-
-    // Kick off the network request before React state updates to push data to
-    // the backend faster.
-    const sendPromise = fetch(apiUrl("/api/messages"), {
-      method: "POST",
-      body: params,
-      keepalive: true,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-      },
-    });
     const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const optimisticMessage: Message = {
       _id: tempId,
@@ -318,26 +366,36 @@ function ChatPageContent() {
     scrollToBottom();
 
     try {
-      const res = await sendPromise;
-
-      if (!res.ok) {
-        throw new Error(`Failed to send message: ${res.status}`);
+      if (!socketRef.current) {
+        throw new Error("Socket not connected");
       }
 
-      const data = (await res.json()) as { message: Message };
-      setMessages((prev) =>
-        sortMessagesByDate(
-          prev.map((m) => (m._id === tempId ? data.message : m))
-        )
-      );
-      setChatData((prev) => ({
-        ...prev,
-        messages: sortMessagesByDate(
-          prev.messages.map((m) => (m._id === tempId ? data.message : m))
-        ),
-      }));
-      socketRef.current?.emit("send-message", data.message);
-      scrollToBottom();
+      await new Promise<void>((resolve, reject) => {
+        socketRef.current?.timeout(4000).emit(
+          "chat:send",
+          { ...payload, clientMessageId: tempId },
+          (response: { ok: boolean; message?: Message; error?: string }) => {
+            if (!response?.ok || !response.message) {
+              reject(new Error(response?.error || "Failed to send"));
+              return;
+            }
+
+            const confirmed = response.message;
+            setMessages((prev) =>
+              sortMessagesByDate(
+                prev.map((m) => (m._id === tempId ? confirmed : m))
+              )
+            );
+            setChatData((prev) => ({
+              ...prev,
+              messages: sortMessagesByDate(
+                prev.messages.map((m) => (m._id === tempId ? confirmed : m))
+              ),
+            }));
+            resolve();
+          }
+        );
+      });
     } catch (error) {
       console.error("Unable to send message", error);
       setMessages((prev) => prev.filter((m) => m._id !== tempId));
