@@ -25,6 +25,16 @@ const upload = multer({
   limits: { fileSize: MAX_IMAGE_BYTES },
 });
 
+// Only engage multer for multipart/form-data requests to avoid throwing errors
+// on JSON requests (e.g., status updates that don't include a file upload).
+const maybeHandleUpload = (req, res, next) => {
+  if (req.is('multipart/form-data')) {
+    return upload.single('image')(req, res, next);
+  }
+
+  return next();
+};
+
 function serializeUser(user) {
   const imageDataUrl =
     user?.imageData?.length
@@ -107,7 +117,7 @@ router.get('/:username', asyncHandler(async (req, res) => {
   return res.json({ user: serializeUser(user) });
 }));
 
-router.put('/:username', upload.single('image'), asyncHandler(async (req, res) => {
+router.put('/:username', maybeHandleUpload, asyncHandler(async (req, res) => {
   const { username: target } = req.params;
   const requester = getRequester(req);
 
