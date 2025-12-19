@@ -10,8 +10,13 @@ const asyncHandler = (handler) =>
   (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
 
 router.get('/', asyncHandler(async (req, res) => {
-  const { user1, user2, limit: limitParam } = req.query;
+  const { user1, user2, limit: limitParam, before } = req.query;
   const limit = limitParam ? Number.parseInt(limitParam, 10) : undefined;
+  const beforeDate = before ? new Date(before) : null;
+
+  if (beforeDate && Number.isNaN(beforeDate.getTime())) {
+    return res.status(400).json({ error: 'Invalid before cursor' });
+  }
 
   if (!user1 || !user2) {
     return res.status(400).json({ error: 'Missing users' });
@@ -29,22 +34,39 @@ router.get('/', asyncHandler(async (req, res) => {
       ? Math.min(limit, 200)
       : null;
 
+  const createdAtFilter =
+    beforeDate && !Number.isNaN(beforeDate.getTime())
+      ? { createdAt: { $lt: beforeDate } }
+      : null;
+
   const fetchMessages = async () => {
     if (boundedLimit) {
+      const limitWithLookahead = boundedLimit + 1;
       // Ensure sorting happens in the database instead of relying on reversing client-side
-      return Message.aggregate([
-        { $match: filter },
+      const results = await Message.aggregate([
+        { $match: createdAtFilter ? { ...filter, ...createdAtFilter } : filter },
         { $sort: { createdAt: -1 } },
-        { $limit: boundedLimit },
+        { $limit: limitWithLookahead },
         { $sort: { createdAt: 1 } },
         { $project: { from: 1, to: 1, type: 1, content: 1, fileName: 1, createdAt: 1 } },
       ]);
+
+      const hasMore = results.length > boundedLimit;
+      const sliced = hasMore ? results.slice(0, boundedLimit) : results;
+      return { messages: sliced, hasMore };
     }
 
-    return Message.find(filter)
+    const query = Message.find(filter);
+    if (createdAtFilter) {
+      query.where('createdAt').lt(beforeDate);
+    }
+
+    const messages = await query
       .select('from to type content fileName createdAt')
       .sort({ createdAt: 1 })
       .lean();
+
+    return { messages, hasMore: false };
   };
 
   const [messages, participants, emojis] = await Promise.all([
@@ -58,7 +80,12 @@ router.get('/', asyncHandler(async (req, res) => {
       .lean(),
   ]);
 
-  return res.json({ messages, participants, emojis });
+  return res.json({
+    messages: messages.messages ?? messages,
+    hasMore: messages.hasMore ?? false,
+    participants,
+    emojis,
+  });
 }));
 
 router.get('/latest', asyncHandler(async (req, res) => {

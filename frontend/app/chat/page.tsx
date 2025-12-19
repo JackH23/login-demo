@@ -14,7 +14,9 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import type { Socket } from "socket.io-client";
 import { apiUrl } from "@/app/lib/api";
-import { prefetchCachedApi, useCachedApi } from "../hooks/useCachedApi";
+
+const PAGE_SIZE = 50;
+const CHAT_CACHE_PREFIX = "chat-cache:";
 
 interface Message {
   _id: string;
@@ -44,6 +46,7 @@ interface ChatData {
   messages: Message[];
   participants: ChatParticipant[];
   emojis: ChatEmoji[];
+  hasMore?: boolean;
 }
 
 function ChatPageContent() {
@@ -54,7 +57,11 @@ function ChatPageContent() {
   const { theme, setTheme } = useTheme();
 
   const [messages, setMessages] = useState<Message[]>([]);
+  const [loadingLatest, setLoadingLatest] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const lastFetchTimeRef = useRef<number>(Date.now());
+  const oldestCursorRef = useRef<string | null>(null);
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const messagesContainerNodeRef = useRef<HTMLDivElement | null>(null);
@@ -70,7 +77,10 @@ function ChatPageContent() {
   const [isMobile, setIsMobile] = useState(false);
   const emojiLoadedRef = useRef(false);
 
-  const POLL_INTERVAL_MS = 10_000;
+  const cacheKey = useMemo(() => {
+    if (!user || !chatUser) return null;
+    return `${CHAT_CACHE_PREFIX}${user.username}:${chatUser}`;
+  }, [chatUser, user]);
 
   useEffect(() => {
     if (!selectedMsgId) return;
@@ -96,40 +106,9 @@ function ChatPageContent() {
     };
   }, [selectedMsgId]);
 
-  const chatDataUrl = useMemo(() => {
-    if (!user || !chatUser) return null;
-    return `/api/messages?${new URLSearchParams({
-      user1: user.username,
-      user2: chatUser,
-      limit: "200",
-    }).toString()}`;
-  }, [chatUser, user]);
-  const messagesContainerRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      messagesContainerNodeRef.current = node;
-      if (node && chatDataUrl) {
-        void prefetchCachedApi<ChatData>(chatDataUrl).catch((error) => {
-          console.warn("Failed to prefetch chat data", error);
-        });
-      }
-    },
-    [chatDataUrl]
-  );
-  const {
-    data: chatData,
-    setData: setChatData,
-    refresh: refreshChatData,
-  } = useCachedApi<ChatData>(chatDataUrl, {
-    fallback: { messages: [], participants: [], emojis: [] },
-    transform: (payload) => {
-      const raw = payload as Partial<ChatData>;
-      return {
-        messages: Array.isArray(raw.messages) ? raw.messages : [],
-        participants: Array.isArray(raw.participants) ? raw.participants : [],
-        emojis: Array.isArray(raw.emojis) ? raw.emojis : [],
-      };
-    },
-  });
+  const messagesContainerRef = useCallback((node: HTMLDivElement | null) => {
+    messagesContainerNodeRef.current = node;
+  }, []);
 
   const sortMessagesByDate = useCallback((list: Message[]) => {
     return [...list].sort(
@@ -138,6 +117,57 @@ function ChatPageContent() {
         resolveMessageDate(b.createdAt).getTime()
     );
   }, []);
+
+  const mergeMessages = useCallback(
+    (incoming: Message[], existing: Message[]) => {
+      const byId = new Map<string, Message>();
+      for (const msg of existing) {
+        byId.set(msg._id, msg);
+      }
+      for (const msg of incoming) {
+        byId.set(msg._id, msg);
+      }
+      return sortMessagesByDate([...byId.values()]);
+    },
+    [sortMessagesByDate]
+  );
+
+  const fetchChatData = useCallback(
+    async (before?: string | null): Promise<ChatData> => {
+      if (!user || !chatUser) {
+        return { messages: [], participants: [], emojis: [], hasMore: false };
+      }
+
+      const params = new URLSearchParams({
+        user1: user.username,
+        user2: chatUser,
+        limit: PAGE_SIZE.toString(),
+      });
+
+      if (before) {
+        params.set("before", before);
+      }
+
+      const res = await fetch(apiUrl(`/api/messages?${params.toString()}`), {
+        cache: "no-store",
+      });
+
+      if (!res.ok) {
+        throw new Error(`Request failed with status ${res.status}`);
+      }
+
+      const payload = await res.json();
+      const raw = payload as Partial<ChatData> & { hasMore?: boolean };
+
+      return {
+        messages: Array.isArray(raw.messages) ? raw.messages : [],
+        participants: Array.isArray(raw.participants) ? raw.participants : [],
+        emojis: Array.isArray(raw.emojis) ? raw.emojis : [],
+        hasMore: Boolean(raw.hasMore),
+      };
+    },
+    [chatUser, user]
+  );
 
   useEffect(() => {
     setParticipants([]);
@@ -200,70 +230,138 @@ function ChatPageContent() {
     };
   }, [chatUser, user]);
 
-  // Sync conversation data from cached API and refresh periodically
   useEffect(() => {
-    if (!user || !chatUser) {
-      setMessages([]);
-      setParticipants([]);
+    setMessages([]);
+    setParticipants([]);
+    setEmojiList([]);
+    setHasMore(true);
+    oldestCursorRef.current = null;
+    prevLengthRef.current = 0;
+    if (!cacheKey || typeof window === "undefined") return;
+
+    try {
+      const raw = localStorage.getItem(cacheKey);
+      if (!raw) return;
+      const cached = JSON.parse(raw) as Partial<ChatData> & {
+        oldestCursor?: string;
+      };
+      const cachedMessages = Array.isArray(cached.messages)
+        ? cached.messages
+        : [];
+      setMessages(sortMessagesByDate(cachedMessages));
+      setParticipants(
+        Array.isArray(cached.participants) ? cached.participants : []
+      );
+      if (Array.isArray(cached.emojis) && cached.emojis.length) {
+        setEmojiList(cached.emojis);
+        emojiLoadedRef.current = true;
+      }
+      if (typeof cached.hasMore === "boolean") {
+        setHasMore(cached.hasMore);
+      }
+      oldestCursorRef.current =
+        cached.oldestCursor ?? cachedMessages[0]?.createdAt ?? null;
+    } catch (error) {
+      console.warn("Failed to load cached chat", error);
+    }
+  }, [cacheKey, sortMessagesByDate]);
+
+  const hydrateLatest = useCallback(async () => {
+    if (!user || !chatUser) return;
+    setLoadingLatest(true);
+    try {
+      const data = await fetchChatData();
+      lastFetchTimeRef.current = Date.now();
+      setMessages((prev) => mergeMessages(data.messages ?? [], prev));
+      setParticipants(data.participants ?? []);
+      if (data.emojis?.length && !emojiLoadedRef.current) {
+        setEmojiList(data.emojis);
+        emojiLoadedRef.current = true;
+      }
+      const partner = (data.participants ?? []).find(
+        (p) => p.username === chatUser
+      );
+      if (partner && typeof partner.online === "boolean") {
+        setChatOnline(partner.online);
+      }
+      setHasMore(Boolean(data.hasMore ?? (data.messages?.length === PAGE_SIZE)));
+    } catch (error) {
+      console.error("Failed to fetch latest chat", error);
+    } finally {
+      setLoadingLatest(false);
+    }
+  }, [chatUser, fetchChatData, mergeMessages, user]);
+
+  useEffect(() => {
+    void hydrateLatest();
+  }, [hydrateLatest]);
+
+  const loadOlderMessages = useCallback(async () => {
+    if (!user || !chatUser || loadingOlder || loadingLatest || !hasMore) return;
+    const cursor = oldestCursorRef.current;
+    if (!cursor) return;
+
+    const container = messagesContainerNodeRef.current;
+    const previousHeight = container?.scrollHeight ?? 0;
+
+    setLoadingOlder(true);
+    try {
+      const data = await fetchChatData(cursor);
+      setMessages((prev) => mergeMessages(data.messages ?? [], prev));
+      if (!participants.length) {
+        setParticipants(data.participants ?? []);
+      }
+      if (data.emojis?.length && !emojiLoadedRef.current) {
+        setEmojiList(data.emojis);
+        emojiLoadedRef.current = true;
+      }
+      setHasMore(Boolean(data.hasMore ?? (data.messages?.length === PAGE_SIZE)));
+    } catch (error) {
+      console.error("Failed to load older messages", error);
+    } finally {
+      setLoadingOlder(false);
+      if (container) {
+        const delta = container.scrollHeight - previousHeight;
+        container.scrollTop += delta;
+      }
+    }
+  }, [
+    chatUser,
+    fetchChatData,
+    hasMore,
+    loadingLatest,
+    loadingOlder,
+    mergeMessages,
+    participants.length,
+    user,
+  ]);
+
+  useEffect(() => {
+    if (!messages.length) {
+      oldestCursorRef.current = null;
       return;
     }
-
-    const normalized: ChatData = {
-      messages: chatData.messages ?? [],
-      participants: chatData.participants ?? [],
-      emojis: chatData.emojis ?? [],
-    };
-
-    lastFetchTimeRef.current = Date.now();
-    setMessages((prev) => {
-      const optimisticMessages = prev.filter(
-        (msg) =>
-          msg._id.startsWith("temp-") &&
-          msg.from === user.username &&
-          msg.to === chatUser
-      );
-
-      const merged = [...normalized.messages];
-
-      for (const optimistic of optimisticMessages) {
-        if (!merged.some((msg) => msg._id === optimistic._id)) {
-          merged.push(optimistic);
-        }
-      }
-
-      return sortMessagesByDate(merged);
-    });
-    setParticipants(normalized.participants);
-
-    const partner = normalized.participants.find(
-      (p) => p.username === chatUser
-    );
-    if (partner && typeof partner.online === "boolean") {
-      setChatOnline(partner.online);
-    }
-
-    if (!emojiLoadedRef.current && normalized.emojis.length) {
-      setEmojiList(normalized.emojis);
-      emojiLoadedRef.current = true;
-    }
-  }, [chatData, chatUser, sortMessagesByDate, user]);
+    const sorted = sortMessagesByDate(messages);
+    oldestCursorRef.current = sorted[0]?.createdAt ?? null;
+  }, [messages, sortMessagesByDate]);
 
   useEffect(() => {
-    if (!user || !chatUser) return;
+    if (!cacheKey || !user || !chatUser) return;
+    if (typeof window === "undefined") return;
 
-    let abort = false;
-    void refreshChatData();
-
-    const interval = setInterval(() => {
-      if (abort) return;
-      void refreshChatData();
-    }, POLL_INTERVAL_MS);
-
-    return () => {
-      abort = true;
-      clearInterval(interval);
-    };
-  }, [POLL_INTERVAL_MS, chatUser, refreshChatData, user]);
+    try {
+      const payload = {
+        messages,
+        participants,
+        emojis: emojiList,
+        hasMore,
+        oldestCursor: oldestCursorRef.current,
+      };
+      localStorage.setItem(cacheKey, JSON.stringify(payload));
+    } catch (error) {
+      console.warn("Unable to persist chat cache", error);
+    }
+  }, [cacheKey, chatUser, emojiList, hasMore, messages, participants, user]);
 
   // Scroll when a new message arrives or when opening the chat
   useEffect(() => {
@@ -299,15 +397,6 @@ function ChatPageContent() {
           : prev;
         return sortMessagesByDate([...withoutTemp, msg]);
       });
-      setChatData((prev) => {
-        const withoutTemp = msg.clientMessageId
-          ? prev.messages.filter((m) => m._id !== msg.clientMessageId)
-          : prev.messages;
-        return {
-          ...prev,
-          messages: sortMessagesByDate([...withoutTemp, msg]),
-        };
-      });
 
       if (msg.from === chatUser) {
         scrollToBottom();
@@ -336,7 +425,7 @@ function ChatPageContent() {
       socketRef.current?.off("user-online");
       socketRef.current?.off("user-offline");
     };
-  }, [chatDataUrl, chatUser, setChatData, sortMessagesByDate, user]);
+  }, [chatUser, sortMessagesByDate, user]);
 
   const chatPartner = participants.find((p) => p.username === chatUser);
   const emojiButtonTitle = emojiList.length
@@ -351,7 +440,8 @@ function ChatPageContent() {
   };
 
   // Show the scroll-to-bottom button when the user scrolls away from the bottom
-  // or when new messages arrive while not at the bottom
+  // or when new messages arrive while not at the bottom. Also trigger lazy
+  // loading when the user scrolls near the top.
   useEffect(() => {
     const container = messagesContainerNodeRef.current;
     if (!container) return;
@@ -361,6 +451,11 @@ function ChatPageContent() {
         container.scrollHeight - container.scrollTop <=
         container.clientHeight + 80;
       setShowScrollButton(!atBottom);
+
+      const nearTop = container.scrollTop < 120;
+      if (nearTop) {
+        void loadOlderMessages();
+      }
     };
 
     // Initial check in case the list overflows on first render
@@ -370,32 +465,22 @@ function ChatPageContent() {
     return () => container.removeEventListener("scroll", handleScroll);
     // Re-run when messages change so the button updates if new messages push
     // content while the user is scrolled up
-  }, [messages]);
+  }, [loadOlderMessages, messages.length]);
 
   const replaceTempMessage = useCallback(
     (tempId: string, confirmed: Message) => {
       setMessages((prev) =>
         sortMessagesByDate(prev.map((m) => (m._id === tempId ? confirmed : m)))
       );
-      setChatData((prev) => ({
-        ...prev,
-        messages: sortMessagesByDate(
-          prev.messages.map((m) => (m._id === tempId ? confirmed : m))
-        ),
-      }));
     },
-    [setChatData, sortMessagesByDate]
+    [sortMessagesByDate]
   );
 
   const removeTempMessage = useCallback(
     (tempId: string) => {
       setMessages((prev) => prev.filter((m) => m._id !== tempId));
-      setChatData((prev) => ({
-        ...prev,
-        messages: prev.messages.filter((m) => m._id !== tempId),
-      }));
     },
-    [setChatData]
+    []
   );
 
   const waitForSocketConnection = useCallback((client: Socket) => {
@@ -549,10 +634,6 @@ function ChatPageContent() {
     };
 
     setMessages((prev) => sortMessagesByDate([...prev, optimisticMessage]));
-    setChatData((prev) => ({
-      ...prev,
-      messages: sortMessagesByDate([...prev.messages, optimisticMessage]),
-    }));
     scrollToBottom();
 
     try {
@@ -564,7 +645,7 @@ function ChatPageContent() {
     }
 
     try {
-      const latest = await refreshChatData();
+      const latest = await fetchChatData();
       const persisted = findMatchingPersistedMessage(
         latest.messages ?? [],
         optimisticMessage,
@@ -637,10 +718,6 @@ function ChatPageContent() {
     });
     if (res.ok) {
       setMessages((prev) => prev.filter((m) => m._id !== id));
-      setChatData((prev) => ({
-        ...prev,
-        messages: prev.messages.filter((m) => m._id !== id),
-      }));
     }
   };
 
@@ -657,12 +734,6 @@ function ChatPageContent() {
       setMessages((prev) =>
         prev.map((m) => (m._id === msg._id ? data.message : m))
       );
-      setChatData((prev) => ({
-        ...prev,
-        messages: prev.messages.map((m) =>
-          m._id === msg._id ? (data.message as Message) : m
-        ),
-      }));
     }
   };
 
