@@ -107,6 +107,16 @@ function ChatPageContent() {
     },
   });
 
+  const sortMessagesByDate = useCallback(
+    (list: Message[]) =>
+      [...list].sort(
+        (a, b) =>
+          resolveMessageDate(a.createdAt).getTime() -
+          resolveMessageDate(b.createdAt).getTime()
+      ),
+    [lastFetchTime]
+  );
+
   useEffect(() => {
     setParticipants([]);
     setChatOnline(false);
@@ -188,7 +198,7 @@ function ChatPageContent() {
         }
       }
 
-      return merged;
+      return sortMessagesByDate(merged);
     });
     setParticipants(normalized.participants);
 
@@ -203,7 +213,7 @@ function ChatPageContent() {
       setEmojiList(normalized.emojis);
       emojiLoadedRef.current = true;
     }
-  }, [chatData, chatUser, user]);
+  }, [chatData, chatUser, sortMessagesByDate, user]);
 
   useEffect(() => {
     if (!user || !chatUser) return;
@@ -302,10 +312,10 @@ function ChatPageContent() {
       ...payload,
     };
 
-    setMessages((prev) => [...prev, optimisticMessage]);
+    setMessages((prev) => sortMessagesByDate([...prev, optimisticMessage]));
     setChatData((prev) => ({
       ...prev,
-      messages: [...prev.messages, optimisticMessage],
+      messages: sortMessagesByDate([...prev.messages, optimisticMessage]),
     }));
     scrollToBottom();
 
@@ -318,12 +328,14 @@ function ChatPageContent() {
 
       const data = (await res.json()) as { message: Message };
       setMessages((prev) =>
-        prev.map((m) => (m._id === tempId ? data.message : m))
+        sortMessagesByDate(
+          prev.map((m) => (m._id === tempId ? data.message : m))
+        )
       );
       setChatData((prev) => ({
         ...prev,
-        messages: prev.messages.map((m) =>
-          m._id === tempId ? data.message : m
+        messages: sortMessagesByDate(
+          prev.messages.map((m) => (m._id === tempId ? data.message : m))
         ),
       }));
       socketRef.current?.emit("send-message", data.message);
