@@ -79,28 +79,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        const res = await fetch(
-          apiUrl(`/api/users/${encodeURIComponent(username)}`),
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: username,
-            },
-            // keepalive prevents the request from being canceled when the page
-            // is closing or hidden, reducing spurious fetch errors in the console.
-            keepalive: true,
-            body: JSON.stringify({ online }),
-          }
-        );
+        const res = await fetch(apiUrl("/api/users/status"), {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          // keepalive prevents the request from being canceled when the page
+          // is closing or hidden, reducing spurious fetch errors in the console.
+          keepalive: true,
+          body: JSON.stringify({ online }),
+        });
 
         if (!res.ok) {
+          if (res.status === 401) {
+            console.warn("Unauthorized to update status; clearing session.");
+            localStorage.removeItem("user");
+            setUser(null);
+            return;
+          }
+
           let message = "Failed to update user";
           const bodyText = await res.text();
           try {
             const data = JSON.parse(bodyText);
-            if (typeof data?.error === "string" && data.error.trim()) {
-              message = data.error;
+            const parsedMessage =
+              typeof data?.message === "string" && data.message.trim()
+                ? data.message
+                : typeof data?.error === "string" && data.error.trim()
+                  ? data.error
+                  : null;
+            if (parsedMessage) {
+              message = parsedMessage;
             }
           } catch {
             if (bodyText.trim()) message = bodyText;
@@ -246,6 +256,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch(apiUrl("/api/auth/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           email: sanitizedEmail,
           password: sanitizedPassword,
