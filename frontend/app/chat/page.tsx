@@ -17,7 +17,6 @@ import { apiUrl, resolveApiUrl } from "@/app/lib/api";
 
 const PAGE_SIZE = 50;
 const CHAT_CACHE_PREFIX = "chat-cache:";
-const SCROLL_BOTTOM_THRESHOLD = 96;
 
 interface Message {
   _id: string;
@@ -86,8 +85,7 @@ function ChatPageContent() {
   const lastFetchTimeRef = useRef<number>(Date.now());
   const oldestCursorRef = useRef<string | null>(null);
   const [input, setInput] = useState("");
-  const bottomRef = useRef<HTMLDivElement | null>(null);
-  const messagesContainerNodeRef = useRef<HTMLDivElement | null>(null);
+  const chatContentRef = useRef<HTMLDivElement | null>(null);
 
   const socketRef = useRef<Socket | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -112,13 +110,12 @@ function ChatPageContent() {
     if (!selectedMsgId) return;
 
     const handleClickOutside = (event: MouseEvent) => {
-      if (!messagesContainerNodeRef.current) return;
+      if (!chatContentRef.current) return;
       if (!(event.target instanceof Node)) return;
 
-      const selectedMessageNode =
-        messagesContainerNodeRef.current.querySelector(
-          `[data-message-id="${selectedMsgId}"]`
-        );
+      const selectedMessageNode = chatContentRef.current.querySelector(
+        `[data-message-id="${selectedMsgId}"]`
+      );
 
       if (selectedMessageNode && !selectedMessageNode.contains(event.target)) {
         setSelectedMsgId(null);
@@ -131,10 +128,6 @@ function ChatPageContent() {
       document.removeEventListener("click", handleClickOutside);
     };
   }, [selectedMsgId]);
-
-  const messagesContainerRef = useCallback((node: HTMLDivElement | null) => {
-    messagesContainerNodeRef.current = node;
-  }, []);
 
   const sortMessagesByDate = useCallback((list: Message[]) => {
     return [...list].sort(
@@ -202,39 +195,35 @@ function ChatPageContent() {
     setChatOnline(false);
   }, [chatUser]);
 
-  const updateScrollButtonVisibility = useCallback(() => {
-    const container = messagesContainerNodeRef.current;
-    if (!container) return;
-
-    const distanceFromBottom =
-      container.scrollHeight - container.clientHeight - container.scrollTop;
-    const hasScrollableContent =
-      container.scrollHeight > container.clientHeight + 8;
-
-    setShowScrollButton(
-      hasScrollableContent && distanceFromBottom > SCROLL_BOTTOM_THRESHOLD
-    );
-  }, []);
-
   useEffect(() => {
     const updateBreakpoint = () => {
       if (typeof window === "undefined") return;
       setIsMobile(window.matchMedia("(max-width: 768px)").matches);
-      updateScrollButtonVisibility();
     };
 
     updateBreakpoint();
     window.addEventListener("resize", updateBreakpoint);
     return () => window.removeEventListener("resize", updateBreakpoint);
-  }, [updateScrollButtonVisibility]);
+  }, []);
 
   useEffect(() => {
     router.prefetch("/friend");
   }, [router]);
 
   const scrollToBottom = () => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    requestAnimationFrame(updateScrollButtonVisibility);
+    const container = chatContentRef.current;
+    if (!container) return;
+
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior: "smooth",
+    });
+
+    requestAnimationFrame(() => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+      setShowScrollButton(distanceFromBottom > 80);
+    });
   };
 
   const toggleTheme = () => {
@@ -345,7 +334,7 @@ function ChatPageContent() {
     const cursor = oldestCursorRef.current;
     if (!cursor) return;
 
-    const container = messagesContainerNodeRef.current;
+    const container = chatContentRef.current;
     const previousHeight = container?.scrollHeight ?? 0;
 
     setLoadingOlder(true);
@@ -488,55 +477,37 @@ function ChatPageContent() {
   // or when new messages arrive while not at the bottom. Also trigger lazy
   // loading when the user scrolls near the top.
   useEffect(() => {
-    const container = messagesContainerNodeRef.current;
-    if (!container) return;
+    const el = chatContentRef.current;
+    if (!el) return;
 
     const handleScroll = () => {
-      updateScrollButtonVisibility();
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
 
-      const nearTop = container.scrollTop < 120;
-      if (nearTop) {
+      setShowScrollButton(distanceFromBottom > 80);
+
+      if (scrollTop < 120) {
         void loadOlderMessages();
       }
     };
 
-    // Initial check in case the list overflows on first render
+    el.addEventListener("scroll", handleScroll);
     handleScroll();
 
-    container.addEventListener("scroll", handleScroll);
-    return () => container.removeEventListener("scroll", handleScroll);
-    // Re-run when messages change so the button updates if new messages push
-    // content while the user is scrolled up
-  }, [loadOlderMessages, messages.length, updateScrollButtonVisibility]);
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [loadOlderMessages]);
 
   useEffect(() => {
-    const container = messagesContainerNodeRef.current;
-    const sentinel = bottomRef.current;
+    const el = chatContentRef.current;
+    if (!el) return;
 
-    if (!container) return;
-    if (!sentinel || typeof IntersectionObserver === "undefined") {
-      updateScrollButtonVisibility();
-      return;
+    const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+
+    if (isAtBottom) {
+      el.scrollTo({ top: el.scrollHeight });
+      setShowScrollButton(false);
     }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry) return;
-        const hasScrollableContent =
-          container.scrollHeight > container.clientHeight + 8;
-        setShowScrollButton(hasScrollableContent && !entry.isIntersecting);
-      },
-      { root: container, threshold: 1 }
-    );
-
-    observer.observe(sentinel);
-
-    return () => observer.disconnect();
-  }, [messages.length, updateScrollButtonVisibility]);
-  
-  useEffect(() => {
-    updateScrollButtonVisibility();
-  }, [messages.length, updateScrollButtonVisibility]);
+  }, [messages]);
 
   const replaceTempMessage = useCallback(
     (tempId: string, confirmed: Message) => {
@@ -1237,9 +1208,9 @@ function ChatPageContent() {
   const messagesContent = (
     <div className="chat-canvas-shell position-relative d-flex flex-column flex-grow-1">
       <div
-        ref={messagesContainerRef}
+        ref={chatContentRef}
         id="chat-scroll-container"
-        className={`chat-canvas flex-grow-1 overflow-auto ${
+        className={`chat-canvas chat-content flex-grow-1 overflow-auto ${
           theme === "night" ? "chat-canvas-night" : "chat-canvas-day"
         }`}
       >
@@ -1313,7 +1284,10 @@ function ChatPageContent() {
 
                   {msg.type === "file" && (
                     <div className="chat-message-file">
-                      <div className="chat-message-file-icon" aria-hidden="true">
+                      <div
+                        className="chat-message-file-icon"
+                        aria-hidden="true"
+                      >
                         📄
                       </div>
                       <div className="chat-message-file-meta">
@@ -1350,7 +1324,9 @@ function ChatPageContent() {
                         >
                           <span aria-hidden="true">✓</span>
                           <span aria-hidden="true">✓</span>
-                          <span className="visually-hidden">Upload complete</span>
+                          <span className="visually-hidden">
+                            Upload complete
+                          </span>
                         </span>
                       )}
                     </div>
@@ -1385,7 +1361,6 @@ function ChatPageContent() {
             </div>
           );
         })}
-        <div ref={bottomRef}></div>
       </div>
       {showScrollButton && (
         <button
@@ -1454,7 +1429,7 @@ function ChatPageContent() {
 
   const desktopLayout = (
     <div
-      className={`container-fluid d-flex flex-column vh-100 p-0 ${
+      className={`chat-page container-fluid d-flex flex-column p-0 ${
         theme === "night" ? "bg-dark text-white" : "bg-light"
       }`}
     >
@@ -1465,7 +1440,7 @@ function ChatPageContent() {
   );
 
   const mobileThreadLayout = (
-    <div className="chat-mobile-thread-view">
+    <div className="chat-mobile-thread-view chat-page">
       {headerContent}
       {messagesContent}
       {composer}
@@ -1479,7 +1454,7 @@ function ChatPageContent() {
       {chatUser ? (
         mobileThreadLayout
       ) : (
-        <div className="chat-mobile-thread-view">
+        <div className="chat-mobile-thread-view chat-page">
           {headerContent}
           <div className="empty-thread-message">
             Choose a conversation to start chatting.
