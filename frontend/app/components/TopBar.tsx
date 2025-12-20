@@ -6,6 +6,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useTransition,
 } from "react";
@@ -109,6 +110,9 @@ export default function TopBar({
     useState<TopBarLayoutVariant>(layoutVariant);
   const [isCompactMobile, setIsCompactMobile] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const prefetchIntentTimeout = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
 
   const handleLogout = useCallback(() => {
     logout();
@@ -185,7 +189,12 @@ export default function TopBar({
         console.error("Failed to prefetch page data", error);
       });
     },
-    [currentUser.username, prefetchFriendDirectory, prefetchPosts, prefetchUsers]
+    [
+      currentUser.username,
+      prefetchFriendDirectory,
+      prefetchPosts,
+      prefetchUsers,
+    ]
   );
 
   const navItems = useMemo(() => {
@@ -242,6 +251,14 @@ export default function TopBar({
     updateViewportFlags();
     window.addEventListener("resize", updateViewportFlags);
     return () => window.removeEventListener("resize", updateViewportFlags);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (prefetchIntentTimeout.current) {
+        clearTimeout(prefetchIntentTimeout.current);
+      }
+    };
   }, []);
 
   const navVariantStyles = useMemo(() => {
@@ -302,6 +319,20 @@ export default function TopBar({
     [prefetchDataForNav, prefetchRoute]
   );
 
+  const schedulePrefetchNavItem = useCallback(
+    (item: NavItem) => {
+      if (prefetchIntentTimeout.current) {
+        clearTimeout(prefetchIntentTimeout.current);
+      }
+
+      prefetchIntentTimeout.current = setTimeout(() => {
+        prefetchNavItem(item);
+        prefetchIntentTimeout.current = null;
+      }, 125);
+    },
+    [prefetchNavItem]
+  );
+
   const handleNavClick = useCallback(
     (event: React.MouseEvent<HTMLAnchorElement>, item: NavItem) => {
       if (
@@ -315,6 +346,12 @@ export default function TopBar({
         return;
       }
 
+      if (prefetchIntentTimeout.current) {
+        clearTimeout(prefetchIntentTimeout.current);
+        prefetchIntentTimeout.current = null;
+      }
+
+      prefetchNavItem(item);
       event.preventDefault();
       if (optimisticActive !== item.key) {
         setOptimisticActive(item.key);
@@ -324,7 +361,7 @@ export default function TopBar({
         router.push(item.href);
       });
     },
-    [optimisticActive, router, startTransition]
+    [optimisticActive, prefetchNavItem, router, startTransition]
   );
 
   const containerStyle: React.CSSProperties = {
@@ -563,6 +600,8 @@ export default function TopBar({
                       key={item.key}
                       href={item.href}
                       className={mobileNavItemClassName(isActive)}
+                      onMouseEnter={() => schedulePrefetchNavItem(item)}
+                      onFocus={() => schedulePrefetchNavItem(item)}
                       onClick={(event) => {
                         handleNavClick(event, item);
                         setMobileNavOpen(false);
@@ -643,8 +682,8 @@ export default function TopBar({
                 className={`${baseClass} ${visualState}`}
                 style={style}
                 aria-current={isActive ? "page" : undefined}
-                onPointerEnter={() => prefetchNavItem(item)}
-                onFocus={() => prefetchNavItem(item)}
+                onMouseEnter={() => schedulePrefetchNavItem(item)}
+                onFocus={() => schedulePrefetchNavItem(item)}
                 onClick={(event) => handleNavClick(event, item)}
               >
                 <Icon size={18} />
