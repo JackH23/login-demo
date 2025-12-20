@@ -26,7 +26,10 @@ import { ADMIN_USERNAME } from "@/lib/constants";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 import { prefetchCachedApi } from "../hooks/useCachedApi";
-import { normalizeUsersResponse } from "../lib/users";
+import {
+  normalizeDirectoryResponse,
+  normalizeUsersResponse,
+} from "../lib/users";
 
 type PrefetchUser = {
   username: string;
@@ -131,14 +134,14 @@ export default function TopBar({
     []
   );
 
-  const prefetchFriends = useCallback(
+  const prefetchFriendDirectory = useCallback(
     (username: string) =>
-      prefetchCachedApi<string[]>(
-        `/api/friends?username=${encodeURIComponent(username)}`,
+      prefetchCachedApi(
+        `/api/friends/directory?username=${encodeURIComponent(username)}`,
         {
-          fallback: [],
-          transform: (payload) =>
-            (payload as { friends?: string[] | null })?.friends ?? [],
+          fallback: { viewer: null, friends: [], total: 0, nextCursor: null },
+          transform: normalizeDirectoryResponse,
+          staleTime: 15_000,
         }
       ),
     []
@@ -165,7 +168,10 @@ export default function TopBar({
           pending.push(prefetchUsers(), prefetchPosts("/api/posts"));
           break;
         case "friend":
-          pending.push(prefetchUsers(), prefetchFriends(currentUser.username));
+          pending.push(
+            prefetchUsers(),
+            prefetchFriendDirectory(currentUser.username)
+          );
           break;
         case "user":
         case "setting":
@@ -179,7 +185,7 @@ export default function TopBar({
         console.error("Failed to prefetch page data", error);
       });
     },
-    [currentUser.username, prefetchFriends, prefetchPosts, prefetchUsers]
+    [currentUser.username, prefetchFriendDirectory, prefetchPosts, prefetchUsers]
   );
 
   const navItems = useMemo(() => {

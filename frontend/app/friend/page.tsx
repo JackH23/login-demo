@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -8,7 +8,7 @@ import TopBar from "../components/TopBar";
 import LoadingState from "../components/LoadingState";
 import { useCachedApi } from "../hooks/useCachedApi";
 import { resolveApiUrl } from "@/app/lib/api";
-import { normalizeUsersResponse } from "@/app/lib/users";
+import { normalizeDirectoryResponse } from "@/app/lib/users";
 
 interface User {
   username: string;
@@ -26,6 +26,13 @@ interface LastMessage {
 interface LatestMessageResponse extends LastMessage {
   partner: string;
   createdAt: string;
+}
+
+interface FriendDirectory {
+  viewer: User | null;
+  friends: User[];
+  total: number;
+  nextCursor: string | null;
 }
 
 function FriendListSkeleton({ theme }: { theme: string }) {
@@ -92,22 +99,17 @@ function FriendListSkeleton({ theme }: { theme: string }) {
 }
 
 export default function FriendPage() {
-  const { user, loading, socket } = useAuth();
+  const { user, loading } = useAuth();
   const { theme } = useTheme();
   const router = useRouter();
   const {
-    data: users,
-    setData: setUsers,
-    loading: usersLoading,
-  } = useCachedApi<User[]>(user ? "/api/users" : null, {
-    fallback: [],
-    transform: normalizeUsersResponse,
-  });
-  const { data: friends, loading: loadingFriends } = useCachedApi<string[]>(
-    user ? `/api/friends?username=${user.username}` : null,
+    data: directory,
+    loading: loadingDirectory,
+  } = useCachedApi<FriendDirectory>(
+    user ? `/api/friends/directory?username=${user.username}` : null,
     {
-      fallback: [],
-      transform: (payload) => (payload as { friends?: string[] }).friends ?? [],
+      fallback: { viewer: null, friends: [], total: 0, nextCursor: null },
+      transform: normalizeDirectoryResponse,
     }
   );
   const [lastMessages, setLastMessages] = useState<
@@ -125,10 +127,6 @@ export default function FriendPage() {
   }, [loading, user, router]);
 
   useEffect(() => {
-    // Socket listeners disabled; relying on API responses for status
-  }, [setUsers, socket]);
-
-  useEffect(() => {
     const updateLayoutMetrics = () => {
       const topbar = document.querySelector(
         ".topbar-wrapper"
@@ -143,8 +141,14 @@ export default function FriendPage() {
     return () => window.removeEventListener("resize", updateLayoutMetrics);
   }, []);
 
+  const friendUsers = directory.friends;
+  const friendUsernames = useMemo(
+    () => friendUsers.map((f) => f.username),
+    [friendUsers]
+  );
+
   useEffect(() => {
-    if (loadingFriends) {
+    if (loadingDirectory) {
       setLoadingMessages(true);
       return;
     }
@@ -153,7 +157,7 @@ export default function FriendPage() {
     setLoadingMessages(true);
 
     const fetchLastMessages = async () => {
-      if (!user || !friends || friends.length === 0) {
+      if (!user || !friendUsernames || friendUsernames.length === 0) {
         setLastMessages({});
         setLoadingMessages(false);
         return;
@@ -163,8 +167,8 @@ export default function FriendPage() {
         const BATCH_SIZE = 40;
         const latestEntries: [string, LastMessage | null][] = [];
 
-        for (let i = 0; i < friends.length; i += BATCH_SIZE) {
-          const slice = friends.slice(i, i + BATCH_SIZE);
+        for (let i = 0; i < friendUsernames.length; i += BATCH_SIZE) {
+          const slice = friendUsernames.slice(i, i + BATCH_SIZE);
 
           const params = new URLSearchParams({
             user: user.username,
@@ -194,7 +198,7 @@ export default function FriendPage() {
         }
 
         const map: Record<string, LastMessage | null> = {};
-        friends.forEach((friend) => {
+        friendUsernames.forEach((friend) => {
           map[friend] = null;
         });
 
@@ -221,8 +225,9 @@ export default function FriendPage() {
     });
 
     return () => controller.abort();
-  }, [user, friends, loadingFriends]);
-  if (loading || usersLoading || !user) {
+  }, [user, friendUsernames, loadingDirectory]);
+
+  if (loading || !user) {
     return (
       <LoadingState
         title="Preparing your profile"
@@ -232,11 +237,11 @@ export default function FriendPage() {
     );
   }
 
-  if (loadingFriends) {
+  if (loadingDirectory) {
     return <FriendListSkeleton theme={theme} />;
   }
 
-  const currentUserData = users.find((u) => u.username === user.username);
+  const currentUserData = directory.viewer;
   if (!currentUserData) {
     return (
       <LoadingState
@@ -247,10 +252,10 @@ export default function FriendPage() {
     );
   }
 
-  const friendUsers = users.filter((u) => friends.includes(u.username));
   const filteredFriendUsers = friendUsers.filter((u) =>
     u.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  const totalFriends = directory.total ?? friendUsers.length;
 
   const openProfile = (username: string) => {
     router.push(`/user/${encodeURIComponent(username)}`);
@@ -278,7 +283,7 @@ export default function FriendPage() {
               <p className="text-uppercase small fw-semibold text-secondary mb-1 d-none d-md-block">
                 People you follow
               </p>
-              <h3 className="h5 mb-0">Friends ({friendUsers.length})</h3>
+              <h3 className="h5 mb-0">Friends ({totalFriends})</h3>
             </div>
             <span className="text-muted small d-none d-md-block">
               Tap to message • Hold for options
