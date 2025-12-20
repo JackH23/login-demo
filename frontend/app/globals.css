@@ -4,6 +4,11 @@
 @tailwind utilities;
 
 /* Chat layout enhancements */
+.chat-canvas-shell {
+  position: relative;
+  min-height: 0;
+}
+
 .chat-canvas {
   padding: 2rem clamp(1rem, 3vw, 2rem);
   display: flex;
@@ -11,6 +16,8 @@
   gap: 1rem;
   scroll-padding-bottom: 6rem;
   background-attachment: fixed;
+  position: relative;
+  min-height: 0;
 }
 
 .chat-canvas-day {
@@ -1876,13 +1883,18 @@
   .chat-message-meta {
     font-size: 0.68rem;
   }
+
+  .scroll-to-bottom-btn {
+    bottom: 1.5rem;
+    right: 0.75rem;
+  }
 }
 
 /* Beautiful floating scroll-to-bottom button */
 .scroll-to-bottom-btn {
-  position: fixed;
-  bottom: 90px; /* stays above input bar */
-  right: 24px;
+  position: absolute;
+  bottom: 1.25rem;
+  right: 1rem;
   width: 50px;
   height: 50px;
   border: none;
@@ -1897,7 +1909,7 @@
     box-shadow 0.2s ease,
     opacity 0.3s ease;
   opacity: 0.95;
-  z-index: 1050;
+  z-index: 10;
   animation: fadeIn 0.4s ease-in-out;
 }
 
