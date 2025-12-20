@@ -510,6 +510,31 @@ function ChatPageContent() {
   }, [loadOlderMessages, messages.length, updateScrollButtonVisibility]);
 
   useEffect(() => {
+    const container = messagesContainerNodeRef.current;
+    const sentinel = bottomRef.current;
+
+    if (!container) return;
+    if (!sentinel || typeof IntersectionObserver === "undefined") {
+      updateScrollButtonVisibility();
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry) return;
+        const hasScrollableContent =
+          container.scrollHeight > container.clientHeight + 8;
+        setShowScrollButton(hasScrollableContent && !entry.isIntersecting);
+      },
+      { root: container, threshold: 1 }
+    );
+
+    observer.observe(sentinel);
+
+    return () => observer.disconnect();
+  }, [messages.length, updateScrollButtonVisibility]);
+  
+  useEffect(() => {
     updateScrollButtonVisibility();
   }, [messages.length, updateScrollButtonVisibility]);
 
