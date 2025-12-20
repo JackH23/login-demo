@@ -35,6 +35,8 @@ interface FriendDirectory {
   nextCursor: string | null;
 }
 
+const DIRECTORY_STALE_TIME = 5 * 60 * 1000;
+
 function FriendListSkeleton({ theme }: { theme: string }) {
   const baseClasses =
     theme === "night"
@@ -102,13 +104,27 @@ export default function FriendPage() {
   const { user, loading } = useAuth();
   const { theme } = useTheme();
   const router = useRouter();
+  const directoryFallback = useMemo(
+    () =>
+      user
+        ? {
+            viewer: { ...user, image: user.image ?? undefined },
+            friends: [],
+            total: 0,
+            nextCursor: null,
+          }
+        : { viewer: null, friends: [], total: 0, nextCursor: null },
+    [user]
+  );
   const {
     data: directory,
     loading: loadingDirectory,
+    error: directoryError,
   } = useCachedApi<FriendDirectory>(
     user ? `/api/friends/directory?username=${user.username}` : null,
     {
-      fallback: { viewer: null, friends: [], total: 0, nextCursor: null },
+      staleTime: DIRECTORY_STALE_TIME,
+      fallback: directoryFallback,
       transform: normalizeDirectoryResponse,
     }
   );
@@ -241,8 +257,8 @@ export default function FriendPage() {
     return <FriendListSkeleton theme={theme} />;
   }
 
-  const currentUserData = directory.viewer;
-  if (!currentUserData) {
+  const currentUserData = directory.viewer ?? user;
+  if (directoryError && !currentUserData) {
     return (
       <LoadingState
         title="Syncing your profile"
