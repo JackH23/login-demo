@@ -33,6 +33,14 @@ function shouldIgnoreNetworkError(error: unknown) {
   );
 }
 
+function resolveNetworkFailureMessage(defaultMessage: string) {
+  if (typeof navigator !== "undefined" && navigator.onLine === false) {
+    return "You appear to be offline. Please reconnect and try again.";
+  }
+
+  return defaultMessage;
+}
+
 // Shape of the authentication context value shared with components
 interface AuthContextValue {
   // Currently logged in user or null if not authenticated
@@ -107,8 +115,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               typeof data?.message === "string" && data.message.trim()
                 ? data.message
                 : typeof data?.error === "string" && data.error.trim()
-                  ? data.error
-                  : null;
+                ? data.error
+                : null;
             if (parsedMessage) {
               message = parsedMessage;
             }
@@ -232,10 +240,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       return { success: false as const, message };
     } catch (error) {
-      console.error("Signup request failed", error);
+      if (!shouldIgnoreNetworkError(error)) {
+        console.error("Signup request failed", error);
+      }
       return {
         success: false as const,
-        message: "Unable to reach the server. Please try again shortly.",
+        message: resolveNetworkFailureMessage(
+          "Unable to reach the server. Please try again shortly."
+        ),
       };
     }
   };
@@ -301,10 +313,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       return { success: false as const, message };
     } catch (error) {
-      console.error("Signin request failed", error);
+      if (!shouldIgnoreNetworkError(error)) {
+        console.error("Signin request failed", error);
+      }
       return {
         success: false as const,
-        message: "Unable to reach the server. Please try again shortly.",
+        message: resolveNetworkFailureMessage(
+          "Unable to reach the server. Please verify the API is running and try again."
+        ),
       };
     }
   };
