@@ -15,7 +15,8 @@ import { useTheme } from "../context/ThemeContext";
 import type { Socket } from "socket.io-client";
 import { apiUrl, resolveApiUrl } from "@/app/lib/api";
 
-const PAGE_SIZE = 50;
+const DESKTOP_PAGE_SIZE = 30;
+const MOBILE_PAGE_SIZE = 20;
 const CHAT_CACHE_PREFIX = "chat-cache:";
 
 interface Message {
@@ -95,7 +96,10 @@ function ChatPageContent() {
   const [chatOnline, setChatOnline] = useState(false);
   const [participants, setParticipants] = useState<ChatParticipant[]>([]);
   const [emojiList, setEmojiList] = useState<ChatEmoji[]>([]);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 768px)").matches;
+  });
   const emojiLoadedRef = useRef(false);
   const [uploadStates, setUploadStates] = useState<Record<string, UploadState>>(
     {}
@@ -151,6 +155,11 @@ function ChatPageContent() {
     [sortMessagesByDate]
   );
 
+  const pageSize = useMemo(
+    () => (isMobile ? MOBILE_PAGE_SIZE : DESKTOP_PAGE_SIZE),
+    [isMobile]
+  );
+
   const fetchChatData = useCallback(
     async (before?: string | null): Promise<ChatData> => {
       if (!user || !chatUser) {
@@ -160,7 +169,7 @@ function ChatPageContent() {
       const params = new URLSearchParams({
         user1: user.username,
         user2: chatUser,
-        limit: PAGE_SIZE.toString(),
+        limit: pageSize.toString(),
       });
 
       if (before) {
@@ -187,7 +196,7 @@ function ChatPageContent() {
         hasMore: Boolean(raw.hasMore),
       };
     },
-    [chatUser, user]
+    [chatUser, pageSize, user]
   );
 
   useEffect(() => {
@@ -196,14 +205,15 @@ function ChatPageContent() {
   }, [chatUser]);
 
   useEffect(() => {
-    const updateBreakpoint = () => {
-      if (typeof window === "undefined") return;
-      setIsMobile(window.matchMedia("(max-width: 768px)").matches);
+    if (typeof window === "undefined") return;
+    const mediaQuery = window.matchMedia("(max-width: 768px)");
+
+    const handleChange = (event: MediaQueryListEvent) => {
+      setIsMobile(event.matches);
     };
 
-    updateBreakpoint();
-    window.addEventListener("resize", updateBreakpoint);
-    return () => window.removeEventListener("resize", updateBreakpoint);
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
   useEffect(() => {
@@ -317,13 +327,13 @@ function ChatPageContent() {
       if (partner && typeof partner.online === "boolean") {
         setChatOnline(partner.online);
       }
-      setHasMore(Boolean(data.hasMore ?? data.messages?.length === PAGE_SIZE));
+      setHasMore(Boolean(data.hasMore ?? data.messages?.length === pageSize));
     } catch (error) {
       console.error("Failed to fetch latest chat", error);
     } finally {
       setLoadingLatest(false);
     }
-  }, [chatUser, fetchChatData, mergeMessages, user]);
+  }, [chatUser, fetchChatData, mergeMessages, pageSize, user]);
 
   useEffect(() => {
     void hydrateLatest();
@@ -348,7 +358,7 @@ function ChatPageContent() {
         setEmojiList(data.emojis);
         emojiLoadedRef.current = true;
       }
-      setHasMore(Boolean(data.hasMore ?? data.messages?.length === PAGE_SIZE));
+      setHasMore(Boolean(data.hasMore ?? data.messages?.length === pageSize));
     } catch (error) {
       console.error("Failed to load older messages", error);
     } finally {
@@ -366,6 +376,7 @@ function ChatPageContent() {
     loadingOlder,
     mergeMessages,
     participants.length,
+    pageSize,
     user,
   ]);
 
