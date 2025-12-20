@@ -4,16 +4,27 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Suspense,
+  forwardRef,
+  memo,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
+} from "react";
+import type {
+  CSSProperties,
+  HTMLAttributes,
+  MutableRefObject,
+  ReactNode,
 } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import type { Socket } from "socket.io-client";
 import { apiUrl, resolveApiUrl } from "@/app/lib/api";
+import type { ListChildComponentProps, ListOnScrollProps } from "react-window";
+import { VariableSizeList } from "react-window";
 
 const PAGE_SIZE = 50;
 const CHAT_CACHE_PREFIX = "chat-cache:";
@@ -49,6 +60,24 @@ interface ChatData {
   hasMore?: boolean;
 }
 
+type ChatListItem =
+  | { kind: "date"; id: string; label: string }
+  | { kind: "message"; message: Message };
+
+interface ListRenderData {
+  items: ChatListItem[];
+  currentUsername: string;
+  theme: string;
+  selectedMsgId: string | null;
+  uploadStates: Record<string, UploadState>;
+  onSelect: (messageId: string | null) => void;
+  onEdit: (message: Message) => void;
+  onDelete: (messageId: string) => void;
+  formatTime: (date: Date) => string;
+  onSize: (index: number, size: number) => void;
+  resolveMessageDate: (raw: string) => Date;
+}
+
 type UploadState = {
   progress: number;
   status: "uploading" | "failed" | "complete";
@@ -71,6 +100,231 @@ function normalizeMessageMedia(message: Message): Message {
   };
 }
 
+const DateDivider = memo(function DateDivider({ label }: { label: string }) {
+  return (
+    <div className="text-center text-muted small my-3">
+      <span className="badge bg-secondary">{label}</span>
+    </div>
+  );
+});
+
+interface MessageBubbleProps {
+  message: Message;
+  isSender: boolean;
+  theme: string;
+  selected: boolean;
+  uploadState?: UploadState;
+  timeLabel: string;
+  createdAt: Date;
+  onSelect: (messageId: string | null) => void;
+  onEdit: (message: Message) => void;
+  onDelete: (messageId: string) => void;
+}
+
+const MessageBubble = memo(function MessageBubble({
+  message,
+  isSender,
+  theme,
+  selected,
+  uploadState,
+  timeLabel,
+  createdAt,
+  onSelect,
+  onEdit,
+  onDelete,
+}: MessageBubbleProps) {
+  return (
+    <div
+      onClick={() => {
+        if (isSender) {
+          onSelect(selected ? null : message._id);
+        }
+      }}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        onSelect(isSender ? message._id : null);
+      }}
+      className={`chat-message ${
+        isSender ? "chat-message--sent" : "chat-message--received"
+      }`}
+      data-message-id={message._id}
+    >
+      <div
+        className={`chat-message-bubble ${
+          isSender
+            ? "chat-message-bubble--sent"
+            : theme === "night"
+            ? "chat-message-bubble--night"
+            : "chat-message-bubble--day"
+        }`}
+      >
+        <div className="chat-message-meta">
+          {!isSender && (
+            <span className="chat-message-sender">{message.from}</span>
+          )}
+          <time className="chat-message-time" dateTime={createdAt.toISOString()}>
+            {timeLabel}
+          </time>
+        </div>
+
+        {message.type === "text" && (
+          <p className="chat-message-text">{message.content}</p>
+        )}
+
+        {message.type === "image" && (
+          <div className="chat-message-media">
+            <img src={message.content} alt="sent-img" />
+          </div>
+        )}
+
+        {message.type === "file" && (
+          <div className="chat-message-file">
+            <div className="chat-message-file-icon" aria-hidden="true">
+              📄
+            </div>
+            <div className="chat-message-file-meta">
+              <a href={message.content} download={message.fileName}>
+                {message.fileName}
+              </a>
+              <span className="chat-message-file-type">
+                {message.fileName?.split(".").pop()?.toUpperCase()} File
+              </span>
+            </div>
+          </div>
+        )}
+
+        {uploadState && (
+          <div
+            className={`chat-message-upload-status chat-message-upload-status--${uploadState.status}`}
+          >
+            {uploadState.status === "uploading" ? (
+              <span>
+                Uploading…{" "}
+                {Number.isFinite(uploadState.progress)
+                  ? `${uploadState.progress}%`
+                  : ""}
+              </span>
+            ) : uploadState.status === "failed" ? (
+              <span className="text-danger">
+                Upload failed
+                {uploadState.error ? `: ${uploadState.error}` : ""}
+              </span>
+            ) : (
+              <span
+                className="chat-message-upload-success"
+                aria-label="Upload complete"
+              >
+                <span aria-hidden="true">✓</span>
+                <span aria-hidden="true">✓</span>
+                <span className="visually-hidden">Upload complete</span>
+              </span>
+            )}
+          </div>
+        )}
+
+        {isSender && selected && (
+          <div className="chat-message-actions">
+            {message.type === "text" && (
+              <button
+                className="chat-message-action"
+                onClick={() => {
+                  onEdit(message);
+                  onSelect(null);
+                }}
+              >
+                ✏️ Edit
+              </button>
+            )}
+            <button
+              className="chat-message-action chat-message-action--danger"
+              onClick={() => {
+                onDelete(message._id);
+                onSelect(null);
+              }}
+            >
+              🗑️ Delete
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+});
+
+const MeasuredItem = memo(function MeasuredItem({
+  index,
+  style,
+  onSize,
+  children,
+}: {
+  index: number;
+  style: CSSProperties;
+  onSize: (index: number, size: number) => void;
+  children: ReactNode;
+}) {
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useLayoutEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+
+    const measure = () => {
+      const rect = node.getBoundingClientRect();
+      onSize(index, rect.height);
+    };
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [index, onSize]);
+
+  return (
+    <div ref={ref} style={style}>
+      {children}
+    </div>
+  );
+});
+
+const VirtualizedMessageRow = memo(function VirtualizedMessageRow({
+  index,
+  style,
+  data,
+}: ListChildComponentProps<ListRenderData>) {
+  const item = data.items[index];
+
+  if (item.kind === "date") {
+    return (
+      <MeasuredItem index={index} style={style} onSize={data.onSize}>
+        <DateDivider label={item.label} />
+      </MeasuredItem>
+    );
+  }
+
+  const isSender = item.message.from === data.currentUsername;
+  const selected = data.selectedMsgId === item.message._id;
+  const uploadState = data.uploadStates[item.message._id];
+  const createdAt = data.resolveMessageDate(item.message.createdAt);
+  const timeLabel = data.formatTime(createdAt);
+
+  return (
+    <MeasuredItem index={index} style={style} onSize={data.onSize}>
+      <MessageBubble
+        message={item.message}
+        isSender={isSender}
+        theme={data.theme}
+        selected={selected}
+        uploadState={uploadState}
+        timeLabel={timeLabel}
+        createdAt={createdAt}
+        onSelect={data.onSelect}
+        onEdit={data.onEdit}
+        onDelete={data.onDelete}
+      />
+    </MeasuredItem>
+  );
+});
+
 function ChatPageContent() {
   const searchParams = useSearchParams();
   const chatUser = searchParams.get("user") ?? "";
@@ -86,6 +340,11 @@ function ChatPageContent() {
   const oldestCursorRef = useRef<string | null>(null);
   const [input, setInput] = useState("");
   const chatContentRef = useRef<HTMLDivElement | null>(null);
+  const listWrapperRef = useRef<HTMLDivElement | null>(null);
+  const listRef = useRef<VariableSizeList<ListRenderData> | null>(null);
+  const sizeMapRef = useRef<Map<number, number>>(new Map());
+  const listItemsRef = useRef<ChatListItem[]>([]);
+  const [listHeight, setListHeight] = useState(0);
 
   const socketRef = useRef<Socket | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -105,6 +364,17 @@ function ChatPageContent() {
     if (!user || !chatUser) return null;
     return `${CHAT_CACHE_PREFIX}${user.username}:${chatUser}`;
   }, [chatUser, user]);
+
+  const currentUsername = user?.username ?? "";
+
+  const resolveMessageDate = useCallback((rawDate: string) => {
+    const parsed = new Date(rawDate);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed;
+    }
+
+    return new Date(lastFetchTimeRef.current);
+  }, []);
 
   useEffect(() => {
     if (!selectedMsgId) return;
@@ -129,13 +399,16 @@ function ChatPageContent() {
     };
   }, [selectedMsgId]);
 
-  const sortMessagesByDate = useCallback((list: Message[]) => {
-    return [...list].sort(
-      (a, b) =>
-        resolveMessageDate(a.createdAt).getTime() -
-        resolveMessageDate(b.createdAt).getTime()
-    );
-  }, []);
+  const sortMessagesByDate = useCallback(
+    (list: Message[]) => {
+      return [...list].sort(
+        (a, b) =>
+          resolveMessageDate(a.createdAt).getTime() -
+          resolveMessageDate(b.createdAt).getTime()
+      );
+    },
+    [resolveMessageDate]
+  );
 
   const mergeMessages = useCallback(
     (incoming: Message[], existing: Message[]) => {
@@ -210,21 +483,67 @@ function ChatPageContent() {
     router.prefetch("/friend");
   }, [router]);
 
-  const scrollToBottom = () => {
+  useLayoutEffect(() => {
+    const el = listWrapperRef.current;
+    if (!el) return;
+
+    const updateHeight = () => setListHeight(el.clientHeight);
+    updateHeight();
+
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
     const container = chatContentRef.current;
-    if (!container) return;
+    if (container) {
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior,
+      });
+    }
 
-    container.scrollTo({
-      top: container.scrollHeight,
-      behavior: "smooth",
-    });
+    const lastIndex = Math.max(listItemsRef.current.length - 1, 0);
+    if (listRef.current && listItemsRef.current.length) {
+      listRef.current.scrollToItem(lastIndex, "end");
+    }
 
-    requestAnimationFrame(() => {
-      const { scrollTop, scrollHeight, clientHeight } = container;
-      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+    setShowScrollButton(false);
+  }, []);
+
+  const isUserNearBottom = useCallback(() => {
+    const el = chatContentRef.current;
+    if (!el) return true;
+    return el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+  }, []);
+
+  const handleItemSize = useCallback((index: number, size: number) => {
+    const current = sizeMapRef.current.get(index);
+    if (current !== size) {
+      sizeMapRef.current.set(index, size);
+      listRef.current?.resetAfterIndex(index, false);
+    }
+  }, []);
+
+  const getItemSize = useCallback((index: number) => {
+    return sizeMapRef.current.get(index) ?? 120;
+  }, []);
+
+  const handleListScroll = useCallback(
+    ({ scrollOffset }: ListOnScrollProps) => {
+      const el = chatContentRef.current;
+      if (!el) return;
+
+      const distanceFromBottom = el.scrollHeight - scrollOffset - el.clientHeight;
       setShowScrollButton(distanceFromBottom > 80);
-    });
-  };
+
+      if (el.scrollTop < 120) {
+        void loadOlderMessages();
+      }
+    },
+    [loadOlderMessages]
+  );
 
   const toggleTheme = () => {
     setTheme(theme === "night" ? "brightness" : "night");
@@ -398,16 +717,21 @@ function ChatPageContent() {
 
   // Scroll when a new message arrives or when opening the chat
   useEffect(() => {
-    // Only scroll if the conversation grew since last render
-    if (messages.length > prevLengthRef.current) {
-      const last = messages[messages.length - 1];
-      // Scroll to the bottom on initial load or when the last message is from the chat partner
-      if (prevLengthRef.current === 0 || (last && last.from === chatUser)) {
-        scrollToBottom();
+    const grew = messages.length > prevLengthRef.current;
+    const lastMessage = messages[messages.length - 1];
+    if (grew) {
+      const shouldAutoScroll =
+        prevLengthRef.current === 0 ||
+        (lastMessage &&
+          (lastMessage.from === chatUser || lastMessage.from === currentUsername) &&
+          isUserNearBottom());
+
+      if (shouldAutoScroll) {
+        scrollToBottom(prevLengthRef.current === 0 ? "auto" : "smooth");
       }
     }
     prevLengthRef.current = messages.length; // Update ref after checking
-  }, [messages, chatUser]);
+  }, [chatUser, currentUsername, isUserNearBottom, messages, scrollToBottom]);
 
   useEffect(() => {
     const clearSelection = () => setSelectedMsgId(null);
@@ -432,7 +756,7 @@ function ChatPageContent() {
         return sortMessagesByDate([...withoutTemp, normalizedMessage]);
       });
 
-      if (msg.from === chatUser) {
+      if (msg.from === chatUser && isUserNearBottom()) {
         scrollToBottom();
       }
     };
@@ -459,55 +783,17 @@ function ChatPageContent() {
       socketRef.current?.off("user-online");
       socketRef.current?.off("user-offline");
     };
-  }, [chatUser, sortMessagesByDate, user]);
+  }, [chatUser, isUserNearBottom, sortMessagesByDate, user]);
 
   const chatPartner = participants.find((p) => p.username === chatUser);
   const emojiButtonTitle = emojiList.length
     ? `Insert emoji (${emojiList.length} available)`
     : "Add emoji";
 
-  const currentUsername = user?.username ?? "";
-
   const openProfile = () => {
     if (!chatUser) return;
     router.push(`/user/${encodeURIComponent(chatUser)}`);
   };
-
-  // Show the scroll-to-bottom button when the user scrolls away from the bottom
-  // or when new messages arrive while not at the bottom. Also trigger lazy
-  // loading when the user scrolls near the top.
-  useEffect(() => {
-    const el = chatContentRef.current;
-    if (!el) return;
-
-    const handleScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = el;
-      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-
-      setShowScrollButton(distanceFromBottom > 80);
-
-      if (scrollTop < 120) {
-        void loadOlderMessages();
-      }
-    };
-
-    el.addEventListener("scroll", handleScroll);
-    handleScroll();
-
-    return () => el.removeEventListener("scroll", handleScroll);
-  }, [loadOlderMessages]);
-
-  useEffect(() => {
-    const el = chatContentRef.current;
-    if (!el) return;
-
-    const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
-
-    if (isAtBottom) {
-      el.scrollTo({ top: el.scrollHeight });
-      setShowScrollButton(false);
-    }
-  }, [messages]);
 
   const replaceTempMessage = useCallback(
     (tempId: string, confirmed: Message) => {
@@ -1010,15 +1296,6 @@ function ChatPageContent() {
     }
   };
 
-  function resolveMessageDate(rawDate: string) {
-    const parsed = new Date(rawDate);
-    if (!Number.isNaN(parsed.getTime())) {
-      return parsed;
-    }
-
-    return new Date(lastFetchTimeRef.current);
-  }
-
   const formatTime = useMemo(
     () =>
       new Intl.DateTimeFormat("en-US", {
@@ -1061,7 +1338,100 @@ function ChatPageContent() {
     return formatDate.format(date);
   }
 
-  let lastDateLabel = "";
+  const listItems = useMemo(() => {
+    let lastDateLabel = "";
+    const nextItems: ChatListItem[] = [];
+
+    for (const msg of messages) {
+      const label = formatDateLabel(msg.createdAt);
+      if (label !== lastDateLabel) {
+        nextItems.push({
+          kind: "date",
+          id: `${label}-${msg.createdAt}`,
+          label,
+        });
+        lastDateLabel = label;
+      }
+
+      nextItems.push({ kind: "message", message: msg });
+    }
+
+    return nextItems;
+  }, [formatDateLabel, messages]);
+
+  useEffect(() => {
+    listItemsRef.current = listItems;
+    sizeMapRef.current.clear();
+    listRef.current?.resetAfterIndex(0, true);
+  }, [listItems]);
+
+  useEffect(() => {
+    const el = chatContentRef.current;
+    if (!el) return;
+
+    handleListScroll({
+      scrollDirection: "forward",
+      scrollOffset: el.scrollTop,
+      scrollUpdateWasRequested: false,
+    });
+  }, [handleListScroll, listItems]);
+
+  const listData = useMemo(
+    () => ({
+      items: listItems,
+      currentUsername,
+      theme,
+      selectedMsgId,
+      uploadStates,
+      onSelect: setSelectedMsgId,
+      onEdit: handleEdit,
+      onDelete: handleDelete,
+      formatTime: (date: Date) => formatTime.format(date),
+      onSize: handleItemSize,
+      resolveMessageDate,
+    }),
+    [
+      currentUsername,
+      formatTime,
+      handleDelete,
+      handleEdit,
+      handleItemSize,
+      listItems,
+      resolveMessageDate,
+      selectedMsgId,
+      theme,
+      uploadStates,
+    ]
+  );
+
+  const listHeightValue = Math.max(listHeight, 320);
+
+  const ListOuterElement = useMemo(
+    () =>
+      forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+        function ListOuterElement(props, ref) {
+          return (
+            <div
+              {...props}
+              ref={(node) => {
+                chatContentRef.current = node;
+                if (typeof ref === "function") {
+                  ref(node);
+                } else if (ref) {
+                  (ref as MutableRefObject<HTMLDivElement | null>).current =
+                    node;
+                }
+              }}
+              id="chat-scroll-container"
+              className={`chat-canvas chat-content flex-grow-1 overflow-auto ${
+                theme === "night" ? "chat-canvas-night" : "chat-canvas-day"
+              }`}
+            />
+          );
+        }
+      ),
+    [theme]
+  );
 
   const headerContent = isMobile ? (
     <div
@@ -1206,162 +1576,28 @@ function ChatPageContent() {
   );
 
   const messagesContent = (
-    <div className="chat-canvas-shell position-relative d-flex flex-column flex-grow-1">
-      <div
-        ref={chatContentRef}
-        id="chat-scroll-container"
-        className={`chat-canvas chat-content flex-grow-1 overflow-auto ${
-          theme === "night" ? "chat-canvas-night" : "chat-canvas-day"
-        }`}
+    <div
+      ref={listWrapperRef}
+      className="chat-canvas-shell position-relative d-flex flex-column flex-grow-1 overflow-hidden"
+    >
+      <VariableSizeList<ListRenderData>
+        height={listHeightValue}
+        width="100%"
+        itemCount={listItems.length}
+        itemSize={getItemSize}
+        itemKey={(index) => {
+          const item = listItems[index];
+          return item.kind === "date"
+            ? `date-${item.id}`
+            : `message-${item.message._id}`;
+        }}
+        itemData={listData}
+        outerElementType={ListOuterElement}
+        onScroll={handleListScroll}
+        ref={listRef}
       >
-        {messages.map((msg, idx) => {
-          const createdAt = resolveMessageDate(msg.createdAt);
-          const msgDate = createdAt.toDateString();
-          const isSender = msg.from === user?.username;
-          const uploadState = uploadStates[msg._id];
-
-          const showDateLabel = msgDate !== lastDateLabel;
-          if (showDateLabel) lastDateLabel = msgDate;
-
-          return (
-            <div key={msg._id + idx}>
-              {showDateLabel && (
-                <div className="text-center text-muted small my-3">
-                  <span className="badge bg-secondary">
-                    {formatDateLabel(createdAt)}
-                  </span>
-                </div>
-              )}
-
-              <div
-                onClick={() => {
-                  if (isSender) {
-                    setSelectedMsgId((current) =>
-                      current === msg._id ? null : msg._id
-                    );
-                  }
-                }}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  if (isSender) setSelectedMsgId(msg._id);
-                  else setSelectedMsgId(null);
-                }}
-                className={`chat-message ${
-                  isSender ? "chat-message--sent" : "chat-message--received"
-                }`}
-                data-message-id={msg._id}
-              >
-                <div
-                  className={`chat-message-bubble ${
-                    isSender
-                      ? "chat-message-bubble--sent"
-                      : theme === "night"
-                      ? "chat-message-bubble--night"
-                      : "chat-message-bubble--day"
-                  }`}
-                >
-                  <div className="chat-message-meta">
-                    {!isSender && (
-                      <span className="chat-message-sender">{msg.from}</span>
-                    )}
-                    <time
-                      className="chat-message-time"
-                      dateTime={createdAt.toISOString()}
-                    >
-                      {formatTime.format(createdAt)}
-                    </time>
-                  </div>
-
-                  {msg.type === "text" && (
-                    <p className="chat-message-text">{msg.content}</p>
-                  )}
-
-                  {msg.type === "image" && (
-                    <div className="chat-message-media">
-                      <img src={msg.content} alt="sent-img" />
-                    </div>
-                  )}
-
-                  {msg.type === "file" && (
-                    <div className="chat-message-file">
-                      <div
-                        className="chat-message-file-icon"
-                        aria-hidden="true"
-                      >
-                        📄
-                      </div>
-                      <div className="chat-message-file-meta">
-                        <a href={msg.content} download={msg.fileName}>
-                          {msg.fileName}
-                        </a>
-                        <span className="chat-message-file-type">
-                          {msg.fileName?.split(".").pop()?.toUpperCase()} File
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {uploadState && (
-                    <div
-                      className={`chat-message-upload-status chat-message-upload-status--${uploadState.status}`}
-                    >
-                      {uploadState.status === "uploading" ? (
-                        <span>
-                          Uploading…{" "}
-                          {Number.isFinite(uploadState.progress)
-                            ? `${uploadState.progress}%`
-                            : ""}
-                        </span>
-                      ) : uploadState.status === "failed" ? (
-                        <span className="text-danger">
-                          Upload failed
-                          {uploadState.error ? `: ${uploadState.error}` : ""}
-                        </span>
-                      ) : (
-                        <span
-                          className="chat-message-upload-success"
-                          aria-label="Upload complete"
-                        >
-                          <span aria-hidden="true">✓</span>
-                          <span aria-hidden="true">✓</span>
-                          <span className="visually-hidden">
-                            Upload complete
-                          </span>
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {isSender && selectedMsgId === msg._id && (
-                    <div className="chat-message-actions">
-                      {msg.type === "text" && (
-                        <button
-                          className="chat-message-action"
-                          onClick={() => {
-                            handleEdit(msg);
-                            setSelectedMsgId(null);
-                          }}
-                        >
-                          ✏️ Edit
-                        </button>
-                      )}
-                      <button
-                        className="chat-message-action chat-message-action--danger"
-                        onClick={() => {
-                          handleDelete(msg._id);
-                          setSelectedMsgId(null);
-                        }}
-                      >
-                        🗑️ Delete
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+        {VirtualizedMessageRow}
+      </VariableSizeList>
       {showScrollButton && (
         <button
           className="scroll-to-bottom-btn"
