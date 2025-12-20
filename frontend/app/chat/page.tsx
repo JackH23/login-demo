@@ -17,6 +17,7 @@ import { apiUrl, resolveApiUrl } from "@/app/lib/api";
 
 const PAGE_SIZE = 50;
 const CHAT_CACHE_PREFIX = "chat-cache:";
+const SCROLL_BOTTOM_THRESHOLD = 96;
 
 interface Message {
   _id: string;
@@ -201,16 +202,31 @@ function ChatPageContent() {
     setChatOnline(false);
   }, [chatUser]);
 
+  const updateScrollButtonVisibility = useCallback(() => {
+    const container = messagesContainerNodeRef.current;
+    if (!container) return;
+
+    const distanceFromBottom =
+      container.scrollHeight - container.clientHeight - container.scrollTop;
+    const hasScrollableContent =
+      container.scrollHeight > container.clientHeight + 8;
+
+    setShowScrollButton(
+      hasScrollableContent && distanceFromBottom > SCROLL_BOTTOM_THRESHOLD
+    );
+  }, []);
+
   useEffect(() => {
     const updateBreakpoint = () => {
       if (typeof window === "undefined") return;
       setIsMobile(window.matchMedia("(max-width: 768px)").matches);
+      updateScrollButtonVisibility();
     };
 
     updateBreakpoint();
     window.addEventListener("resize", updateBreakpoint);
     return () => window.removeEventListener("resize", updateBreakpoint);
-  }, []);
+  }, [updateScrollButtonVisibility]);
 
   useEffect(() => {
     router.prefetch("/friend");
@@ -218,6 +234,7 @@ function ChatPageContent() {
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    requestAnimationFrame(updateScrollButtonVisibility);
   };
 
   const toggleTheme = () => {
@@ -475,10 +492,7 @@ function ChatPageContent() {
     if (!container) return;
 
     const handleScroll = () => {
-      const atBottom =
-        container.scrollHeight - container.scrollTop <=
-        container.clientHeight + 80;
-      setShowScrollButton(!atBottom);
+      updateScrollButtonVisibility();
 
       const nearTop = container.scrollTop < 120;
       if (nearTop) {
@@ -493,27 +507,11 @@ function ChatPageContent() {
     return () => container.removeEventListener("scroll", handleScroll);
     // Re-run when messages change so the button updates if new messages push
     // content while the user is scrolled up
-  }, [loadOlderMessages, messages.length]);
+  }, [loadOlderMessages, messages.length, updateScrollButtonVisibility]);
 
   useEffect(() => {
-    if (typeof IntersectionObserver === "undefined") return;
-
-    const target = bottomRef.current;
-    if (!target) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setShowScrollButton(!entry.isIntersecting);
-      },
-      {
-        root: null,
-        rootMargin: "0px 0px 120px 0px",
-      }
-    );
-
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, [messages.length]);
+    updateScrollButtonVisibility();
+  }, [messages.length, updateScrollButtonVisibility]);
 
   const replaceTempMessage = useCallback(
     (tempId: string, confirmed: Message) => {
@@ -1212,166 +1210,168 @@ function ChatPageContent() {
   );
 
   const messagesContent = (
-    <div
-      ref={messagesContainerRef}
-      id="chat-scroll-container"
-      className={`chat-canvas flex-grow-1 overflow-auto ${
-        theme === "night" ? "chat-canvas-night" : "chat-canvas-day"
-      }`}
-    >
-      {messages.map((msg, idx) => {
-        const createdAt = resolveMessageDate(msg.createdAt);
-        const msgDate = createdAt.toDateString();
-        const isSender = msg.from === user?.username;
-        const uploadState = uploadStates[msg._id];
+    <div className="chat-canvas-shell position-relative d-flex flex-column flex-grow-1">
+      <div
+        ref={messagesContainerRef}
+        id="chat-scroll-container"
+        className={`chat-canvas flex-grow-1 overflow-auto ${
+          theme === "night" ? "chat-canvas-night" : "chat-canvas-day"
+        }`}
+      >
+        {messages.map((msg, idx) => {
+          const createdAt = resolveMessageDate(msg.createdAt);
+          const msgDate = createdAt.toDateString();
+          const isSender = msg.from === user?.username;
+          const uploadState = uploadStates[msg._id];
 
-        const showDateLabel = msgDate !== lastDateLabel;
-        if (showDateLabel) lastDateLabel = msgDate;
+          const showDateLabel = msgDate !== lastDateLabel;
+          if (showDateLabel) lastDateLabel = msgDate;
 
-        return (
-          <div key={msg._id + idx}>
-            {showDateLabel && (
-              <div className="text-center text-muted small my-3">
-                <span className="badge bg-secondary">
-                  {formatDateLabel(createdAt)}
-                </span>
-              </div>
-            )}
-
-            <div
-              onClick={() => {
-                if (isSender) {
-                  setSelectedMsgId((current) =>
-                    current === msg._id ? null : msg._id
-                  );
-                }
-              }}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                if (isSender) setSelectedMsgId(msg._id);
-                else setSelectedMsgId(null);
-              }}
-              className={`chat-message ${
-                isSender ? "chat-message--sent" : "chat-message--received"
-              }`}
-              data-message-id={msg._id}
-            >
-              <div
-                className={`chat-message-bubble ${
-                  isSender
-                    ? "chat-message-bubble--sent"
-                    : theme === "night"
-                    ? "chat-message-bubble--night"
-                    : "chat-message-bubble--day"
-                }`}
-              >
-                <div className="chat-message-meta">
-                  {!isSender && (
-                    <span className="chat-message-sender">{msg.from}</span>
-                  )}
-                  <time
-                    className="chat-message-time"
-                    dateTime={createdAt.toISOString()}
-                  >
-                    {formatTime.format(createdAt)}
-                  </time>
+          return (
+            <div key={msg._id + idx}>
+              {showDateLabel && (
+                <div className="text-center text-muted small my-3">
+                  <span className="badge bg-secondary">
+                    {formatDateLabel(createdAt)}
+                  </span>
                 </div>
+              )}
 
-                {msg.type === "text" && (
-                  <p className="chat-message-text">{msg.content}</p>
-                )}
-
-                {msg.type === "image" && (
-                  <div className="chat-message-media">
-                    <img src={msg.content} alt="sent-img" />
-                  </div>
-                )}
-
-                {msg.type === "file" && (
-                  <div className="chat-message-file">
-                    <div className="chat-message-file-icon" aria-hidden="true">
-                      📄
-                    </div>
-                    <div className="chat-message-file-meta">
-                      <a href={msg.content} download={msg.fileName}>
-                        {msg.fileName}
-                      </a>
-                      <span className="chat-message-file-type">
-                        {msg.fileName?.split(".").pop()?.toUpperCase()} File
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {uploadState && (
-                  <div
-                    className={`chat-message-upload-status chat-message-upload-status--${uploadState.status}`}
-                  >
-                    {uploadState.status === "uploading" ? (
-                      <span>
-                        Uploading…{" "}
-                        {Number.isFinite(uploadState.progress)
-                          ? `${uploadState.progress}%`
-                          : ""}
-                      </span>
-                    ) : uploadState.status === "failed" ? (
-                      <span className="text-danger">
-                        Upload failed
-                        {uploadState.error ? `: ${uploadState.error}` : ""}
-                      </span>
-                    ) : (
-                      <span
-                        className="chat-message-upload-success"
-                        aria-label="Upload complete"
-                      >
-                        <span aria-hidden="true">✓</span>
-                        <span aria-hidden="true">✓</span>
-                        <span className="visually-hidden">Upload complete</span>
-                      </span>
+              <div
+                onClick={() => {
+                  if (isSender) {
+                    setSelectedMsgId((current) =>
+                      current === msg._id ? null : msg._id
+                    );
+                  }
+                }}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  if (isSender) setSelectedMsgId(msg._id);
+                  else setSelectedMsgId(null);
+                }}
+                className={`chat-message ${
+                  isSender ? "chat-message--sent" : "chat-message--received"
+                }`}
+                data-message-id={msg._id}
+              >
+                <div
+                  className={`chat-message-bubble ${
+                    isSender
+                      ? "chat-message-bubble--sent"
+                      : theme === "night"
+                      ? "chat-message-bubble--night"
+                      : "chat-message-bubble--day"
+                  }`}
+                >
+                  <div className="chat-message-meta">
+                    {!isSender && (
+                      <span className="chat-message-sender">{msg.from}</span>
                     )}
+                    <time
+                      className="chat-message-time"
+                      dateTime={createdAt.toISOString()}
+                    >
+                      {formatTime.format(createdAt)}
+                    </time>
                   </div>
-                )}
 
-                {isSender && selectedMsgId === msg._id && (
-                  <div className="chat-message-actions">
-                    {msg.type === "text" && (
+                  {msg.type === "text" && (
+                    <p className="chat-message-text">{msg.content}</p>
+                  )}
+
+                  {msg.type === "image" && (
+                    <div className="chat-message-media">
+                      <img src={msg.content} alt="sent-img" />
+                    </div>
+                  )}
+
+                  {msg.type === "file" && (
+                    <div className="chat-message-file">
+                      <div className="chat-message-file-icon" aria-hidden="true">
+                        📄
+                      </div>
+                      <div className="chat-message-file-meta">
+                        <a href={msg.content} download={msg.fileName}>
+                          {msg.fileName}
+                        </a>
+                        <span className="chat-message-file-type">
+                          {msg.fileName?.split(".").pop()?.toUpperCase()} File
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {uploadState && (
+                    <div
+                      className={`chat-message-upload-status chat-message-upload-status--${uploadState.status}`}
+                    >
+                      {uploadState.status === "uploading" ? (
+                        <span>
+                          Uploading…{" "}
+                          {Number.isFinite(uploadState.progress)
+                            ? `${uploadState.progress}%`
+                            : ""}
+                        </span>
+                      ) : uploadState.status === "failed" ? (
+                        <span className="text-danger">
+                          Upload failed
+                          {uploadState.error ? `: ${uploadState.error}` : ""}
+                        </span>
+                      ) : (
+                        <span
+                          className="chat-message-upload-success"
+                          aria-label="Upload complete"
+                        >
+                          <span aria-hidden="true">✓</span>
+                          <span aria-hidden="true">✓</span>
+                          <span className="visually-hidden">Upload complete</span>
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {isSender && selectedMsgId === msg._id && (
+                    <div className="chat-message-actions">
+                      {msg.type === "text" && (
+                        <button
+                          className="chat-message-action"
+                          onClick={() => {
+                            handleEdit(msg);
+                            setSelectedMsgId(null);
+                          }}
+                        >
+                          ✏️ Edit
+                        </button>
+                      )}
                       <button
-                        className="chat-message-action"
+                        className="chat-message-action chat-message-action--danger"
                         onClick={() => {
-                          handleEdit(msg);
+                          handleDelete(msg._id);
                           setSelectedMsgId(null);
                         }}
                       >
-                        ✏️ Edit
+                        🗑️ Delete
                       </button>
-                    )}
-                    <button
-                      className="chat-message-action chat-message-action--danger"
-                      onClick={() => {
-                        handleDelete(msg._id);
-                        setSelectedMsgId(null);
-                      }}
-                    >
-                      🗑️ Delete
-                    </button>
-                  </div>
-                )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+        <div ref={bottomRef}></div>
+      </div>
       {showScrollButton && (
         <button
           className="scroll-to-bottom-btn"
           onClick={scrollToBottom}
           title="Scroll to latest"
+          type="button"
         >
           ⬇
         </button>
       )}
-
-      <div ref={bottomRef}></div>
     </div>
   );
 
