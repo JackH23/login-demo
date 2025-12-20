@@ -495,6 +495,26 @@ function ChatPageContent() {
     // content while the user is scrolled up
   }, [loadOlderMessages, messages.length]);
 
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") return;
+
+    const target = bottomRef.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowScrollButton(!entry.isIntersecting);
+      },
+      {
+        root: null,
+        rootMargin: "0px 0px 120px 0px",
+      }
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [messages.length]);
+
   const replaceTempMessage = useCallback(
     (tempId: string, confirmed: Message) => {
       setMessages((prev) =>
