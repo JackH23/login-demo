@@ -181,14 +181,16 @@ export default function FriendPage() {
 
       try {
         const BATCH_SIZE = 40;
-        const latestEntries: [string, LastMessage | null][] = [];
+        const chunkedTargets: string[][] = [];
 
         for (let i = 0; i < friendUsernames.length; i += BATCH_SIZE) {
-          const slice = friendUsernames.slice(i, i + BATCH_SIZE);
+          chunkedTargets.push(friendUsernames.slice(i, i + BATCH_SIZE));
+        }
 
+        const fetchBatchLatest = async (targets: string[]) => {
           const params = new URLSearchParams({
             user: user.username,
-            targets: slice.join(","),
+            targets: targets.join(","),
           });
 
           const res = await fetch(
@@ -196,22 +198,38 @@ export default function FriendPage() {
             { signal: controller.signal }
           );
 
-          if (!res.ok) continue;
+          if (!res.ok) return [];
 
           const data = await res.json();
           const latest = (data.latest ?? []) as LatestMessageResponse[];
 
-          latestEntries.push(
-            ...latest.map((item): [string, LastMessage] => [
-              item.partner,
-              {
-                type: item.type,
-                content: item.content,
-                fileName: item.fileName,
-              },
-            ])
-          );
-        }
+          return latest.map((item): [string, LastMessage] => [
+            item.partner,
+            {
+              type: item.type,
+              content: item.content,
+              fileName: item.fileName,
+            },
+          ]);
+        };
+
+        const batchResults = await Promise.allSettled(
+          chunkedTargets.map((targets) => fetchBatchLatest(targets))
+        );
+        if (controller.signal.aborted) return;
+
+        batchResults.forEach((result) => {
+          if (result.status === "rejected" && !controller.signal.aborted) {
+            console.error(
+              "Failed to fetch latest messages batch",
+              result.reason
+            );
+          }
+        });
+
+        const latestEntries = batchResults.flatMap((result) =>
+          result.status === "fulfilled" ? result.value : []
+        );
 
         const map: Record<string, LastMessage | null> = {};
         friendUsernames.forEach((friend) => {
