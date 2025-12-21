@@ -1375,7 +1375,11 @@ function ChatPageContent() {
       </div>
       {showScrollButton && (
         <button
-          className="scroll-to-bottom-btn"
+          className={`scroll-to-bottom-btn ${
+            isMobile
+              ? "scroll-to-bottom-btn--mobile"
+              : "scroll-to-bottom-btn--desktop"
+          }`}
           onClick={scrollToBottom}
           title="Scroll to latest"
           type="button"

@@ -2016,21 +2016,32 @@
 /* Beautiful floating scroll-to-bottom button */
 .scroll-to-bottom-btn {
   position: absolute;
-  bottom: 90px;
-  right: 16px;
-  width: 50px;
-  height: 50px;
   border: none;
   border-radius: 50%;
   background: linear-gradient(135deg, #0d6efd, #3b82f6);
   color: white;
-  font-size: 1.5rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.3s ease;
   opacity: 0.95;
   z-index: 1000;
   animation: fadeIn 0.4s ease-in-out;
+}
+
+.scroll-to-bottom-btn--desktop {
+  width: 52px;
+  height: 52px;
+  bottom: 96px;
+  right: 18px;
+  font-size: 1.6rem;
+}
+
+.scroll-to-bottom-btn--mobile {
+  width: 44px;
+  height: 44px;
+  bottom: 84px;
+  right: 12px;
+  font-size: 1.4rem;
 }
 
 /* Hover & active states */
