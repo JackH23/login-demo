@@ -11,35 +11,14 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
-const THEME_STORAGE_KEY = "theme";
-
-const readStoredTheme = (): Theme => {
-  if (typeof window === "undefined") return "brightness";
-
-  const stored = window.localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
-  if (stored === "night" || stored === "brightness") {
-    return stored;
-  }
-
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  return prefersDark ? "night" : "brightness";
-};
-
-const readDomTheme = (): Theme => {
-  if (typeof document === "undefined") return "brightness";
-
-  const current = document.documentElement.getAttribute("data-bs-theme");
-  if (current === "dark") return "night";
-  if (current === "light") return "brightness";
-
-  return readStoredTheme();
-};
-
 const applyThemeToDom = (value: Theme) => {
   if (typeof document === "undefined") return;
 
   const isDark = value === "night";
-  document.documentElement.setAttribute("data-bs-theme", isDark ? "dark" : "light");
+  document.documentElement.setAttribute(
+    "data-bs-theme",
+    isDark ? "dark" : "light"
+  );
 
   if (isDark) {
     document.body.classList.add("bg-dark", "text-white");
@@ -51,51 +30,22 @@ const applyThemeToDom = (value: Theme) => {
 };
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Default to brightness during SSR to keep server and client markup aligned.
-  // The stored or preferred theme will be applied immediately after hydration.
   const [theme, setThemeState] = useState<Theme>("brightness");
-  const [hasHydrated, setHasHydrated] = useState(false);
 
   const setTheme = (value: Theme) => {
     setThemeState(value);
   };
 
-  // Read the stored theme once we're on the client to avoid SSR/client
-  // mismatches during hydration.
+  // Keep DOM attributes and classes in sync whenever the theme changes.
   useEffect(() => {
-    const storedTheme = readDomTheme();
-    setThemeState(storedTheme);
-    setHasHydrated(true);
-  }, []);
-
-  // Keep DOM attributes, classes, and storage in sync whenever the theme
-  // changes so user selections persist across sessions.
-  useEffect(() => {
-    if (!hasHydrated) return;
-
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(THEME_STORAGE_KEY, theme);
-    }
-
     applyThemeToDom(theme);
-  }, [theme, hasHydrated]);
+  }, [theme]);
 
-  // Sync theme changes across tabs so the preference stays consistent.
-  useEffect(() => {
-    const handleStorage = (event: StorageEvent) => {
-      if (event.key === THEME_STORAGE_KEY) {
-        const newValue = event.newValue as Theme | null;
-        if (newValue === "night" || newValue === "brightness") {
-          setThemeState(newValue);
-        }
-      }
-    };
-
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
-  }, []);
-
-  return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
 }
 
 export function useTheme() {
