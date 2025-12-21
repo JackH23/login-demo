@@ -37,69 +37,6 @@ interface FriendDirectory {
 
 const DIRECTORY_STALE_TIME = 5 * 60 * 1000;
 
-function FriendListSkeleton({ theme }: { theme: string }) {
-  const baseClasses =
-    theme === "night"
-      ? "bg-dark text-white border border-primary-subtle"
-      : "bg-light";
-
-  return (
-    <div
-      className={`friend-page-shell container-fluid min-vh-100 px-4 py-3 ${baseClasses}`}
-    >
-      <div className="friend-skeleton-topbar rounded-4 shadow-sm mb-3" />
-      <div className="friend-panel card border-0 shadow-sm">
-        <div className="card-body">
-          <div className="friend-panel-header d-flex align-items-center justify-content-between mb-3">
-            <div className="placeholder-wave w-50">
-              <span className="placeholder col-8" />
-            </div>
-            <div className="placeholder-wave w-25 text-end">
-              <span className="placeholder col-6" />
-            </div>
-          </div>
-          <ul className="user-directory" role="list">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <li key={index} className="user-card" aria-hidden="true">
-                <div className="user-card-main">
-                  <div className="user-card-avatar">
-                    <span className="placeholder rounded-circle d-block w-100 h-100" />
-                    <span className="user-card-presence user-card-presence--offline" />
-                  </div>
-                  <div className="user-card-body">
-                    <div className="placeholder-wave mb-2">
-                      <span className="placeholder col-6" />
-                    </div>
-                    <div className="placeholder-wave mb-1">
-                      <span className="placeholder col-8" />
-                    </div>
-                    <div className="placeholder-wave">
-                      <span className="placeholder col-4" />
-                    </div>
-                  </div>
-                </div>
-                <div
-                  className="user-card-actions user-card-actions--stacked"
-                  aria-hidden="true"
-                >
-                  <div
-                    className="placeholder rounded-pill w-100 mb-2"
-                    style={{ height: "44px" }}
-                  />
-                  <div
-                    className="placeholder rounded-pill w-100"
-                    style={{ height: "44px" }}
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function FriendPage() {
   const { user, loading } = useAuth();
   const { theme } = useTheme();
@@ -128,6 +65,7 @@ export default function FriendPage() {
       transform: normalizeDirectoryResponse,
     }
   );
+  const isUserDataLoading = loading || loadingDirectory;
   const [lastMessages, setLastMessages] = useState<
     Record<string, LastMessage | null>
   >({});
@@ -261,7 +199,7 @@ export default function FriendPage() {
     return () => controller.abort();
   }, [user, friendUsernames, loadingDirectory]);
 
-  if (loading || !user) {
+  if (isUserDataLoading || !user) {
     return (
       <LoadingState
         title="Preparing your profile"
@@ -269,10 +207,6 @@ export default function FriendPage() {
         skeletonCount={2}
       />
     );
-  }
-
-  if (loadingDirectory) {
-    return <FriendListSkeleton theme={theme} />;
   }
 
   const currentUserData = directory.viewer ?? user;
