@@ -701,12 +701,11 @@ export default function BlogCard({
     }
   };
 
-  const toggleReplyInput = (index: number) => {
+  const setReplyInputVisibility = (index: number, shouldOpen: boolean) => {
     const comment = comments[index];
     if (!comment) return;
 
     const replyKey = comment._id ?? `local-${index}`;
-    const shouldOpen = !comment.showReplyInput;
 
     updateComments((prev) =>
       prev.map((c, i) => {
@@ -721,6 +720,12 @@ export default function BlogCard({
     if (shouldOpen) {
       requestAnimationFrame(() => scrollToReplyInput(replyKey));
     }
+  };
+
+  const toggleReplyInput = (index: number) => {
+    const comment = comments[index];
+    if (!comment) return;
+    setReplyInputVisibility(index, !comment.showReplyInput);
   };
 
   const handleReplyChange = (index: number, value: string) => {
@@ -1588,7 +1593,23 @@ export default function BlogCard({
                                           {reply.author}
                                         </button>
                                       </div>
-                                      <div className="conversation-reply__text conversation-reply__bubble text-muted">
+                                      <div
+                                        className="conversation-reply__text conversation-reply__bubble text-muted"
+                                        role="button"
+                                        tabIndex={0}
+                                        onClick={() =>
+                                          setReplyInputVisibility(idx, true)
+                                        }
+                                        onKeyDown={(event) => {
+                                          if (
+                                            event.key === "Enter" ||
+                                            event.key === " "
+                                          ) {
+                                            event.preventDefault();
+                                            setReplyInputVisibility(idx, true);
+                                          }
+                                        }}
+                                      >
                                         {reply.text}
                                       </div>
                                       {reply.isPending && (
@@ -1993,7 +2014,23 @@ export default function BlogCard({
                                           {reply.author}
                                         </button>
                                       </div>
-                                      <div className="conversation-reply__text conversation-reply__bubble text-muted">
+                                      <div
+                                        className="conversation-reply__text conversation-reply__bubble text-muted"
+                                        role="button"
+                                        tabIndex={0}
+                                        onClick={() =>
+                                          setReplyInputVisibility(idx, true)
+                                        }
+                                        onKeyDown={(event) => {
+                                          if (
+                                            event.key === "Enter" ||
+                                            event.key === " "
+                                          ) {
+                                            event.preventDefault();
+                                            setReplyInputVisibility(idx, true);
+                                          }
+                                        }}
+                                      >
                                         {reply.text}
                                       </div>
                                       {reply.isPending && (
