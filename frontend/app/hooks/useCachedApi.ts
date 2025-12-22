@@ -37,7 +37,7 @@ interface UseCachedApiOptions<T> {
 interface PrefetchOptions<T> {
   staleTime?: number;
   transform?: (payload: unknown) => T;
-  fallback?: T,
+  fallback?: T;
 }
 
 export function prefetchCachedApi<T>(
@@ -75,11 +75,15 @@ export function prefetchCachedApi<T>(
       return result;
     })
     .catch((err) => {
-      const errorObj = err instanceof Error ? err : new Error("Failed to prefetch data");
+      const errorObj =
+        err instanceof Error ? err : new Error("Failed to prefetch data");
       entry.error = errorObj;
-      
+
       if (fallback !== undefined) {
-        console.warn(`Prefetch for ${url} failed; using fallback value.`, errorObj);
+        console.warn(
+          `Prefetch for ${url} failed; using fallback value.`,
+          errorObj
+        );
         entry.data = fallback;
         entry.timestamp = Date.now();
         return fallback;
@@ -105,7 +109,11 @@ interface UseCachedApiReturn<T> {
 
 export function useCachedApi<T>(
   url: string | null,
-  { staleTime = DEFAULT_STALE_TIME, fallback, transform }: UseCachedApiOptions<T> = {}
+  {
+    staleTime = DEFAULT_STALE_TIME,
+    fallback,
+    transform,
+  }: UseCachedApiOptions<T> = {}
 ): UseCachedApiReturn<T> {
   const transformRef = useRef(transform);
   useEffect(() => {
@@ -150,9 +158,7 @@ export function useCachedApi<T>(
       }
       setState((prev) => {
         const next =
-          typeof value === "function"
-            ? (value as (prev: T) => T)(prev)
-            : value;
+          typeof value === "function" ? (value as (prev: T) => T)(prev) : value;
         const entry = ensureEntry<T>(url);
         entry.data = next;
         entry.timestamp = Date.now();
@@ -195,8 +201,9 @@ export function useCachedApi<T>(
       setError(null);
       setLoading(false);
       return result;
-      } catch (err) {
-      const errorObj = err instanceof Error ? err : new Error("Failed to refresh data");
+    } catch (err) {
+      const errorObj =
+        err instanceof Error ? err : new Error("Failed to refresh data");
       const fallbackValue = (fallbackRef.current ?? (undefined as T)) as T;
 
       if (!url) {
@@ -212,7 +219,7 @@ export function useCachedApi<T>(
 
       setError(errorObj);
       setLoading(false);
-      setState((prev) => (prev ?? entry.data ?? fallbackValue));
+      setState((prev) => prev ?? entry.data ?? fallbackValue);
 
       return entry.data ?? fallbackValue;
     }
@@ -261,8 +268,15 @@ export function useCachedApi<T>(
         const errorObj =
           err instanceof Error ? err : new Error("Failed to load data");
         entry.error = errorObj;
+
+        if (entry.data == null && fallbackRef.current !== undefined) {
+          entry.data = fallbackRef.current as T;
+          entry.timestamp = Date.now();
+          setState(fallbackRef.current as T);
+        }
+
         setError(errorObj);
-        setLoading(entry.data == null);
+        setLoading(false);
       })
       .finally(() => {
         entry.promise = null;
