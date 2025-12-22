@@ -562,6 +562,7 @@ export default function BlogCard({
               : comment
           )
         );
+        void refreshComments();
         isSaved = true;
       } catch (error) {
         console.error("Unable to submit comment", error);
@@ -785,6 +786,7 @@ export default function BlogCard({
             : c
         )
       );
+      void refreshComments();
     } catch (error) {
       console.error("Unable to submit reply", error);
       updateComments((prev) =>
