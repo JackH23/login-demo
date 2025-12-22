@@ -607,42 +607,43 @@ export default function AdminPage() {
                     {recentPosts.map((post, index) => (
                       <div
                         key={post._id}
-                        className={`d-flex flex-column gap-2 rounded-4 p-3 ${cardThemeClass}`}
+                        className={`d-flex flex-column gap-3 rounded-4 p-3 ${cardThemeClass}`}
                         style={{
                           border: `1px solid ${sectionBorderColor}`,
                         }}
                       >
-                        <div className="d-flex align-items-start gap-3">
+                        <div className="d-flex align-items-center gap-2">
                           <span className="badge bg-dark-subtle text-dark fw-semibold">
                             #{index + 1}
                           </span>
-                          <div className="d-flex flex-column gap-1 flex-grow-1">
-                            <p
-                              className={`small text-uppercase mb-0 ${mutedTextClass}`}
-                            >
-                              Recent post
-                            </p>
-                            <h3 className="h6 mb-1 text-start">{post.title}</h3>
-                            <p className={`mb-0 small ${mutedTextClass}`}>
-                              by{" "}
-                              <span className="fw-semibold">{post.author}</span>
-                            </p>
-                            <p className={`mb-1 small ${mutedTextClass}`}>
-                              {post.content.slice(0, 90)}
-                              {post.content.length > 90 ? "…" : ""}
-                            </p>
-                            <div
-                              className={`d-flex align-items-center gap-2 small ${mutedTextClass}`}
-                            >
-                              <span role="img" aria-label="likes">
-                                👍 {post.likes}
-                              </span>
-                              <span aria-hidden="true">•</span>
-                              <span role="img" aria-label="dislikes">
-                                👎 {post.dislikes}
-                              </span>
-                            </div>
-                          </div>
+                          <p
+                            className={`small text-uppercase mb-0 ${mutedTextClass}`}
+                          >
+                            Recent post
+                          </p>
+                        </div>
+                        <div className="d-flex flex-column gap-1">
+                          <h3 className="h6 mb-1 text-start">{post.title}</h3>
+                          <p className={`mb-0 small ${mutedTextClass}`}>
+                            by{" "}
+                            <span className="fw-semibold">{post.author}</span>
+                          </p>
+                        </div>
+                        <p className={`mb-0 small ${mutedTextClass}`}>
+                          {post.content.slice(0, 90)}
+                          {post.content.length > 90 ? "…" : ""}
+                        </p>
+                        <div
+                          className={`d-flex align-items-center gap-3 small ${mutedTextClass}`}
+                        >
+                          <span role="img" aria-label="likes">
+                            👍 {post.likes}
+                          </span>
+                          <span role="img" aria-label="dislikes">
+                            👎 {post.dislikes}
+                          </span>
+                        </div>
+                        <div className="d-grid">
                           <button
                             type="button"
                             className="btn btn-primary w-100"
