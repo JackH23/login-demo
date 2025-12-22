@@ -102,6 +102,7 @@ const buildImageStyle = (
 
 interface Comment {
   _id?: string;
+  postId?: string;
   text: string;
   author: string;
   authorImage?: string;
@@ -112,6 +113,7 @@ interface Comment {
   replies: Reply[];
   showReplyInput: boolean;
   newReply: string;
+  createdAt?: string;
   isPending?: boolean;
 }
 
@@ -138,7 +140,7 @@ export default function BlogCard({
   const [showImageModal, setShowImageModal] = useState(false);
   const [showConversation, setShowConversation] = useState(false);
   const [userImages, setUserImages] = useState<Record<string, string>>({});
-  const { user } = useAuth();
+  const { user, socket } = useAuth();
   const { theme } = useTheme();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -213,20 +215,29 @@ export default function BlogCard({
 
   const mapCommentFromApi = useCallback(
     (c: {
-      _id: string;
+      _id?: string | null;
+      postId?: string | null;
       text: string;
       author: string;
-      authorImage?: string;
+      authorImage?: string | null;
       likes: number;
       dislikes: number;
       likedBy?: string[];
       dislikedBy?: string[];
-      replies?: { text: string; author: string; authorImage?: string }[];
+      replies?: { text: string; author: string; authorImage?: string | null }[];
+      createdAt?: string;
     }): Comment => ({
-      _id: c._id as string,
+      _id:
+        typeof c._id === "string" ? c._id : c._id ? String(c._id) : undefined,
+      postId:
+        typeof c.postId === "string"
+          ? c.postId
+          : c.postId
+          ? String(c.postId)
+          : undefined,
       text: c.text as string,
       author: c.author as string,
-      authorImage: resolveAvatar(c.authorImage, c.author),
+      authorImage: resolveAvatar(c.authorImage ?? undefined, c.author),
       likes: c.likes ?? 0,
       dislikes: c.dislikes ?? 0,
       likedBy: c.likedBy ?? [],
@@ -234,6 +245,7 @@ export default function BlogCard({
       replies: (c.replies ?? []).map(mapReplyFromApi),
       showReplyInput: false,
       newReply: "",
+      createdAt: c.createdAt,
     }),
     [mapReplyFromApi, resolveAvatar]
   );
@@ -393,6 +405,57 @@ export default function BlogCard({
   }, [blog._id, user?.username]);
 
   useEffect(() => {
+    if (!socket || !blog._id) return;
+
+    const handleCommentCreated = (payload: { comment?: Comment }) => {
+      if (!payload?.comment || payload.comment.postId !== blog._id) return;
+
+      const mapped = mapCommentFromApi(payload.comment);
+
+      updateComments((prev) => {
+        const exists = mapped._id
+          ? prev.some((comment) => comment._id === mapped._id)
+          : false;
+        if (exists) return prev;
+
+        return [...prev, mapped].sort((a, b) => {
+          const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return aTime - bTime;
+        });
+      });
+    };
+
+    const handleCommentUpdated = (payload: { comment?: Comment }) => {
+      if (!payload?.comment || payload.comment.postId !== blog._id) return;
+      const mapped = mapCommentFromApi(payload.comment);
+
+      updateComments((prev) => {
+        const existingIndex = mapped._id
+          ? prev.findIndex((comment) => comment._id === mapped._id)
+          : -1;
+        if (existingIndex === -1) return prev;
+
+        const next = [...prev];
+        next[existingIndex] = {
+          ...mapped,
+          showReplyInput: false,
+          newReply: "",
+        };
+        return next;
+      });
+    };
+
+    socket.on("comment-created", handleCommentCreated);
+    socket.on("comment-updated", handleCommentUpdated);
+
+    return () => {
+      socket.off("comment-created", handleCommentCreated);
+      socket.off("comment-updated", handleCommentUpdated);
+    };
+  }, [blog._id, mapCommentFromApi, socket, updateComments]);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
       if (
@@ -456,6 +519,7 @@ export default function BlogCard({
     const tempId = `temp-${Date.now()}`;
     const optimisticComment: Comment = {
       _id: tempId,
+      postId: blog._id,
       text,
       author: user.username,
       authorImage: resolveAvatar(user.image, user.username),
@@ -466,6 +530,7 @@ export default function BlogCard({
       replies: [],
       showReplyInput: false,
       newReply: "",
+      createdAt: new Date().toISOString(),
       isPending: true,
     };
 
@@ -1167,9 +1232,7 @@ export default function BlogCard({
                   <span>⤴</span>
                   <span>Share</span>
                 </button>
-              
 
-              
                 <button
                   className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
                     isNight ? "btn-outline-light" : "btn-outline-secondary"
@@ -2028,11 +2091,7 @@ export default function BlogCard({
           aria-labelledby="expanded-image-title"
           onClick={() => setShowImageModal(false)}
         >
-          <div
-            className="modal-dialog modal-fullscreen"
-            role="document"
-            
-          >
+          <div className="modal-dialog modal-fullscreen" role="document">
             <div className="modal-content bg-black text-white border-0">
               <div className="modal-header border-0 align-items-start gap-3 px-4 px-md-5 pt-4 pb-0">
                 <div className="d-flex flex-column gap-1">
@@ -2332,7 +2391,11 @@ export default function BlogCard({
         .expanded-image__caption {
           position: absolute;
           inset: auto 0 0 0;
-          background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.75) 60%);
+          background: linear-gradient(
+            180deg,
+            rgba(0, 0, 0, 0) 0%,
+            rgba(0, 0, 0, 0.75) 60%
+          );
           padding: 1rem 1.25rem 1.5rem;
           display: flex;
           justify-content: center;
@@ -2778,12 +2841,10 @@ export default function BlogCard({
             font-size: 0.8rem !important;
             min-height: 36px !important;
             border-radius: 14px !important;
-            box-shadow: 0 10px 18px ${
-              isNight ? "rgba(0,0,0,0.28)" : "rgba(15,23,42,0.08)"
-            },
-              inset 0 0 0 1px ${
-                isNight ? "rgba(255,255,255,0.08)" : "rgba(59,130,246,0.15)"
-              };
+            box-shadow: 0 10px 18px
+                ${isNight ? "rgba(0,0,0,0.28)" : "rgba(15,23,42,0.08)"},
+              inset 0 0 0 1px
+                ${isNight ? "rgba(255,255,255,0.08)" : "rgba(59,130,246,0.15)"};
           }
 
           .blog-card__mobile-actions-grid .btn span {
