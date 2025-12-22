@@ -129,6 +129,19 @@ router.get('/', asyncHandler(async (req, res) => {
   return res.json({ posts: posts.map(serializePost) });
 }));
 
+router.get('/:id', asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const post = await Post.findById(id)
+    .select('title content image imageData imageContentType imageEdits author likes dislikes likedBy dislikedBy createdAt updatedAt')
+    .lean();
+
+  if (!post) {
+    return res.status(404).json({ error: 'Post not found' });
+  }
+
+  return res.json({ post: serializePost(post) });
+}));
+
 router.patch('/:id', asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { action, username } = req.body;
