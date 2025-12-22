@@ -187,6 +187,28 @@ export default function AdminPage() {
     }
   }, [posts, selectedPost]);
 
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setSelectedPost(null);
+      }
+    };
+
+    if (selectedPost) {
+      document.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [selectedPost]);
+
   const selectedPostAuthor = useMemo(
     () =>
       selectedPost
@@ -646,36 +668,6 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {selectedPost ? (
-              <div className={`card shadow-sm border-0 ${cardThemeClass}`}>
-                <div className="card-body">
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <div>
-                      <h2 className="h5 mb-1">Selected Post</h2>
-                      <p className={`mb-0 small ${mutedTextClass}`}>
-                        Viewing {selectedPost.title} by {selectedPost.author}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      className="btn btn-outline-secondary btn-sm"
-                      onClick={() => setSelectedPost(null)}
-                    >
-                      Close
-                    </button>
-                  </div>
-                  <BlogCard
-                    blog={selectedPost}
-                    author={
-                      selectedPostAuthor ?? {
-                        username: selectedPost.author,
-                      }
-                    }
-                  />
-                </div>
-              </div>
-            ) : null}
-
             {/* Top Contributors */}
             <div className={`card shadow-sm border-0 ${cardThemeClass}`}>
               <div className="card-body">
@@ -758,6 +750,52 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
+
+      {selectedPost ? (
+        <div
+          className="modal fade show d-block"
+          tabIndex={-1}
+          role="dialog"
+          aria-modal="true"
+          style={{ backgroundColor: "rgba(0, 0, 0, 0.65)" }}
+          onClick={() => setSelectedPost(null)}
+        >
+          <div
+            className="modal-dialog modal-dialog-centered modal-lg"
+            role="document"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div
+              className={`modal-content ${isNight ? "bg-dark text-white" : ""}`}
+            >
+              <div className="modal-header">
+                <div className="d-flex flex-column">
+                  <h2 className="modal-title h5 mb-1">{selectedPost.title}</h2>
+                  <p className={`mb-0 small ${mutedTextClass}`}>
+                    by {selectedPost.author}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="btn-close"
+                  aria-label="Close"
+                  onClick={() => setSelectedPost(null)}
+                />
+              </div>
+              <div className="modal-body">
+                <BlogCard
+                  blog={selectedPost}
+                  author={
+                    selectedPostAuthor ?? {
+                      username: selectedPost.author,
+                    }
+                  }
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
