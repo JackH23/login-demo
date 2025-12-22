@@ -93,6 +93,9 @@ export default function AdminPage() {
   const isNight = theme === "night";
   const cardThemeClass = isNight ? "bg-dark border-secondary text-light" : "";
   const mutedTextClass = isNight ? "text-secondary" : "text-muted";
+  const sectionBorderColor = isNight ? "#2e3642" : "#e5e7eb";
+  const summaryCardTextClass = isNight ? "text-white" : "text-dark";
+  const metricCardTextClass = isNight ? "text-white" : "text-dark";
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good morning";
@@ -100,11 +103,25 @@ export default function AdminPage() {
     return "Good evening";
   }, []);
 
-  const metricCardStyle = {
-    background: "#1e2530",
-    borderRadius: "12px",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
-  } as const;
+  const summaryCardStyle = useMemo(
+    () => ({
+      backgroundColor: isNight ? "#0f172a" : "#ffffff",
+      border: `1px solid ${sectionBorderColor}`,
+    }),
+    [isNight, sectionBorderColor]
+  );
+
+  const metricCardStyle = useMemo(
+    () => ({
+      background: isNight ? "#1e2530" : "#f8fafc",
+      borderRadius: "12px",
+      boxShadow: isNight
+        ? "0 4px 10px rgba(0,0,0,0.2)"
+        : "0 4px 10px rgba(0,0,0,0.1)",
+      border: `1px solid ${sectionBorderColor}`,
+    }),
+    [isNight, sectionBorderColor]
+  );
 
   const metricBodyStyle = {
     padding: "12px 16px",
@@ -125,8 +142,6 @@ export default function AdminPage() {
     (username: string) => posts.filter((p) => p.author === username).length,
     [posts]
   );
-
-  const sectionBorderColor = isNight ? "#2e3642" : "#e5e7eb";
 
   const filteredUsers = useMemo(() => {
     if (!searchTerm.trim()) return users;
@@ -266,28 +281,26 @@ export default function AdminPage() {
         {/* Summary cards */}
         <div className="d-md-none mb-4">
           <div
-            className={`rounded-4 overflow-hidden shadow-sm ${cardThemeClass}`}
-            style={{
-              border: isNight ? "1px solid #2e3642" : "1px solid #e5e7eb",
-            }}
+            className={`rounded-4 overflow-hidden shadow-sm ${summaryCardTextClass}`}
+            style={summaryCardStyle}
           >
             <div
               className="d-flex justify-content-between align-items-center px-3 py-3 border-bottom"
-              style={{ borderColor: isNight ? "#2e3642" : "#e5e7eb" }}
+              style={{ borderColor: sectionBorderColor }}
             >
               <span className="fw-semibold">Total Users</span>
               <span className="fw-bold">{users.length}</span>
             </div>
             <div
               className="d-flex justify-content-between align-items-center px-3 py-3 border-bottom"
-              style={{ borderColor: isNight ? "#2e3642" : "#e5e7eb" }}
+              style={{ borderColor: sectionBorderColor }}
             >
               <span className="fw-semibold">Total Posts</span>
               <span className="fw-bold">{posts.length}</span>
             </div>
             <div
               className="d-flex justify-content-between align-items-center px-3 py-3 border-bottom"
-              style={{ borderColor: isNight ? "#2e3642" : "#e5e7eb" }}
+              style={{ borderColor: sectionBorderColor }}
             >
               <span className="fw-semibold">Active Users</span>
               <div className="d-flex align-items-center gap-2">
@@ -313,7 +326,7 @@ export default function AdminPage() {
         <div className="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3 mb-4 d-none d-md-flex">
           <div className="col">
             <div
-              className="card h-100 border-0 text-white"
+              className={`card h-100 border-0 ${metricCardTextClass}`}
               style={metricCardStyle}
             >
               <div
@@ -335,7 +348,7 @@ export default function AdminPage() {
 
           <div className="col">
             <div
-              className="card h-100 border-0 text-white"
+              className={`card h-100 border-0 ${metricCardTextClass}`}
               style={metricCardStyle}
             >
               <div
@@ -357,7 +370,7 @@ export default function AdminPage() {
 
           <div className="col">
             <div
-              className="card h-100 border-0 text-white"
+              className={`card h-100 border-0 ${metricCardTextClass}`}
               style={metricCardStyle}
             >
               <div
@@ -388,7 +401,7 @@ export default function AdminPage() {
 
           <div className="col">
             <div
-              className="card h-100 border-0 text-white"
+              className={`card h-100 border-0 ${metricCardTextClass}`}
               style={metricCardStyle}
             >
               <div
