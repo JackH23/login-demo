@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import TopBar from "../components/TopBar";
 import LoadingState from "../components/LoadingState";
+import BlogCard from "../components/BlogCard";
 import { ADMIN_USERNAME } from "@/lib/constants";
 import { useCachedApi } from "../hooks/useCachedApi";
 import { normalizeUsersResponse } from "@/app/lib/users";
@@ -20,6 +21,22 @@ interface Post {
   _id: string;
   author: string;
   title: string;
+  content: string;
+  image?: string | null;
+  imageEdits?: {
+    brightness?: number;
+    contrast?: number;
+    saturation?: number;
+    grayscale?: number;
+    rotation?: number;
+    hue?: number;
+    blur?: number;
+    sepia?: number;
+  } | null;
+  likes: number;
+  dislikes: number;
+  likedBy?: string[];
+  dislikedBy?: string[];
 }
 
 export default function AdminPage() {
@@ -29,13 +46,13 @@ export default function AdminPage() {
 
   const shouldFetch = user?.username === ADMIN_USERNAME;
 
-  const {
-    data: users,
-    loading: loadingUsers,
-  } = useCachedApi<User[]>(shouldFetch ? "/api/users" : null, {
-    fallback: [],
-    transform: normalizeUsersResponse,
-  });
+  const { data: users, loading: loadingUsers } = useCachedApi<User[]>(
+    shouldFetch ? "/api/users" : null,
+    {
+      fallback: [],
+      transform: normalizeUsersResponse,
+    }
+  );
 
   const { data: posts, loading: loadingPosts } = useCachedApi<Post[]>(
     shouldFetch ? "/api/posts" : null,
@@ -57,6 +74,7 @@ export default function AdminPage() {
 
   const [isMobile, setIsMobile] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
   useEffect(() => {
     const updateIsMobile = () => {
@@ -104,8 +122,7 @@ export default function AdminPage() {
   } as const;
 
   const getPostCount = useCallback(
-    (username: string) =>
-      posts.filter((p) => p.author === username).length,
+    (username: string) => posts.filter((p) => p.author === username).length,
     [posts]
   );
 
@@ -149,9 +166,33 @@ export default function AdminPage() {
 
   const recentPosts = useMemo(() => posts.slice(0, 6), [posts]);
   const handleViewPost = useCallback(
-    (postId: string) =>
-      router.push(`/posts/${encodeURIComponent(postId)}`),
-    [router]
+    (postId: string) => {
+      const postToView = posts.find((entry) => entry._id === postId) ?? null;
+      if (postToView) {
+        setSelectedPost(postToView);
+        return;
+      }
+
+      router.push(`/posts/${encodeURIComponent(postId)}`);
+    },
+    [posts, router]
+  );
+
+  useEffect(() => {
+    if (
+      selectedPost &&
+      !posts.find((entry) => entry._id === selectedPost._id)
+    ) {
+      setSelectedPost(null);
+    }
+  }, [posts, selectedPost]);
+
+  const selectedPostAuthor = useMemo(
+    () =>
+      selectedPost
+        ? users.find((candidate) => candidate.username === selectedPost.author)
+        : undefined,
+    [selectedPost, users]
   );
 
   if (loading || loadingUsers || loadingPosts || !user) {
@@ -187,13 +228,15 @@ export default function AdminPage() {
       <div className="container mt-4" style={{ maxWidth: "1100px" }}>
         <div className="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-md-center mb-4">
           <div>
-            <p className={`mb-1 text-uppercase fw-semibold small ${mutedTextClass}`}>
+            <p
+              className={`mb-1 text-uppercase fw-semibold small ${mutedTextClass}`}
+            >
               {greeting}, {user.username}
             </p>
             <h1 className="h3 mb-1">📋 Admin Dashboard</h1>
             <p className={`mb-0 ${mutedTextClass} d-none d-md-block`}>
-              Track user activity, highlight top contributors, and review
-              recent posts in one place.
+              Track user activity, highlight top contributors, and review recent
+              posts in one place.
             </p>
           </div>
         </div>
@@ -228,7 +271,9 @@ export default function AdminPage() {
               <div className="d-flex align-items-center gap-2">
                 <span className="fw-bold">{onlineCount}</span>
                 <span
-                  className={`badge ${onlineCount ? "bg-success" : "bg-secondary"}`}
+                  className={`badge ${
+                    onlineCount ? "bg-success" : "bg-secondary"
+                  }`}
                 >
                   {onlineCount ? "Live" : "Offline"}
                 </span>
@@ -355,7 +400,9 @@ export default function AdminPage() {
                 <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
                   <div className="d-flex flex-column gap-1">
                     <h2 className="h5 mb-0">User Directory</h2>
-                    <p className={`mb-0 small ${mutedTextClass} d-none d-md-block`}>
+                    <p
+                      className={`mb-0 small ${mutedTextClass} d-none d-md-block`}
+                    >
                       Search and manage your community members.
                     </p>
                   </div>
@@ -369,11 +416,16 @@ export default function AdminPage() {
                   onSubmit={(event) => event.preventDefault()}
                 >
                   <div className="col-12 col-md">
-                    <label className="form-label visually-hidden" htmlFor="user-search">
+                    <label
+                      className="form-label visually-hidden"
+                      htmlFor="user-search"
+                    >
                       Search users
                     </label>
                     <div className="input-group">
-                      <span className={`input-group-text ${cardThemeClass}`}>🔍</span>
+                      <span className={`input-group-text ${cardThemeClass}`}>
+                        🔍
+                      </span>
                       <input
                         id="user-search"
                         type="search"
@@ -391,10 +443,10 @@ export default function AdminPage() {
                             filteredUsers.length === 1 ? "" : "s"
                           }`
                         : isMobile && !showAllUsers && users.length > 1
-                          ? "Showing the latest member on mobile"
-                          : showAllUsers
-                            ? "Showing all members"
-                            : "Showing the latest members"}
+                        ? "Showing the latest member on mobile"
+                        : showAllUsers
+                        ? "Showing all members"
+                        : "Showing the latest members"}
                     </p>
                   </div>
                   {users.length > 4 && !searchTerm && (
@@ -439,7 +491,9 @@ export default function AdminPage() {
                               if (event.key === "Enter" || event.key === " ") {
                                 event.preventDefault();
                                 router.push(
-                                  `/admin/users/${encodeURIComponent(u.username)}`
+                                  `/admin/users/${encodeURIComponent(
+                                    u.username
+                                  )}`
                                 );
                               }
                             }}
@@ -468,8 +522,8 @@ export default function AdminPage() {
                                           backgroundColor: isOnline
                                             ? "#22c55e"
                                             : isNight
-                                              ? "#6b7280"
-                                              : "#9ca3af",
+                                            ? "#6b7280"
+                                            : "#9ca3af",
                                           display: "inline-block",
                                         }}
                                         aria-hidden="true"
@@ -479,19 +533,19 @@ export default function AdminPage() {
                                       </span>
                                     </div>
                                   </div>
-                                  <span
-                                    className="badge bg-primary-subtle text-primary fw-semibold py-1 px-2 small d-none d-md-inline-flex"
-                                  >
-                                    {postCount} {postCount === 1 ? "post" : "posts"}
+                                  <span className="badge bg-primary-subtle text-primary fw-semibold py-1 px-2 small d-none d-md-inline-flex">
+                                    {postCount}{" "}
+                                    {postCount === 1 ? "post" : "posts"}
                                   </span>
-                                  </div>
+                                </div>
                                 <div
                                   className={`d-flex align-items-center gap-2 small ${mutedTextClass}`}
                                 >
                                   <span>{isOnline ? "Active" : "Idle"}</span>
                                   <span aria-hidden="true">•</span>
                                   <span>
-                                    {postCount} {postCount === 1 ? "post" : "posts"}
+                                    {postCount}{" "}
+                                    {postCount === 1 ? "post" : "posts"}
                                   </span>
                                 </div>
                               </div>
@@ -517,9 +571,7 @@ export default function AdminPage() {
                       posts.length ? "bg-info" : "bg-secondary"
                     }`}
                   >
-                    {posts.length
-                      ? `${posts.length} total`
-                      : "Awaiting posts"}
+                    {posts.length ? `${posts.length} total` : "Awaiting posts"}
                   </span>
                 </div>
 
@@ -538,12 +590,15 @@ export default function AdminPage() {
                       >
                         <div className="d-flex justify-content-between align-items-start gap-2">
                           <div>
-                            <p className={`small text-uppercase mb-1 ${mutedTextClass}`}>
+                            <p
+                              className={`small text-uppercase mb-1 ${mutedTextClass}`}
+                            >
                               Recent post
                             </p>
                             <h3 className="h6 mb-1">{post.title}</h3>
                             <p className={`mb-0 small ${mutedTextClass}`}>
-                              by <span className="fw-semibold">{post.author}</span>
+                              by{" "}
+                              <span className="fw-semibold">{post.author}</span>
                             </p>
                           </div>
                           <button
@@ -569,8 +624,10 @@ export default function AdminPage() {
                             <div>
                               <h3 className="h6 mb-1">{post.title}</h3>
                               <p className={`mb-0 small ${mutedTextClass}`}>
-                                by {" "}
-                                <span className="fw-semibold">{post.author}</span>
+                                by{" "}
+                                <span className="fw-semibold">
+                                  {post.author}
+                                </span>
                               </p>
                             </div>
                             <button
@@ -589,12 +646,44 @@ export default function AdminPage() {
               </div>
             </div>
 
+            {selectedPost ? (
+              <div className={`card shadow-sm border-0 ${cardThemeClass}`}>
+                <div className="card-body">
+                  <div className="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                      <h2 className="h5 mb-1">Selected Post</h2>
+                      <p className={`mb-0 small ${mutedTextClass}`}>
+                        Viewing {selectedPost.title} by {selectedPost.author}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn-outline-secondary btn-sm"
+                      onClick={() => setSelectedPost(null)}
+                    >
+                      Close
+                    </button>
+                  </div>
+                  <BlogCard
+                    blog={selectedPost}
+                    author={
+                      selectedPostAuthor ?? {
+                        username: selectedPost.author,
+                      }
+                    }
+                  />
+                </div>
+              </div>
+            ) : null}
+
             {/* Top Contributors */}
             <div className={`card shadow-sm border-0 ${cardThemeClass}`}>
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center mb-3">
                   <h2 className="h5 mb-0">Top Contributors</h2>
-                  <span className={`badge bg-primary-subtle text-primary fw-semibold`}>
+                  <span
+                    className={`badge bg-primary-subtle text-primary fw-semibold`}
+                  >
                     Leaderboard
                   </span>
                 </div>
@@ -618,9 +707,12 @@ export default function AdminPage() {
                               {index + 1}
                             </span>
                             <div className="d-flex flex-column gap-1">
-                              <span className="fw-semibold">{contributor.username}</span>
+                              <span className="fw-semibold">
+                                {contributor.username}
+                              </span>
                               <span className={`small ${mutedTextClass}`}>
-                                Leading with {count} {count === 1 ? "post" : "posts"}
+                                Leading with {count}{" "}
+                                {count === 1 ? "post" : "posts"}
                               </span>
                             </div>
                           </div>
@@ -649,7 +741,9 @@ export default function AdminPage() {
                             <span className="badge bg-dark-subtle text-dark fw-semibold">
                               {index + 1}
                             </span>
-                            <span className="fw-semibold">{contributor.username}</span>
+                            <span className="fw-semibold">
+                              {contributor.username}
+                            </span>
                           </div>
                           <span className="badge bg-primary-subtle text-primary fw-semibold">
                             {count} {count === 1 ? "post" : "posts"}
