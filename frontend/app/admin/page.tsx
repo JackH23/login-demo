@@ -148,6 +148,11 @@ export default function AdminPage() {
   const topContributor = topContributors[0];
 
   const recentPosts = useMemo(() => posts.slice(0, 6), [posts]);
+  const handleViewPost = useCallback(
+    (postId: string) =>
+      router.push(`/posts/${encodeURIComponent(postId)}`),
+    [router]
+  );
 
   if (loading || loadingUsers || loadingPosts || !user) {
     return (
@@ -541,9 +546,13 @@ export default function AdminPage() {
                               by <span className="fw-semibold">{post.author}</span>
                             </p>
                           </div>
-                          <span className="badge bg-primary-subtle text-primary fw-semibold align-self-start">
-                            View
-                          </span>
+                          <button
+                            type="button"
+                            className="badge bg-primary-subtle text-primary fw-semibold align-self-start border-0"
+                            onClick={() => handleViewPost(post._id)}
+                          >
+                            View post
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -564,9 +573,13 @@ export default function AdminPage() {
                                 <span className="fw-semibold">{post.author}</span>
                               </p>
                             </div>
-                            <span className="badge bg-primary-subtle text-primary fw-semibold align-self-center">
+                            <button
+                              type="button"
+                              className="badge bg-primary-subtle text-primary fw-semibold align-self-center border-0"
+                              onClick={() => handleViewPost(post._id)}
+                            >
                               View post
-                            </span>
+                            </button>
                           </div>
                         </div>
                       </div>
