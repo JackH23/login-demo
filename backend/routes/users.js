@@ -73,6 +73,42 @@ async function isAdminUser(username) {
   return Boolean(record?.isAdmin);
 }
 
+async function updateAdminStatus(req, res) {
+  const requester = getRequester(req);
+  if (!requester) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const requesterIsAdmin = await isAdminUser(requester);
+  if (!requesterIsAdmin) {
+    return res.status(403).json({ error: "Forbidden" });
+  }
+
+  const { isAdmin } = req.body ?? {};
+  if (typeof isAdmin !== "boolean") {
+    return res.status(400).json({ error: "isAdmin must be a boolean" });
+  }
+
+  const target = req.params.username;
+  const nextIsAdmin = target === ADMIN_USERNAME ? true : isAdmin;
+
+  const user = await User.findOneAndUpdate(
+    { username: target },
+    { isAdmin: nextIsAdmin },
+    {
+      new: true,
+      fields:
+        "username image imageData imageContentType friends online isAdmin -_id",
+    }
+  ).lean();
+
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
+  return res.json({ user: serializeUser(user) });
+}
+
 router.get(
   "/",
   asyncHandler(async (_req, res) => {
@@ -142,44 +178,8 @@ router.get(
   })
 );
 
-router.patch(
-  "/:username/admin",
-  asyncHandler(async (req, res) => {
-    const requester = getRequester(req);
-    if (!requester) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-
-    const requesterIsAdmin = await isAdminUser(requester);
-    if (!requesterIsAdmin) {
-      return res.status(403).json({ error: "Forbidden" });
-    }
-
-    const { isAdmin } = req.body ?? {};
-    if (typeof isAdmin !== "boolean") {
-      return res.status(400).json({ error: "isAdmin must be a boolean" });
-    }
-
-    const target = req.params.username;
-    const nextIsAdmin = target === ADMIN_USERNAME ? true : isAdmin;
-
-    const user = await User.findOneAndUpdate(
-      { username: target },
-      { isAdmin: nextIsAdmin },
-      {
-        new: true,
-        fields:
-          "username image imageData imageContentType friends online isAdmin -_id",
-      }
-    ).lean();
-
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    return res.json({ user: serializeUser(user) });
-  })
-);
+router.patch("/:username/admin", asyncHandler(updateAdminStatus));
+router.post("/:username/admin", asyncHandler(updateAdminStatus));
 
 router.patch(
   "/status",

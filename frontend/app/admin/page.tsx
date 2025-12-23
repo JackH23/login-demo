@@ -214,21 +214,31 @@ export default function AdminPage() {
         )
       );
 
+      const endpoint = apiUrl(
+        `/api/users/${encodeURIComponent(targetUsername)}/admin`
+      );
+      const payload = JSON.stringify({ isAdmin: nextIsAdmin });
+
+      const submit = async (method: "PATCH" | "POST") =>
+        fetch(endpoint, {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: user.username,
+          },
+          body: payload,
+        });
+
       try {
-        const res = await fetch(
-          apiUrl(`/api/users/${encodeURIComponent(targetUsername)}/admin`),
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: user.username,
-            },
-            body: JSON.stringify({ isAdmin: nextIsAdmin }),
-          }
-        );
+        let res = await submit("PATCH");
+
+        if (res.status === 404 || res.status === 405) {
+          res = await submit("POST");
+        }
 
         if (!res.ok) {
-          throw new Error(await res.text());
+          const message = await res.text();
+          throw new Error(message || `Request failed with ${res.status}`);
         }
 
         const data = await res.json();
