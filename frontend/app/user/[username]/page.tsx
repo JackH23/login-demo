@@ -145,6 +145,7 @@ export default function UserProfilePage() {
           currentUser={{
             username: currentUserData.username,
             image: currentUserData.image,
+            isAdmin: user?.isAdmin,
           }}
         />
         <div className="container mt-5">
@@ -198,6 +199,7 @@ export default function UserProfilePage() {
         currentUser={{
           username: currentUserData.username,
           image: currentUserData.image,
+          isAdmin: user?.isAdmin,
         }}
       />
 

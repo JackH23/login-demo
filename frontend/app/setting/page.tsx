@@ -115,7 +115,8 @@ export default function SettingPage() {
       return;
     }
 
-    const changeSummary: { label: string; from: ReactNode; to: ReactNode }[] = [];
+    const changeSummary: { label: string; from: ReactNode; to: ReactNode }[] =
+      [];
     if (updates.username)
       changeSummary.push({
         label: "Username",
@@ -147,7 +148,10 @@ export default function SettingPage() {
                 <div className="confirm-dialog-diff-label">{change.label}</div>
                 <div className="confirm-dialog-diff-values">
                   <span>{change.from}</span>
-                  <span className="confirm-dialog-diff-arrow" aria-hidden="true">
+                  <span
+                    className="confirm-dialog-diff-arrow"
+                    aria-hidden="true"
+                  >
                     →
                   </span>
                   <span>{change.to}</span>
@@ -231,7 +235,6 @@ export default function SettingPage() {
         if (retry) {
           await performUpdate();
         }
-        
       }
     };
 
@@ -293,6 +296,7 @@ export default function SettingPage() {
         currentUser={{
           username: currentUserData.username,
           image: currentUserData.image,
+          isAdmin: user.isAdmin,
         }}
       />
 
@@ -320,7 +324,11 @@ export default function SettingPage() {
               Choose how the interface appears across the app.
             </p>
             <div className="d-flex flex-column flex-sm-row align-items-sm-center gap-3">
-              <div className="btn-group" role="group" aria-label="Theme selection">
+              <div
+                className="btn-group"
+                role="group"
+                aria-label="Theme selection"
+              >
                 <button
                   type="button"
                   className={`btn btn-sm ${
@@ -378,7 +386,9 @@ export default function SettingPage() {
               background: isNight
                 ? "linear-gradient(135deg, rgba(148,163,184,0.2), rgba(30,41,59,0.75))"
                 : "linear-gradient(135deg, #f1f5ff, #ffffff)",
-              borderColor: isNight ? "rgba(148,163,184,0.35)" : "rgba(99,102,241,0.2)",
+              borderColor: isNight
+                ? "rgba(148,163,184,0.35)"
+                : "rgba(99,102,241,0.2)",
             }}
           >
             <h5 className="fw-semibold mb-1 d-flex align-items-center gap-2">
@@ -396,7 +406,9 @@ export default function SettingPage() {
                 style={{
                   width: "96px",
                   height: "96px",
-                  background: isNight ? "rgba(15,23,42,0.6)" : "rgba(59,130,246,0.08)",
+                  background: isNight
+                    ? "rgba(15,23,42,0.6)"
+                    : "rgba(59,130,246,0.08)",
                 }}
               >
                 {image ? (
@@ -404,7 +416,11 @@ export default function SettingPage() {
                     src={image}
                     alt="Profile"
                     className="rounded-circle"
-                    style={{ width: "84px", height: "84px", objectFit: "cover" }}
+                    style={{
+                      width: "84px",
+                      height: "84px",
+                      objectFit: "cover",
+                    }}
                   />
                 ) : (
                   <UserCircle2
@@ -414,7 +430,9 @@ export default function SettingPage() {
                   />
                 )}
               </div>
-              <div className={`${mutedTextClass} text-center text-sm-start d-none d-md-block`}>
+              <div
+                className={`${mutedTextClass} text-center text-sm-start d-none d-md-block`}
+              >
                 <div className="fw-semibold text-reset">Profile preview</div>
                 <small>
                   Update your avatar and details to keep your profile fresh.
@@ -463,7 +481,9 @@ export default function SettingPage() {
                       }}
                     />
                     <div className="flex-grow-1 text-center text-sm-start">
-                      <div className="fw-semibold text-reset">New image ready</div>
+                      <div className="fw-semibold text-reset">
+                        New image ready
+                      </div>
                       <small className={mutedTextClass}>
                         This preview will replace your current profile picture
                         after saving.
@@ -519,7 +539,9 @@ export default function SettingPage() {
                 style={{
                   width: "42px",
                   height: "42px",
-                  background: isNight ? "rgba(239,68,68,0.35)" : "rgba(225,29,72,0.1)",
+                  background: isNight
+                    ? "rgba(239,68,68,0.35)"
+                    : "rgba(225,29,72,0.1)",
                 }}
               >
                 <span aria-hidden="true" className="fs-4">

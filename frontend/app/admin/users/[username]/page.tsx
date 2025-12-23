@@ -15,6 +15,7 @@ interface UserProfile {
   image?: string | null;
   friends?: string[];
   online?: boolean;
+  isAdmin?: boolean;
 }
 
 interface Post {
@@ -54,27 +55,29 @@ export default function AdminUserProfilePage() {
   }, [loading, user, router]);
 
   useEffect(() => {
-    if (!loading && user && user.username !== ADMIN_USERNAME) {
+    if (
+      !loading &&
+      user &&
+      !(user.isAdmin || user.username === ADMIN_USERNAME)
+    ) {
       router.push("/home");
     }
   }, [loading, user, router]);
 
   const shouldFetch = Boolean(
-    user && paramUsername && user.username === ADMIN_USERNAME
+    user && paramUsername && (user.isAdmin || user.username === ADMIN_USERNAME)
   );
 
-  const {
-    data: profile,
-    loading: loadingProfile,
-  } = useCachedApi<UserProfile | null>(
-    shouldFetch && paramUsername
-      ? `/api/users/${encodeURIComponent(paramUsername)}`
-      : null,
-    {
-      fallback: null,
-      transform: normalizeUserResponse,
-    }
-  );
+  const { data: profile, loading: loadingProfile } =
+    useCachedApi<UserProfile | null>(
+      shouldFetch && paramUsername
+        ? `/api/users/${encodeURIComponent(paramUsername)}`
+        : null,
+      {
+        fallback: null,
+        transform: normalizeUserResponse,
+      }
+    );
 
   const { data: posts, loading: loadingPosts } = useCachedApi<Post[]>(
     shouldFetch && paramUsername
@@ -82,7 +85,8 @@ export default function AdminUserProfilePage() {
       : null,
     {
       fallback: [],
-      transform: (payload) => (payload as { posts?: Post[] | null })?.posts ?? [],
+      transform: (payload) =>
+        (payload as { posts?: Post[] | null })?.posts ?? [],
     }
   );
 
@@ -119,7 +123,11 @@ export default function AdminUserProfilePage() {
       <TopBar
         title="Admin"
         active="admin"
-        currentUser={{ username: user.username, image: user.image }}
+        currentUser={{
+          username: user.username,
+          image: user.image,
+          isAdmin: user.isAdmin,
+        }}
       />
 
       <div className="container mt-4" style={{ maxWidth: "1100px" }}>
@@ -133,7 +141,12 @@ export default function AdminUserProfilePage() {
 
         <div className="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-md-center mb-4 mt-2">
           <div>
-            <h1 className="h3 mb-1">{profile.username}</h1>
+            <div className="d-flex align-items-center gap-2 flex-wrap">
+              <h1 className="h3 mb-1">{profile.username}</h1>
+              {profile.isAdmin ? (
+                <span className="badge bg-info text-dark">Admin</span>
+              ) : null}
+            </div>
             <p className={`mb-0 ${mutedTextClass} d-none d-md-block`}>
               Viewing full profile and posts created by this user.
             </p>
@@ -155,7 +168,9 @@ export default function AdminUserProfilePage() {
         <div className="d-md-none mb-3">
           <div className="row g-2">
             <div className="col-12 col-sm-6">
-              <div className={`card shadow-sm border-0 h-100 ${cardThemeClass}`}>
+              <div
+                className={`card shadow-sm border-0 h-100 ${cardThemeClass}`}
+              >
                 <div className="card-body d-flex justify-content-between align-items-center py-3">
                   <div>
                     <p className={`mb-1 small ${mutedTextClass}`}>Status</p>
@@ -174,10 +189,16 @@ export default function AdminUserProfilePage() {
               </div>
             </div>
             <div className="col-12 col-sm-6">
-              <div className={`card shadow-sm border-0 h-100 ${cardThemeClass}`}>
+              <div
+                className={`card shadow-sm border-0 h-100 ${cardThemeClass}`}
+              >
                 <div className="card-body d-flex justify-content-between align-items-center py-3">
                   <div>
-                    <p className={`mb-1 small ${mutedTextClass} d-none d-md-block`}>Connections</p>
+                    <p
+                      className={`mb-1 small ${mutedTextClass} d-none d-md-block`}
+                    >
+                      Connections
+                    </p>
                     <span className="badge bg-primary-subtle text-primary fw-semibold">
                       {profile.friends?.length ?? 0} friends
                     </span>
@@ -207,6 +228,9 @@ export default function AdminUserProfilePage() {
                 <p className={`mb-3 ${mutedTextClass}`}>
                   {profile.online ? "Currently active" : "Last seen recently"}
                 </p>
+                {profile.isAdmin ? (
+                  <span className="badge bg-info text-dark mb-3">Admin</span>
+                ) : null}
                 <div className="text-start">
                   <p className="mb-2 fw-semibold">Connections</p>
                   {profile.friends && profile.friends.length > 0 ? (
@@ -233,7 +257,11 @@ export default function AdminUserProfilePage() {
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center mb-3">
                   <h3 className="h5 mb-0">Posts by {profile.username}</h3>
-                  <span className={`badge ${posts.length ? "bg-info" : "bg-secondary"}`}>
+                  <span
+                    className={`badge ${
+                      posts.length ? "bg-info" : "bg-secondary"
+                    }`}
+                  >
                     {posts.length ? `${posts.length} posts` : "No posts yet"}
                   </span>
                 </div>

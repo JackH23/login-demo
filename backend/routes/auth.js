@@ -11,6 +11,11 @@ const {
   encodeImageToDataUrl,
 } = require("./utils/image");
 
+const ADMIN_USERNAME =
+  process.env.ADMIN_USERNAME ||
+  process.env.NEXT_PUBLIC_ADMIN_USERNAME ||
+  "Jackie";
+
 const router = express.Router();
 
 const upload = multer({
@@ -18,8 +23,8 @@ const upload = multer({
   limits: { fileSize: MAX_IMAGE_BYTES },
 });
 
-const asyncHandler = (handler) =>
-  (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
+const asyncHandler = (handler) => (req, res, next) =>
+  Promise.resolve(handler(req, res, next)).catch(next);
 
 router.post(
   "/signup",
@@ -29,7 +34,8 @@ router.post(
 
     const { username, email, password } = req.body ?? {};
 
-    const normalizedUsername = typeof username === "string" ? username.trim() : "";
+    const normalizedUsername =
+      typeof username === "string" ? username.trim() : "";
     const normalizedEmail =
       typeof email === "string" ? email.trim().toLowerCase() : "";
     const normalizedPassword = typeof password === "string" ? password : "";
@@ -39,7 +45,9 @@ router.post(
     });
 
     if (imagePayload?.error === "too_large") {
-      return res.status(400).json({ error: "Profile image must be 5MB or smaller" });
+      return res
+        .status(400)
+        .json({ error: "Profile image must be 5MB or smaller" });
     }
 
     if (imagePayload?.error === "invalid") {
@@ -53,14 +61,13 @@ router.post(
     }
 
     const existingUser = await User.findOne({
-      $or: [
-        { username: normalizedUsername },
-        { email: normalizedEmail },
-      ],
+      $or: [{ username: normalizedUsername }, { email: normalizedEmail }],
     }).lean();
 
     if (existingUser) {
-      return res.status(409).json({ error: "Username or email already in use" });
+      return res
+        .status(409)
+        .json({ error: "Username or email already in use" });
     }
 
     const hashedPassword = await bcrypt.hash(normalizedPassword, 10);
@@ -84,6 +91,7 @@ router.post(
         username: normalizedUsername,
         email: normalizedEmail,
         password: hashedPassword,
+        isAdmin: normalizedUsername === ADMIN_USERNAME,
         ...imageFields,
       });
 
@@ -93,6 +101,7 @@ router.post(
           username: user.username,
           email: user.email,
           image: imageFields.image ?? null,
+          isAdmin: user.username === ADMIN_USERNAME,
         },
       });
     } catch (error) {
@@ -125,7 +134,10 @@ const handleSignin = asyncHandler(async (req, res) => {
     return res.status(401).json({ error: "Invalid credentials" });
   }
 
-  const passwordMatches = await bcrypt.compare(normalizedPassword, user.password);
+  const passwordMatches = await bcrypt.compare(
+    normalizedPassword,
+    user.password
+  );
 
   if (!passwordMatches) {
     return res.status(401).json({ error: "Invalid credentials" });
@@ -136,6 +148,11 @@ const handleSignin = asyncHandler(async (req, res) => {
     process.env.JWT_SECRET || "secretkey123",
     { expiresIn: "7d" }
   );
+
+  const isAdmin = Boolean(user.isAdmin) || user.username === ADMIN_USERNAME;
+  if (isAdmin && !user.isAdmin && user.username === ADMIN_USERNAME) {
+    await User.updateOne({ _id: user._id }, { isAdmin: true });
+  }
 
   res.cookie("token", token, {
     httpOnly: true,
@@ -153,6 +170,7 @@ const handleSignin = asyncHandler(async (req, res) => {
       username: user.username,
       email: user.email,
       image: image ?? null,
+      isAdmin,
     },
     token,
   });

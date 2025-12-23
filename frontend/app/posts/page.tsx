@@ -46,13 +46,13 @@ export default function PostsPage() {
   const { theme } = useTheme();
   const router = useRouter();
 
-  const {
-    data: users,
-    loading: loadingUsers,
-  } = useCachedApi<User[]>(user ? "/api/users" : null, {
-    fallback: [],
-    transform: normalizeUsersResponse,
-  });
+  const { data: users, loading: loadingUsers } = useCachedApi<User[]>(
+    user ? "/api/users" : null,
+    {
+      fallback: [],
+      transform: normalizeUsersResponse,
+    }
+  );
 
   const {
     data: posts,
@@ -75,7 +75,8 @@ export default function PostsPage() {
       message: targetPost ? (
         <div>
           <p className="mb-1">
-            <span className="fw-semibold">“{targetPost.title}”</span> will be permanently removed from your posts.
+            <span className="fw-semibold">“{targetPost.title}”</span> will be
+            permanently removed from your posts.
           </p>
           <small className="text-muted">
             Your readers won’t be able to access it anymore.
@@ -137,6 +138,7 @@ export default function PostsPage() {
         currentUser={{
           username: currentUserData.username,
           image: currentUserData.image,
+          isAdmin: user.isAdmin,
         }}
       />
 

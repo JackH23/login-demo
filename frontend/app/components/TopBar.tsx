@@ -53,6 +53,7 @@ type PrefetchPost = {
 interface UserData {
   username: string;
   image?: string;
+  isAdmin?: boolean;
 }
 
 type ActivePage =
@@ -212,7 +213,7 @@ export default function TopBar({
       { key: "setting", label: "Settings", href: "/setting", icon: Settings2 },
     ];
 
-    if (currentUser.username === ADMIN_USERNAME) {
+    if (currentUser.isAdmin || currentUser.username === ADMIN_USERNAME) {
       baseItems.splice(5, 0, {
         key: "admin",
         label: "Admin",

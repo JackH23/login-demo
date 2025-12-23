@@ -9,6 +9,7 @@ const UserSchema = new Schema({
   imageContentType: { type: String },
   friends: { type: [String], default: [] },
   online: { type: Boolean, default: false },
+  isAdmin: { type: Boolean, default: false },
 });
 
 UserSchema.index({ online: 1, username: 1 });

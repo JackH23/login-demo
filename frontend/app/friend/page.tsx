@@ -241,6 +241,7 @@ export default function FriendPage() {
         currentUser={{
           username: currentUserData.username,
           image: currentUserData.image,
+          isAdmin: currentUserData?.isAdmin ?? user?.isAdmin,
         }}
       />
 

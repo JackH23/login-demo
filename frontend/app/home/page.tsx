@@ -26,7 +26,7 @@ interface BlogPost {
   image: string | null;
   imageEdites?: {
     brightness?: number;
-    contrast?: number;  
+    contrast?: number;
     saturation?: number;
     grayscale?: number;
     rotation?: number;
@@ -41,19 +41,18 @@ interface BlogPost {
   dislikedBy?: string[];
 }
 
-
 export default function HomePage() {
   const { user, loading } = useAuth();
   const { theme } = useTheme();
   const router = useRouter();
 
-  const {
-    data: users,
-    loading: loadingUsers,
-  } = useCachedApi<User[]>(user ? "/api/users" : null, {
-    fallback: [],
-    transform: normalizeUsersResponse,
-  });
+  const { data: users, loading: loadingUsers } = useCachedApi<User[]>(
+    user ? "/api/users" : null,
+    {
+      fallback: [],
+      transform: normalizeUsersResponse,
+    }
+  );
 
   const {
     data: posts,
@@ -73,8 +72,7 @@ export default function HomePage() {
       message: targetPost ? (
         <div>
           <p className="mb-1">
-            You’re about to permanently remove
-            {" "}
+            You’re about to permanently remove{" "}
             <span className="fw-semibold">“{targetPost.title}”</span>.
           </p>
           <small className="text-muted">
@@ -125,7 +123,6 @@ export default function HomePage() {
     );
   }
 
-
   return (
     <div
       className={`container-fluid min-vh-100 p-4 ${
@@ -137,7 +134,11 @@ export default function HomePage() {
       <TopBar
         title="Home"
         active="home"
-        currentUser={{ username: currentUserData.username, image: currentUserData.image }}
+        currentUser={{
+          username: currentUserData.username,
+          image: currentUserData.image,
+          isAdmin: user.isAdmin,
+        }}
       />
 
       {/* Blog Section */}

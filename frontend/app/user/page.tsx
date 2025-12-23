@@ -57,7 +57,7 @@ export default function UserPage() {
   useEffect(() => {
     const updateLayoutMetrics = () => {
       const topbar = document.querySelector(
-        ".topbar-wrapper",
+        ".topbar-wrapper"
       ) as HTMLElement | null;
       const topbarHeight = topbar?.getBoundingClientRect().height ?? 0;
       setStickyOffset(topbarHeight + 12);
@@ -89,7 +89,7 @@ export default function UserPage() {
     );
   }
 
-  const isAdmin = user.username === ADMIN_USERNAME;
+  const isAdmin = Boolean(user.isAdmin || user.username === ADMIN_USERNAME);
 
   const currentUserData = users.find((u) => u.username === user.username);
   if (!currentUserData) {
@@ -109,8 +109,7 @@ export default function UserPage() {
       message: (
         <div>
           <p className="mb-1">
-            Are you sure you want to delete
-            {" "}
+            Are you sure you want to delete{" "}
             <span className="fw-semibold">{username}</span>’s profile?
           </p>
           <small className="text-muted">
@@ -179,11 +178,13 @@ export default function UserPage() {
       description: (
         <>
           <p className="mb-2">
-            Craft a friendlier snapshot of <span className="fw-semibold">{u.username}</span>
+            Craft a friendlier snapshot of{" "}
+            <span className="fw-semibold">{u.username}</span>
             ’s profile so teammates know who they are meeting.
           </p>
           <p className="mb-0 text-muted small">
-            Fields marked with an asterisk are required. You can review every change before saving.
+            Fields marked with an asterisk are required. You can review every
+            change before saving.
           </p>
         </>
       ),
@@ -249,14 +250,20 @@ export default function UserPage() {
                     </span>
                     <span className="confirm-dialog-diff-pill">Updated</span>
                   </div>
-                  <div className="confirm-dialog-diff-values" role="presentation">
+                  <div
+                    className="confirm-dialog-diff-values"
+                    role="presentation"
+                  >
                     <div className="confirm-dialog-diff-value confirm-dialog-diff-value-from">
                       <span className="confirm-dialog-diff-chip">Before</span>
                       <span className="confirm-dialog-diff-value-text">
                         {change.from}
                       </span>
                     </div>
-                    <div className="confirm-dialog-diff-arrow" aria-hidden="true">
+                    <div
+                      className="confirm-dialog-diff-arrow"
+                      aria-hidden="true"
+                    >
                       →
                     </div>
                     <div className="confirm-dialog-diff-value confirm-dialog-diff-value-to">
@@ -314,7 +321,8 @@ export default function UserPage() {
           <p className="mb-2">
             {friendUser ? (
               <>
-                We’ll send <span className="fw-semibold">{friendUser.username}</span> a
+                We’ll send{" "}
+                <span className="fw-semibold">{friendUser.username}</span> a
                 friendly nudge to connect.
               </>
             ) : (
@@ -358,7 +366,7 @@ export default function UserPage() {
         )
       );
 
-      addFriendLocally();
+    addFriendLocally();
 
     try {
       const res = await fetch(apiUrl("/api/friends"), {
@@ -395,6 +403,7 @@ export default function UserPage() {
         currentUser={{
           username: currentUserData.username,
           image: currentUserData.image,
+          isAdmin: user.isAdmin,
         }}
       />
 
@@ -433,7 +442,9 @@ export default function UserPage() {
             <>
               <ul className="user-directory" role="list">
                 {filteredUsers.map((u) => {
-                  const isFriend = currentUserData.friends?.includes(u.username);
+                  const isFriend = currentUserData.friends?.includes(
+                    u.username
+                  );
                   const presenceClass = u.online
                     ? "user-card-presence user-card-presence--online"
                     : "user-card-presence user-card-presence--offline";
@@ -441,32 +452,32 @@ export default function UserPage() {
                   return (
                     <li key={u.username} className="user-card" role="listitem">
                       <div className="user-card-main">
-                          <div
-                            className="user-card-avatar user-card-avatar--focusable"
-                            role="presentation"
-                            onClick={() => navigateToProfile(u.username)}
-                            onKeyDown={(event) => {
-                              if (event.key === "Enter" || event.key === " ") {
-                                event.preventDefault();
-                                navigateToProfile(u.username);
-                              }
-                            }}
-                            tabIndex={0}
-                            style={{ cursor: "pointer" }}
-                          >
-                            {u.image ? (
-                              isAdmin ? (
-                                <button
-                                  type="button"
-                                  className="user-card-avatar-button"
-                                  onClick={(event) => {
-                                    event.stopPropagation();
-                                    handleImageChange(u);
-                                  }}
-                                  title={`Update ${u.username}'s profile picture`}
-                                  aria-label={`Update ${u.username}'s profile picture`}
-                                >
-                                  <img
+                        <div
+                          className="user-card-avatar user-card-avatar--focusable"
+                          role="presentation"
+                          onClick={() => navigateToProfile(u.username)}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault();
+                              navigateToProfile(u.username);
+                            }
+                          }}
+                          tabIndex={0}
+                          style={{ cursor: "pointer" }}
+                        >
+                          {u.image ? (
+                            isAdmin ? (
+                              <button
+                                type="button"
+                                className="user-card-avatar-button"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  handleImageChange(u);
+                                }}
+                                title={`Update ${u.username}'s profile picture`}
+                                aria-label={`Update ${u.username}'s profile picture`}
+                              >
+                                <img
                                   src={u.image}
                                   alt={`${u.username} profile`}
                                   className="user-card-avatar-img"
@@ -506,10 +517,10 @@ export default function UserPage() {
                             className={presenceClass}
                             aria-hidden="true"
                           ></span>
-                            <span className="visually-hidden d-none d-md-block">
-                              {u.online ? "Online" : "Offline"}
-                            </span>
-                          </div>
+                          <span className="visually-hidden d-none d-md-block">
+                            {u.online ? "Online" : "Offline"}
+                          </span>
+                        </div>
                         <div
                           className="user-card-body"
                           role="button"
@@ -527,7 +538,10 @@ export default function UserPage() {
                           </div>
                           <div className="user-card-status-row">
                             <div className="user-card-status-badges">
-                              <span className={presenceClass} data-variant="label">
+                              <span
+                                className={presenceClass}
+                                data-variant="label"
+                              >
                                 {u.online ? "Online" : "Offline"}
                               </span>
                               {isFriend && (
@@ -537,13 +551,14 @@ export default function UserPage() {
                               )}
                             </div>
                           </div>
-                          <div className="user-card-meta user-card-meta--desktop">
-                          </div>
+                          <div className="user-card-meta user-card-meta--desktop"></div>
                         </div>
                       </div>
                       <div
                         className={`user-card-actions ${
-                          isCompactLayout ? "user-card-actions--inline-mobile" : ""
+                          isCompactLayout
+                            ? "user-card-actions--inline-mobile"
+                            : ""
                         }`}
                         role="group"
                         aria-label={`Actions for ${u.username}`}
@@ -564,10 +579,13 @@ export default function UserPage() {
                           disabled={isFriend}
                           onClick={() => handleAddFriend(u.username)}
                         >
-                          <i className="bi bi-person-plus" aria-hidden="true"></i>
+                          <i
+                            className="bi bi-person-plus"
+                            aria-hidden="true"
+                          ></i>
                           {isFriend ? "Friend" : "Add Friend"}
                         </button>
-                        
+
                         {isAdmin && (
                           <>
                             {isCompactLayout ? (
@@ -579,7 +597,10 @@ export default function UserPage() {
                                   aria-expanded={openAdminMenu === u.username}
                                   aria-controls={`admin-actions-${u.username}`}
                                 >
-                                  <i className="bi bi-three-dots" aria-hidden="true"></i>
+                                  <i
+                                    className="bi bi-three-dots"
+                                    aria-hidden="true"
+                                  ></i>
                                   Manage
                                 </button>
                                 {openAdminMenu === u.username && (
@@ -603,7 +624,10 @@ export default function UserPage() {
                                       className="user-card-action user-card-action--danger"
                                       onClick={() => handleDelete(u.username)}
                                     >
-                                      <i className="bi bi-trash" aria-hidden="true"></i>
+                                      <i
+                                        className="bi bi-trash"
+                                        aria-hidden="true"
+                                      ></i>
                                       Delete user
                                     </button>
                                   </div>
@@ -616,7 +640,10 @@ export default function UserPage() {
                                   className="user-card-action user-card-action--edit"
                                   onClick={() => handleEdit(u)}
                                 >
-                                  <i className="bi bi-pencil-square" aria-hidden="true"></i>
+                                  <i
+                                    className="bi bi-pencil-square"
+                                    aria-hidden="true"
+                                  ></i>
                                   Edit
                                 </button>
                                 <button
@@ -624,7 +651,10 @@ export default function UserPage() {
                                   className="user-card-action user-card-action--danger"
                                   onClick={() => handleDelete(u.username)}
                                 >
-                                  <i className="bi bi-trash" aria-hidden="true"></i>
+                                  <i
+                                    className="bi bi-trash"
+                                    aria-hidden="true"
+                                  ></i>
                                   Delete
                                 </button>
                               </>
@@ -639,9 +669,12 @@ export default function UserPage() {
             </>
           ) : (
             <div className="user-card-empty text-center py-5">
-              <p className="text-muted mb-2">No users match your search right now.</p>
+              <p className="text-muted mb-2">
+                No users match your search right now.
+              </p>
               <p className="text-muted mb-3">
-                Invite teammates to join or adjust your filters to see more people.
+                Invite teammates to join or adjust your filters to see more
+                people.
               </p>
               <button
                 type="button"

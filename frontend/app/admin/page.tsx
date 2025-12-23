@@ -9,12 +9,14 @@ import LoadingState from "../components/LoadingState";
 import BlogCard from "../components/BlogCard";
 import { ADMIN_USERNAME } from "@/lib/constants";
 import { useCachedApi } from "../hooks/useCachedApi";
-import { normalizeUsersResponse } from "@/app/lib/users";
+import { apiUrl } from "@/app/lib/api";
+import { normalizeUserResponse, normalizeUsersResponse } from "@/app/lib/users";
 
 interface User {
   username: string;
   image?: string;
   online?: boolean;
+  isAdmin?: boolean;
 }
 
 interface Post {
@@ -44,15 +46,19 @@ export default function AdminPage() {
   const { theme } = useTheme();
   const router = useRouter();
 
-  const shouldFetch = user?.username === ADMIN_USERNAME;
-
-  const { data: users, loading: loadingUsers } = useCachedApi<User[]>(
-    shouldFetch ? "/api/users" : null,
-    {
-      fallback: [],
-      transform: normalizeUsersResponse,
-    }
+  const isAdminUser = Boolean(
+    user?.isAdmin || user?.username === ADMIN_USERNAME
   );
+  const shouldFetch = isAdminUser;
+
+  const {
+    data: users,
+    loading: loadingUsers,
+    setData: setUsers,
+  } = useCachedApi<User[]>(shouldFetch ? "/api/users" : null, {
+    fallback: [],
+    transform: normalizeUsersResponse,
+  });
 
   const { data: posts, loading: loadingPosts } = useCachedApi<Post[]>(
     shouldFetch ? "/api/posts" : null,
@@ -75,6 +81,9 @@ export default function AdminPage() {
   const [isMobile, setIsMobile] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [pendingAdminChange, setPendingAdminChange] = useState<
+    Record<string, boolean>
+  >({});
 
   useEffect(() => {
     const updateIsMobile = () => {
@@ -193,6 +202,64 @@ export default function AdminPage() {
     [posts, router]
   );
 
+  const handleToggleAdmin = useCallback(
+    async (targetUsername: string, nextIsAdmin: boolean) => {
+      if (!user) return;
+      setPendingAdminChange((prev) => ({ ...prev, [targetUsername]: true }));
+      setUsers((prev) =>
+        prev.map((entry) =>
+          entry.username === targetUsername
+            ? { ...entry, isAdmin: nextIsAdmin }
+            : entry
+        )
+      );
+
+      try {
+        const res = await fetch(
+          apiUrl(`/api/users/${encodeURIComponent(targetUsername)}/admin`),
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: user.username,
+            },
+            body: JSON.stringify({ isAdmin: nextIsAdmin }),
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error(await res.text());
+        }
+
+        const data = await res.json();
+        const normalized = normalizeUserResponse<User>(data);
+        if (normalized) {
+          setUsers((prev) =>
+            prev.map((entry) =>
+              entry.username === targetUsername ? normalized : entry
+            )
+          );
+        }
+      } catch (error) {
+        console.error("Failed to update admin status", error);
+        setUsers((prev) =>
+          prev.map((entry) =>
+            entry.username === targetUsername
+              ? { ...entry, isAdmin: !nextIsAdmin }
+              : entry
+          )
+        );
+        alert("Unable to update admin status. Please try again.");
+      } finally {
+        setPendingAdminChange((prev) => ({
+          ...prev,
+          [targetUsername]: false,
+        }));
+      }
+    },
+    [setUsers, user]
+  );
+
   useEffect(() => {
     if (
       selectedPost &&
@@ -242,7 +309,7 @@ export default function AdminPage() {
     );
   }
 
-  if (user.username !== ADMIN_USERNAME) {
+  if (!isAdminUser) {
     router.push("/home");
     return null;
   }
@@ -259,6 +326,7 @@ export default function AdminPage() {
         currentUser={{
           username: user.username,
           image: currentUserData?.image,
+          isAdmin: user.isAdmin,
         }}
       />
 
@@ -510,6 +578,12 @@ export default function AdminPage() {
                     {visibleUsers.map((u) => {
                       const postCount = getPostCount(u.username);
                       const isOnline = Boolean(u.online);
+                      const isAdminMember =
+                        Boolean(u.isAdmin) || u.username === ADMIN_USERNAME;
+                      const isSuperAdmin = u.username === ADMIN_USERNAME;
+                      const isToggling = Boolean(
+                        pendingAdminChange[u.username]
+                      );
 
                       return (
                         <div key={u.username} className="col-12 col-md-6">
@@ -533,19 +607,33 @@ export default function AdminPage() {
                               }
                             }}
                           >
-                            <div className="card-body d-flex gap-3 align-items-center p-3">
-                              <img
-                                src={u.image}
-                                alt={`${u.username} profile picture`}
-                                className="rounded-circle"
-                                width={56}
-                                width={52}
-                                height={52}
-                              />
-                              <div className="flex-grow-1 d-flex flex-column gap-1">
-                                <div className="d-flex align-items-start justify-content-between gap-2">
+                            <div className="card-body p-3">
+                              <div className="d-flex justify-content-between align-items-start gap-3">
+                                <div className="d-flex gap-3 align-items-center">
+                                  <img
+                                    src={u.image}
+                                    alt={`${u.username} profile picture`}
+                                    className="rounded-circle"
+                                    width={56}
+                                    height={56}
+                                  />
                                   <div className="d-flex flex-column gap-1">
-                                    <h3 className="h6 mb-0">{u.username}</h3>
+                                    <div className="d-flex align-items-center gap-2 flex-wrap">
+                                      <h3 className="h6 mb-0">{u.username}</h3>
+                                      {isAdminMember ? (
+                                        <span
+                                          className={`badge ${
+                                            isSuperAdmin
+                                              ? "bg-warning text-dark"
+                                              : "bg-info text-dark"
+                                          }`}
+                                        >
+                                          {isSuperAdmin
+                                            ? "Super admin"
+                                            : "Admin"}
+                                        </span>
+                                      ) : null}
+                                    </div>
                                     <div
                                       className={`d-flex align-items-center gap-2 small ${mutedTextClass}`}
                                     >
@@ -568,21 +656,46 @@ export default function AdminPage() {
                                       </span>
                                     </div>
                                   </div>
+                                </div>
+                                <div className="d-flex flex-column align-items-end gap-2">
                                   <span className="badge bg-primary-subtle text-primary fw-semibold py-1 px-2 small d-none d-md-inline-flex">
                                     {postCount}{" "}
                                     {postCount === 1 ? "post" : "posts"}
                                   </span>
+                                  {u.username !== user.username &&
+                                  !isSuperAdmin ? (
+                                    <button
+                                      type="button"
+                                      className={`btn btn-sm ${
+                                        isAdminMember
+                                          ? "btn-outline-danger"
+                                          : "btn-outline-success"
+                                      }`}
+                                      disabled={isToggling}
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        handleToggleAdmin(
+                                          u.username,
+                                          !isAdminMember
+                                        );
+                                      }}
+                                    >
+                                      {isAdminMember
+                                        ? "Remove admin"
+                                        : "Make admin"}
+                                    </button>
+                                  ) : null}
                                 </div>
-                                <div
-                                  className={`d-flex align-items-center gap-2 small ${mutedTextClass}`}
-                                >
-                                  <span>{isOnline ? "Active" : "Idle"}</span>
-                                  <span aria-hidden="true">•</span>
-                                  <span>
-                                    {postCount}{" "}
-                                    {postCount === 1 ? "post" : "posts"}
-                                  </span>
-                                </div>
+                              </div>
+                              <div
+                                className={`d-flex align-items-center gap-2 small ${mutedTextClass} mt-3`}
+                              >
+                                <span>{isOnline ? "Active" : "Idle"}</span>
+                                <span aria-hidden="true">•</span>
+                                <span>
+                                  {postCount}{" "}
+                                  {postCount === 1 ? "post" : "posts"}
+                                </span>
                               </div>
                             </div>
                           </div>

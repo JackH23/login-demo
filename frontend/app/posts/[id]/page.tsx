@@ -115,6 +115,7 @@ export default function PostDetailsPage() {
         currentUser={{
           username: currentUserData.username,
           image: currentUserData.image,
+          isAdmin: user.isAdmin,
         }}
       />
 

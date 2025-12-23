@@ -11,11 +11,13 @@ import {
 import { Socket } from "socket.io-client";
 import { apiUrl, resolveImageUrl } from "@/app/lib/api";
 import socketClient from "@/lib/socketClient";
+import { ADMIN_USERNAME } from "@/lib/constants";
 
 // Basic representation of a user stored in the context
 interface User {
   username: string;
   image?: string | null;
+  isAdmin?: boolean;
 }
 
 // Returns true when a network-related failure should be ignored because the
@@ -152,11 +154,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsed = JSON.parse(storedUser);
-      setUser(parsed);
+      const restored: User = {
+        username: parsed.username,
+        image: parsed.image ?? null,
+        isAdmin: Boolean(parsed.isAdmin || parsed.username === ADMIN_USERNAME),
+      };
+      setUser(restored);
       if (socket) {
-        socket.emit("user-online", parsed.username);
+        socket.emit("user-online", restored.username);
       }
-      void updateOnlineStatus(parsed.username, true);
+      void updateOnlineStatus(restored.username, true);
     }
     // Loading complete after attempting to read from storage
     setLoading(false);
@@ -278,6 +285,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const data = await res.json();
         const username = data?.user?.username ?? data?.username;
         const image = resolveImageUrl(data?.user?.image ?? data?.image ?? null);
+        const isAdmin = Boolean(data?.user?.isAdmin);
         if (!username || typeof username !== "string") {
           return {
             success: false as const,
@@ -285,11 +293,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           };
         }
         // Persist the username in local storage so the session survives reloads
-        localStorage.setItem(
-          "user",
-          JSON.stringify({ username, image: image ?? null })
-        );
-        setUser({ username, image: image ?? null });
+        const persistedUser: User = {
+          username,
+          image: image ?? null,
+          isAdmin,
+        };
+        localStorage.setItem("user", JSON.stringify(persistedUser));
+        setUser(persistedUser);
         // Mark user as online after successful sign in
         if (socket) socket.emit("user-online", username);
         void updateOnlineStatus(username, true);
@@ -341,10 +351,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser((prev) => {
       if (!prev) return prev;
       const next = { ...prev, ...updates };
-      if (typeof updates.username === "string" || "image" in updates) {
+      if (
+        typeof updates.username === "string" ||
+        "image" in updates ||
+        "isAdmin" in updates
+      ) {
         localStorage.setItem(
           "user",
-          JSON.stringify({ username: next.username, image: next.image ?? null })
+          JSON.stringify({
+            username: next.username,
+            image: next.image ?? null,
+            isAdmin: Boolean(next.isAdmin),
+          })
         );
       }
       return next;

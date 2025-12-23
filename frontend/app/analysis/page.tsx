@@ -113,6 +113,7 @@ export default function AnalysisPage() {
         currentUser={{
           username: currentUserData.username,
           image: currentUserData.image,
+          isAdmin: user.isAdmin,
         }}
       />
 
