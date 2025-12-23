@@ -344,6 +344,12 @@ export default function BlogCard({
     [coverImageBaseStyle, isMobile, isNight]
   );
 
+  const heroPreview = useMemo(() => {
+    const snippet = blog.content ?? "";
+    if (snippet.length <= 180) return snippet;
+    return `${snippet.slice(0, 180).trim()}…`;
+  }, [blog.content]);
+
   const contentStyle: CSSProperties = {
     fontSize: isMobile ? "0.95rem" : undefined,
     lineHeight: isMobile ? 1.6 : 1.7,
@@ -894,7 +900,7 @@ export default function BlogCard({
 
   return (
     <div
-      className={`blog-card card border-0 shadow-lg w-100 mx-auto mb-4 position-relative ${
+      className={`blog-card block-card card border-0 shadow-lg w-100 mx-auto mb-4 position-relative ${
         isNight ? "bg-dark text-light" : "bg-white"
       }`}
       style={{
@@ -904,245 +910,222 @@ export default function BlogCard({
         border: `1px solid ${cardBorderColor}`, // Dynamic border color based on theme
       }}
     >
-      {/* Header section with background gradient and author info */}
-      <div
-        className="blog-card__hero position-relative text-white"
-        style={{
-          background: headerGradient, // Dynamic background based on theme
-          padding: isMobile ? "0.65rem 0.9rem" : "1.1rem 1.35rem",
-        }}
-      >
-        <div className="blog-card__menu position-absolute top-0 end-0 m-2 m-md-3">
-          {/* MENU-DOTS */}
-          <button
-            type="button"
-            ref={menuButtonRef}
-            className={`blog-card__menu-dots border-0 ${
-              canManagePost ? "" : "blog-card__menu-dots--muted"
-            }`}
-            aria-label="Post actions"
-            aria-haspopup="menu"
-            aria-expanded={showActionsMenu}
-            aria-controls={`blog-card-menu-${blog._id ?? "new"}`}
-            onClick={() => setShowActionsMenu((prev) => !prev)}
-          >
-            <span className="blog-card__menu-icon" aria-hidden={true}>
-              &#8942;
-            </span>
-            <span className="visually-hidden">Toggle actions menu</span>
-          </button>
-
-          {showActionsMenu && (
-            <>
-              <button
-                type="button"
-                className="blog-card__menu-backdrop"
-                aria-label="Close actions menu"
-                onClick={() => setShowActionsMenu(false)}
-              />
-              <div
-                ref={menuDropdownRef}
-                role="menu"
-                id={`blog-card-menu-${blog._id ?? "new"}`}
-                className={`blog-card__menu-dropdown ${
-                  isMobile
-                    ? useBottomSheet
-                      ? "blog-card__menu-dropdown--mobile-sheet"
-                      : "blog-card__menu-dropdown--mobile"
-                    : "blog-card__menu-dropdown--desktop"
-                } ${isNight ? "is-dark" : "is-light"}`}
-                data-open={showActionsMenu}
-              >
-                {/* DELETE POST */}
-                <div className="blog-card__menu-list" role="none">
+      <div className="block-card__halo" aria-hidden={true} />
+      <div className="block-card__inner">
+        {/* Header section with background gradient and author info */}
+        <div
+          className="blog-card__hero position-relative text-white"
+          style={{
+            background: headerGradient, // Dynamic background based on theme
+            padding: isMobile ? "0.9rem 1rem 1.1rem" : "1.35rem 1.5rem 1.65rem",
+          }}
+        >
+          <div className="block-card__hero-grid">
+            <div className="block-card__hero-copy">
+              <div className="block-card__topline">
+                <div className="block-card__eyebrow">
+                  Editorial spotlight · Crafted feature
+                </div>
+                <div className="blog-card__menu">
+                  {/* MENU-DOTS */}
                   <button
                     type="button"
-                    className="blog-card__menu-item blog-card__menu-item--danger"
-                    role="menuitem"
-                    onClick={() => {
-                      setShowActionsMenu(false);
-                      setShowDeleteModal(true);
-                    }}
+                    ref={menuButtonRef}
+                    className={`blog-card__menu-dots border-0 ${
+                      canManagePost ? "" : "blog-card__menu-dots--muted"
+                    }`}
+                    aria-label="Post actions"
+                    aria-haspopup="menu"
+                    aria-expanded={showActionsMenu}
+                    aria-controls={`blog-card-menu-${blog._id ?? "new"}`}
+                    onClick={() => setShowActionsMenu((prev) => !prev)}
                   >
-                    <span
-                      aria-hidden={true}
-                      className="blog-card__menu-item-icon"
-                    >
-                      🗑️
+                    <span className="blog-card__menu-icon" aria-hidden={true}>
+                      &#8942;
                     </span>
-                    <div className="blog-card__menu-item-copy">
-                      <span className="blog-card__menu-item-title">
-                        Delete post
-                      </span>
-                      <span className="blog-card__menu-item-subtitle">
-                        Permanently remove this post
-                      </span>
-                    </div>
+                    <span className="visually-hidden">Toggle actions menu</span>
                   </button>
+
+                  {showActionsMenu && (
+                    <>
+                      <button
+                        type="button"
+                        className="blog-card__menu-backdrop"
+                        aria-label="Close actions menu"
+                        onClick={() => setShowActionsMenu(false)}
+                      />
+                      <div
+                        ref={menuDropdownRef}
+                        role="menu"
+                        id={`blog-card-menu-${blog._id ?? "new"}`}
+                        className={`blog-card__menu-dropdown ${
+                          isMobile
+                            ? useBottomSheet
+                              ? "blog-card__menu-dropdown--mobile-sheet"
+                              : "blog-card__menu-dropdown--mobile"
+                            : "blog-card__menu-dropdown--desktop"
+                        } ${isNight ? "is-dark" : "is-light"}`}
+                        data-open={showActionsMenu}
+                      >
+                        {/* DELETE POST */}
+                        <div className="blog-card__menu-list" role="none">
+                          <button
+                            type="button"
+                            className="blog-card__menu-item blog-card__menu-item--danger"
+                            role="menuitem"
+                            onClick={() => {
+                              setShowActionsMenu(false);
+                              setShowDeleteModal(true);
+                            }}
+                          >
+                            <span
+                              aria-hidden={true}
+                              className="blog-card__menu-item-icon"
+                            >
+                              🗑️
+                            </span>
+                            <div className="blog-card__menu-item-copy">
+                              <span className="blog-card__menu-item-title">
+                                Delete post
+                              </span>
+                              <span className="blog-card__menu-item-subtitle">
+                                Permanently remove this post
+                              </span>
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
-            </>
-          )}
-        </div>
-        {/* Row: author avatar + title + author name */}
-        <div
-          className="blog-card__header d-flex flex-column gap-2 gap-md-3 align-items-start text-start"
-          style={{
-            gap: isMobile ? "0.55rem" : "0.9rem",
-          }}
-        >
-          <div className="blog-card__author-row d-flex align-items-center w-100 gap-3 flex-wrap">
-            <div className="blog-card__author-info d-flex align-items-center gap-3">
-              {/* If author has an image, display it */}
-              <button
-                className="blog-card__avatar p-0 border-0 bg-transparent"
-                aria-label={
-                  isProfileNavigable
-                    ? `View ${displayAuthor}'s profile`
-                    : undefined
-                }
-                onClick={isProfileNavigable ? openAuthorProfile : undefined}
-                disabled={!isProfileNavigable}
-                style={{ cursor: isProfileNavigable ? "pointer" : "default" }}
-                disabled={!displayAuthor}
-              >
-                {author?.image ? (
-                  <img
-                    src={author.image}
-                    alt={author.username}
-                    className="rounded-circle border border-3 border-white"
+
+              <div className="block-card__title-panel">
+                <div className="blog-card__author-row d-flex align-items-center w-100 gap-3 flex-wrap">
+                  <div className="blog-card__author-info d-flex align-items-center gap-3">
+                    {/* If author has an image, display it */}
+                    <button
+                      className="blog-card__avatar p-0 border-0 bg-transparent"
+                      aria-label={
+                        isProfileNavigable
+                          ? `View ${displayAuthor}'s profile`
+                          : undefined
+                      }
+                      onClick={isProfileNavigable ? openAuthorProfile : undefined}
+                      disabled={!isProfileNavigable}
+                      style={{ cursor: isProfileNavigable ? "pointer" : "default" }}
+                    >
+                      {author?.image ? (
+                        <img
+                          src={author.image}
+                          alt={author.username}
+                          className="rounded-circle border border-3 border-white"
+                          style={{
+                            width: isMobile ? "44px" : "52px", // Avatar width
+                            height: isMobile ? "44px" : "52px", // Avatar height
+                            objectFit: "cover", // Ensures image fills the circle without distortion
+                          }}
+                        />
+                      ) : (
+                        <div
+                          className="rounded-circle bg-white text-primary fw-semibold d-flex align-items-center justify-content-center"
+                          style={{
+                            width: isMobile ? "44px" : "52px",
+                            height: isMobile ? "44px" : "52px",
+                          }}
+                        >
+                          {authorInitial}
+                        </div>
+                      )}
+                    </button>
+
+                    <div className="blog-card__author-meta d-flex align-items-center gap-2 text-start">
+                      <span className="small text-white-50">By</span>
+                      <button
+                        type="button"
+                        className="btn btn-link p-0 align-baseline fw-semibold text-white text-start"
+                        onClick={openAuthorProfile}
+                        disabled={!displayAuthor}
+                      >
+                        {displayAuthor || "Unknown"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="block-card__title">
+                  <h3
+                    className="mb-2 fw-bold"
                     style={{
-                      width: isMobile ? "40px" : "48px", // Avatar width
-                      height: isMobile ? "40px" : "48px", // Avatar height
-                      objectFit: "cover", // Ensures image fills the circle without distortion
-                    }}
-                  />
-                ) : (
-                  <div
-                    className="rounded-circle bg-white text-primary fw-semibold d-flex align-items-center justify-content-center"
-                    style={{
-                      width: isMobile ? "40px" : "48px",
-                      height: isMobile ? "40px" : "48px",
+                      fontSize: isMobile ? "1.15rem" : "1.45rem",
+                      lineHeight: 1.2,
                     }}
                   >
-                    {authorInitial}
-                  </div>
-                )}
-              </button>
+                    {blog.title}
+                  </h3>
+                  <p className="block-card__lede mb-0 text-white-50">
+                    {heroPreview}
+                  </p>
+                </div>
 
-              <div className="blog-card__author-meta d-flex align-items-center gap-2 text-start">
-                <span className="small text-white-50">By</span>
-                <button
-                  type="button"
-                  className="btn btn-link p-0 align-baseline fw-semibold text-white text-start"
-                  onClick={openAuthorProfile}
-                  disabled={!displayAuthor}
-                >
-                  {displayAuthor || "Unknown"}
-                </button>
+                <div className="block-card__meta-row">
+                  <div className="block-card__stat-deck">
+                    <span className="block-card__stat-chip">
+                      <span aria-hidden={true}>❤️</span> {likes} appreciations
+                    </span>
+                    <span className="block-card__stat-chip block-card__stat-chip--muted">
+                      <span aria-hidden={true}>👎</span> {dislikes} passes
+                    </span>
+                    <span className="block-card__stat-chip block-card__stat-chip--accent">
+                      <span aria-hidden={true}>💬</span> {totalComments}{" "}
+                      {totalComments === 1 ? "comment" : "comments"}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
+
+            {blog.image && (
+              <div className="block-card__hero-media">
+                <div
+                  className="block-card__media-frame"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setShowImageModal(true)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      setShowImageModal(true);
+                    }
+                  }}
+                >
+                  <img
+                    src={blog.image}
+                    alt="Blog Visual"
+                    className="card-img-top"
+                    style={coverImageStyle}
+                  />
+                  <div className="block-card__media-overlay">
+                    <div className="block-card__media-label">
+                      Premium art direction
+                    </div>
+                    <button
+                      type="button"
+                      className="block-card__media-cta btn btn-light btn-sm rounded-pill"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setShowImageModal(true);
+                      }}
+                    >
+                      View gallery
+                    </button>
+                  </div>
+                </div>
+                <div className="block-card__media-shadow" aria-hidden={true} />
+              </div>
+            )}
           </div>
-
-          {/* Blog title and author name section */}
-          <div className="blog-card__title w-100">
-            {/* Blog title */}
-            <h3
-              className="mb-1 fw-bold"
-              style={{
-                fontSize: isMobile ? "1.05rem" : undefined,
-                lineHeight: 1.15,
-              }}
-            >
-              {blog.title}
-            </h3>
-          </div>
-
-          {!isMobile && (
-            <div className="blog-card__stats d-flex flex-wrap align-items-center justify-content-center gap-2 mt-2 mt-md-0">
-              {/* Display like count */}
-              <span className={statBadgeClass}>❤️ {likes}</span>
-              {/* Display dislike count */}
-              <span className={statBadgeClass}>👎 {dislikes}</span>
-              {/* Display comment count */}
-              <span className={statBadgeClass}>💬 {totalComments}</span>
-            </div>
-          )}
         </div>
-      </div>
-
-      {blog.image && (
-        <div
-          className="blog-card__media position-relative overflow-hidden"
-          style={{
-            cursor: "pointer",
-            width: "100%",
-            maxHeight: isMobile ? "320px" : "360px",
-            minHeight: isMobile ? "280px" : undefined,
-            aspectRatio: isMobile ? "4 / 3" : "16 / 9",
-            backgroundColor: isNight ? "#0f172a" : "#f8fafc",
-            borderBottomLeftRadius: "0px",
-            borderBottomRightRadius: "0px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {/* Image container section with clickable behavior */}
-          <img
-            src={blog.image}
-            alt="Blog Visual"
-            className="card-img-top"
-            style={coverImageStyle}
-            onClick={() => setShowImageModal(true)}
-          />
-
-          {/* Transparent gradient overlay for visual depth */}
-          <div
-            className="position-absolute top-0 start-0 w-100 h-100"
-            style={{
-              pointerEvents: "none",
-              background:
-                "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.35) 100%)",
-            }}
-          />
-
-          {/* Bottom-right floating badge prompting user interaction */}
-          {!isMobile && (
-            <button
-              type="button"
-              className="blog-card__expand position-absolute bottom-0 end-0 m-2 m-md-3 border-0 bg-transparent p-0"
-              onClick={() => setShowImageModal(true)}
-              aria-label="Expand image"
-            >
-              <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-2 py-1 px-md-3 py-md-2 d-flex align-items-center gap-2">
-                <span className="tap-to-expand" aria-hidden="true">
-                  🔍
-                </span>
-                <span className="tap-to-expand">Tap to expand</span>
-              </span>
-            </button>
-          )}
-        </div>
-      )}
-
-      {blog.image && isMobile && (
-        <div className="px-3 pb-3">
-          <button
-            type="button"
-            className="blog-card__expand w-100 border-0 bg-transparent p-0"
-            onClick={() => setShowImageModal(true)}
-            aria-label="Expand image"
-          >
-            <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-3 py-2 w-100 d-flex align-items-center justify-content-center gap-2">
-              <span className="tap-to-expand" aria-hidden="true">
-                🔍
-              </span>
-              <span className="tap-to-expand">Tap to expand</span>
-            </span>
-          </button>
-        </div>
-      )}
 
       <div
         className="blog-card__body card-body p-3"
@@ -2192,7 +2175,262 @@ export default function BlogCard({
           </div>
         </div>
       )}
+
+      </div>
       <style jsx>{`
+        .block-card {
+          position: relative;
+          isolation: isolate;
+        }
+
+        .block-card__halo {
+          position: absolute;
+          inset: -6%;
+          background: radial-gradient(
+              circle at 20% 10%,
+              ${isNight ? "rgba(59,130,246,0.12)" : "rgba(59,130,246,0.2)"},
+              transparent 40%
+            ),
+            radial-gradient(
+              circle at 80% 20%,
+              ${isNight ? "rgba(236,72,153,0.08)" : "rgba(236,72,153,0.16)"},
+              transparent 45%
+            ),
+            radial-gradient(
+              circle at 50% 90%,
+              ${isNight ? "rgba(14,165,233,0.08)" : "rgba(14,165,233,0.14)"},
+              transparent 45%
+            );
+          filter: blur(30px);
+          opacity: ${isNight ? 0.8 : 0.65};
+          z-index: 0;
+        }
+
+        .block-card__inner {
+          position: relative;
+          z-index: 1;
+          background: ${isNight
+            ? "linear-gradient(145deg, rgba(15,23,42,0.96), rgba(30,41,59,0.92))"
+            : "linear-gradient(145deg, #ffffff, #f7fafc)"};
+          border-radius: ${isMobile ? "16px" : "20px"};
+          overflow: hidden;
+          box-shadow: 0 20px 40px
+              ${isNight ? "rgba(0,0,0,0.45)" : "rgba(15,23,42,0.12)"},
+            inset 0 1px 0 ${isNight ? "rgba(255,255,255,0.05)" : "#ffffff"};
+        }
+
+        .blog-card__hero {
+          position: relative;
+          overflow: hidden;
+          border-bottom: 1px solid
+            ${isNight ? "rgba(255,255,255,0.08)" : "rgba(59,130,246,0.12)"};
+        }
+
+        .blog-card__hero::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.08) 0%,
+            rgba(255, 255, 255, 0) 50%,
+            rgba(0, 0, 0, 0.12) 100%
+          );
+          pointer-events: none;
+          mix-blend-mode: soft-light;
+        }
+
+        .block-card__hero-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          align-items: stretch;
+          gap: ${isMobile ? "1rem" : "1.35rem"};
+        }
+
+        @media (min-width: 768px) {
+          .block-card__hero-grid {
+            grid-template-columns: 1.3fr 1fr;
+          }
+        }
+
+        .block-card__hero-copy {
+          display: flex;
+          flex-direction: column;
+          gap: ${isMobile ? "0.85rem" : "1.1rem"};
+        }
+
+        .block-card__topline {
+          display: flex;
+          align-items: center;
+          gap: 0.85rem;
+          justify-content: space-between;
+          flex-wrap: wrap;
+        }
+
+        .block-card__eyebrow {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          background: ${isNight
+            ? "rgba(255,255,255,0.08)"
+            : "rgba(255,255,255,0.9)"};
+          color: ${isNight ? "#cbd5e1" : "#334155"};
+          border: 1px solid
+            ${isNight ? "rgba(255,255,255,0.16)" : "rgba(59,130,246,0.25)"};
+          border-radius: 999px;
+          padding: ${isMobile ? "0.4rem 0.75rem" : "0.45rem 0.9rem"};
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          font-weight: 700;
+          font-size: ${isMobile ? "0.68rem" : "0.75rem"};
+          box-shadow: 0 12px 30px
+              ${isNight ? "rgba(0,0,0,0.35)" : "rgba(59,130,246,0.16)"},
+            inset 0 1px 0 ${isNight ? "rgba(255,255,255,0.1)" : "#ffffff"};
+        }
+
+        .block-card__title-panel {
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+
+        .block-card__title h3 {
+          letter-spacing: -0.01em;
+        }
+
+        .block-card__lede {
+          font-size: ${isMobile ? "0.96rem" : "1rem"};
+          line-height: ${isMobile ? 1.5 : 1.65};
+          max-width: 60ch;
+        }
+
+        .block-card__meta-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+        }
+
+        .block-card__stat-deck {
+          display: inline-flex;
+          flex-wrap: wrap;
+          gap: 0.6rem;
+        }
+
+        .block-card__stat-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.45rem;
+          padding: 0.55rem 0.9rem;
+          border-radius: 999px;
+          border: 1px solid
+            ${isNight ? "rgba(255,255,255,0.18)" : "rgba(59,130,246,0.2)"};
+          background: ${isNight
+            ? "rgba(255,255,255,0.08)"
+            : "rgba(255,255,255,0.9)"};
+          color: ${isNight ? "#e2e8f0" : "#0f172a"};
+          font-weight: 600;
+          letter-spacing: 0.01em;
+          box-shadow: 0 10px 24px
+              ${isNight ? "rgba(0,0,0,0.4)" : "rgba(15,23,42,0.08)"},
+            inset 0 1px 0 ${isNight ? "rgba(255,255,255,0.08)" : "#ffffff"};
+        }
+
+        .block-card__stat-chip--muted {
+          opacity: 0.8;
+        }
+
+        .block-card__stat-chip--accent {
+          border-color: ${isNight
+            ? "rgba(129,140,248,0.35)"
+            : "rgba(129,140,248,0.45)"};
+          background: ${isNight
+            ? "rgba(99,102,241,0.16)"
+            : "rgba(129,140,248,0.16)"};
+          color: ${isNight ? "#c7d2fe" : "#312e81"};
+        }
+
+        .block-card__hero-media {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .block-card__media-frame {
+          position: relative;
+          width: 100%;
+          border-radius: ${isMobile ? "14px" : "16px"};
+          overflow: hidden;
+          background: ${isNight ? "#0f172a" : "#f8fafc"};
+          border: 1px solid
+            ${isNight ? "rgba(255,255,255,0.12)" : "rgba(59,130,246,0.2)"};
+          box-shadow: 0 20px 38px
+              ${isNight ? "rgba(0,0,0,0.45)" : "rgba(15,23,42,0.12)"},
+            inset 0 1px 0 ${isNight ? "rgba(255,255,255,0.08)" : "#ffffff"};
+          min-height: ${isMobile ? "220px" : "280px"};
+          aspect-ratio: ${isMobile ? "4 / 3" : "16 / 10"};
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+        }
+
+        .block-card__media-frame img {
+          object-fit: ${isMobile ? "cover" : "contain"};
+        }
+
+        .block-card__media-overlay {
+          position: absolute;
+          inset: auto 0 0 0;
+          padding: ${isMobile ? "0.55rem 0.85rem" : "0.75rem 1rem"};
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.75rem;
+          background: linear-gradient(
+            180deg,
+            rgba(0, 0, 0, 0.05) 0%,
+            ${isNight ? "rgba(15,23,42,0.7)" : "rgba(15,23,42,0.42)"} 100%
+          );
+          backdrop-filter: blur(6px);
+          color: #e2e8f0;
+        }
+
+        .block-card__media-label {
+          letter-spacing: 0.08em;
+          font-size: ${isMobile ? "0.78rem" : "0.85rem"};
+          text-transform: uppercase;
+          opacity: 0.9;
+        }
+
+        .block-card__media-cta {
+          box-shadow: 0 12px 28px
+            ${isNight ? "rgba(0,0,0,0.35)" : "rgba(15,23,42,0.08)"};
+          border: none;
+          font-weight: 700;
+          padding-inline: ${isMobile ? "0.85rem" : "1.1rem"};
+        }
+
+        .block-card__media-shadow {
+          position: absolute;
+          inset: -12px;
+          border-radius: ${isMobile ? "18px" : "22px"};
+          background: radial-gradient(
+            circle at 50% 50%,
+            ${isNight ? "rgba(99,102,241,0.18)" : "rgba(59,130,246,0.18)"},
+            transparent 60%
+          );
+          filter: blur(30px);
+          opacity: 0.7;
+          pointer-events: none;
+        }
+
+        .blog-card__body {
+          background: ${isNight ? "rgba(17,24,39,0.92)" : "#ffffff"};
+        }
+
         .blog-card__header {
           width: 100%;
         }
@@ -2223,6 +2461,8 @@ export default function BlogCard({
         .blog-card__menu {
           z-index: 2;
           position: relative;
+          margin-left: auto;
+          display: inline-flex;
         }
 
         .blog-card__menu-dots {
