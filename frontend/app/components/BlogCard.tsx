@@ -320,7 +320,6 @@ export default function BlogCard({
   const isContentLong = (blog.content ?? "").length > 240;
   const collapsedLines = isMobile ? 3 : 5;
   const collapsedMaxHeight = `${(1.65 * collapsedLines).toFixed(1)}em`;
-  const actionButtonPadding = isMobile ? "px-2 py-1" : "px-3 py-2";
 
   const coverImageBaseStyle = useMemo(
     () => buildImageStyle(blog.imageEdits),
@@ -1230,115 +1229,6 @@ export default function BlogCard({
               {isContentExpanded ? "Show less" : "Show more"}
             </small>
           )}
-
-          <div className="blog-card__footer d-flex flex-column flex-md-row gap-3 mt-4 align-items-start align-items-md-center w-100">
-            {isMobile ? (
-              <div className="blog-card__mobile-cta w-100">
-                <div className="blog-card__mobile-actions-grid">
-                  <button
-                    className={`btn btn-sm btn-success rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
-                    onClick={handleLikePost}
-                    disabled={hasLikedPost || !user}
-                    style={{ fontSize: "0.95rem" }}
-                  >
-                    <span>👍</span>
-                    <span className="badge bg-white text-success ms-1">
-                      {likes}
-                    </span>
-                  </button>
-
-                  <button
-                    className={`btn btn-sm btn-outline-danger rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
-                    onClick={handleDislikePost}
-                    disabled={hasDislikedPost || !user}
-                    style={{ fontSize: "0.95rem" }}
-                  >
-                    <span>👎</span>
-                    <span className="badge bg-light text-danger ms-1">
-                      {dislikes}
-                    </span>
-                  </button>
-
-                  <button
-                    className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
-                      isNight ? "btn-outline-light" : "btn-outline-secondary"
-                    }`}
-                    onClick={handleSharePost}
-                    style={{ fontSize: "0.95rem" }}
-                  >
-                    <span>⤴</span>
-                    <span>Share</span>
-                  </button>
-
-                  <button
-                    className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
-                      isNight ? "btn-outline-light" : "btn-outline-secondary"
-                    }`}
-                    onClick={handleToggleConversation}
-                    onMouseEnter={prefetchComments}
-                    onFocus={prefetchComments}
-                    style={{ fontSize: "0.95rem" }}
-                    aria-pressed={showConversation}
-                  >
-                    <span>💬</span>
-                    <span>{showConversation ? "Hide chat" : "Comments"}</span>
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="blog-card__actions d-flex flex-wrap gap-2 align-items-center">
-                  <button
-                    className={`btn btn-sm btn-success rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
-                    onClick={handleLikePost}
-                    disabled={hasLikedPost || !user}
-                    style={{ fontSize: isMobile ? "0.9rem" : undefined }}
-                  >
-                    <span>👍</span>
-                    <span className="badge bg-white text-success ms-1">
-                      {likes}
-                    </span>
-                  </button>
-
-                  <button
-                    className={`btn btn-sm btn-outline-danger rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
-                    onClick={handleDislikePost}
-                    disabled={hasDislikedPost || !user}
-                    style={{ fontSize: isMobile ? "0.9rem" : undefined }}
-                  >
-                    <span>👎</span>
-                    <span className="badge bg-light text-danger ms-1">
-                      {dislikes}
-                    </span>
-                  </button>
-                  <button
-                    className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
-                      isNight ? "btn-outline-light" : "btn-outline-secondary"
-                    }`}
-                    onClick={handleSharePost}
-                    style={{ fontSize: isMobile ? "0.9rem" : undefined }}
-                  >
-                    <span>⤴</span>
-                    <span>Share</span>
-                  </button>
-
-                  <button
-                    className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
-                      isNight ? "btn-outline-light" : "btn-outline-secondary"
-                    }`}
-                    onClick={handleToggleConversation}
-                    onMouseEnter={prefetchComments}
-                    onFocus={prefetchComments}
-                    style={{ fontSize: isMobile ? "0.9rem" : undefined }}
-                    aria-pressed={showConversation}
-                  >
-                    <span>💬</span>
-                    <span>{showConversation ? "Hide chat" : "Comments"}</span>
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
 
           {showConversation && (
             /* Comments Section */
