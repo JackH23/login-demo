@@ -155,6 +155,7 @@ export default function BlogCard({
   const replyInputRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const menuDropdownRef = useRef<HTMLDivElement | null>(null);
+  const lastCommentFetchRef = useRef<number>(0);
 
   const { data: knownUsers } = useCachedApi<AuthorData[]>(
     user ? "/api/users" : null,
@@ -302,6 +303,17 @@ export default function BlogCard({
     router.push(`/user/${encodeURIComponent(username)}`);
   };
 
+  const prefetchComments = useCallback(() => {
+    if (!blog._id) return;
+
+    const now = Date.now();
+    const timeSinceLastFetch = now - lastCommentFetchRef.current;
+    if (timeSinceLastFetch < 4000) return;
+
+    lastCommentFetchRef.current = now;
+    void refreshComments();
+  }, [blog._id, refreshComments]);
+
   // Count total number of comments for the blog post
   const totalComments = comments.length;
 
@@ -391,14 +403,13 @@ export default function BlogCard({
   }, [resolveCommentAvatars, updateComments]);
 
   useEffect(() => {
-    if (!blog._id) return;
-    refreshComments();
-  }, [blog._id, refreshComments]);
+    prefetchComments();
+  }, [blog._id, prefetchComments]);
 
   useEffect(() => {
-    if (!showConversation || !blog._id) return;
-    refreshComments();
-  }, [blog._id, refreshComments, showConversation]);
+    if (!showConversation) return;
+    prefetchComments();
+  }, [prefetchComments, showConversation]);
 
   useEffect(() => {
     setShowActionsMenu(false);
@@ -1244,7 +1255,12 @@ export default function BlogCard({
                   className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
                     isNight ? "btn-outline-light" : "btn-outline-secondary"
                   }`}
-                  onClick={() => setShowConversation((prev) => !prev)}
+                  onClick={() => {
+                    if (!showConversation) prefetchComments();
+                    setShowConversation((prev) => !prev);
+                  }}
+                  onMouseEnter={prefetchComments}
+                  onFocus={prefetchComments}
                   style={{ fontSize: "0.95rem" }}
                   aria-pressed={showConversation}
                 >
@@ -1311,7 +1327,12 @@ export default function BlogCard({
                   className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
                     isNight ? "btn-outline-light" : "btn-outline-secondary"
                   }`}
-                  onClick={() => setShowConversation((prev) => !prev)}
+                  onClick={() => {
+                    if (!showConversation) prefetchComments();
+                    setShowConversation((prev) => !prev);
+                  }}
+                  onMouseEnter={prefetchComments}
+                  onFocus={prefetchComments}
                   style={{ fontSize: isMobile ? "0.9rem" : undefined }}
                   aria-pressed={showConversation}
                 >
@@ -1351,7 +1372,12 @@ export default function BlogCard({
               {totalComments > 0 && (
                 <button
                   className="btn btn-sm btn-outline-primary rounded-pill view-all-btn"
-                  onClick={() => setShowCommentsModal(true)}
+                  onClick={() => {
+                    prefetchComments();
+                    setShowCommentsModal(true);
+                  }}
+                  onMouseEnter={prefetchComments}
+                  onFocus={prefetchComments}
                 >
                   View all
                 </button>
