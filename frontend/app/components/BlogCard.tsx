@@ -33,6 +33,7 @@ interface BlogPost {
   author: string;
   likes: number;
   dislikes: number;
+  shares?: number;
   likedBy?: string[];
   dislikedBy?: string[];
 }
@@ -129,6 +130,7 @@ export default function BlogCard({
   const router = useRouter();
   const [likes, setLikes] = useState<number>(blog.likes ?? 0);
   const [dislikes, setDislikes] = useState<number>(blog.dislikes ?? 0);
+  const [shares] = useState<number>(blog.shares ?? 0);
   const [hasLikedPost, setHasLikedPost] = useState<boolean>(false);
   const [hasDislikedPost, setHasDislikedPost] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -1103,6 +1105,12 @@ export default function BlogCard({
                     >
                       <span aria-hidden={true}>👍</span>
                       <span>Like</span>
+                      <span
+                        className={statBadgeClass}
+                        aria-label={`${likes} likes`}
+                      >
+                        {likes}
+                      </span>
                     </button>
                     <button
                       type="button"
@@ -1112,6 +1120,12 @@ export default function BlogCard({
                     >
                       <span aria-hidden={true}>👎</span>
                       <span>Dislike</span>
+                      <span
+                        className={statBadgeClass}
+                        aria-label={`${dislikes} dislikes`}
+                      >
+                        {dislikes}
+                      </span>
                     </button>
                     <button
                       type="button"
@@ -1120,6 +1134,12 @@ export default function BlogCard({
                     >
                       <span aria-hidden={true}>🔗</span>
                       <span>Share</span>
+                      <span
+                        className={statBadgeClass}
+                        aria-label={`${shares} shares`}
+                      >
+                        {shares}
+                      </span>
                     </button>
                     <button
                       type="button"
@@ -1131,6 +1151,12 @@ export default function BlogCard({
                     >
                       <span aria-hidden={true}>💬</span>
                       <span>Comment</span>
+                      <span
+                        className={statBadgeClass}
+                        aria-label={`${totalComments} comments`}
+                      >
+                        {totalComments}
+                      </span>
                     </button>
                   </div>
                 </div>
