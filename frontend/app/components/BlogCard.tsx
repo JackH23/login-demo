@@ -321,6 +321,12 @@ export default function BlogCard({
   const collapsedLines = isMobile ? 3 : 5;
   const collapsedMaxHeight = `${(1.65 * collapsedLines).toFixed(1)}em`;
   const actionButtonPadding = isMobile ? "px-2 py-1" : "px-3 py-2";
+  const shouldShowSideConversation = showConversation && !isMobile;
+  const conversationSpacingClass = isMobile
+    ? "mt-3"
+    : shouldShowSideConversation
+    ? "mt-0"
+    : "mt-5";
 
   const coverImageBaseStyle = useMemo(
     () => buildImageStyle(blog.imageEdits),
@@ -892,836 +898,820 @@ export default function BlogCard({
     }
   };
 
-  return (
+  const conversationSection = (
     <div
-      className={`blog-card card border-0 shadow-lg w-100 mx-auto mb-4 position-relative ${
-        isNight ? "bg-dark text-light" : "bg-white"
+      className={`conversation-card ${conversationSpacingClass} rounded-4 p-md-4 p-3 ${
+        isNight ? "bg-secondary bg-opacity-25" : "bg-light"
       }`}
-      style={{
-        maxWidth: "960px", // Keeps the card at a more compact width
-        borderRadius: isMobile ? "16px" : "20px", // Slightly tighter rounding for a smaller footprint
-        overflow: "hidden", // Prevents content from overflowing outside card edges
-        border: `1px solid ${cardBorderColor}`, // Dynamic border color based on theme
-      }}
     >
-      {/* Header section with background gradient and author info */}
-      <div
-        className="blog-card__hero position-relative text-white"
-        style={{
-          background: headerGradient, // Dynamic background based on theme
-          padding: isMobile ? "0.65rem 0.9rem" : "1.1rem 1.35rem",
-        }}
-      >
-        <div className="blog-card__menu position-absolute top-0 end-0 m-2 m-md-3">
-          {/* MENU-DOTS */}
+      <div className="conversation-header d-flex flex-column flex-md-row gap-2 justify-content-between align-items-start align-items-md-center mb-3">
+        <div>
+          <h5 className="mb-1 d-flex align-items-center gap-2">
+            <span>💬</span>
+            <span>Conversation</span>
+          </h5>
+          <p className={`community-subtitle mb-0 small ${mutedTextClass}`}>
+            {totalComments === 0
+              ? "Be the first to start the discussion."
+              : `Join ${totalComments} ${
+                  totalComments === 1 ? "comment" : "comments"
+                } from the community.`}
+          </p>
+        </div>
+        {totalComments > 0 && (
           <button
-            type="button"
-            ref={menuButtonRef}
-            className={`blog-card__menu-dots border-0 ${
-              canManagePost ? "" : "blog-card__menu-dots--muted"
-            }`}
-            aria-label="Post actions"
-            aria-haspopup="menu"
-            aria-expanded={showActionsMenu}
-            aria-controls={`blog-card-menu-${blog._id ?? "new"}`}
-            onClick={() => setShowActionsMenu((prev) => !prev)}
+            className="btn btn-sm btn-outline-primary rounded-pill view-all-btn"
+            onClick={() => {
+              prefetchComments();
+              setShowCommentsModal(true);
+            }}
+            onMouseEnter={prefetchComments}
+            onFocus={prefetchComments}
           >
-            <span className="blog-card__menu-icon" aria-hidden={true}>
-              &#8942;
-            </span>
-            <span className="visually-hidden">Toggle actions menu</span>
+            View all
           </button>
-
-          {showActionsMenu && (
-            <>
-              <button
-                type="button"
-                className="blog-card__menu-backdrop"
-                aria-label="Close actions menu"
-                onClick={() => setShowActionsMenu(false)}
-              />
-              <div
-                ref={menuDropdownRef}
-                role="menu"
-                id={`blog-card-menu-${blog._id ?? "new"}`}
-                className={`blog-card__menu-dropdown ${
-                  isMobile
-                    ? useBottomSheet
-                      ? "blog-card__menu-dropdown--mobile-sheet"
-                      : "blog-card__menu-dropdown--mobile"
-                    : "blog-card__menu-dropdown--desktop"
-                } ${isNight ? "is-dark" : "is-light"}`}
-                data-open={showActionsMenu}
-              >
-                {/* DELETE POST */}
-                <div className="blog-card__menu-list" role="none">
-                  <button
-                    type="button"
-                    className="blog-card__menu-item blog-card__menu-item--danger"
-                    role="menuitem"
-                    onClick={() => {
-                      setShowActionsMenu(false);
-                      setShowDeleteModal(true);
-                    }}
-                  >
-                    <span
-                      aria-hidden={true}
-                      className="blog-card__menu-item-icon"
-                    >
-                      🗑️
-                    </span>
-                    <div className="blog-card__menu-item-copy">
-                      <span className="blog-card__menu-item-title">
-                        Delete post
-                      </span>
-                      <span className="blog-card__menu-item-subtitle">
-                        Permanently remove this post
-                      </span>
-                    </div>
-                  </button>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-        {/* Row: author avatar + title + author name */}
-        <div
-          className="blog-card__header d-flex flex-column gap-2 gap-md-3 align-items-start text-start"
-          style={{
-            gap: isMobile ? "0.55rem" : "0.9rem",
-          }}
-        >
-          <div className="blog-card__author-row d-flex align-items-center w-100 gap-3 flex-wrap">
-            <div className="blog-card__author-info d-flex align-items-center gap-3">
-              {/* If author has an image, display it */}
-              <button
-                className="blog-card__avatar p-0 border-0 bg-transparent"
-                aria-label={
-                  isProfileNavigable
-                    ? `View ${displayAuthor}'s profile`
-                    : undefined
-                }
-                onClick={isProfileNavigable ? openAuthorProfile : undefined}
-                disabled={!isProfileNavigable}
-                style={{ cursor: isProfileNavigable ? "pointer" : "default" }}
-                disabled={!displayAuthor}
-              >
-                {author?.image ? (
-                  <img
-                    src={author.image}
-                    alt={author.username}
-                    className="rounded-circle border border-3 border-white"
-                    style={{
-                      width: isMobile ? "40px" : "48px", // Avatar width
-                      height: isMobile ? "40px" : "48px", // Avatar height
-                      objectFit: "cover", // Ensures image fills the circle without distortion
-                    }}
-                  />
-                ) : (
-                  <div
-                    className="rounded-circle bg-white text-primary fw-semibold d-flex align-items-center justify-content-center"
-                    style={{
-                      width: isMobile ? "40px" : "48px",
-                      height: isMobile ? "40px" : "48px",
-                    }}
-                  >
-                    {authorInitial}
-                  </div>
-                )}
-              </button>
-
-              <div className="blog-card__author-meta d-flex align-items-center gap-2 text-start">
-                <span className="small text-white-50">By</span>
-                <button
-                  type="button"
-                  className="btn btn-link p-0 align-baseline fw-semibold text-white text-start"
-                  onClick={openAuthorProfile}
-                  disabled={!displayAuthor}
-                >
-                  {displayAuthor || "Unknown"}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Blog title and author name section */}
-          <div className="blog-card__title w-100">
-            {/* Blog title */}
-            <h3
-              className="mb-1 fw-bold"
-              style={{
-                fontSize: isMobile ? "1.05rem" : undefined,
-                lineHeight: 1.15,
-              }}
-            >
-              {blog.title}
-            </h3>
-          </div>
-
-          {!isMobile && (
-            <div className="blog-card__stats d-flex flex-wrap align-items-center justify-content-center gap-2 mt-2 mt-md-0">
-              {/* Display like count */}
-              <span className={statBadgeClass}>❤️ {likes}</span>
-              {/* Display dislike count */}
-              <span className={statBadgeClass}>👎 {dislikes}</span>
-              {/* Display comment count */}
-              <span className={statBadgeClass}>💬 {totalComments}</span>
-            </div>
-          )}
-        </div>
+        )}
       </div>
 
-      {blog.image && (
+      {comments.length === 0 ? (
         <div
-          className="blog-card__media position-relative overflow-hidden"
+          className={`p-4 rounded-4 text-center ${mutedTextClass}`}
           style={{
-            cursor: "pointer",
-            width: "100%",
-            maxHeight: isMobile ? "320px" : "360px",
-            minHeight: isMobile ? "280px" : undefined,
-            aspectRatio: isMobile ? "4 / 3" : "16 / 9",
-            backgroundColor: isNight ? "#0f172a" : "#f8fafc",
-            borderBottomLeftRadius: "0px",
-            borderBottomRightRadius: "0px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            border: `2px dashed ${
+              isNight ? "rgba(255,255,255,0.25)" : "rgba(59,130,246,0.35)"
+            }`,
           }}
         >
-          {/* Image container section with clickable behavior */}
-          <img
-            src={blog.image}
-            alt="Blog Visual"
-            className="card-img-top"
-            style={coverImageStyle}
-            onClick={() => setShowImageModal(true)}
-          />
-
-          {/* Transparent gradient overlay for visual depth */}
-          <div
-            className="position-absolute top-0 start-0 w-100 h-100"
-            style={{
-              pointerEvents: "none",
-              background:
-                "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.35) 100%)",
-            }}
-          />
-
-          {/* Bottom-right floating badge prompting user interaction */}
-          {!isMobile && (
-            <button
-              type="button"
-              className="blog-card__expand position-absolute bottom-0 end-0 m-2 m-md-3 border-0 bg-transparent p-0"
-              onClick={() => setShowImageModal(true)}
-              aria-label="Expand image"
-            >
-              <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-2 py-1 px-md-3 py-md-2 d-flex align-items-center gap-2">
-                <span className="tap-to-expand" aria-hidden="true">
-                  🔍
-                </span>
-                <span className="tap-to-expand">Tap to expand</span>
-              </span>
-            </button>
-          )}
+          <p className="mb-0">No comments yet. Share your thoughts below!</p>
         </div>
-      )}
+      ) : (
+        <div className="conversation-comment-wrapper mb-3">
+          <ul className="conversation-comment-list list-unstyled mb-0">
+            {(showAllComments ? comments : comments.slice(-3)).map(
+              (comment, idx) => {
+                const commentAvatar = resolveAvatar(
+                  comment.authorImage,
+                  comment.author
+                );
+                const replyKey = comment._id ?? `local-${idx}`;
+                const isCommentPending = comment.isPending || !comment._id;
+                const isReplySending = replySubmittingId === replyKey;
+                const canSendReply = Boolean(
+                  user &&
+                    comment._id &&
+                    comment.newReply.trim() &&
+                    !isReplySending
+                );
 
-      {blog.image && isMobile && (
-        <div className="px-3 pb-3">
-          <button
-            type="button"
-            className="blog-card__expand w-100 border-0 bg-transparent p-0"
-            onClick={() => setShowImageModal(true)}
-            aria-label="Expand image"
-          >
-            <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-3 py-2 w-100 d-flex align-items-center justify-content-center gap-2">
-              <span className="tap-to-expand" aria-hidden="true">
-                🔍
-              </span>
-              <span className="tap-to-expand">Tap to expand</span>
-            </span>
-          </button>
-        </div>
-      )}
+                return (
+                  <li
+                    key={comment._id ?? idx}
+                    className={`conversation-comment-item rounded-4 shadow-sm ${
+                      isNight
+                        ? "bg-dark bg-opacity-75 text-white"
+                        : "bg-white"
+                    }`}
+                  >
+                    <div className="conversation-comment">
+                      <div className="conversation-comment__main">
+                        <div className="conversation-comment__avatar">
+                          <button
+                            type="button"
+                            className="p-0 border-0 bg-transparent"
+                            onClick={() => openUserProfile(comment.author)}
+                            aria-label={`View ${comment.author}'s profile`}
+                          >
+                            {commentAvatar ? (
+                              <img
+                                src={commentAvatar}
+                                alt={`${comment.author}'s avatar`}
+                                className="conversation-comment__avatar-image"
+                              />
+                            ) : (
+                              <span
+                                className={`conversation-comment__avatar-fallback ${
+                                  isNight
+                                    ? "bg-secondary text-white"
+                                    : "bg-primary bg-opacity-10 text-primary"
+                                }`}
+                              >
+                                {comment.author?.charAt(0)?.toUpperCase() ||
+                                  "?"}
+                              </span>
+                            )}
+                          </button>
+                        </div>
 
-      <div
-        className="blog-card__body card-body p-3"
-        style={{
-          padding: isMobile
-            ? blog.image
-              ? "0.5rem 0.9rem 0.95rem"
-              : "0.75rem 0.9rem"
-            : "1rem 1.25rem",
-        }}
-      >
-        <p
-          className="card-text fs-6 mb-2"
-          style={contentStyle}
-          onClick={handleToggleContent}
-          onKeyDown={(event) => {
-            if (!isContentLong) return;
-            if (event.key === "Enter" || event.key === " ") {
-              event.preventDefault();
-              handleToggleContent();
-            }
-          }}
-          role={isContentLong ? "button" : undefined}
-          tabIndex={isContentLong ? 0 : undefined}
-          aria-expanded={isContentLong ? isContentExpanded : undefined}
-          aria-label={
-            isContentLong
-              ? isContentExpanded
-                ? "Collapse blog content"
-                : "Expand blog content"
-              : undefined
-          }
-          title={
-            isContentLong
-              ? isContentExpanded
-                ? "Click to collapse"
-                : "Click to read more"
-              : undefined
-          }
-        >
-          {blog.content}
-        </p>
-        {isContentLong && (
-          <small
-            className={`d-inline-block ${mutedTextClass}`}
-            role="presentation"
-            aria-hidden="true"
-          >
-            {isContentExpanded ? "Show less" : "Show more"}
-          </small>
-        )}
+                        <div className="conversation-comment__body">
+                          <div className="conversation-comment__meta">
+                            <span
+                              className={`conversation-comment__author ${
+                                isNight
+                                  ? "text-primary text-opacity-75"
+                                  : "text-primary"
+                              }`}
+                              role="button"
+                              tabIndex={0}
+                              onClick={() => openUserProfile(comment.author)}
+                              onKeyDown={(event) => {
+                                if (
+                                  event.key === "Enter" ||
+                                  event.key === " "
+                                ) {
+                                  event.preventDefault();
+                                  openUserProfile(comment.author);
+                                }
+                              }}
+                            >
+                              {comment.author}
+                            </span>
+                          </div>
 
-        <div className="blog-card__footer d-flex flex-column flex-md-row gap-3 mt-4 align-items-start align-items-md-center w-100">
-          {isMobile ? (
-            <div className="blog-card__mobile-cta w-100">
-              <div className="blog-card__mobile-actions-grid">
-                <button
-                  className={`btn btn-sm btn-success rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
-                  onClick={handleLikePost}
-                  disabled={hasLikedPost || !user}
-                  style={{ fontSize: "0.95rem" }}
-                >
-                  <span>👍</span>
-                  <span className="badge bg-white text-success ms-1">
-                    {likes}
-                  </span>
-                </button>
+                          <p
+                            className={`conversation-comment__text ${
+                              isNight ? "text-light" : "text-body"
+                            }`}
+                          >
+                            {comment.text}
+                          </p>
 
-                <button
-                  className={`btn btn-sm btn-outline-danger rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
-                  onClick={handleDislikePost}
-                  disabled={hasDislikedPost || !user}
-                  style={{ fontSize: "0.95rem" }}
-                >
-                  <span>👎</span>
-                  <span className="badge bg-light text-danger ms-1">
-                    {dislikes}
-                  </span>
-                </button>
+                          <div className="conversation-comment__actions">
+                            <button
+                              type="button"
+                              className="reaction-button"
+                              onClick={() => handleLikeComment(idx)}
+                              disabled={
+                                !user ||
+                                isCommentPending ||
+                                comment.likedBy?.includes(user.username) ||
+                                comment.dislikedBy?.includes(user.username)
+                              }
+                            >
+                              👍{" "}
+                              <span className="reaction-count">
+                                {comment.likes}
+                              </span>
+                            </button>
+                            <button
+                              type="button"
+                              className="reaction-button"
+                              onClick={() => handleDislikeComment(idx)}
+                              disabled={
+                                !user ||
+                                isCommentPending ||
+                                comment.likedBy?.includes(user.username) ||
+                                comment.dislikedBy?.includes(user.username)
+                              }
+                            >
+                              👎{" "}
+                              <span className="reaction-count">
+                                {comment.dislikes}
+                              </span>
+                            </button>
+                            <button
+                              type="button"
+                              className="reaction-button"
+                              onClick={() => toggleReplyInput(idx)}
+                              disabled={
+                                !user || isCommentPending || isReplySending
+                              }
+                            >
+                              💬 Reply
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
-                <button
-                  className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
-                    isNight ? "btn-outline-light" : "btn-outline-secondary"
-                  }`}
-                  onClick={() => {
-                    const shareText = `${blog.title}\n\n${blog.content}\n\nShared from Blog App`;
-                    const shareUrl = window.location.href;
-                    if (navigator.share) {
-                      navigator
-                        .share({
-                          title: blog.title,
-                          text: shareText,
-                          url: shareUrl,
-                        })
-                        .catch((err) => console.error("Share failed", err));
-                    } else {
-                      navigator.clipboard.writeText(
-                        `${shareText}\n\n${shareUrl}`
-                      );
-                      alert("Link copied to clipboard!");
-                    }
-                  }}
-                  style={{ fontSize: "0.95rem" }}
-                >
-                  <span>⤴</span>
-                  <span>Share</span>
-                </button>
+                    {/* Replies */}
+                    {comment.replies.length > 0 && (
+                      <ul className="mt-2 ps-3 list-unstyled conversation-reply-list">
+                        {comment.replies.map((reply, rIdx) => {
+                          const replyAvatar = resolveAvatar(
+                            reply.authorImage,
+                            reply.author
+                          );
 
-                <button
-                  className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
-                    isNight ? "btn-outline-light" : "btn-outline-secondary"
-                  }`}
-                  onClick={() => {
-                    if (!showConversation) prefetchComments();
-                    setShowConversation((prev) => !prev);
-                  }}
-                  onMouseEnter={prefetchComments}
-                  onFocus={prefetchComments}
-                  style={{ fontSize: "0.95rem" }}
-                  aria-pressed={showConversation}
-                >
-                  <span>💬</span>
-                  <span>{showConversation ? "Hide chat" : "Comments"}</span>
-                </button>
-              </div>
-            </div>
-          ) : (
-            <>
-              <div className="blog-card__actions d-flex flex-wrap gap-2 align-items-center">
-                <button
-                  className={`btn btn-sm btn-success rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
-                  onClick={handleLikePost}
-                  disabled={hasLikedPost || !user}
-                  style={{ fontSize: isMobile ? "0.9rem" : undefined }}
-                >
-                  <span>👍</span>
-                  <span className="badge bg-white text-success ms-1">
-                    {likes}
-                  </span>
-                </button>
-
-                <button
-                  className={`btn btn-sm btn-outline-danger rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
-                  onClick={handleDislikePost}
-                  disabled={hasDislikedPost || !user}
-                  style={{ fontSize: isMobile ? "0.9rem" : undefined }}
-                >
-                  <span>👎</span>
-                  <span className="badge bg-light text-danger ms-1">
-                    {dislikes}
-                  </span>
-                </button>
-                <button
-                  className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
-                    isNight ? "btn-outline-light" : "btn-outline-secondary"
-                  }`}
-                  onClick={() => {
-                    const shareText = `${blog.title}\n\n${blog.content}\n\nShared from Blog App`;
-                    const shareUrl = window.location.href;
-                    if (navigator.share) {
-                      navigator
-                        .share({
-                          title: blog.title,
-                          text: shareText,
-                          url: shareUrl,
-                        })
-                        .catch((err) => console.error("Share failed", err));
-                    } else {
-                      navigator.clipboard.writeText(
-                        `${shareText}\n\n${shareUrl}`
-                      );
-                      alert("Link copied to clipboard!");
-                    }
-                  }}
-                  style={{ fontSize: isMobile ? "0.9rem" : undefined }}
-                >
-                  <span>⤴</span>
-                  <span>Share</span>
-                </button>
-
-                <button
-                  className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
-                    isNight ? "btn-outline-light" : "btn-outline-secondary"
-                  }`}
-                  onClick={() => {
-                    if (!showConversation) prefetchComments();
-                    setShowConversation((prev) => !prev);
-                  }}
-                  onMouseEnter={prefetchComments}
-                  onFocus={prefetchComments}
-                  style={{ fontSize: isMobile ? "0.9rem" : undefined }}
-                  aria-pressed={showConversation}
-                >
-                  <span>💬</span>
-                  <span>{showConversation ? "Hide chat" : "Comments"}</span>
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-
-        {showConversation && (
-          /* Comments Section */
-          <div
-            className={`conversation-card ${
-              isMobile ? "mt-3" : "mt-5"
-            } rounded-4 p-md-4 p-3 ${
-              isNight ? "bg-secondary bg-opacity-25" : "bg-light"
-            }`}
-          >
-            <div className="conversation-header d-flex flex-column flex-md-row gap-2 justify-content-between align-items-start align-items-md-center mb-3">
-              <div>
-                <h5 className="mb-1 d-flex align-items-center gap-2">
-                  <span>💬</span>
-                  <span>Conversation</span>
-                </h5>
-                <p
-                  className={`community-subtitle mb-0 small ${mutedTextClass}`}
-                >
-                  {totalComments === 0
-                    ? "Be the first to start the discussion."
-                    : `Join ${totalComments} ${
-                        totalComments === 1 ? "comment" : "comments"
-                      } from the community.`}
-                </p>
-              </div>
-              {totalComments > 0 && (
-                <button
-                  className="btn btn-sm btn-outline-primary rounded-pill view-all-btn"
-                  onClick={() => {
-                    prefetchComments();
-                    setShowCommentsModal(true);
-                  }}
-                  onMouseEnter={prefetchComments}
-                  onFocus={prefetchComments}
-                >
-                  View all
-                </button>
-              )}
-            </div>
-
-            {comments.length === 0 ? (
-              <div
-                className={`p-4 rounded-4 text-center ${mutedTextClass}`}
-                style={{
-                  border: `2px dashed ${
-                    isNight ? "rgba(255,255,255,0.25)" : "rgba(59,130,246,0.35)"
-                  }`,
-                }}
-              >
-                <p className="mb-0">
-                  No comments yet. Share your thoughts below!
-                </p>
-              </div>
-            ) : (
-              <div className="conversation-comment-wrapper mb-3">
-                <ul className="conversation-comment-list list-unstyled mb-0">
-                  {(showAllComments ? comments : comments.slice(-3)).map(
-                    (comment, idx) => {
-                      const commentAvatar = resolveAvatar(
-                        comment.authorImage,
-                        comment.author
-                      );
-                      const replyKey = comment._id ?? `local-${idx}`;
-                      const isCommentPending =
-                        comment.isPending || !comment._id;
-                      const isReplySending = replySubmittingId === replyKey;
-                      const canSendReply = Boolean(
-                        user &&
-                          comment._id &&
-                          comment.newReply.trim() &&
-                          !isReplySending
-                      );
-
-                      return (
-                        <li
-                          key={comment._id ?? idx}
-                          className={`conversation-comment-item rounded-4 shadow-sm ${
-                            isNight
-                              ? "bg-dark bg-opacity-75 text-white"
-                              : "bg-white"
-                          }`}
-                        >
-                          <div className="conversation-comment">
-                            <div className="conversation-comment__main">
-                              <div className="conversation-comment__avatar">
-                                <button
-                                  type="button"
-                                  className="p-0 border-0 bg-transparent"
-                                  onClick={() =>
-                                    openUserProfile(comment.author)
-                                  }
-                                  aria-label={`View ${comment.author}'s profile`}
-                                >
-                                  {commentAvatar ? (
-                                    <img
-                                      src={commentAvatar}
-                                      alt={`${comment.author}'s avatar`}
-                                      className="conversation-comment__avatar-image"
-                                    />
-                                  ) : (
-                                    <span
-                                      className={`conversation-comment__avatar-fallback ${
-                                        isNight
-                                          ? "bg-secondary text-white"
-                                          : "bg-primary bg-opacity-10 text-primary"
-                                      }`}
-                                    >
-                                      {comment.author
-                                        ?.charAt(0)
-                                        ?.toUpperCase() || "?"}
-                                    </span>
-                                  )}
-                                </button>
-                              </div>
-
-                              <div className="conversation-comment__body">
-                                <div className="conversation-comment__meta">
+                          return (
+                            <li
+                              key={reply.tempId ?? rIdx}
+                              className={`conversation-reply d-flex align-items-start gap-2 ${
+                                theme === "night" ? "text-light" : "text-muted"
+                              } small mb-2`}
+                            >
+                              <button
+                                type="button"
+                                className="conversation-reply__avatar p-0 border-0 bg-transparent"
+                                onClick={() => openUserProfile(reply.author)}
+                                aria-label={`View ${reply.author}'s profile`}
+                              >
+                                {replyAvatar ? (
+                                  <img
+                                    src={replyAvatar}
+                                    alt={`${reply.author}'s avatar`}
+                                    className="rounded-circle conversation-reply__avatar-image"
+                                  />
+                                ) : (
                                   <span
-                                    className={`conversation-comment__author ${
+                                    className={`conversation-reply__avatar-fallback d-inline-flex align-items-center justify-content-center rounded-circle ${
                                       isNight
-                                        ? "text-primary text-opacity-75"
-                                        : "text-primary"
+                                        ? "bg-secondary text-white"
+                                        : "bg-primary bg-opacity-10 text-primary"
                                     }`}
-                                    role="button"
-                                    tabIndex={0}
-                                    onClick={() =>
-                                      openUserProfile(comment.author)
-                                    }
+                                  >
+                                    {reply.author?.charAt(0)?.toUpperCase() ||
+                                      "?"}
+                                  </span>
+                                )}
+                              </button>
+
+                              <div className="conversation-reply__body">
+                                <div className="conversation-reply__header">
+                                  <button
+                                    type="button"
+                                    className="fw-semibold p-0 border-0 bg-transparent text-start conversation-reply__author"
+                                    onClick={() => openUserProfile(reply.author)}
                                     onKeyDown={(event) => {
                                       if (
                                         event.key === "Enter" ||
                                         event.key === " "
                                       ) {
                                         event.preventDefault();
-                                        openUserProfile(comment.author);
+                                        openUserProfile(reply.author);
                                       }
                                     }}
+                                    aria-label={`View ${reply.author}'s profile`}
                                   >
-                                    {comment.author}
-                                  </span>
+                                    {reply.author}
+                                  </button>
                                 </div>
-
-                                <p
-                                  className={`conversation-comment__text ${
-                                    isNight ? "text-light" : "text-body"
-                                  }`}
+                                <div
+                                  className="conversation-reply__text conversation-reply__bubble text-muted"
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={() =>
+                                    setReplyInputVisibility(idx, true)
+                                  }
+                                  onKeyDown={(event) => {
+                                    if (
+                                      event.key === "Enter" ||
+                                      event.key === " "
+                                    ) {
+                                      event.preventDefault();
+                                      setReplyInputVisibility(idx, true);
+                                    }
+                                  }}
                                 >
-                                  {comment.text}
-                                </p>
-
-                                <div className="conversation-comment__actions">
-                                  <button
-                                    type="button"
-                                    className="reaction-button"
-                                    onClick={() => handleLikeComment(idx)}
-                                    disabled={
-                                      !user ||
-                                      isCommentPending ||
-                                      comment.likedBy?.includes(
-                                        user.username
-                                      ) ||
-                                      comment.dislikedBy?.includes(
-                                        user.username
-                                      )
-                                    }
-                                  >
-                                    👍{" "}
-                                    <span className="reaction-count">
-                                      {comment.likes}
-                                    </span>
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="reaction-button"
-                                    onClick={() => handleDislikeComment(idx)}
-                                    disabled={
-                                      !user ||
-                                      isCommentPending ||
-                                      comment.likedBy?.includes(
-                                        user.username
-                                      ) ||
-                                      comment.dislikedBy?.includes(
-                                        user.username
-                                      )
-                                    }
-                                  >
-                                    👎{" "}
-                                    <span className="reaction-count">
-                                      {comment.dislikes}
-                                    </span>
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="reaction-button"
-                                    onClick={() => toggleReplyInput(idx)}
-                                    disabled={
-                                      !user ||
-                                      isCommentPending ||
-                                      isReplySending
-                                    }
-                                  >
-                                    💬 Reply
-                                  </button>
+                                  {reply.text}
                                 </div>
+                                {reply.isPending && (
+                                  <span className="badge bg-secondary bg-opacity-25 text-secondary ms-auto">
+                                    Sending...
+                                  </span>
+                                )}
                               </div>
-                            </div>
-                          </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
 
-                          {/* Replies */}
-                          {comment.replies.length > 0 && (
-                            <ul className="mt-2 ps-3 list-unstyled conversation-reply-list">
-                              {comment.replies.map((reply, rIdx) => {
-                                const replyAvatar = resolveAvatar(
-                                  reply.authorImage,
-                                  reply.author
-                                );
-
-                                return (
-                                  <li
-                                    key={reply.tempId ?? rIdx}
-                                    className={`conversation-reply d-flex align-items-start gap-2 ${
-                                      theme === "night"
-                                        ? "text-light"
-                                        : "text-muted"
-                                    } small mb-2`}
-                                  >
-                                    <button
-                                      type="button"
-                                      className="conversation-reply__avatar p-0 border-0 bg-transparent"
-                                      onClick={() =>
-                                        openUserProfile(reply.author)
-                                      }
-                                      aria-label={`View ${reply.author}'s profile`}
-                                    >
-                                      {replyAvatar ? (
-                                        <img
-                                          src={replyAvatar}
-                                          alt={`${reply.author}'s avatar`}
-                                          className="rounded-circle conversation-reply__avatar-image"
-                                        />
-                                      ) : (
-                                        <span
-                                          className={`conversation-reply__avatar-fallback d-inline-flex align-items-center justify-content-center rounded-circle ${
-                                            isNight
-                                              ? "bg-secondary text-white"
-                                              : "bg-primary bg-opacity-10 text-primary"
-                                          }`}
-                                        >
-                                          {reply.author
-                                            ?.charAt(0)
-                                            ?.toUpperCase() || "?"}
-                                        </span>
-                                      )}
-                                    </button>
-
-                                    <div className="conversation-reply__body">
-                                      <div className="conversation-reply__header">
-                                        <button
-                                          type="button"
-                                          className="fw-semibold p-0 border-0 bg-transparent text-start conversation-reply__author"
-                                          onClick={() =>
-                                            openUserProfile(reply.author)
-                                          }
-                                          onKeyDown={(event) => {
-                                            if (
-                                              event.key === "Enter" ||
-                                              event.key === " "
-                                            ) {
-                                              event.preventDefault();
-                                              openUserProfile(reply.author);
-                                            }
-                                          }}
-                                          aria-label={`View ${reply.author}'s profile`}
-                                        >
-                                          {reply.author}
-                                        </button>
-                                      </div>
-                                      <div
-                                        className="conversation-reply__text conversation-reply__bubble text-muted"
-                                        role="button"
-                                        tabIndex={0}
-                                        onClick={() =>
-                                          setReplyInputVisibility(idx, true)
-                                        }
-                                        onKeyDown={(event) => {
-                                          if (
-                                            event.key === "Enter" ||
-                                            event.key === " "
-                                          ) {
-                                            event.preventDefault();
-                                            setReplyInputVisibility(idx, true);
-                                          }
-                                        }}
-                                      >
-                                        {reply.text}
-                                      </div>
-                                      {reply.isPending && (
-                                        <span className="badge bg-secondary bg-opacity-25 text-secondary ms-auto">
-                                          Sending...
-                                        </span>
-                                      )}
-                                    </div>
-                                  </li>
-                                );
-                              })}
-                            </ul>
-                          )}
-
-                          {/* Reply Input */}
-                          {comment.showReplyInput && (
-                            <div
-                              className="d-flex gap-2 mt-2 align-items-center reply-input-row"
-                              ref={(el) => {
-                                const key = comment._id ?? `local-${idx}`;
-                                replyInputRefs.current[key] = el;
-                              }}
-                            >
-                              <input
-                                type="text"
-                                className="form-control form-control-sm reply-inline-input"
-                                placeholder={
-                                  user
-                                    ? "Write a reply..."
-                                    : "Sign in to reply to this comment"
-                                }
-                                value={comment.newReply}
-                                onChange={(e) =>
-                                  handleReplyChange(idx, e.target.value)
-                                }
-                                disabled={isReplySending || !user}
-                              />
-                              <button
-                                className="btn btn-sm btn-primary reply-inline-send"
-                                onClick={() => handleReplySubmit(idx)}
-                                disabled={!canSendReply}
-                              >
-                                {isReplySending ? "Sending..." : "Send"}
-                              </button>
-                            </div>
-                          )}
-                        </li>
-                      );
-                    }
-                  )}
-                </ul>
-              </div>
+                    {/* Reply Input */}
+                    {comment.showReplyInput && (
+                      <div
+                        className="d-flex gap-2 mt-2 align-items-center reply-input-row"
+                        ref={(el) => {
+                          const key = comment._id ?? `local-${idx}`;
+                          replyInputRefs.current[key] = el;
+                        }}
+                      >
+                        <input
+                          type="text"
+                          className="form-control form-control-sm reply-inline-input"
+                          placeholder={
+                            user
+                              ? "Write a reply..."
+                              : "Sign in to reply to this comment"
+                          }
+                          value={comment.newReply}
+                          onChange={(e) =>
+                            handleReplyChange(idx, e.target.value)
+                          }
+                          disabled={isReplySending || !user}
+                        />
+                        <button
+                          className="btn btn-sm btn-primary reply-inline-send"
+                          onClick={() => handleReplySubmit(idx)}
+                          disabled={!canSendReply}
+                        >
+                          {isReplySending ? "Sending..." : "Send"}
+                        </button>
+                      </div>
+                    )}
+                  </li>
+                );
+              }
             )}
+          </ul>
+        </div>
+      )}
 
-            {/* Add Comment Input */}
-            <div className="comment-input-panel">
-              <label className="form-label mb-2 fw-semibold text-muted small d-none d-md-block">
-                Join the conversation
-              </label>
-              <div className="comment-input-group">
-                <input
-                  type="text"
-                  className="form-control comment-input"
-                  placeholder={
-                    user
-                      ? "Write a comment..."
-                      : "Sign in to join the conversation"
-                  }
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  disabled={isSubmittingComment || !user}
-                />
+      {/* Add Comment Input */}
+      <div className="comment-input-panel">
+        <label className="form-label mb-2 fw-semibold text-muted small d-none d-md-block">
+          Join the conversation
+        </label>
+        <div className="comment-input-group">
+          <input
+            type="text"
+            className="form-control comment-input"
+            placeholder={
+              user
+                ? "Write a comment..."
+                : "Sign in to join the conversation"
+            }
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            disabled={isSubmittingComment || !user}
+          />
+          <button
+            className="btn btn-primary comment-send-btn"
+            onClick={handleCommentSubmit}
+            disabled={!newComment.trim() || !user || isSubmittingComment}
+          >
+            {isSubmittingComment ? "Sending..." : "Send"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div
+      className={`blog-card__shell mb-4 ${
+        shouldShowSideConversation ? "is-split" : ""
+      }`}
+    >
+      <div
+        className={`blog-card card border-0 shadow-lg w-100 mx-auto position-relative ${
+          shouldShowSideConversation ? "blog-card--shifted" : ""
+        } ${isNight ? "bg-dark text-light" : "bg-white"}`}
+        style={{
+          maxWidth: "960px", // Keeps the card at a more compact width
+          borderRadius: isMobile ? "16px" : "20px", // Slightly tighter rounding for a smaller footprint
+          overflow: "hidden", // Prevents content from overflowing outside card edges
+          border: `1px solid ${cardBorderColor}`, // Dynamic border color based on theme
+        }}
+      >
+        {/* Header section with background gradient and author info */}
+        <div
+          className="blog-card__hero position-relative text-white"
+          style={{
+            background: headerGradient, // Dynamic background based on theme
+            padding: isMobile ? "0.65rem 0.9rem" : "1.1rem 1.35rem",
+          }}
+        >
+          <div className="blog-card__menu position-absolute top-0 end-0 m-2 m-md-3">
+            {/* MENU-DOTS */}
+            <button
+              type="button"
+              ref={menuButtonRef}
+              className={`blog-card__menu-dots border-0 ${
+                canManagePost ? "" : "blog-card__menu-dots--muted"
+              }`}
+              aria-label="Post actions"
+              aria-haspopup="menu"
+              aria-expanded={showActionsMenu}
+              aria-controls={`blog-card-menu-${blog._id ?? "new"}`}
+              onClick={() => setShowActionsMenu((prev) => !prev)}
+            >
+              <span className="blog-card__menu-icon" aria-hidden={true}>
+                &#8942;
+              </span>
+              <span className="visually-hidden">Toggle actions menu</span>
+            </button>
+
+            {showActionsMenu && (
+              <>
                 <button
-                  className="btn btn-primary comment-send-btn"
-                  onClick={handleCommentSubmit}
-                  disabled={!newComment.trim() || !user || isSubmittingComment}
+                  type="button"
+                  className="blog-card__menu-backdrop"
+                  aria-label="Close actions menu"
+                  onClick={() => setShowActionsMenu(false)}
+                />
+                <div
+                  ref={menuDropdownRef}
+                  role="menu"
+                  id={`blog-card-menu-${blog._id ?? "new"}`}
+                  className={`blog-card__menu-dropdown ${
+                    isMobile
+                      ? useBottomSheet
+                        ? "blog-card__menu-dropdown--mobile-sheet"
+                        : "blog-card__menu-dropdown--mobile"
+                      : "blog-card__menu-dropdown--desktop"
+                  } ${isNight ? "is-dark" : "is-light"}`}
+                  data-open={showActionsMenu}
                 >
-                  {isSubmittingComment ? "Sending..." : "Send"}
+                  {/* DELETE POST */}
+                  <div className="blog-card__menu-list" role="none">
+                    <button
+                      type="button"
+                      className="blog-card__menu-item blog-card__menu-item--danger"
+                      role="menuitem"
+                      onClick={() => {
+                        setShowActionsMenu(false);
+                        setShowDeleteModal(true);
+                      }}
+                    >
+                      <span
+                        aria-hidden={true}
+                        className="blog-card__menu-item-icon"
+                      >
+                        🗑️
+                      </span>
+                      <div className="blog-card__menu-item-copy">
+                        <span className="blog-card__menu-item-title">
+                          Delete post
+                        </span>
+                        <span className="blog-card__menu-item-subtitle">
+                          Permanently remove this post
+                        </span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+          {/* Row: author avatar + title + author name */}
+          <div
+            className="blog-card__header d-flex flex-column gap-2 gap-md-3 align-items-start text-start"
+            style={{
+              gap: isMobile ? "0.55rem" : "0.9rem",
+            }}
+          >
+            <div className="blog-card__author-row d-flex align-items-center w-100 gap-3 flex-wrap">
+              <div className="blog-card__author-info d-flex align-items-center gap-3">
+                {/* If author has an image, display it */}
+                <button
+                  className="blog-card__avatar p-0 border-0 bg-transparent"
+                  aria-label={
+                    isProfileNavigable
+                      ? `View ${displayAuthor}'s profile`
+                      : undefined
+                  }
+                  onClick={isProfileNavigable ? openAuthorProfile : undefined}
+                  disabled={!isProfileNavigable}
+                  style={{ cursor: isProfileNavigable ? "pointer" : "default" }}
+                  disabled={!displayAuthor}
+                >
+                  {author?.image ? (
+                    <img
+                      src={author.image}
+                      alt={author.username}
+                      className="rounded-circle border border-3 border-white"
+                      style={{
+                        width: isMobile ? "40px" : "48px", // Avatar width
+                        height: isMobile ? "40px" : "48px", // Avatar height
+                        objectFit: "cover", // Ensures image fills the circle without distortion
+                      }}
+                    />
+                  ) : (
+                    <div
+                      className="rounded-circle bg-white text-primary fw-semibold d-flex align-items-center justify-content-center"
+                      style={{
+                        width: isMobile ? "40px" : "48px",
+                        height: isMobile ? "40px" : "48px",
+                      }}
+                    >
+                      {authorInitial}
+                    </div>
+                  )}
                 </button>
+
+                <div className="blog-card__author-meta d-flex align-items-center gap-2 text-start">
+                  <span className="small text-white-50">By</span>
+                  <button
+                    type="button"
+                    className="btn btn-link p-0 align-baseline fw-semibold text-white text-start"
+                    onClick={openAuthorProfile}
+                    disabled={!displayAuthor}
+                  >
+                    {displayAuthor || "Unknown"}
+                  </button>
+                </div>
               </div>
             </div>
+
+            {/* Blog title and author name section */}
+            <div className="blog-card__title w-100">
+              {/* Blog title */}
+              <h3
+                className="mb-1 fw-bold"
+                style={{
+                  fontSize: isMobile ? "1.05rem" : undefined,
+                  lineHeight: 1.15,
+                }}
+              >
+                {blog.title}
+              </h3>
+            </div>
+
+            {!isMobile && (
+              <div className="blog-card__stats d-flex flex-wrap align-items-center justify-content-center gap-2 mt-2 mt-md-0">
+                {/* Display like count */}
+                <span className={statBadgeClass}>❤️ {likes}</span>
+                {/* Display dislike count */}
+                <span className={statBadgeClass}>👎 {dislikes}</span>
+                {/* Display comment count */}
+                <span className={statBadgeClass}>💬 {totalComments}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {blog.image && (
+          <div
+            className="blog-card__media position-relative overflow-hidden"
+            style={{
+              cursor: "pointer",
+              width: "100%",
+              maxHeight: isMobile ? "320px" : "360px",
+              minHeight: isMobile ? "280px" : undefined,
+              aspectRatio: isMobile ? "4 / 3" : "16 / 9",
+              backgroundColor: isNight ? "#0f172a" : "#f8fafc",
+              borderBottomLeftRadius: "0px",
+              borderBottomRightRadius: "0px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {/* Image container section with clickable behavior */}
+            <img
+              src={blog.image}
+              alt="Blog Visual"
+              className="card-img-top"
+              style={coverImageStyle}
+              onClick={() => setShowImageModal(true)}
+            />
+
+            {/* Transparent gradient overlay for visual depth */}
+            <div
+              className="position-absolute top-0 start-0 w-100 h-100"
+              style={{
+                pointerEvents: "none",
+                background:
+                  "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.35) 100%)",
+              }}
+            />
+
+            {/* Bottom-right floating badge prompting user interaction */}
+            {!isMobile && (
+              <button
+                type="button"
+                className="blog-card__expand position-absolute bottom-0 end-0 m-2 m-md-3 border-0 bg-transparent p-0"
+                onClick={() => setShowImageModal(true)}
+                aria-label="Expand image"
+              >
+                <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-2 py-1 px-md-3 py-md-2 d-flex align-items-center gap-2">
+                  <span className="tap-to-expand" aria-hidden="true">
+                    🔍
+                  </span>
+                  <span className="tap-to-expand">Tap to expand</span>
+                </span>
+              </button>
+            )}
           </div>
         )}
+
+        {blog.image && isMobile && (
+          <div className="px-3 pb-3">
+            <button
+              type="button"
+              className="blog-card__expand w-100 border-0 bg-transparent p-0"
+              onClick={() => setShowImageModal(true)}
+              aria-label="Expand image"
+            >
+              <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-3 py-2 w-100 d-flex align-items-center justify-content-center gap-2">
+                <span className="tap-to-expand" aria-hidden="true">
+                  🔍
+                </span>
+                <span className="tap-to-expand">Tap to expand</span>
+              </span>
+            </button>
+          </div>
+        )}
+
+        <div
+          className="blog-card__body card-body p-3"
+          style={{
+            padding: isMobile
+              ? blog.image
+                ? "0.5rem 0.9rem 0.95rem"
+                : "0.75rem 0.9rem"
+              : "1rem 1.25rem",
+          }}
+        >
+          <p
+            className="card-text fs-6 mb-2"
+            style={contentStyle}
+            onClick={handleToggleContent}
+            onKeyDown={(event) => {
+              if (!isContentLong) return;
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                handleToggleContent();
+              }
+            }}
+            role={isContentLong ? "button" : undefined}
+            tabIndex={isContentLong ? 0 : undefined}
+            aria-expanded={isContentLong ? isContentExpanded : undefined}
+            aria-label={
+              isContentLong
+                ? isContentExpanded
+                  ? "Collapse blog content"
+                  : "Expand blog content"
+                : undefined
+            }
+            title={
+              isContentLong
+                ? isContentExpanded
+                  ? "Click to collapse"
+                  : "Click to read more"
+                : undefined
+            }
+          >
+            {blog.content}
+          </p>
+          {isContentLong && (
+            <small
+              className={`d-inline-block ${mutedTextClass}`}
+              role="presentation"
+              aria-hidden="true"
+            >
+              {isContentExpanded ? "Show less" : "Show more"}
+            </small>
+          )}
+
+          <div className="blog-card__footer d-flex flex-column flex-md-row gap-3 mt-4 align-items-start align-items-md-center w-100">
+            {isMobile ? (
+              <div className="blog-card__mobile-cta w-100">
+                <div className="blog-card__mobile-actions-grid">
+                  <button
+                    className={`btn btn-sm btn-success rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
+                    onClick={handleLikePost}
+                    disabled={hasLikedPost || !user}
+                    style={{ fontSize: "0.95rem" }}
+                  >
+                    <span>👍</span>
+                    <span className="badge bg-white text-success ms-1">
+                      {likes}
+                    </span>
+                  </button>
+
+                  <button
+                    className={`btn btn-sm btn-outline-danger rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
+                    onClick={handleDislikePost}
+                    disabled={hasDislikedPost || !user}
+                    style={{ fontSize: "0.95rem" }}
+                  >
+                    <span>👎</span>
+                    <span className="badge bg-light text-danger ms-1">
+                      {dislikes}
+                    </span>
+                  </button>
+
+                  <button
+                    className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
+                      isNight ? "btn-outline-light" : "btn-outline-secondary"
+                    }`}
+                    onClick={() => {
+                      const shareText = `${blog.title}\n\n${blog.content}\n\nShared from Blog App`;
+                      const shareUrl = window.location.href;
+                      if (navigator.share) {
+                        navigator
+                          .share({
+                            title: blog.title,
+                            text: shareText,
+                            url: shareUrl,
+                          })
+                          .catch((err) => console.error("Share failed", err));
+                      } else {
+                        navigator.clipboard.writeText(
+                          `${shareText}\n\n${shareUrl}`
+                        );
+                        alert("Link copied to clipboard!");
+                      }
+                    }}
+                    style={{ fontSize: "0.95rem" }}
+                  >
+                    <span>⤴</span>
+                    <span>Share</span>
+                  </button>
+
+                  <button
+                    className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
+                      isNight ? "btn-outline-light" : "btn-outline-secondary"
+                    }`}
+                    onClick={() => {
+                      if (!showConversation) prefetchComments();
+                      setShowConversation((prev) => !prev);
+                    }}
+                    onMouseEnter={prefetchComments}
+                    onFocus={prefetchComments}
+                    style={{ fontSize: "0.95rem" }}
+                    aria-pressed={showConversation}
+                  >
+                    <span>💬</span>
+                    <span>{showConversation ? "Hide chat" : "Comments"}</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="blog-card__actions d-flex flex-wrap gap-2 align-items-center">
+                  <button
+                    className={`btn btn-sm btn-success rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
+                    onClick={handleLikePost}
+                    disabled={hasLikedPost || !user}
+                    style={{ fontSize: isMobile ? "0.9rem" : undefined }}
+                  >
+                    <span>👍</span>
+                    <span className="badge bg-white text-success ms-1">
+                      {likes}
+                    </span>
+                  </button>
+
+                  <button
+                    className={`btn btn-sm btn-outline-danger rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
+                    onClick={handleDislikePost}
+                    disabled={hasDislikedPost || !user}
+                    style={{ fontSize: isMobile ? "0.9rem" : undefined }}
+                  >
+                    <span>👎</span>
+                    <span className="badge bg-light text-danger ms-1">
+                      {dislikes}
+                    </span>
+                  </button>
+                  <button
+                    className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
+                      isNight ? "btn-outline-light" : "btn-outline-secondary"
+                    }`}
+                    onClick={() => {
+                      const shareText = `${blog.title}\n\n${blog.content}\n\nShared from Blog App`;
+                      const shareUrl = window.location.href;
+                      if (navigator.share) {
+                        navigator
+                          .share({
+                            title: blog.title,
+                            text: shareText,
+                            url: shareUrl,
+                          })
+                          .catch((err) => console.error("Share failed", err));
+                      } else {
+                        navigator.clipboard.writeText(
+                          `${shareText}\n\n${shareUrl}`
+                        );
+                        alert("Link copied to clipboard!");
+                      }
+                    }}
+                    style={{ fontSize: isMobile ? "0.9rem" : undefined }}
+                  >
+                    <span>⤴</span>
+                    <span>Share</span>
+                  </button>
+
+                  <button
+                    className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
+                      isNight ? "btn-outline-light" : "btn-outline-secondary"
+                    }`}
+                    onClick={() => {
+                      if (!showConversation) prefetchComments();
+                      setShowConversation((prev) => !prev);
+                    }}
+                    onMouseEnter={prefetchComments}
+                    onFocus={prefetchComments}
+                    style={{ fontSize: isMobile ? "0.9rem" : undefined }}
+                    aria-pressed={showConversation}
+                  >
+                    <span>💬</span>
+                    <span>{showConversation ? "Hide chat" : "Comments"}</span>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+
+          {showConversation && isMobile && conversationSection}
+        </div>
       </div>
+
+      {shouldShowSideConversation && (
+        <aside className="blog-card__conversation-pane">
+          {conversationSection}
+        </aside>
+      )}
 
       {/* showDeleteModal */}
       {showDeleteModal && (
@@ -2193,6 +2183,33 @@ export default function BlogCard({
         </div>
       )}
       <style jsx>{`
+        .blog-card__shell {
+          display: flex;
+          flex-direction: column;
+          gap: 0;
+        }
+
+        .blog-card__shell.is-split {
+          flex-direction: row;
+          align-items: flex-start;
+          gap: 1.5rem;
+        }
+
+        .blog-card--shifted {
+          transform: translateX(-12px);
+          transition: transform 0.25s ease;
+        }
+
+        .blog-card__conversation-pane {
+          flex: 0 0 min(360px, 100%);
+          max-width: 360px;
+          width: 100%;
+        }
+
+        .blog-card__shell.is-split .conversation-card {
+          margin-top: 0;
+        }
+
         .blog-card__header {
           width: 100%;
         }
@@ -2500,6 +2517,10 @@ export default function BlogCard({
           .blog-card__menu-dropdown--mobile-sheet,
           .blog-card__menu-item {
             transition: none;
+            transform: none;
+          }
+
+          .blog-card--shifted {
             transform: none;
           }
         }
