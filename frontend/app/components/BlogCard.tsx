@@ -2584,16 +2584,24 @@ export default function BlogCard({
           padding: 0.85rem 0.9rem 0.75rem;
         }
 
+        .conversation-comment-wrapper {
+          max-height: 320px;
+          overflow-y: auto;
+          padding-right: 0.35rem;
+          scroll-behavior: smooth;
+          scrollbar-gutter: stable;
+        }
+
         .conversation-comment-list {
           display: flex;
           flex-direction: column;
-          gap: 1rem;
+          gap: 1.1rem;
         }
 
         .conversation-comment-item {
-          padding: 0.85rem 1rem;
-          border: 1px solid ${isNight ? "rgba(255,255,255,0.08)" : "#e5e7eb"};
-          background: ${isNight ? "rgba(17,24,39,0.6)" : "#fbfdff"};
+          padding: 1rem 1.1rem;
+          border: 1px solid ${isNight ? "rgba(255,255,255,0.08)" : "#e2e8f0"};
+          background: ${isNight ? "rgba(17,24,39,0.65)" : "#ffffff"};
           transition: transform 0.15s ease, box-shadow 0.2s ease;
         }
 
@@ -2607,7 +2615,7 @@ export default function BlogCard({
           display: flex;
           flex-direction: column;
           align-items: stretch;
-          gap: 0.85rem;
+          gap: 0.75rem;
           min-width: 0;
           width: 100%;
           max-width: 100%;
@@ -2617,20 +2625,23 @@ export default function BlogCard({
         .conversation-comment__main {
           display: flex;
           align-items: flex-start;
-          gap: 0.85rem;
+          gap: 0.75rem;
           min-width: 0;
           width: 100%;
           max-width: 100%;
         }
 
         .conversation-comment__avatar {
+          width: 38px;
+          height: 38px;
+          flex: 0 0 38px;
           flex-shrink: 0;
         }
 
         .conversation-comment__body {
           display: flex;
           flex-direction: column;
-          gap: 0.5rem;
+          gap: 0.4rem;
           flex: 1;
           min-width: 0;
           overflow-wrap: anywhere;
@@ -2639,16 +2650,22 @@ export default function BlogCard({
         .conversation-comment__meta {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
+          gap: 0.4rem;
           min-width: 0;
           width: 100%;
           flex-wrap: wrap;
         }
 
+        .conversation-comment__author {
+          font-size: 0.85rem;
+          font-weight: 600;
+          letter-spacing: 0.02em;
+        }
+
         .conversation-comment__avatar-image,
         .conversation-comment__avatar-fallback {
-          width: 44px;
-          height: 44px;
+          width: 38px;
+          height: 38px;
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -2658,29 +2675,31 @@ export default function BlogCard({
 
         .conversation-comment__text {
           margin: 0;
-          padding: 0.6rem 0.75rem;
+          padding: 0.65rem 0.8rem;
           line-height: 1.6;
+          font-size: 0.95rem;
           word-break: break-word;
           overflow-wrap: anywhere;
           width: 100%;
           max-width: none;
           border-radius: 12px;
-          background: ${isNight ? "rgba(255,255,255,0.04)" : "#f8fafc"};
-          border: 1px solid ${isNight ? "rgba(255,255,255,0.06)" : "#e2e8f0"};
+          background: ${isNight ? "rgba(255,255,255,0.05)" : "#f8fafc"};
+          border: 1px solid ${isNight ? "rgba(255,255,255,0.08)" : "#e2e8f0"};
         }
 
         .conversation-comment__actions {
           display: flex;
           flex-wrap: wrap;
-          gap: 0.4rem;
+          gap: 0.35rem;
           align-items: center;
+          margin-top: 0.15rem;
         }
 
         .reaction-button {
           display: inline-flex;
           align-items: center;
           gap: 0.35rem;
-          padding: 0.35rem 0.55rem;
+          padding: 0.3rem 0.6rem;
           font-size: 0.82rem;
           line-height: 1.2;
           border-radius: 999px;
@@ -2703,23 +2722,23 @@ export default function BlogCard({
         .conversation-reply {
           display: flex;
           align-items: flex-start;
-          gap: 0.6rem;
-          padding: 0.25rem 0.25rem 0.25rem 0.4rem;
-          border-radius: 12px;
+          gap: 0.5rem;
+          padding: 0.3rem 0.35rem;
+          border-radius: 10px;
           width: 100%;
         }
 
         .conversation-reply__avatar {
-          width: 30px;
-          height: 30px;
-          flex: 0 0 30px;
-          margin-top: 3px;
+          width: 28px;
+          height: 28px;
+          flex: 0 0 28px;
+          margin-top: 2px;
         }
 
         .conversation-reply__avatar-image,
         .conversation-reply__avatar-fallback {
-          width: 30px;
-          height: 30px;
+          width: 28px;
+          height: 28px;
           object-fit: cover;
           border-radius: 50%;
           display: inline-flex;
@@ -2741,7 +2760,7 @@ export default function BlogCard({
           display: flex;
           flex-direction: column;
           align-items: flex-start;
-          gap: 0.35rem;
+          gap: 0.3rem;
         }
 
         .conversation-reply__header {
@@ -2755,6 +2774,8 @@ export default function BlogCard({
         .conversation-reply__author {
           color: inherit;
           text-decoration: none;
+          font-size: 0.82rem;
+          font-weight: 600;
         }
 
         .conversation-reply__text {
@@ -2762,13 +2783,14 @@ export default function BlogCard({
           min-width: 0;
           word-break: break-word;
           line-height: 1.5;
+          font-size: 0.9rem;
           height: auto;
         }
 
         .conversation-reply__bubble {
           background-color: ${isNight ? "rgba(255,255,255,0.05)" : "#f8fafc"};
-          padding: 0.6rem 0.75rem;
-          border-radius: 12px;
+          padding: 0.55rem 0.7rem;
+          border-radius: 10px;
           display: block;
           width: auto;
           max-width: 100%;
@@ -2777,10 +2799,10 @@ export default function BlogCard({
 
         .conversation-reply-list {
           position: relative;
-          border-left: 2px solid ${isNight ? "#334155" : "#e5e7eb"};
-          margin-left: 0.15rem;
-          padding-left: 1.1rem !important;
-          gap: 0.5rem;
+          border-left: 2px solid ${isNight ? "#334155" : "#e2e8f0"};
+          margin-left: 1.1rem;
+          padding-left: 1.35rem !important;
+          gap: 0.6rem;
           display: flex;
           flex-direction: column;
         }
@@ -2798,16 +2820,16 @@ export default function BlogCard({
         }
 
         .reply-inline-input {
-          min-height: 38px;
+          min-height: 40px;
         }
 
         .reply-inline-send {
-          min-height: 38px;
-          padding-inline: 0.85rem;
+          min-height: 40px;
+          padding-inline: 0.9rem;
         }
 
         .reply-input-row {
-          margin-left: 2.6rem;
+          margin-left: 2.9rem;
         }
 
         .comment-input-panel {
@@ -3065,7 +3087,7 @@ export default function BlogCard({
           Conversation Comments Layout
           -----------------------------------*/
           .conversation-comment-wrapper {
-            max-height: 260px;
+            max-height: 280px;
             overflow-y: auto;
           }
 
@@ -3076,7 +3098,7 @@ export default function BlogCard({
 
           .conversation-comment-item {
             width: 100%;
-            padding: 0.65rem 0.75rem;
+            padding: 0.7rem 0.75rem;
           }
 
           .conversation-comment {
@@ -3099,9 +3121,9 @@ export default function BlogCard({
           .conversation-comment__avatar,
           .conversation-comment__avatar-image,
           .conversation-comment__avatar-fallback {
-            width: 32px !important;
-            height: 32px !important;
-            flex: 0 0 32px !important;
+            width: 30px !important;
+            height: 30px !important;
+            flex: 0 0 30px !important;
           }
 
           .conversation-comment__body {
@@ -3122,12 +3144,12 @@ export default function BlogCard({
           }
 
           .conversation-comment__text {
-            font-size: 0.84rem !important;
+            font-size: 0.86rem !important;
             line-height: 1.4 !important;
             margin-left: 0 !important;
             width: 100%;
             overflow-wrap: anywhere;
-            padding: 0.45rem 0.6rem !important;
+            padding: 0.5rem 0.6rem !important;
             border-radius: 10px;
           }
 
@@ -3142,9 +3164,9 @@ export default function BlogCard({
           }
 
           .reaction-button {
-            font-size: 0.78rem;
-            padding: 0.25rem 0.4rem;
-            min-height: 30px;
+            font-size: 0.76rem;
+            padding: 0.25rem 0.45rem;
+            min-height: 28px;
           }
 
           .conversation-reply {
@@ -3156,9 +3178,9 @@ export default function BlogCard({
           .conversation-reply__avatar,
           .conversation-reply__avatar-image,
           .conversation-reply__avatar-fallback {
-            width: 28px !important;
-            height: 28px !important;
-            flex-basis: 28px !important;
+            width: 26px !important;
+            height: 26px !important;
+            flex-basis: 26px !important;
           }
 
           .conversation-reply__body {
@@ -3180,7 +3202,7 @@ export default function BlogCard({
           .conversation-reply__text {
             flex: 1 1 100%;
             min-width: 0;
-            font-size: 0.82rem !important;
+            font-size: 0.8rem !important;
             line-height: 1.4;
           }
 
@@ -3188,17 +3210,17 @@ export default function BlogCard({
             width: 100%;
             max-width: 100%;
             line-height: 1.4;
-            padding: 0.45rem 0.6rem;
+            padding: 0.45rem 0.55rem;
           }
 
           .conversation-reply-list {
             border-left: 1px solid ${isNight ? "#334155" : "#cbd5e1"} !important;
-            padding-left: 0.55rem !important;
-            margin-left: 0.05rem;
+            padding-left: 0.6rem !important;
+            margin-left: 0.6rem;
           }
 
           .reply-input-row {
-            margin-left: 1.2rem;
+            margin-left: 1.5rem;
           }
 
           .comment-input-panel {
