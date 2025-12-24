@@ -1035,49 +1035,51 @@ export default function BlogCard({
                             {comment.text}
                           </p>
 
-                          <div className="conversation-comment__actions">
-                            <button
-                              type="button"
-                              className="reaction-button"
-                              onClick={() => handleLikeComment(idx)}
-                              disabled={
-                                !user ||
-                                isCommentPending ||
-                                comment.likedBy?.includes(user.username) ||
-                                comment.dislikedBy?.includes(user.username)
-                              }
-                            >
-                              👍{" "}
-                              <span className="reaction-count">
-                                {comment.likes}
-                              </span>
-                            </button>
-                            <button
-                              type="button"
-                              className="reaction-button"
-                              onClick={() => handleDislikeComment(idx)}
-                              disabled={
-                                !user ||
-                                isCommentPending ||
-                                comment.likedBy?.includes(user.username) ||
-                                comment.dislikedBy?.includes(user.username)
-                              }
-                            >
-                              👎{" "}
-                              <span className="reaction-count">
-                                {comment.dislikes}
-                              </span>
-                            </button>
-                            <button
-                              type="button"
-                              className="reaction-button"
-                              onClick={() => toggleReplyInput(idx)}
-                              disabled={
-                                !user || isCommentPending || isReplySending
-                              }
-                            >
-                              💬 Reply
-                            </button>
+                          <div className="conversation-comment__footer">
+                            <div className="conversation-comment__actions">
+                              <button
+                                type="button"
+                                className="reaction-button"
+                                onClick={() => handleLikeComment(idx)}
+                                disabled={
+                                  !user ||
+                                  isCommentPending ||
+                                  comment.likedBy?.includes(user.username) ||
+                                  comment.dislikedBy?.includes(user.username)
+                                }
+                              >
+                                👍{" "}
+                                <span className="reaction-count">
+                                  {comment.likes}
+                                </span>
+                              </button>
+                              <button
+                                type="button"
+                                className="reaction-button"
+                                onClick={() => handleDislikeComment(idx)}
+                                disabled={
+                                  !user ||
+                                  isCommentPending ||
+                                  comment.likedBy?.includes(user.username) ||
+                                  comment.dislikedBy?.includes(user.username)
+                                }
+                              >
+                                👎{" "}
+                                <span className="reaction-count">
+                                  {comment.dislikes}
+                                </span>
+                              </button>
+                              <button
+                                type="button"
+                                className="reaction-button"
+                                onClick={() => toggleReplyInput(idx)}
+                                disabled={
+                                  !user || isCommentPending || isReplySending
+                                }
+                              >
+                                💬 Reply
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1905,59 +1907,61 @@ export default function BlogCard({
                                 >
                                   {comment.text}
                                 </p>
-                                <div className="conversation-comment__actions">
-                                  <button
-                                    type="button"
-                                    className="reaction-button"
-                                    onClick={() => handleLikeComment(idx)}
-                                    disabled={
-                                      !user ||
-                                      isCommentPending ||
-                                      comment.likedBy?.includes(
-                                        user.username
-                                      ) ||
-                                      comment.dislikedBy?.includes(
-                                        user.username
-                                      )
-                                    }
-                                  >
-                                    👍{" "}
-                                    <span className="reaction-count">
-                                      {comment.likes}
-                                    </span>
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="reaction-button"
-                                    onClick={() => handleDislikeComment(idx)}
-                                    disabled={
-                                      !user ||
-                                      isCommentPending ||
-                                      comment.likedBy?.includes(
-                                        user.username
-                                      ) ||
-                                      comment.dislikedBy?.includes(
-                                        user.username
-                                      )
-                                    }
-                                  >
-                                    👎{" "}
-                                    <span className="reaction-count">
-                                      {comment.dislikes}
-                                    </span>
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="reaction-button"
-                                    onClick={() => toggleReplyInput(idx)}
-                                    disabled={
-                                      !user ||
-                                      isCommentPending ||
-                                      isReplySending
-                                    }
-                                  >
-                                    💬 Reply
-                                  </button>
+                                <div className="conversation-comment__footer">
+                                  <div className="conversation-comment__actions">
+                                    <button
+                                      type="button"
+                                      className="reaction-button"
+                                      onClick={() => handleLikeComment(idx)}
+                                      disabled={
+                                        !user ||
+                                        isCommentPending ||
+                                        comment.likedBy?.includes(
+                                          user.username
+                                        ) ||
+                                        comment.dislikedBy?.includes(
+                                          user.username
+                                        )
+                                      }
+                                    >
+                                      👍{" "}
+                                      <span className="reaction-count">
+                                        {comment.likes}
+                                      </span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="reaction-button"
+                                      onClick={() => handleDislikeComment(idx)}
+                                      disabled={
+                                        !user ||
+                                        isCommentPending ||
+                                        comment.likedBy?.includes(
+                                          user.username
+                                        ) ||
+                                        comment.dislikedBy?.includes(
+                                          user.username
+                                        )
+                                      }
+                                    >
+                                      👎{" "}
+                                      <span className="reaction-count">
+                                        {comment.dislikes}
+                                      </span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="reaction-button"
+                                      onClick={() => toggleReplyInput(idx)}
+                                      disabled={
+                                        !user ||
+                                        isCommentPending ||
+                                        isReplySending
+                                      }
+                                    >
+                                      💬 Reply
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -2565,6 +2569,7 @@ export default function BlogCard({
         .comments-modal__scroll {
           max-height: 60vh;
           overflow-y: auto;
+          scroll-behavior: smooth;
           padding: 0.25rem 0.25rem 0.5rem;
           display: flex;
           flex-direction: column;
@@ -2587,13 +2592,20 @@ export default function BlogCard({
         .conversation-comment-list {
           display: flex;
           flex-direction: column;
-          gap: 1rem;
+          gap: 1.1rem;
+        }
+
+        .conversation-comment-wrapper {
+          max-height: 440px;
+          overflow-y: auto;
+          padding-right: 0.2rem;
+          scroll-behavior: smooth;
         }
 
         .conversation-comment-item {
-          padding: 0.85rem 1rem;
+          padding: 1rem 1.1rem;
           border: 1px solid ${isNight ? "rgba(255,255,255,0.08)" : "#e5e7eb"};
-          background: ${isNight ? "rgba(17,24,39,0.6)" : "#fbfdff"};
+          background: ${isNight ? "rgba(17,24,39,0.75)" : "#ffffff"};
           transition: transform 0.15s ease, box-shadow 0.2s ease;
         }
 
@@ -2607,7 +2619,7 @@ export default function BlogCard({
           display: flex;
           flex-direction: column;
           align-items: stretch;
-          gap: 0.85rem;
+          gap: 0.9rem;
           min-width: 0;
           width: 100%;
           max-width: 100%;
@@ -2617,7 +2629,7 @@ export default function BlogCard({
         .conversation-comment__main {
           display: flex;
           align-items: flex-start;
-          gap: 0.85rem;
+          gap: 0.95rem;
           min-width: 0;
           width: 100%;
           max-width: 100%;
@@ -2625,12 +2637,13 @@ export default function BlogCard({
 
         .conversation-comment__avatar {
           flex-shrink: 0;
+          margin-top: 0.1rem;
         }
 
         .conversation-comment__body {
           display: flex;
           flex-direction: column;
-          gap: 0.5rem;
+          gap: 0.55rem;
           flex: 1;
           min-width: 0;
           overflow-wrap: anywhere;
@@ -2645,10 +2658,16 @@ export default function BlogCard({
           flex-wrap: wrap;
         }
 
+        .conversation-comment__author {
+          font-size: 0.96rem;
+          font-weight: 600;
+          letter-spacing: 0.01em;
+        }
+
         .conversation-comment__avatar-image,
         .conversation-comment__avatar-fallback {
-          width: 44px;
-          height: 44px;
+          width: 46px;
+          height: 46px;
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -2658,21 +2677,31 @@ export default function BlogCard({
 
         .conversation-comment__text {
           margin: 0;
-          padding: 0.6rem 0.75rem;
+          padding: 0.7rem 0.85rem;
           line-height: 1.6;
+          font-size: 0.95rem;
           word-break: break-word;
           overflow-wrap: anywhere;
           width: 100%;
           max-width: none;
-          border-radius: 12px;
-          background: ${isNight ? "rgba(255,255,255,0.04)" : "#f8fafc"};
+          border-radius: 14px;
+          background: ${isNight ? "rgba(255,255,255,0.06)" : "#f8fafc"};
           border: 1px solid ${isNight ? "rgba(255,255,255,0.06)" : "#e2e8f0"};
+        }
+
+        .conversation-comment__footer {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding-top: 0.25rem;
+          border-top: 1px solid
+            ${isNight ? "rgba(148,163,184,0.2)" : "rgba(148,163,184,0.2)"};
         }
 
         .conversation-comment__actions {
           display: flex;
           flex-wrap: wrap;
-          gap: 0.4rem;
+          gap: 0.45rem;
           align-items: center;
         }
 
@@ -2680,12 +2709,12 @@ export default function BlogCard({
           display: inline-flex;
           align-items: center;
           gap: 0.35rem;
-          padding: 0.35rem 0.55rem;
-          font-size: 0.82rem;
+          padding: 0.4rem 0.65rem;
+          font-size: 0.83rem;
           line-height: 1.2;
           border-radius: 999px;
-          border: 1px solid ${isNight ? "#334155" : "#d1d5db"};
-          background: ${isNight ? "rgba(255,255,255,0.03)" : "#f8fafc"};
+          border: 1px solid ${isNight ? "rgba(148,163,184,0.4)" : "#cbd5f5"};
+          background: ${isNight ? "rgba(15,23,42,0.7)" : "#f8fafc"};
           color: inherit;
           min-height: 36px;
           min-width: 0;
@@ -2704,8 +2733,8 @@ export default function BlogCard({
           display: flex;
           align-items: flex-start;
           gap: 0.6rem;
-          padding: 0.25rem 0.25rem 0.25rem 0.4rem;
-          border-radius: 12px;
+          padding: 0.35rem 0.35rem 0.35rem 0.45rem;
+          border-radius: 14px;
           width: 100%;
         }
 
@@ -2741,7 +2770,7 @@ export default function BlogCard({
           display: flex;
           flex-direction: column;
           align-items: flex-start;
-          gap: 0.35rem;
+          gap: 0.4rem;
         }
 
         .conversation-reply__header {
@@ -2762,25 +2791,26 @@ export default function BlogCard({
           min-width: 0;
           word-break: break-word;
           line-height: 1.5;
+          font-size: 0.9rem;
           height: auto;
         }
 
         .conversation-reply__bubble {
-          background-color: ${isNight ? "rgba(255,255,255,0.05)" : "#f8fafc"};
-          padding: 0.6rem 0.75rem;
-          border-radius: 12px;
+          background-color: ${isNight ? "rgba(15,23,42,0.7)" : "#f1f5f9"};
+          padding: 0.6rem 0.8rem;
+          border-radius: 14px;
           display: block;
           width: auto;
           max-width: 100%;
-          border: 1px solid ${isNight ? "rgba(255,255,255,0.08)" : "#e2e8f0"};
+          border: 1px solid ${isNight ? "rgba(148,163,184,0.25)" : "#e2e8f0"};
         }
 
         .conversation-reply-list {
           position: relative;
           border-left: 2px solid ${isNight ? "#334155" : "#e5e7eb"};
-          margin-left: 0.15rem;
-          padding-left: 1.1rem !important;
-          gap: 0.5rem;
+          margin-left: 0.35rem;
+          padding-left: 1.35rem !important;
+          gap: 0.65rem;
           display: flex;
           flex-direction: column;
         }
@@ -2807,7 +2837,7 @@ export default function BlogCard({
         }
 
         .reply-input-row {
-          margin-left: 2.6rem;
+          margin-left: 3.1rem;
         }
 
         .comment-input-panel {
@@ -2826,14 +2856,20 @@ export default function BlogCard({
 
         .comment-input {
           min-height: 42px;
-          padding: 0.5rem 0.75rem;
-          border-radius: 10px;
+          padding: 0.55rem 0.85rem;
+          border-radius: 12px;
         }
 
         .comment-send-btn {
           min-height: 42px;
-          padding: 0.5rem 1rem;
-          border-radius: 10px;
+          padding: 0.55rem 1.1rem;
+          border-radius: 12px;
+        }
+
+        @media (min-width: 992px) {
+          .conversation-comment-wrapper {
+            max-height: 520px;
+          }
         }
 
         /* 📱 MOBILE STYLES */
@@ -3054,6 +3090,7 @@ export default function BlogCard({
           .comments-modal__scroll {
             max-height: calc(100vh - 230px);
             padding-inline: 0.05rem;
+            scroll-behavior: smooth;
           }
 
           .comments-modal__composer {
@@ -3067,16 +3104,17 @@ export default function BlogCard({
           .conversation-comment-wrapper {
             max-height: 260px;
             overflow-y: auto;
+            scroll-behavior: smooth;
           }
 
           .conversation-comment-list {
             width: 100%;
-            gap: 0.75rem;
+            gap: 0.85rem;
           }
 
           .conversation-comment-item {
             width: 100%;
-            padding: 0.65rem 0.75rem;
+            padding: 0.75rem 0.85rem;
           }
 
           .conversation-comment {
@@ -3091,7 +3129,7 @@ export default function BlogCard({
             flex-direction: row !important;
             align-items: flex-start !important;
             width: 100%;
-            gap: 0.45rem !important;
+            gap: 0.55rem !important;
             min-width: 0;
             max-width: 100%;
           }
@@ -3099,9 +3137,9 @@ export default function BlogCard({
           .conversation-comment__avatar,
           .conversation-comment__avatar-image,
           .conversation-comment__avatar-fallback {
-            width: 32px !important;
-            height: 32px !important;
-            flex: 0 0 32px !important;
+            width: 34px !important;
+            height: 34px !important;
+            flex: 0 0 34px !important;
           }
 
           .conversation-comment__body {
@@ -3122,13 +3160,18 @@ export default function BlogCard({
           }
 
           .conversation-comment__text {
-            font-size: 0.84rem !important;
-            line-height: 1.4 !important;
+            font-size: 0.86rem !important;
+            line-height: 1.45 !important;
             margin-left: 0 !important;
             width: 100%;
             overflow-wrap: anywhere;
-            padding: 0.45rem 0.6rem !important;
+            padding: 0.5rem 0.65rem !important;
             border-radius: 10px;
+          }
+
+          .conversation-comment__footer {
+            width: 100%;
+            padding-top: 0.2rem;
           }
 
           .conversation-comment__actions {
@@ -3137,20 +3180,20 @@ export default function BlogCard({
             flex-direction: row;
             align-items: center;
             justify-content: flex-start;
-            gap: 0.25rem;
+            gap: 0.3rem;
             flex-wrap: wrap;
           }
 
           .reaction-button {
-            font-size: 0.78rem;
-            padding: 0.25rem 0.4rem;
-            min-height: 30px;
+            font-size: 0.76rem;
+            padding: 0.3rem 0.45rem;
+            min-height: 32px;
           }
 
           .conversation-reply {
             align-items: flex-start !important;
-            gap: 0.4rem;
-            margin-left: 0.1rem;
+            gap: 0.45rem;
+            margin-left: 0.15rem;
           }
 
           .conversation-reply__avatar,
@@ -3181,24 +3224,24 @@ export default function BlogCard({
             flex: 1 1 100%;
             min-width: 0;
             font-size: 0.82rem !important;
-            line-height: 1.4;
+            line-height: 1.45;
           }
 
           .conversation-reply__bubble {
             width: 100%;
             max-width: 100%;
             line-height: 1.4;
-            padding: 0.45rem 0.6rem;
+            padding: 0.5rem 0.65rem;
           }
 
           .conversation-reply-list {
             border-left: 1px solid ${isNight ? "#334155" : "#cbd5e1"} !important;
-            padding-left: 0.55rem !important;
-            margin-left: 0.05rem;
+            padding-left: 0.75rem !important;
+            margin-left: 0.15rem;
           }
 
           .reply-input-row {
-            margin-left: 1.2rem;
+            margin-left: 1.6rem;
           }
 
           .comment-input-panel {
