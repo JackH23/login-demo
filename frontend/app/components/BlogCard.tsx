@@ -14,6 +14,10 @@ import { useTheme } from "../context/ThemeContext";
 import { useCachedApi } from "../hooks/useCachedApi";
 import { apiUrl, resolveImageUrl } from "@/app/lib/api";
 import { normalizeUsersResponse } from "@/app/lib/users";
+import ConversationCard, {
+  Comment,
+  Reply,
+} from "@/app/components/ConversationCard";
 
 interface BlogPost {
   _id?: string;
@@ -44,13 +48,6 @@ interface AuthorData {
   online?: boolean;
 }
 
-interface Reply {
-  text: string;
-  author: string;
-  authorImage?: string;
-  tempId?: string;
-  isPending?: boolean;
-}
 
 type ImageEditState = {
   brightness: number;
@@ -101,22 +98,6 @@ const buildImageStyle = (
   };
 };
 
-interface Comment {
-  _id?: string;
-  postId?: string;
-  text: string;
-  author: string;
-  authorImage?: string;
-  likes: number;
-  dislikes: number;
-  likedBy?: string[];
-  dislikedBy?: string[];
-  replies: Reply[];
-  showReplyInput: boolean;
-  newReply: string;
-  createdAt?: string;
-  isPending?: boolean;
-}
 
 export default function BlogCard({
   blog,
@@ -189,25 +170,6 @@ export default function BlogCard({
       ? "bg-dark bg-opacity-75 text-light border border-primary border-opacity-50" // Semi-transparent dark background for night
       : "bg-white text-primary border border-primary border-opacity-25" // Light background for day mode
   }`;
-
-  const conversationPanelWidth = useMemo(
-    () => (isMobile ? "min(100%, 420px)" : "min(420px, 38vw)"),
-    [isMobile]
-  );
-
-  const contentShellStyle = useMemo(
-    () =>
-      ({
-        ["--panel-width" as string]: conversationPanelWidth,
-        ["--panel-reserved" as string]:
-          showConversation && !isMobile
-            ? `calc(${conversationPanelWidth} + 1.25rem)`
-            : showConversation
-            ? "1rem"
-            : "0px",
-      }) as CSSProperties,
-    [conversationPanelWidth, isMobile, showConversation]
-  );
 
   // Determine which author name to display
   // Priority: author.username → blog.author → empty string
@@ -941,738 +903,392 @@ export default function BlogCard({
   };
 
   return (
-    <div className="blog-card__layout" style={contentShellStyle}>
-      <div
-        className={`blog-card block-card card border-0 shadow-lg w-100 mx-auto mb-4 position-relative ${
-          isNight ? "bg-dark text-light" : "bg-white"
-        }`}
-        style={{
-          maxWidth: "960px", // Keeps the card at a more compact width
-          borderRadius: isMobile ? "16px" : "20px", // Slightly tighter rounding for a smaller footprint
-          overflow: "hidden", // Prevents content from overflowing outside card edges
-          border: `1px solid ${cardBorderColor}`, // Dynamic border color based on theme
-        }}
-      >
-        <div className="block-card__halo" aria-hidden={true} />
-        <div className="block-card__inner">
-          {/* Header section with background gradient and author info */}
-          <div
-            className="blog-card__hero position-relative text-white"
-            style={{
-              background: headerGradient, // Dynamic background based on theme
-              padding: isMobile
-                ? "0.9rem 1rem 1.1rem"
-                : "1.35rem 1.5rem 1.65rem",
-            }}
-          >
-          <div className="block-card__hero-grid">
-            <div className="block-card__hero-copy">
-              <div className="block-card__topline">
-                <div className="block-card__eyebrow">
-                  Editorial spotlight · Crafted feature
-                </div>
-                <div className="blog-card__menu">
-                  {/* MENU-DOTS */}
-                  <button
-                    type="button"
-                    ref={menuButtonRef}
-                    className={`blog-card__menu-dots border-0 ${
-                      canManagePost ? "" : "blog-card__menu-dots--muted"
-                    }`}
-                    aria-label="Post actions"
-                    aria-haspopup="menu"
-                    aria-expanded={showActionsMenu}
-                    aria-controls={`blog-card-menu-${blog._id ?? "new"}`}
-                    onClick={() => setShowActionsMenu((prev) => !prev)}
-                  >
-                    <span className="blog-card__menu-icon" aria-hidden={true}>
-                      &#8942;
-                    </span>
-                    <span className="visually-hidden">Toggle actions menu</span>
-                  </button>
-
-                  {showActionsMenu && (
-                    <>
+    <div
+      className={`blog-card__layout ${
+        showConversation && !isMobile ? "is-split" : ""
+      }`}
+    >
+      <div className="blog-card__column blog-card__column--main">
+        <div
+          className={`blog-card block-card card border-0 shadow-lg w-100 ${
+            showConversation && !isMobile ? "" : "mx-auto"
+          } mb-4 position-relative ${isNight ? "bg-dark text-light" : "bg-white"}`}
+          style={{
+            maxWidth: "960px", // Keeps the card at a more compact width
+            borderRadius: isMobile ? "16px" : "20px", // Slightly tighter rounding for a smaller footprint
+            overflow: "hidden", // Prevents content from overflowing outside card edges
+            border: `1px solid ${cardBorderColor}`, // Dynamic border color based on theme
+          }}
+        >
+          <div className="block-card__halo" aria-hidden={true} />
+          <div className="block-card__inner">
+            {/* Header section with background gradient and author info */}
+            <div
+              className="blog-card__hero position-relative text-white"
+              style={{
+                background: headerGradient, // Dynamic background based on theme
+                padding: isMobile
+                  ? "0.9rem 1rem 1.1rem"
+                  : "1.35rem 1.5rem 1.65rem",
+              }}
+            >
+              <div className="block-card__hero-grid">
+                <div className="block-card__hero-copy">
+                  <div className="block-card__topline">
+                    <div className="block-card__eyebrow">
+                      Editorial spotlight · Crafted feature
+                    </div>
+                    <div className="blog-card__menu">
+                      {/* MENU-DOTS */}
                       <button
                         type="button"
-                        className="blog-card__menu-backdrop"
-                        aria-label="Close actions menu"
-                        onClick={() => setShowActionsMenu(false)}
-                      />
-                      <div
-                        ref={menuDropdownRef}
-                        role="menu"
-                        id={`blog-card-menu-${blog._id ?? "new"}`}
-                        className={`blog-card__menu-dropdown ${
-                          isMobile
-                            ? useBottomSheet
-                              ? "blog-card__menu-dropdown--mobile-sheet"
-                              : "blog-card__menu-dropdown--mobile"
-                            : "blog-card__menu-dropdown--desktop"
-                        } ${isNight ? "is-dark" : "is-light"}`}
-                        data-open={showActionsMenu}
+                        ref={menuButtonRef}
+                        className={`blog-card__menu-dots border-0 ${
+                          canManagePost ? "" : "blog-card__menu-dots--muted"
+                        }`}
+                        aria-label="Post actions"
+                        aria-haspopup="menu"
+                        aria-expanded={showActionsMenu}
+                        aria-controls={`blog-card-menu-${blog._id ?? "new"}`}
+                        onClick={() => setShowActionsMenu((prev) => !prev)}
                       >
-                        {/* DELETE POST */}
-                        <div className="blog-card__menu-list" role="none">
+                        <span className="blog-card__menu-icon" aria-hidden={true}>
+                          &#8942;
+                        </span>
+                        <span className="visually-hidden">
+                          Toggle actions menu
+                        </span>
+                      </button>
+
+                      {showActionsMenu && (
+                        <>
                           <button
                             type="button"
-                            className="blog-card__menu-item blog-card__menu-item--danger"
-                            role="menuitem"
-                            onClick={() => {
-                              setShowActionsMenu(false);
-                              setShowDeleteModal(true);
-                            }}
+                            className="blog-card__menu-backdrop"
+                            aria-label="Close actions menu"
+                            onClick={() => setShowActionsMenu(false)}
+                          />
+                          <div
+                            ref={menuDropdownRef}
+                            role="menu"
+                            id={`blog-card-menu-${blog._id ?? "new"}`}
+                            className={`blog-card__menu-dropdown ${
+                              isMobile
+                                ? useBottomSheet
+                                  ? "blog-card__menu-dropdown--mobile-sheet"
+                                  : "blog-card__menu-dropdown--mobile"
+                                : "blog-card__menu-dropdown--desktop"
+                            } ${isNight ? "is-dark" : "is-light"}`}
+                            data-open={showActionsMenu}
                           >
-                            <span
-                              aria-hidden={true}
-                              className="blog-card__menu-item-icon"
-                            >
-                              🗑️
-                            </span>
-                            <div className="blog-card__menu-item-copy">
-                              <span className="blog-card__menu-item-title">
-                                Delete post
-                              </span>
-                              <span className="blog-card__menu-item-subtitle">
-                                Permanently remove this post
-                              </span>
+                            {/* DELETE POST */}
+                            <div className="blog-card__menu-list" role="none">
+                              <button
+                                type="button"
+                                className="blog-card__menu-item blog-card__menu-item--danger"
+                                role="menuitem"
+                                onClick={() => {
+                                  setShowActionsMenu(false);
+                                  setShowDeleteModal(true);
+                                }}
+                              >
+                                <span
+                                  aria-hidden={true}
+                                  className="blog-card__menu-item-icon"
+                                >
+                                  🗑️
+                                </span>
+                                <div className="blog-card__menu-item-copy">
+                                  <span className="blog-card__menu-item-title">
+                                    Delete post
+                                  </span>
+                                  <span className="blog-card__menu-item-subtitle">
+                                    Permanently remove this post
+                                  </span>
+                                </div>
+                              </button>
                             </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="block-card__title-panel">
+                    <div className="blog-card__author-row d-flex align-items-center w-100 gap-3 flex-wrap">
+                      <div className="blog-card__author-info d-flex align-items-center gap-3">
+                        {/* If author has an image, display it */}
+                        <button
+                          className="blog-card__avatar p-0 border-0 bg-transparent"
+                          aria-label={
+                            isProfileNavigable
+                              ? `View ${displayAuthor}'s profile`
+                              : undefined
+                          }
+                          onClick={
+                            isProfileNavigable ? openAuthorProfile : undefined
+                          }
+                          disabled={!isProfileNavigable}
+                          style={{
+                            cursor: isProfileNavigable ? "pointer" : "default",
+                          }}
+                        >
+                          {author?.image ? (
+                            <img
+                              src={author.image}
+                              alt={author.username}
+                              className="rounded-circle border border-3 border-white"
+                              style={{
+                                width: isMobile ? "44px" : "52px", // Avatar width
+                                height: isMobile ? "44px" : "52px", // Avatar height
+                                objectFit: "cover", // Ensures image fills the circle without distortion
+                              }}
+                            />
+                          ) : (
+                            <div
+                              className="rounded-circle bg-white text-primary fw-semibold d-flex align-items-center justify-content-center"
+                              style={{
+                                width: isMobile ? "44px" : "52px",
+                                height: isMobile ? "44px" : "52px",
+                              }}
+                            >
+                              {authorInitial}
+                            </div>
+                          )}
+                        </button>
+
+                        <div className="blog-card__author-meta d-flex align-items-center gap-2 text-start">
+                          <span className="small text-white-50">By</span>
+                          <button
+                            type="button"
+                            className="btn btn-link p-0 align-baseline fw-semibold text-white text-start"
+                            onClick={openAuthorProfile}
+                            disabled={!displayAuthor}
+                          >
+                            {displayAuthor || "Unknown"}
                           </button>
                         </div>
                       </div>
-                    </>
-                  )}
-                </div>
-              </div>
+                    </div>
 
-              <div className="block-card__title-panel">
-                <div className="blog-card__author-row d-flex align-items-center w-100 gap-3 flex-wrap">
-                  <div className="blog-card__author-info d-flex align-items-center gap-3">
-                    {/* If author has an image, display it */}
-                    <button
-                      className="blog-card__avatar p-0 border-0 bg-transparent"
-                      aria-label={
-                        isProfileNavigable
-                          ? `View ${displayAuthor}'s profile`
-                          : undefined
-                      }
-                      onClick={
-                        isProfileNavigable ? openAuthorProfile : undefined
-                      }
-                      disabled={!isProfileNavigable}
-                      style={{
-                        cursor: isProfileNavigable ? "pointer" : "default",
-                      }}
-                    >
-                      {author?.image ? (
-                        <img
-                          src={author.image}
-                          alt={author.username}
-                          className="rounded-circle border border-3 border-white"
-                          style={{
-                            width: isMobile ? "44px" : "52px", // Avatar width
-                            height: isMobile ? "44px" : "52px", // Avatar height
-                            objectFit: "cover", // Ensures image fills the circle without distortion
-                          }}
-                        />
-                      ) : (
-                        <div
-                          className="rounded-circle bg-white text-primary fw-semibold d-flex align-items-center justify-content-center"
-                          style={{
-                            width: isMobile ? "44px" : "52px",
-                            height: isMobile ? "44px" : "52px",
-                          }}
-                        >
-                          {authorInitial}
-                        </div>
-                      )}
-                    </button>
-
-                    <div className="blog-card__author-meta d-flex align-items-center gap-2 text-start">
-                      <span className="small text-white-50">By</span>
-                      <button
-                        type="button"
-                        className="btn btn-link p-0 align-baseline fw-semibold text-white text-start"
-                        onClick={openAuthorProfile}
-                        disabled={!displayAuthor}
+                    <div className="block-card__title">
+                      <h3
+                        className="mb-2 fw-bold"
+                        style={{
+                          fontSize: isMobile ? "1.15rem" : "1.45rem",
+                          lineHeight: 1.2,
+                        }}
                       >
-                        {displayAuthor || "Unknown"}
-                      </button>
+                        {blog.title}
+                      </h3>
+                      <p className="block-card__lede mb-0 text-white-50">
+                        {heroPreview}
+                      </p>
+                    </div>
+
+                    <div className="block-card__meta-row">
+                      <div className="d-flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-light rounded-pill d-inline-flex align-items-center gap-2"
+                          onClick={handleLikePost}
+                          disabled={hasLikedPost || !user}
+                        >
+                          <span aria-hidden={true}>👍</span>
+                          <span>Like</span>
+                          <span
+                            className={statBadgeClass}
+                            aria-label={`${likes} likes`}
+                          >
+                            {likes}
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-light rounded-pill d-inline-flex align-items-center gap-2"
+                          onClick={handleDislikePost}
+                          disabled={hasDislikedPost || !user}
+                        >
+                          <span aria-hidden={true}>👎</span>
+                          <span>Dislike</span>
+                          <span
+                            className={statBadgeClass}
+                            aria-label={`${dislikes} dislikes`}
+                          >
+                            {dislikes}
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-light rounded-pill d-inline-flex align-items-center gap-2"
+                          onClick={handleSharePost}
+                        >
+                          <span aria-hidden={true}>🔗</span>
+                          <span>Share</span>
+                          <span
+                            className={statBadgeClass}
+                            aria-label={`${shares} shares`}
+                          >
+                            {shares}
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-light rounded-pill d-inline-flex align-items-center gap-2"
+                          onClick={handleToggleConversation}
+                          onMouseEnter={prefetchComments}
+                          onFocus={prefetchComments}
+                          aria-pressed={showConversation}
+                        >
+                          <span aria-hidden={true}>💬</span>
+                          <span>Comment</span>
+                          <span
+                            className={statBadgeClass}
+                            aria-label={`${totalComments} comments`}
+                          >
+                            {totalComments}
+                          </span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="block-card__title">
-                  <h3
-                    className="mb-2 fw-bold"
-                    style={{
-                      fontSize: isMobile ? "1.15rem" : "1.45rem",
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    {blog.title}
-                  </h3>
-                  <p className="block-card__lede mb-0 text-white-50">
-                    {heroPreview}
-                  </p>
-                </div>
-
-                <div className="block-card__meta-row">
-                  <div className="d-flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-light rounded-pill d-inline-flex align-items-center gap-2"
-                      onClick={handleLikePost}
-                      disabled={hasLikedPost || !user}
+                {blog.image && (
+                  <div className="block-card__hero-media">
+                    <div
+                      className="block-card__media-frame"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setShowImageModal(true)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          setShowImageModal(true);
+                        }
+                      }}
                     >
-                      <span aria-hidden={true}>👍</span>
-                      <span>Like</span>
-                      <span
-                        className={statBadgeClass}
-                        aria-label={`${likes} likes`}
-                      >
-                        {likes}
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-light rounded-pill d-inline-flex align-items-center gap-2"
-                      onClick={handleDislikePost}
-                      disabled={hasDislikedPost || !user}
-                    >
-                      <span aria-hidden={true}>👎</span>
-                      <span>Dislike</span>
-                      <span
-                        className={statBadgeClass}
-                        aria-label={`${dislikes} dislikes`}
-                      >
-                        {dislikes}
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-light rounded-pill d-inline-flex align-items-center gap-2"
-                      onClick={handleSharePost}
-                    >
-                      <span aria-hidden={true}>🔗</span>
-                      <span>Share</span>
-                      <span
-                        className={statBadgeClass}
-                        aria-label={`${shares} shares`}
-                      >
-                        {shares}
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-light rounded-pill d-inline-flex align-items-center gap-2"
-                      onClick={handleToggleConversation}
-                      onMouseEnter={prefetchComments}
-                      onFocus={prefetchComments}
-                      aria-pressed={showConversation}
-                    >
-                      <span aria-hidden={true}>💬</span>
-                      <span>Comment</span>
-                      <span
-                        className={statBadgeClass}
-                        aria-label={`${totalComments} comments`}
-                      >
-                        {totalComments}
-                      </span>
-                    </button>
+                      <img
+                        src={blog.image}
+                        alt="Blog Visual"
+                        className="card-img-top"
+                        style={coverImageStyle}
+                      />
+                      <div className="block-card__media-overlay">
+                        <div className="block-card__media-label">
+                          Premium art direction
+                        </div>
+                        <button
+                          type="button"
+                          className="block-card__media-cta btn btn-light btn-sm rounded-pill"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setShowImageModal(true);
+                          }}
+                        >
+                          View gallery
+                        </button>
+                      </div>
+                    </div>
+                    <div className="block-card__media-shadow" aria-hidden={true} />
                   </div>
-                </div>
+                )}
               </div>
             </div>
 
-            {blog.image && (
-              <div className="block-card__hero-media">
-                <div
-                  className="block-card__media-frame"
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => setShowImageModal(true)}
+            <div className="blog-card__content-shell">
+              <div
+                className={`blog-card__body card-body p-3 ${
+                  showConversation ? "is-condensed" : ""
+                }`}
+                style={{
+                  padding: isMobile
+                    ? blog.image
+                      ? "0.5rem 0.9rem 0.95rem"
+                      : "0.75rem 0.9rem"
+                    : "1rem 1.25rem",
+                }}
+              >
+                <p
+                  className="card-text fs-6 mb-2"
+                  style={contentStyle}
+                  onClick={handleToggleContent}
                   onKeyDown={(event) => {
+                    if (!isContentLong) return;
                     if (event.key === "Enter" || event.key === " ") {
                       event.preventDefault();
-                      setShowImageModal(true);
+                      handleToggleContent();
                     }
                   }}
+                  role={isContentLong ? "button" : undefined}
+                  tabIndex={isContentLong ? 0 : undefined}
+                  aria-expanded={isContentLong ? isContentExpanded : undefined}
+                  aria-label={
+                    isContentLong
+                      ? isContentExpanded
+                        ? "Collapse blog content"
+                        : "Expand blog content"
+                      : undefined
+                  }
+                  title={
+                    isContentLong
+                      ? isContentExpanded
+                        ? "Click to collapse"
+                        : "Click to read more"
+                      : undefined
+                  }
                 >
-                  <img
-                    src={blog.image}
-                    alt="Blog Visual"
-                    className="card-img-top"
-                    style={coverImageStyle}
-                  />
-                  <div className="block-card__media-overlay">
-                    <div className="block-card__media-label">
-                      Premium art direction
-                    </div>
-                    <button
-                      type="button"
-                      className="block-card__media-cta btn btn-light btn-sm rounded-pill"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        setShowImageModal(true);
-                      }}
-                    >
-                      View gallery
-                    </button>
-                  </div>
-                </div>
-                <div className="block-card__media-shadow" aria-hidden={true} />
+                  {blog.content}
+                </p>
+                {isContentLong && (
+                  <small
+                    className={`d-inline-block ${mutedTextClass}`}
+                    role="presentation"
+                    aria-hidden="true"
+                  >
+                    {isContentExpanded ? "Show less" : "Show more"}
+                  </small>
+                )}
               </div>
-            )}
+            </div>
           </div>
-        </div>
-
-        <div
-          className="blog-card__content-shell"
-          style={contentShellStyle}
-        >
-          <div
-            className={`blog-card__body card-body p-3 ${
-              showConversation ? "is-condensed" : ""
-            }`}
-            style={{
-              padding: isMobile
-                ? blog.image
-                  ? "0.5rem 0.9rem 0.95rem"
-                  : "0.75rem 0.9rem"
-                : "1rem 1.25rem",
-            }}
-          >
-            <p
-              className="card-text fs-6 mb-2"
-              style={contentStyle}
-              onClick={handleToggleContent}
-              onKeyDown={(event) => {
-                if (!isContentLong) return;
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  handleToggleContent();
-                }
-              }}
-              role={isContentLong ? "button" : undefined}
-              tabIndex={isContentLong ? 0 : undefined}
-              aria-expanded={isContentLong ? isContentExpanded : undefined}
-              aria-label={
-                isContentLong
-                  ? isContentExpanded
-                    ? "Collapse blog content"
-                    : "Expand blog content"
-                  : undefined
-              }
-              title={
-                isContentLong
-                  ? isContentExpanded
-                    ? "Click to collapse"
-                    : "Click to read more"
-                  : undefined
-              }
-            >
-              {blog.content}
-            </p>
-            {isContentLong && (
-              <small
-                className={`d-inline-block ${mutedTextClass}`}
-                role="presentation"
-                aria-hidden="true"
-              >
-                {isContentExpanded ? "Show less" : "Show more"}
-              </small>
-            )}
-          </div>
-
         </div>
       </div>
 
       <aside
-        className={`blog-card__side-panel ${
+        className={`blog-card__column blog-card__conversation-panel ${
           showConversation ? "is-open" : ""
         } ${isNight ? "is-dark" : "is-light"}`}
         aria-hidden={!showConversation}
         tabIndex={showConversation ? undefined : -1}
       >
-        <div className="blog-card__side-panel-inner">
-          {/* Comments Section */}
-          <div
-            className={`conversation-card ${
-              isMobile ? "mt-3" : "mt-5"
-            } rounded-4 p-md-4 p-3 ${
-              isNight ? "bg-secondary bg-opacity-25" : "bg-light"
-            }`}
-            aria-hidden={!showConversation}
-          >
-            <div className="conversation-header d-flex flex-column flex-md-row gap-2 justify-content-between align-items-start align-items-md-center mb-3">
-              <div>
-                <h5 className="mb-1 d-flex align-items-center gap-2">
-                  <span>💬</span>
-                  <span>Conversation</span>
-                </h5>
-                <p
-                  className={`community-subtitle mb-0 small ${mutedTextClass}`}
-                >
-                  {totalComments === 0
-                    ? "Be the first to start the discussion."
-                    : `Join ${totalComments} ${
-                        totalComments === 1 ? "comment" : "comments"
-                      } from the community.`}
-                </p>
-              </div>
-              {totalComments > 0 && (
-                <button
-                  className="btn btn-sm btn-outline-primary rounded-pill view-all-btn"
-                  onClick={() => {
-                    prefetchComments();
-                    setShowCommentsModal(true);
-                  }}
-                  onMouseEnter={prefetchComments}
-                  onFocus={prefetchComments}
-                >
-                  View all
-                </button>
-              )}
-            </div>
-
-            {comments.length === 0 ? (
-              <div
-                className={`p-4 rounded-4 text-center ${mutedTextClass}`}
-                style={{
-                  border: `2px dashed ${
-                    isNight
-                      ? "rgba(255,255,255,0.25)"
-                      : "rgba(59,130,246,0.35)"
-                  }`,
-                }}
-              >
-                <p className="mb-0">
-                  No comments yet. Share your thoughts below!
-                </p>
-              </div>
-            ) : (
-              <div className="conversation-comment-wrapper mb-3">
-                <ul className="conversation-comment-list list-unstyled mb-0">
-                  {(showAllComments ? comments : comments.slice(-3)).map(
-                    (comment, idx) => {
-                      const commentAvatar = resolveAvatar(
-                        comment.authorImage,
-                        comment.author
-                      );
-                      const replyKey = comment._id ?? `local-${idx}`;
-                      const isCommentPending =
-                        comment.isPending || !comment._id;
-                      const isReplySending = replySubmittingId === replyKey;
-                      const canSendReply = Boolean(
-                        user &&
-                          comment._id &&
-                          comment.newReply.trim() &&
-                          !isReplySending
-                      );
-
-                      return (
-                        <li
-                          key={comment._id ?? idx}
-                          className={`conversation-comment-item rounded-4 shadow-sm ${
-                            isNight
-                              ? "bg-dark bg-opacity-75 text-white"
-                              : "bg-white"
-                          }`}
-                        >
-                          <div className="conversation-comment">
-                            <div className="conversation-comment__main">
-                              <div className="conversation-comment__avatar">
-                                <button
-                                  type="button"
-                                  className="p-0 border-0 bg-transparent"
-                                  onClick={() =>
-                                    openUserProfile(comment.author)
-                                  }
-                                  aria-label={`View ${comment.author}'s profile`}
-                                >
-                                  {commentAvatar ? (
-                                    <img
-                                      src={commentAvatar}
-                                      alt={`${comment.author}'s avatar`}
-                                      className="conversation-comment__avatar-image"
-                                    />
-                                  ) : (
-                                    <span
-                                      className={`conversation-comment__avatar-fallback ${
-                                        isNight
-                                          ? "bg-secondary text-white"
-                                          : "bg-primary bg-opacity-10 text-primary"
-                                      }`}
-                                    >
-                                      {comment.author
-                                        ?.charAt(0)
-                                        ?.toUpperCase() || "?"}
-                                    </span>
-                                  )}
-                                </button>
-                              </div>
-
-                              <div className="conversation-comment__body">
-                                <div className="conversation-comment__meta">
-                                  <span
-                                    className={`conversation-comment__author ${
-                                      isNight
-                                        ? "text-primary text-opacity-75"
-                                        : "text-primary"
-                                    }`}
-                                    role="button"
-                                    tabIndex={0}
-                                    onClick={() =>
-                                      openUserProfile(comment.author)
-                                    }
-                                    onKeyDown={(event) => {
-                                      if (
-                                        event.key === "Enter" ||
-                                        event.key === " "
-                                      ) {
-                                        event.preventDefault();
-                                        openUserProfile(comment.author);
-                                      }
-                                    }}
-                                  >
-                                    {comment.author}
-                                  </span>
-                                </div>
-
-                                <p
-                                  className={`conversation-comment__text ${
-                                    isNight ? "text-light" : "text-body"
-                                  }`}
-                                >
-                                  {comment.text}
-                                </p>
-
-                                <div className="conversation-comment__actions">
-                                  <button
-                                    type="button"
-                                    className="reaction-button"
-                                    onClick={() => handleLikeComment(idx)}
-                                    disabled={
-                                      !user ||
-                                      isCommentPending ||
-                                      comment.likedBy?.includes(user.username) ||
-                                      comment.dislikedBy?.includes(
-                                        user.username
-                                      )
-                                    }
-                                  >
-                                    👍{" "}
-                                    <span className="reaction-count">
-                                      {comment.likes}
-                                    </span>
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="reaction-button"
-                                    onClick={() => handleDislikeComment(idx)}
-                                    disabled={
-                                      !user ||
-                                      isCommentPending ||
-                                      comment.likedBy?.includes(user.username) ||
-                                      comment.dislikedBy?.includes(
-                                        user.username
-                                      )
-                                    }
-                                  >
-                                    👎{" "}
-                                    <span className="reaction-count">
-                                      {comment.dislikes}
-                                    </span>
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="reaction-button"
-                                    onClick={() => toggleReplyInput(idx)}
-                                    disabled={
-                                      !user || isCommentPending || isReplySending
-                                    }
-                                  >
-                                    💬 Reply
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Replies */}
-                          {comment.replies.length > 0 && (
-                            <ul className="mt-2 ps-3 list-unstyled conversation-reply-list">
-                              {comment.replies.map((reply, rIdx) => {
-                                const replyAvatar = resolveAvatar(
-                                  reply.authorImage,
-                                  reply.author
-                                );
-
-                                return (
-                                  <li
-                                    key={reply.tempId ?? rIdx}
-                                    className={`conversation-reply d-flex align-items-start gap-2 ${
-                                      theme === "night"
-                                        ? "text-light"
-                                        : "text-muted"
-                                    } small mb-2`}
-                                  >
-                                    <button
-                                      type="button"
-                                      className="conversation-reply__avatar p-0 border-0 bg-transparent"
-                                      onClick={() =>
-                                        openUserProfile(reply.author)
-                                      }
-                                      aria-label={`View ${reply.author}'s profile`}
-                                    >
-                                      {replyAvatar ? (
-                                        <img
-                                          src={replyAvatar}
-                                          alt={`${reply.author}'s avatar`}
-                                          className="rounded-circle conversation-reply__avatar-image"
-                                        />
-                                      ) : (
-                                        <span
-                                          className={`conversation-reply__avatar-fallback d-inline-flex align-items-center justify-content-center rounded-circle ${
-                                            theme === "night"
-                                              ? "bg-secondary text-white"
-                                              : "bg-primary bg-opacity-10 text-primary"
-                                          }`}
-                                        >
-                                          {reply.author
-                                            ?.charAt(0)
-                                            ?.toUpperCase() || "?"}
-                                        </span>
-                                      )}
-                                    </button>
-
-                                    <div className="conversation-reply__body">
-                                      <div className="conversation-reply__header">
-                                        <button
-                                          type="button"
-                                          className="fw-semibold p-0 border-0 bg-transparent text-start conversation-reply__author"
-                                          onClick={() =>
-                                            openUserProfile(reply.author)
-                                          }
-                                          onKeyDown={(event) => {
-                                            if (
-                                              event.key === "Enter" ||
-                                              event.key === " "
-                                            ) {
-                                              event.preventDefault();
-                                              openUserProfile(reply.author);
-                                            }
-                                          }}
-                                          aria-label={`View ${reply.author}'s profile`}
-                                        >
-                                          {reply.author}
-                                        </button>
-                                      </div>
-                                      <div
-                                        className="conversation-reply__text conversation-reply__bubble text-muted"
-                                        role="button"
-                                        tabIndex={0}
-                                        onClick={() =>
-                                          setReplyInputVisibility(idx, true)
-                                        }
-                                        onKeyDown={(event) => {
-                                          if (
-                                            event.key === "Enter" ||
-                                            event.key === " "
-                                          ) {
-                                            event.preventDefault();
-                                            setReplyInputVisibility(
-                                              idx,
-                                              true
-                                            );
-                                          }
-                                        }}
-                                      >
-                                        {reply.text}
-                                      </div>
-                                      {reply.isPending && (
-                                        <span className="badge bg-secondary bg-opacity-25 text-secondary ms-auto">
-                                          Sending...
-                                        </span>
-                                      )}
-                                    </div>
-                                  </li>
-                                );
-                              })}
-                            </ul>
-                          )}
-
-                          {/* Reply Input */}
-                          {comment.showReplyInput && (
-                            <div
-                              className="d-flex gap-2 mt-2 align-items-center reply-input-row"
-                              ref={(el) => {
-                                const key = comment._id ?? `local-${idx}`;
-                                replyInputRefs.current[key] = el;
-                              }}
-                            >
-                              <input
-                                type="text"
-                                className="form-control form-control-sm reply-inline-input"
-                                placeholder={
-                                  user
-                                    ? "Write a reply..."
-                                    : "Sign in to reply to this comment"
-                                }
-                                value={comment.newReply}
-                                onChange={(e) =>
-                                  handleReplyChange(idx, e.target.value)
-                                }
-                                disabled={isReplySending || !user}
-                              />
-                              <button
-                                className="btn btn-sm btn-primary reply-inline-send"
-                                onClick={() => handleReplySubmit(idx)}
-                                disabled={!canSendReply}
-                              >
-                                {isReplySending ? "Sending..." : "Send"}
-                              </button>
-                            </div>
-                          )}
-                        </li>
-                      );
-                    }
-                  )}
-                </ul>
-              </div>
-            )}
-
-            {/* Add Comment Input */}
-            <div className="comment-input-panel">
-              <label className="form-label mb-2 fw-semibold text-muted small d-none d-md-block">
-                Join the conversation
-              </label>
-              <div className="comment-input-group">
-                <input
-                  type="text"
-                  className="form-control comment-input"
-                  placeholder={
-                    user
-                      ? "Write a comment..."
-                      : "Sign in to join the conversation"
-                  }
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  disabled={isSubmittingComment || !user}
-                />
-                <button
-                  className="btn btn-primary comment-send-btn"
-                  onClick={handleCommentSubmit}
-                  disabled={
-                    !newComment.trim() || !user || isSubmittingComment
-                  }
-                >
-                  {isSubmittingComment ? "Sending..." : "Send"}
-                </button>
-              </div>
-            </div>
-          </div>
+        <div className="blog-card__conversation-inner">
+          <ConversationCard
+            comments={comments}
+            showAllComments={showAllComments}
+            isMobile={isMobile}
+            isNight={isNight}
+            mutedTextClass={mutedTextClass}
+            totalComments={totalComments}
+            user={user ? { username: user.username, image: user.image } : null}
+            replySubmittingId={replySubmittingId}
+            newComment={newComment}
+            isSubmittingComment={isSubmittingComment}
+            theme={theme}
+            resolveAvatar={resolveAvatar}
+            prefetchComments={prefetchComments}
+            setShowCommentsModal={setShowCommentsModal}
+            handleLikeComment={handleLikeComment}
+            handleDislikeComment={handleDislikeComment}
+            toggleReplyInput={toggleReplyInput}
+            setReplyInputVisibility={setReplyInputVisibility}
+            openUserProfile={openUserProfile}
+            handleReplyChange={handleReplyChange}
+            handleReplySubmit={handleReplySubmit}
+            onNewCommentChange={setNewComment}
+            handleCommentSubmit={handleCommentSubmit}
+            replyInputRefs={replyInputRefs}
+          />
         </div>
       </aside>
 
@@ -2149,7 +1765,7 @@ export default function BlogCard({
           </div>
         )}
       </div>
-      <style jsx>{`
+      <style jsx global>{`
         .block-card {
           position: relative;
           isolation: isolate;
@@ -2411,13 +2027,16 @@ export default function BlogCard({
         .blog-card__layout {
           position: relative;
           width: 100%;
-          display: flex;
-          justify-content: center;
-          align-items: stretch;
-          padding-right: var(--panel-reserved, 0px);
+          display: grid;
+          grid-template-columns: minmax(0, 1fr);
+          align-items: start;
+          gap: 1.5rem;
           box-sizing: border-box;
-          gap: 0.5rem;
-          transition: padding-right 320ms ease;
+        }
+
+        .blog-card__layout.is-split {
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+          align-items: stretch;
         }
 
         .blog-card__content-shell {
@@ -2425,57 +2044,43 @@ export default function BlogCard({
           display: grid;
           grid-template-columns: 1fr;
           align-items: stretch;
-          padding-right: var(--panel-reserved, 0px);
-          transition: padding-right 320ms ease;
         }
 
-        .blog-card__side-panel {
-          position: absolute;
-          top: 0;
-          right: 0;
-          width: var(--panel-width, 0px);
-          max-width: min(420px, 42vw);
-          height: 100%;
-          transform: translateX(110%);
-          opacity: 0;
-          pointer-events: none;
-          visibility: hidden;
+        .blog-card__column {
+          min-width: 0;
+        }
+
+        .blog-card__conversation-panel {
+          display: none;
+          min-width: 0;
+        }
+
+        .blog-card__conversation-panel.is-open {
           display: flex;
-          transition: transform 320ms ease, opacity 320ms ease,
-            box-shadow 320ms ease, visibility 0ms linear 320ms;
-          z-index: 2;
+          flex-direction: column;
         }
 
-        .blog-card__side-panel.is-open {
-          transform: translateX(0);
-          opacity: 1;
-          pointer-events: auto;
-          visibility: visible;
-          transition: transform 320ms ease, opacity 320ms ease,
-            box-shadow 320ms ease;
-        }
-
-        .blog-card__side-panel-inner {
+        .blog-card__conversation-inner {
           width: 100%;
-          height: 100%;
+          min-height: 100%;
           display: flex;
           flex-direction: column;
           gap: 0.85rem;
           background: ${isNight ? "rgba(15,23,42,0.95)" : "#f8fafc"};
-          border-left: 1px solid
+          border: 1px solid
             ${isNight ? "rgba(255,255,255,0.08)" : "#e2e8f0"};
-          box-shadow: -14px 0 30px
+          box-shadow: 0 18px 32px
             ${isNight ? "rgba(0,0,0,0.38)" : "rgba(15,23,42,0.12)"};
           padding: ${isMobile ? "0.85rem" : "1.05rem"};
-          border-radius: 16px 0 0 16px;
+          border-radius: 16px;
           overflow: hidden;
         }
 
-        .blog-card__side-panel.is-light .conversation-card {
+        .blog-card__conversation-panel.is-light .conversation-card {
           background: #eef2ff;
         }
 
-        .blog-card__side-panel .conversation-card {
+        .blog-card__conversation-panel .conversation-card {
           height: 100%;
           overflow: hidden;
           display: flex;
@@ -2484,7 +2089,7 @@ export default function BlogCard({
           flex: 1 1 auto;
         }
 
-        .blog-card__side-panel .conversation-comment-wrapper {
+        .blog-card__conversation-panel .conversation-comment-wrapper {
           max-height: none;
           overflow-y: auto;
           flex: 1 1 auto;
@@ -3117,32 +2722,16 @@ export default function BlogCard({
         /* 📱 MOBILE STYLES */
         @media (max-width: 576px) {
           .blog-card__layout {
-            padding-right: 0 !important;
+            grid-template-columns: 1fr;
           }
 
-          .blog-card__content-shell {
-            padding-right: 0 !important;
+          .blog-card__layout.is-split {
+            grid-template-columns: 1fr;
+            gap: 1rem;
           }
 
-          .blog-card__side-panel {
-            position: absolute;
-            inset: 0 0 auto auto;
-            width: min(100%, 420px);
-            max-width: none;
-            transform: translateX(104%);
-            border-left: none;
-            box-shadow: 0 18px 32px
-              ${isNight ? "rgba(0,0,0,0.45)" : "rgba(15,23,42,0.12)"};
-          }
-
-          .blog-card__side-panel-inner {
-            border-left: none;
-            border-radius: 16px;
-            padding: 0.85rem 0.9rem;
-          }
-
-          .blog-card__side-panel .conversation-card {
-            height: auto;
+          .blog-card__conversation-panel {
+            width: 100%;
           }
 
           /* ----------------------------------
