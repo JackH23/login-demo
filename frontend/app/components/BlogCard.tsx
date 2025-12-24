@@ -430,9 +430,7 @@ export default function BlogCard({
                   <li
                     key={comment._id ?? idx}
                     className={`conversation-comment-item rounded-4 shadow-sm ${
-                      isNight
-                        ? "bg-dark bg-opacity-75 text-white"
-                        : "bg-white"
+                      isNight ? "bg-dark bg-opacity-75 text-white" : "bg-white"
                     }`}
                   >
                     <div className="conversation-comment">
@@ -535,7 +533,9 @@ export default function BlogCard({
                               type="button"
                               className="reaction-button"
                               onClick={() => toggleReplyInput(idx)}
-                              disabled={!user || isCommentPending || isReplySending}
+                              disabled={
+                                !user || isCommentPending || isReplySending
+                              }
                             >
                               💬 Reply
                             </button>
@@ -557,9 +557,7 @@ export default function BlogCard({
                             <li
                               key={reply.tempId ?? rIdx}
                               className={`conversation-reply d-flex align-items-start gap-2 ${
-                                theme === "night"
-                                  ? "text-light"
-                                  : "text-muted"
+                                theme === "night" ? "text-light" : "text-muted"
                               } small mb-2`}
                             >
                               <button
@@ -593,7 +591,9 @@ export default function BlogCard({
                                   <button
                                     type="button"
                                     className="fw-semibold p-0 border-0 bg-transparent text-start conversation-reply__author"
-                                    onClick={() => openUserProfile(reply.author)}
+                                    onClick={() =>
+                                      openUserProfile(reply.author)
+                                    }
                                     onKeyDown={(event) => {
                                       if (
                                         event.key === "Enter" ||
@@ -612,7 +612,9 @@ export default function BlogCard({
                                   className="conversation-reply__text conversation-reply__bubble text-muted"
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => setReplyInputVisibility(idx, true)}
+                                  onClick={() =>
+                                    setReplyInputVisibility(idx, true)
+                                  }
                                   onKeyDown={(event) => {
                                     if (
                                       event.key === "Enter" ||
@@ -655,7 +657,9 @@ export default function BlogCard({
                               : "Sign in to reply to this comment"
                           }
                           value={comment.newReply}
-                          onChange={(e) => handleReplyChange(idx, e.target.value)}
+                          onChange={(e) =>
+                            handleReplyChange(idx, e.target.value)
+                          }
                           disabled={isReplySending || !user}
                         />
                         <button
@@ -685,9 +689,7 @@ export default function BlogCard({
             type="text"
             className="form-control comment-input"
             placeholder={
-              user
-                ? "Write a comment..."
-                : "Sign in to join the conversation"
+              user ? "Write a comment..." : "Sign in to join the conversation"
             }
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
@@ -1264,773 +1266,794 @@ export default function BlogCard({
             padding: isMobile ? "0.65rem 0.9rem" : "1.1rem 1.35rem",
           }}
         >
-        <div className="blog-card__menu position-absolute top-0 end-0 m-2 m-md-3">
-          {/* MENU-DOTS */}
-          <button
-            type="button"
-            ref={menuButtonRef}
-            className={`blog-card__menu-dots border-0 ${
-              canManagePost ? "" : "blog-card__menu-dots--muted"
-            }`}
-            aria-label="Post actions"
-            aria-haspopup="menu"
-            aria-expanded={showActionsMenu}
-            aria-controls={`blog-card-menu-${blog._id ?? "new"}`}
-            onClick={() => setShowActionsMenu((prev) => !prev)}
-          >
-            <span className="blog-card__menu-icon" aria-hidden={true}>
-              &#8942;
-            </span>
-            <span className="visually-hidden">Toggle actions menu</span>
-          </button>
+          <div className="blog-card__menu position-absolute top-0 end-0 m-2 m-md-3">
+            {/* MENU-DOTS */}
+            <button
+              type="button"
+              ref={menuButtonRef}
+              className={`blog-card__menu-dots border-0 ${
+                canManagePost ? "" : "blog-card__menu-dots--muted"
+              }`}
+              aria-label="Post actions"
+              aria-haspopup="menu"
+              aria-expanded={showActionsMenu}
+              aria-controls={`blog-card-menu-${blog._id ?? "new"}`}
+              onClick={() => setShowActionsMenu((prev) => !prev)}
+            >
+              <span className="blog-card__menu-icon" aria-hidden={true}>
+                &#8942;
+              </span>
+              <span className="visually-hidden">Toggle actions menu</span>
+            </button>
 
-          {showActionsMenu && (
-            <>
-              <button
-                type="button"
-                className="blog-card__menu-backdrop"
-                aria-label="Close actions menu"
-                onClick={() => setShowActionsMenu(false)}
-              />
-              <div
-                ref={menuDropdownRef}
-                role="menu"
-                id={`blog-card-menu-${blog._id ?? "new"}`}
-                className={`blog-card__menu-dropdown ${
-                  isMobile
-                    ? useBottomSheet
-                      ? "blog-card__menu-dropdown--mobile-sheet"
-                      : "blog-card__menu-dropdown--mobile"
-                    : "blog-card__menu-dropdown--desktop"
-                } ${isNight ? "is-dark" : "is-light"}`}
-                data-open={showActionsMenu}
-              >
-                {/* DELETE POST */}
-                <div className="blog-card__menu-list" role="none">
+            {showActionsMenu && (
+              <>
+                <button
+                  type="button"
+                  className="blog-card__menu-backdrop"
+                  aria-label="Close actions menu"
+                  onClick={() => setShowActionsMenu(false)}
+                />
+                <div
+                  ref={menuDropdownRef}
+                  role="menu"
+                  id={`blog-card-menu-${blog._id ?? "new"}`}
+                  className={`blog-card__menu-dropdown ${
+                    isMobile
+                      ? useBottomSheet
+                        ? "blog-card__menu-dropdown--mobile-sheet"
+                        : "blog-card__menu-dropdown--mobile"
+                      : "blog-card__menu-dropdown--desktop"
+                  } ${isNight ? "is-dark" : "is-light"}`}
+                  data-open={showActionsMenu}
+                >
+                  {/* DELETE POST */}
+                  <div className="blog-card__menu-list" role="none">
+                    <button
+                      type="button"
+                      className="blog-card__menu-item blog-card__menu-item--danger"
+                      role="menuitem"
+                      onClick={() => {
+                        setShowActionsMenu(false);
+                        setShowDeleteModal(true);
+                      }}
+                    >
+                      <span
+                        aria-hidden={true}
+                        className="blog-card__menu-item-icon"
+                      >
+                        🗑️
+                      </span>
+                      <div className="blog-card__menu-item-copy">
+                        <span className="blog-card__menu-item-title">
+                          Delete post
+                        </span>
+                        <span className="blog-card__menu-item-subtitle">
+                          Permanently remove this post
+                        </span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+          {/* Row: author avatar + title + author name */}
+          <div
+            className="blog-card__header d-flex flex-column gap-2 gap-md-3 align-items-start text-start"
+            style={{
+              gap: isMobile ? "0.55rem" : "0.9rem",
+            }}
+          >
+            <div className="blog-card__author-row d-flex align-items-center w-100 gap-3 flex-wrap">
+              <div className="blog-card__author-info d-flex align-items-center gap-3">
+                {/* If author has an image, display it */}
+                <button
+                  className="blog-card__avatar p-0 border-0 bg-transparent"
+                  aria-label={
+                    isProfileNavigable
+                      ? `View ${displayAuthor}'s profile`
+                      : undefined
+                  }
+                  onClick={isProfileNavigable ? openAuthorProfile : undefined}
+                  disabled={!isProfileNavigable}
+                  style={{ cursor: isProfileNavigable ? "pointer" : "default" }}
+                  disabled={!displayAuthor}
+                >
+                  {author?.image ? (
+                    <img
+                      src={author.image}
+                      alt={author.username}
+                      className="rounded-circle border border-3 border-white"
+                      style={{
+                        width: isMobile ? "40px" : "48px", // Avatar width
+                        height: isMobile ? "40px" : "48px", // Avatar height
+                        objectFit: "cover", // Ensures image fills the circle without distortion
+                      }}
+                    />
+                  ) : (
+                    <div
+                      className="rounded-circle bg-white text-primary fw-semibold d-flex align-items-center justify-content-center"
+                      style={{
+                        width: isMobile ? "40px" : "48px",
+                        height: isMobile ? "40px" : "48px",
+                      }}
+                    >
+                      {authorInitial}
+                    </div>
+                  )}
+                </button>
+
+                <div className="blog-card__author-meta d-flex align-items-center gap-2 text-start">
+                  <span className="small text-white-50">By</span>
                   <button
                     type="button"
-                    className="blog-card__menu-item blog-card__menu-item--danger"
-                    role="menuitem"
-                    onClick={() => {
-                      setShowActionsMenu(false);
-                      setShowDeleteModal(true);
-                    }}
+                    className="btn btn-link p-0 align-baseline fw-semibold text-white text-start"
+                    onClick={openAuthorProfile}
+                    disabled={!displayAuthor}
                   >
-                    <span
-                      aria-hidden={true}
-                      className="blog-card__menu-item-icon"
-                    >
-                      🗑️
-                    </span>
-                    <div className="blog-card__menu-item-copy">
-                      <span className="blog-card__menu-item-title">
-                        Delete post
-                      </span>
-                      <span className="blog-card__menu-item-subtitle">
-                        Permanently remove this post
-                      </span>
-                    </div>
+                    {displayAuthor || "Unknown"}
                   </button>
                 </div>
               </div>
-            </>
-          )}
-        </div>
-        {/* Row: author avatar + title + author name */}
-        <div
-          className="blog-card__header d-flex flex-column gap-2 gap-md-3 align-items-start text-start"
-          style={{
-            gap: isMobile ? "0.55rem" : "0.9rem",
-          }}
-        >
-          <div className="blog-card__author-row d-flex align-items-center w-100 gap-3 flex-wrap">
-            <div className="blog-card__author-info d-flex align-items-center gap-3">
-              {/* If author has an image, display it */}
-              <button
-                className="blog-card__avatar p-0 border-0 bg-transparent"
-                aria-label={
-                  isProfileNavigable
-                    ? `View ${displayAuthor}'s profile`
-                    : undefined
-                }
-                onClick={isProfileNavigable ? openAuthorProfile : undefined}
-                disabled={!isProfileNavigable}
-                style={{ cursor: isProfileNavigable ? "pointer" : "default" }}
-                disabled={!displayAuthor}
+            </div>
+
+            {/* Blog title and author name section */}
+            <div className="blog-card__title w-100">
+              {/* Blog title */}
+              <h3
+                className="mb-1 fw-bold"
+                style={{
+                  fontSize: isMobile ? "1.05rem" : undefined,
+                  lineHeight: 1.15,
+                }}
               >
-                {author?.image ? (
-                  <img
-                    src={author.image}
-                    alt={author.username}
-                    className="rounded-circle border border-3 border-white"
-                    style={{
-                      width: isMobile ? "40px" : "48px", // Avatar width
-                      height: isMobile ? "40px" : "48px", // Avatar height
-                      objectFit: "cover", // Ensures image fills the circle without distortion
-                    }}
-                  />
-                ) : (
-                  <div
-                    className="rounded-circle bg-white text-primary fw-semibold d-flex align-items-center justify-content-center"
-                    style={{
-                      width: isMobile ? "40px" : "48px",
-                      height: isMobile ? "40px" : "48px",
-                    }}
-                  >
-                    {authorInitial}
-                  </div>
-                )}
-              </button>
+                {blog.title}
+              </h3>
+            </div>
 
-              <div className="blog-card__author-meta d-flex align-items-center gap-2 text-start">
-                <span className="small text-white-50">By</span>
-                <button
-                  type="button"
-                  className="btn btn-link p-0 align-baseline fw-semibold text-white text-start"
-                  onClick={openAuthorProfile}
-                  disabled={!displayAuthor}
-                >
-                  {displayAuthor || "Unknown"}
-                </button>
+            {!isMobile && (
+              <div className="blog-card__stats d-flex flex-wrap align-items-center justify-content-center gap-2 mt-2 mt-md-0">
+                {/* Display like count */}
+                <span className={statBadgeClass}>❤️ {likes}</span>
+                {/* Display dislike count */}
+                <span className={statBadgeClass}>👎 {dislikes}</span>
+                {/* Display comment count */}
+                <span className={statBadgeClass}>💬 {totalComments}</span>
               </div>
-            </div>
+            )}
           </div>
-
-          {/* Blog title and author name section */}
-          <div className="blog-card__title w-100">
-            {/* Blog title */}
-            <h3
-              className="mb-1 fw-bold"
-              style={{
-                fontSize: isMobile ? "1.05rem" : undefined,
-                lineHeight: 1.15,
-              }}
-            >
-              {blog.title}
-            </h3>
-          </div>
-
-          {!isMobile && (
-            <div className="blog-card__stats d-flex flex-wrap align-items-center justify-content-center gap-2 mt-2 mt-md-0">
-              {/* Display like count */}
-              <span className={statBadgeClass}>❤️ {likes}</span>
-              {/* Display dislike count */}
-              <span className={statBadgeClass}>👎 {dislikes}</span>
-              {/* Display comment count */}
-              <span className={statBadgeClass}>💬 {totalComments}</span>
-            </div>
-          )}
         </div>
-      </div>
 
-      {blog.image && (
-        <div
-          className="blog-card__media position-relative overflow-hidden"
-          style={{
-            cursor: "pointer",
-            width: "100%",
-            maxHeight: isMobile ? "320px" : "360px",
-            minHeight: isMobile ? "280px" : undefined,
-            aspectRatio: isMobile ? "4 / 3" : "16 / 9",
-            backgroundColor: isNight ? "#0f172a" : "#f8fafc",
-            borderBottomLeftRadius: "0px",
-            borderBottomRightRadius: "0px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {/* Image container section with clickable behavior */}
-          <img
-            src={blog.image}
-            alt="Blog Visual"
-            className="card-img-top"
-            style={coverImageStyle}
-            onClick={() => setShowImageModal(true)}
-          />
-
-          {/* Transparent gradient overlay for visual depth */}
+        {blog.image && (
           <div
-            className="position-absolute top-0 start-0 w-100 h-100"
+            className="blog-card__media position-relative overflow-hidden"
             style={{
-              pointerEvents: "none",
-              background:
-                "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.35) 100%)",
+              cursor: "pointer",
+              width: "100%",
+              maxHeight: isMobile ? "320px" : "360px",
+              minHeight: isMobile ? "280px" : undefined,
+              aspectRatio: isMobile ? "4 / 3" : "16 / 9",
+              backgroundColor: isNight ? "#0f172a" : "#f8fafc",
+              borderBottomLeftRadius: "0px",
+              borderBottomRightRadius: "0px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-          />
+          >
+            {/* Image container section with clickable behavior */}
+            <img
+              src={blog.image}
+              alt="Blog Visual"
+              className="card-img-top"
+              style={coverImageStyle}
+              onClick={() => setShowImageModal(true)}
+            />
 
-          {/* Bottom-right floating badge prompting user interaction */}
-          {!isMobile && (
+            {/* Transparent gradient overlay for visual depth */}
+            <div
+              className="position-absolute top-0 start-0 w-100 h-100"
+              style={{
+                pointerEvents: "none",
+                background:
+                  "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.35) 100%)",
+              }}
+            />
+
+            {/* Bottom-right floating badge prompting user interaction */}
+            {!isMobile && (
+              <button
+                type="button"
+                className="blog-card__expand position-absolute bottom-0 end-0 m-2 m-md-3 border-0 bg-transparent p-0"
+                onClick={() => setShowImageModal(true)}
+                aria-label="Expand image"
+              >
+                <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-2 py-1 px-md-3 py-md-2 d-flex align-items-center gap-2">
+                  <span className="tap-to-expand" aria-hidden="true">
+                    🔍
+                  </span>
+                  <span className="tap-to-expand">Tap to expand</span>
+                </span>
+              </button>
+            )}
+          </div>
+        )}
+
+        {blog.image && isMobile && (
+          <div className="px-3 pb-3">
             <button
               type="button"
-              className="blog-card__expand position-absolute bottom-0 end-0 m-2 m-md-3 border-0 bg-transparent p-0"
+              className="blog-card__expand w-100 border-0 bg-transparent p-0"
               onClick={() => setShowImageModal(true)}
               aria-label="Expand image"
             >
-              <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-2 py-1 px-md-3 py-md-2 d-flex align-items-center gap-2">
+              <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-3 py-2 w-100 d-flex align-items-center justify-content-center gap-2">
                 <span className="tap-to-expand" aria-hidden="true">
                   🔍
                 </span>
                 <span className="tap-to-expand">Tap to expand</span>
               </span>
             </button>
-          )}
-        </div>
-      )}
-
-      {blog.image && isMobile && (
-        <div className="px-3 pb-3">
-          <button
-            type="button"
-            className="blog-card__expand w-100 border-0 bg-transparent p-0"
-            onClick={() => setShowImageModal(true)}
-            aria-label="Expand image"
-          >
-            <span className="badge bg-dark bg-opacity-75 text-white rounded-pill px-3 py-2 w-100 d-flex align-items-center justify-content-center gap-2">
-              <span className="tap-to-expand" aria-hidden="true">
-                🔍
-              </span>
-              <span className="tap-to-expand">Tap to expand</span>
-            </span>
-          </button>
-        </div>
-      )}
-
-      <div
-        className="blog-card__body card-body p-3"
-        style={{
-          padding: isMobile
-            ? blog.image
-              ? "0.5rem 0.9rem 0.95rem"
-              : "0.75rem 0.9rem"
-            : "1rem 1.25rem",
-        }}
-      >
-        <p
-          className="card-text fs-6 mb-2"
-          style={contentStyle}
-          onClick={handleToggleContent}
-          onKeyDown={(event) => {
-            if (!isContentLong) return;
-            if (event.key === "Enter" || event.key === " ") {
-              event.preventDefault();
-              handleToggleContent();
-            }
-          }}
-          role={isContentLong ? "button" : undefined}
-          tabIndex={isContentLong ? 0 : undefined}
-          aria-expanded={isContentLong ? isContentExpanded : undefined}
-          aria-label={
-            isContentLong
-              ? isContentExpanded
-                ? "Collapse blog content"
-                : "Expand blog content"
-              : undefined
-          }
-          title={
-            isContentLong
-              ? isContentExpanded
-                ? "Click to collapse"
-                : "Click to read more"
-              : undefined
-          }
-        >
-          {blog.content}
-        </p>
-        {isContentLong && (
-          <small
-            className={`d-inline-block ${mutedTextClass}`}
-            role="presentation"
-            aria-hidden="true"
-          >
-            {isContentExpanded ? "Show less" : "Show more"}
-          </small>
+          </div>
         )}
 
-        <div className="blog-card__footer d-flex flex-column flex-md-row gap-3 mt-4 align-items-start align-items-md-center w-100">
-          {isMobile ? (
-            <div className="blog-card__mobile-cta w-100">
-              <div className="blog-card__mobile-actions-grid">
-                <button
-                  className={`btn btn-sm btn-success rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
-                  onClick={handleLikePost}
-                  disabled={hasLikedPost || !user}
-                  style={{ fontSize: "0.95rem" }}
-                >
-                  <span>👍</span>
-                  <span className="badge bg-white text-success ms-1">
-                    {likes}
-                  </span>
-                </button>
-
-                <button
-                  className={`btn btn-sm btn-outline-danger rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
-                  onClick={handleDislikePost}
-                  disabled={hasDislikedPost || !user}
-                  style={{ fontSize: "0.95rem" }}
-                >
-                  <span>👎</span>
-                  <span className="badge bg-light text-danger ms-1">
-                    {dislikes}
-                  </span>
-                </button>
-
-                <button
-                  className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
-                    isNight ? "btn-outline-light" : "btn-outline-secondary"
-                  }`}
-                  onClick={() => {
-                    const shareText = `${blog.title}\n\n${blog.content}\n\nShared from Blog App`;
-                    const shareUrl = window.location.href;
-                    if (navigator.share) {
-                      navigator
-                        .share({
-                          title: blog.title,
-                          text: shareText,
-                          url: shareUrl,
-                        })
-                        .catch((err) => console.error("Share failed", err));
-                    } else {
-                      navigator.clipboard.writeText(
-                        `${shareText}\n\n${shareUrl}`
-                      );
-                      alert("Link copied to clipboard!");
-                    }
-                  }}
-                  style={{ fontSize: "0.95rem" }}
-                >
-                  <span>⤴</span>
-                  <span>Share</span>
-                </button>
-
-                <button
-                  className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
-                    isNight ? "btn-outline-light" : "btn-outline-secondary"
-                  }`}
-                  onClick={() => {
-                    if (!showConversation) prefetchComments();
-                    setShowConversation((prev) => !prev);
-                  }}
-                  onMouseEnter={prefetchComments}
-                  onFocus={prefetchComments}
-                  style={{ fontSize: "0.95rem" }}
-                  aria-pressed={showConversation}
-                >
-                  <span>💬</span>
-                  <span>{showConversation ? "Hide chat" : "Comments"}</span>
-                </button>
-              </div>
-            </div>
-          ) : (
-            <>
-              <div className="blog-card__actions d-flex flex-wrap gap-2 align-items-center">
-                <button
-                  className={`btn btn-sm btn-success rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
-                  onClick={handleLikePost}
-                  disabled={hasLikedPost || !user}
-                  style={{ fontSize: isMobile ? "0.9rem" : undefined }}
-                >
-                  <span>👍</span>
-                  <span className="badge bg-white text-success ms-1">
-                    {likes}
-                  </span>
-                </button>
-
-                <button
-                  className={`btn btn-sm btn-outline-danger rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
-                  onClick={handleDislikePost}
-                  disabled={hasDislikedPost || !user}
-                  style={{ fontSize: isMobile ? "0.9rem" : undefined }}
-                >
-                  <span>👎</span>
-                  <span className="badge bg-light text-danger ms-1">
-                    {dislikes}
-                  </span>
-                </button>
-                <button
-                  className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
-                    isNight ? "btn-outline-light" : "btn-outline-secondary"
-                  }`}
-                  onClick={() => {
-                    const shareText = `${blog.title}\n\n${blog.content}\n\nShared from Blog App`;
-                    const shareUrl = window.location.href;
-                    if (navigator.share) {
-                      navigator
-                        .share({
-                          title: blog.title,
-                          text: shareText,
-                          url: shareUrl,
-                        })
-                        .catch((err) => console.error("Share failed", err));
-                    } else {
-                      navigator.clipboard.writeText(
-                        `${shareText}\n\n${shareUrl}`
-                      );
-                      alert("Link copied to clipboard!");
-                    }
-                  }}
-                  style={{ fontSize: isMobile ? "0.9rem" : undefined }}
-                >
-                  <span>⤴</span>
-                  <span>Share</span>
-                </button>
-
-                <button
-                  className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
-                    isNight ? "btn-outline-light" : "btn-outline-secondary"
-                  }`}
-                  onClick={() => {
-                    if (!showConversation) prefetchComments();
-                    setShowConversation((prev) => !prev);
-                  }}
-                  onMouseEnter={prefetchComments}
-                  onFocus={prefetchComments}
-                  style={{ fontSize: isMobile ? "0.9rem" : undefined }}
-                  aria-pressed={showConversation}
-                >
-                  <span>💬</span>
-                  <span>{showConversation ? "Hide chat" : "Comments"}</span>
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-
-        {showConversation && isMobile && renderConversationSection("inline")}
-      </div>
-
-      {!isMobile && (
-        <aside
-          className={`blog-card-comments-panel ${
-            showConversation ? "is-open" : ""
-          } ${isNight ? "is-night" : "is-day"}`}
-          aria-hidden={!showConversation}
-        >
-          <div className="blog-card-comments-panel__header">
-            <div>
-              <p className="mb-0 text-uppercase fw-semibold small text-muted">
-                Comments
-              </p>
-              <h5 className="mb-0">Conversation</h5>
-            </div>
-            <button
-              type="button"
-              className="btn btn-sm btn-outline-secondary rounded-pill"
-              onClick={() => setShowConversation(false)}
-            >
-              Close
-            </button>
-          </div>
-          <div className="blog-card-comments-panel__content">
-            {renderConversationSection("panel")}
-          </div>
-        </aside>
-      )}
-
-      {/* showDeleteModal */}
-      {showDeleteModal && (
         <div
-          className="modal fade show d-block"
-          tabIndex={-1}
-          role="dialog"
-          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-          onClick={() => !isDeleting && setShowDeleteModal(false)}
+          className="blog-card__body card-body p-3"
+          style={{
+            padding: isMobile
+              ? blog.image
+                ? "0.5rem 0.9rem 0.95rem"
+                : "0.75rem 0.9rem"
+              : "1rem 1.25rem",
+          }}
         >
-          <div
-            className="modal-dialog modal-dialog-centered"
-            role="document"
-            onClick={(e) => e.stopPropagation()}
+          <p
+            className="card-text fs-6 mb-2"
+            style={contentStyle}
+            onClick={handleToggleContent}
+            onKeyDown={(event) => {
+              if (!isContentLong) return;
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                handleToggleContent();
+              }
+            }}
+            role={isContentLong ? "button" : undefined}
+            tabIndex={isContentLong ? 0 : undefined}
+            aria-expanded={isContentLong ? isContentExpanded : undefined}
+            aria-label={
+              isContentLong
+                ? isContentExpanded
+                  ? "Collapse blog content"
+                  : "Expand blog content"
+                : undefined
+            }
+            title={
+              isContentLong
+                ? isContentExpanded
+                  ? "Click to collapse"
+                  : "Click to read more"
+                : undefined
+            }
           >
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Confirm Delete</h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setShowDeleteModal(false)}
-                  disabled={isDeleting}
-                />
-              </div>
-              <div className="modal-body">
-                Are you sure you want to delete this post?
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setShowDeleteModal(false)}
-                  disabled={isDeleting}
-                >
-                  Cancel
-                </button>
+            {blog.content}
+          </p>
+          {isContentLong && (
+            <small
+              className={`d-inline-block ${mutedTextClass}`}
+              role="presentation"
+              aria-hidden="true"
+            >
+              {isContentExpanded ? "Show less" : "Show more"}
+            </small>
+          )}
 
-                <button
-                  type="button"
-                  className="btn btn-danger"
-                  onClick={handleDeletePost}
-                  disabled={isDeleting}
-                >
-                  {isDeleting ? (
-                    <>
-                      <span
-                        className="spinner-border spinner-border-sm me-2"
-                        role="status"
-                      ></span>
-                      Deleting...
-                    </>
-                  ) : (
-                    "Delete"
-                  )}
-                </button>
+          <div className="blog-card__footer d-flex flex-column flex-md-row gap-3 mt-4 align-items-start align-items-md-center w-100">
+            {isMobile ? (
+              <div className="blog-card__mobile-cta w-100">
+                <div className="blog-card__mobile-actions-grid">
+                  <button
+                    className={`btn btn-sm btn-success rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
+                    onClick={handleLikePost}
+                    disabled={hasLikedPost || !user}
+                    style={{ fontSize: "0.95rem" }}
+                  >
+                    <span>👍</span>
+                    <span className="badge bg-white text-success ms-1">
+                      {likes}
+                    </span>
+                  </button>
+
+                  <button
+                    className={`btn btn-sm btn-outline-danger rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
+                    onClick={handleDislikePost}
+                    disabled={hasDislikedPost || !user}
+                    style={{ fontSize: "0.95rem" }}
+                  >
+                    <span>👎</span>
+                    <span className="badge bg-light text-danger ms-1">
+                      {dislikes}
+                    </span>
+                  </button>
+
+                  <button
+                    className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
+                      isNight ? "btn-outline-light" : "btn-outline-secondary"
+                    }`}
+                    onClick={() => {
+                      const shareText = `${blog.title}\n\n${blog.content}\n\nShared from Blog App`;
+                      const shareUrl = window.location.href;
+                      if (navigator.share) {
+                        navigator
+                          .share({
+                            title: blog.title,
+                            text: shareText,
+                            url: shareUrl,
+                          })
+                          .catch((err) => console.error("Share failed", err));
+                      } else {
+                        navigator.clipboard.writeText(
+                          `${shareText}\n\n${shareUrl}`
+                        );
+                        alert("Link copied to clipboard!");
+                      }
+                    }}
+                    style={{ fontSize: "0.95rem" }}
+                  >
+                    <span>⤴</span>
+                    <span>Share</span>
+                  </button>
+
+                  <button
+                    className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
+                      isNight ? "btn-outline-light" : "btn-outline-secondary"
+                    }`}
+                    onClick={() => {
+                      if (!showConversation) prefetchComments();
+                      setShowConversation((prev) => !prev);
+                    }}
+                    onMouseEnter={prefetchComments}
+                    onFocus={prefetchComments}
+                    style={{ fontSize: "0.95rem" }}
+                    aria-pressed={showConversation}
+                  >
+                    <span>💬</span>
+                    <span>{showConversation ? "Hide chat" : "Comments"}</span>
+                  </button>
+                </div>
               </div>
-            </div>
+            ) : (
+              <>
+                <div className="blog-card__actions d-flex flex-wrap gap-2 align-items-center">
+                  <button
+                    className={`btn btn-sm btn-success rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
+                    onClick={handleLikePost}
+                    disabled={hasLikedPost || !user}
+                    style={{ fontSize: isMobile ? "0.9rem" : undefined }}
+                  >
+                    <span>👍</span>
+                    <span className="badge bg-white text-success ms-1">
+                      {likes}
+                    </span>
+                  </button>
+
+                  <button
+                    className={`btn btn-sm btn-outline-danger rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding}`}
+                    onClick={handleDislikePost}
+                    disabled={hasDislikedPost || !user}
+                    style={{ fontSize: isMobile ? "0.9rem" : undefined }}
+                  >
+                    <span>👎</span>
+                    <span className="badge bg-light text-danger ms-1">
+                      {dislikes}
+                    </span>
+                  </button>
+                  <button
+                    className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
+                      isNight ? "btn-outline-light" : "btn-outline-secondary"
+                    }`}
+                    onClick={() => {
+                      const shareText = `${blog.title}\n\n${blog.content}\n\nShared from Blog App`;
+                      const shareUrl = window.location.href;
+                      if (navigator.share) {
+                        navigator
+                          .share({
+                            title: blog.title,
+                            text: shareText,
+                            url: shareUrl,
+                          })
+                          .catch((err) => console.error("Share failed", err));
+                      } else {
+                        navigator.clipboard.writeText(
+                          `${shareText}\n\n${shareUrl}`
+                        );
+                        alert("Link copied to clipboard!");
+                      }
+                    }}
+                    style={{ fontSize: isMobile ? "0.9rem" : undefined }}
+                  >
+                    <span>⤴</span>
+                    <span>Share</span>
+                  </button>
+
+                  <button
+                    className={`btn btn-sm rounded-pill d-flex align-items-center gap-2 ${actionButtonPadding} ${
+                      isNight ? "btn-outline-light" : "btn-outline-secondary"
+                    }`}
+                    onClick={() => {
+                      if (!showConversation) prefetchComments();
+                      setShowConversation((prev) => !prev);
+                    }}
+                    onMouseEnter={prefetchComments}
+                    onFocus={prefetchComments}
+                    style={{ fontSize: isMobile ? "0.9rem" : undefined }}
+                    aria-pressed={showConversation}
+                  >
+                    <span>💬</span>
+                    <span>{showConversation ? "Hide chat" : "Comments"}</span>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
-        </div>
-      )}
 
-      {/* showCommentsModal */}
-      {showCommentsModal && (
-        <div
-          className="modal fade show d-block"
-          tabIndex={-1}
-          role="dialog"
-          aria-modal="true"
-          style={{ backgroundColor: "rgba(0,0,0,0.85)" }}
-          onClick={() => setShowCommentsModal(false)}
-        >
+          {showConversation && isMobile && renderConversationSection("inline")}
+        </div>
+
+        {!isMobile && (
+          <aside
+            className={`blog-card-comments-panel ${
+              showConversation ? "is-open" : ""
+            } ${isNight ? "is-night" : "is-day"}`}
+            aria-hidden={!showConversation}
+          >
+            <div className="blog-card-comments-panel__header">
+              <div>
+                <p className="mb-0 text-uppercase fw-semibold small text-muted">
+                  Comments
+                </p>
+                <h5 className="mb-0">Conversation</h5>
+              </div>
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-secondary rounded-pill"
+                onClick={() => setShowConversation(false)}
+              >
+                Close
+              </button>
+            </div>
+            <div className="blog-card-comments-panel__content">
+              {renderConversationSection("panel")}
+            </div>
+          </aside>
+        )}
+
+        {/* showDeleteModal */}
+        {showDeleteModal && (
           <div
-            className="modal-dialog modal-fullscreen-sm-down modal-dialog-centered comments-modal__dialog"
-            role="document"
-            onClick={(e) => e.stopPropagation()}
+            className="modal fade show d-block"
+            tabIndex={-1}
+            role="dialog"
+            style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+            onClick={() => !isDeleting && setShowDeleteModal(false)}
           >
             <div
-              className={`modal-content comments-modal__shell ${
-                theme === "night" ? "bg-dark text-white" : ""
-              }`}
+              className="modal-dialog modal-dialog-centered"
+              role="document"
+              onClick={(e) => e.stopPropagation()}
             >
-              <div className="modal-header border-0 pb-2 comments-modal__header">
-                <div className="d-flex flex-column gap-1">
-                  <h5 className="modal-title mb-0">All Comments</h5>
-                  <p className="comments-modal__subtle mb-0">
-                    {totalComments} comment{totalComments === 1 ? "" : "s"} ·
-                    Tap a comment to reply
-                  </p>
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Confirm Delete</h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setShowDeleteModal(false)}
+                    disabled={isDeleting}
+                  />
                 </div>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setShowCommentsModal(false)}
-                  aria-label="Close"
-                />
+                <div className="modal-body">
+                  Are you sure you want to delete this post?
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setShowDeleteModal(false)}
+                    disabled={isDeleting}
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn btn-danger"
+                    onClick={handleDeletePost}
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? (
+                      <>
+                        <span
+                          className="spinner-border spinner-border-sm me-2"
+                          role="status"
+                        ></span>
+                        Deleting...
+                      </>
+                    ) : (
+                      "Delete"
+                    )}
+                  </button>
+                </div>
               </div>
+            </div>
+          </div>
+        )}
 
-              <div className="modal-body comments-modal__body">
-                <div className="comments-modal__scroll">
-                  <ul className="conversation-comment-list list-unstyled mb-0">
-                    {comments.map((comment, idx) => {
-                      const commentAvatar = resolveAvatar(
-                        comment.authorImage,
-                        comment.author
-                      );
-                      const replyKey = comment._id ?? `local-${idx}`;
-                      const isCommentPending =
-                        comment.isPending || !comment._id;
-                      const isReplySending = replySubmittingId === replyKey;
-                      const canSendReply = Boolean(
-                        user &&
-                          comment._id &&
-                          comment.newReply.trim() &&
-                          !isReplySending
-                      );
+        {/* showCommentsModal */}
+        {showCommentsModal && (
+          <div
+            className="modal fade show d-block"
+            tabIndex={-1}
+            role="dialog"
+            aria-modal="true"
+            style={{ backgroundColor: "rgba(0,0,0,0.85)" }}
+            onClick={() => setShowCommentsModal(false)}
+          >
+            <div
+              className="modal-dialog modal-fullscreen-sm-down modal-dialog-centered comments-modal__dialog"
+              role="document"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div
+                className={`modal-content comments-modal__shell ${
+                  theme === "night" ? "bg-dark text-white" : ""
+                }`}
+              >
+                <div className="modal-header border-0 pb-2 comments-modal__header">
+                  <div className="d-flex flex-column gap-1">
+                    <h5 className="modal-title mb-0">All Comments</h5>
+                    <p className="comments-modal__subtle mb-0">
+                      {totalComments} comment{totalComments === 1 ? "" : "s"} ·
+                      Tap a comment to reply
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setShowCommentsModal(false)}
+                    aria-label="Close"
+                  />
+                </div>
 
-                      return (
-                        <li
-                          key={comment._id ?? idx}
-                          className={`conversation-comment-item rounded-4 shadow-sm ${
-                            theme === "night"
-                              ? "bg-dark bg-opacity-75 text-white"
-                              : "bg-white"
-                          }`}
-                        >
-                          <div className="conversation-comment">
-                            <div className="conversation-comment__main">
-                              <div className="conversation-comment__avatar">
-                                <button
-                                  type="button"
-                                  className="p-0 border-0 bg-transparent"
-                                  onClick={() =>
-                                    openUserProfile(comment.author)
-                                  }
-                                  aria-label={`View ${comment.author}'s profile`}
-                                >
-                                  {commentAvatar ? (
-                                    <img
-                                      src={commentAvatar}
-                                      alt={`${comment.author}'s avatar`}
-                                      className="conversation-comment__avatar-image"
-                                    />
-                                  ) : (
-                                    <span
-                                      className={`conversation-comment__avatar-fallback ${
-                                        theme === "night"
-                                          ? "bg-secondary text-white"
-                                          : "bg-primary bg-opacity-10 text-primary"
-                                      }`}
-                                    >
-                                      {comment.author
-                                        ?.charAt(0)
-                                        ?.toUpperCase() || "?"}
-                                    </span>
-                                  )}
-                                </button>
-                              </div>
-                              <div className="conversation-comment__body">
-                                <div className="conversation-comment__meta">
-                                  <span
-                                    className={`conversation-comment__author ${
-                                      theme === "night"
-                                        ? "text-primary text-opacity-75"
-                                        : "text-primary"
-                                    }`}
-                                    role="button"
-                                    tabIndex={0}
+                <div className="modal-body comments-modal__body">
+                  <div className="comments-modal__scroll">
+                    <ul className="conversation-comment-list list-unstyled mb-0">
+                      {comments.map((comment, idx) => {
+                        const commentAvatar = resolveAvatar(
+                          comment.authorImage,
+                          comment.author
+                        );
+                        const replyKey = comment._id ?? `local-${idx}`;
+                        const isCommentPending =
+                          comment.isPending || !comment._id;
+                        const isReplySending = replySubmittingId === replyKey;
+                        const canSendReply = Boolean(
+                          user &&
+                            comment._id &&
+                            comment.newReply.trim() &&
+                            !isReplySending
+                        );
+
+                        return (
+                          <li
+                            key={comment._id ?? idx}
+                            className={`conversation-comment-item rounded-4 shadow-sm ${
+                              theme === "night"
+                                ? "bg-dark bg-opacity-75 text-white"
+                                : "bg-white"
+                            }`}
+                          >
+                            <div className="conversation-comment">
+                              <div className="conversation-comment__main">
+                                <div className="conversation-comment__avatar">
+                                  <button
+                                    type="button"
+                                    className="p-0 border-0 bg-transparent"
                                     onClick={() =>
                                       openUserProfile(comment.author)
                                     }
-                                    onKeyDown={(event) => {
-                                      if (
-                                        event.key === "Enter" ||
-                                        event.key === " "
-                                      ) {
-                                        event.preventDefault();
-                                        openUserProfile(comment.author);
-                                      }
-                                    }}
+                                    aria-label={`View ${comment.author}'s profile`}
                                   >
-                                    {comment.author}
-                                  </span>
+                                    {commentAvatar ? (
+                                      <img
+                                        src={commentAvatar}
+                                        alt={`${comment.author}'s avatar`}
+                                        className="conversation-comment__avatar-image"
+                                      />
+                                    ) : (
+                                      <span
+                                        className={`conversation-comment__avatar-fallback ${
+                                          theme === "night"
+                                            ? "bg-secondary text-white"
+                                            : "bg-primary bg-opacity-10 text-primary"
+                                        }`}
+                                      >
+                                        {comment.author
+                                          ?.charAt(0)
+                                          ?.toUpperCase() || "?"}
+                                      </span>
+                                    )}
+                                  </button>
                                 </div>
-                                <p
-                                  className={`conversation-comment__text ${
-                                    theme === "night"
-                                      ? "text-light"
-                                      : "text-body"
-                                  }`}
-                                >
-                                  {comment.text}
-                                </p>
-                                <div className="conversation-comment__actions">
-                                  <button
-                                    type="button"
-                                    className="reaction-button"
-                                    onClick={() => handleLikeComment(idx)}
-                                    disabled={
-                                      !user ||
-                                      isCommentPending ||
-                                      comment.likedBy?.includes(
-                                        user.username
-                                      ) ||
-                                      comment.dislikedBy?.includes(
-                                        user.username
-                                      )
-                                    }
-                                  >
-                                    👍{" "}
-                                    <span className="reaction-count">
-                                      {comment.likes}
+                                <div className="conversation-comment__body">
+                                  <div className="conversation-comment__meta">
+                                    <span
+                                      className={`conversation-comment__author ${
+                                        theme === "night"
+                                          ? "text-primary text-opacity-75"
+                                          : "text-primary"
+                                      }`}
+                                      role="button"
+                                      tabIndex={0}
+                                      onClick={() =>
+                                        openUserProfile(comment.author)
+                                      }
+                                      onKeyDown={(event) => {
+                                        if (
+                                          event.key === "Enter" ||
+                                          event.key === " "
+                                        ) {
+                                          event.preventDefault();
+                                          openUserProfile(comment.author);
+                                        }
+                                      }}
+                                    >
+                                      {comment.author}
                                     </span>
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="reaction-button"
-                                    onClick={() => handleDislikeComment(idx)}
-                                    disabled={
-                                      !user ||
-                                      isCommentPending ||
-                                      comment.likedBy?.includes(
-                                        user.username
-                                      ) ||
-                                      comment.dislikedBy?.includes(
-                                        user.username
-                                      )
-                                    }
+                                  </div>
+                                  <p
+                                    className={`conversation-comment__text ${
+                                      theme === "night"
+                                        ? "text-light"
+                                        : "text-body"
+                                    }`}
                                   >
-                                    👎{" "}
-                                    <span className="reaction-count">
-                                      {comment.dislikes}
-                                    </span>
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="reaction-button"
-                                    onClick={() => toggleReplyInput(idx)}
-                                    disabled={
-                                      !user ||
-                                      isCommentPending ||
-                                      isReplySending
-                                    }
-                                  >
-                                    💬 Reply
-                                  </button>
+                                    {comment.text}
+                                  </p>
+                                  <div className="conversation-comment__actions">
+                                    <button
+                                      type="button"
+                                      className="reaction-button"
+                                      onClick={() => handleLikeComment(idx)}
+                                      disabled={
+                                        !user ||
+                                        isCommentPending ||
+                                        comment.likedBy?.includes(
+                                          user.username
+                                        ) ||
+                                        comment.dislikedBy?.includes(
+                                          user.username
+                                        )
+                                      }
+                                    >
+                                      👍{" "}
+                                      <span className="reaction-count">
+                                        {comment.likes}
+                                      </span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="reaction-button"
+                                      onClick={() => handleDislikeComment(idx)}
+                                      disabled={
+                                        !user ||
+                                        isCommentPending ||
+                                        comment.likedBy?.includes(
+                                          user.username
+                                        ) ||
+                                        comment.dislikedBy?.includes(
+                                          user.username
+                                        )
+                                      }
+                                    >
+                                      👎{" "}
+                                      <span className="reaction-count">
+                                        {comment.dislikes}
+                                      </span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="reaction-button"
+                                      onClick={() => toggleReplyInput(idx)}
+                                      disabled={
+                                        !user ||
+                                        isCommentPending ||
+                                        isReplySending
+                                      }
+                                    >
+                                      💬 Reply
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
 
-                          {/* Replies */}
-                          {comment.replies.length > 0 && (
-                            <ul className="mt-2 ps-3 list-unstyled conversation-reply-list">
-                              {comment.replies.map((reply, rIdx) => {
-                                const replyAvatar = resolveAvatar(
-                                  reply.authorImage,
-                                  reply.author
-                                );
+                            {/* Replies */}
+                            {comment.replies.length > 0 && (
+                              <ul className="mt-2 ps-3 list-unstyled conversation-reply-list">
+                                {comment.replies.map((reply, rIdx) => {
+                                  const replyAvatar = resolveAvatar(
+                                    reply.authorImage,
+                                    reply.author
+                                  );
 
-                                return (
-                                  <li
-                                    key={reply.tempId ?? rIdx}
-                                    className={`conversation-reply d-flex align-items-start gap-2 ${
-                                      theme === "night"
-                                        ? "text-light"
-                                        : "text-muted"
-                                    } small mb-2`}
-                                  >
-                                    <button
-                                      type="button"
-                                      className="conversation-reply__avatar p-0 border-0 bg-transparent"
-                                      onClick={() =>
-                                        openUserProfile(reply.author)
-                                      }
-                                      aria-label={`View ${reply.author}'s profile`}
+                                  return (
+                                    <li
+                                      key={reply.tempId ?? rIdx}
+                                      className={`conversation-reply d-flex align-items-start gap-2 ${
+                                        theme === "night"
+                                          ? "text-light"
+                                          : "text-muted"
+                                      } small mb-2`}
                                     >
-                                      {replyAvatar ? (
-                                        <img
-                                          src={replyAvatar}
-                                          alt={`${reply.author}'s avatar`}
-                                          className="rounded-circle conversation-reply__avatar-image"
-                                        />
-                                      ) : (
-                                        <span
-                                          className={`conversation-reply__avatar-fallback d-inline-flex align-items-center justify-content-center rounded-circle ${
-                                            theme === "night"
-                                              ? "bg-secondary text-white"
-                                              : "bg-primary bg-opacity-10 text-primary"
-                                          }`}
-                                        >
-                                          {reply.author
-                                            ?.charAt(0)
-                                            ?.toUpperCase() || "?"}
-                                        </span>
-                                      )}
-                                    </button>
+                                      <button
+                                        type="button"
+                                        className="conversation-reply__avatar p-0 border-0 bg-transparent"
+                                        onClick={() =>
+                                          openUserProfile(reply.author)
+                                        }
+                                        aria-label={`View ${reply.author}'s profile`}
+                                      >
+                                        {replyAvatar ? (
+                                          <img
+                                            src={replyAvatar}
+                                            alt={`${reply.author}'s avatar`}
+                                            className="rounded-circle conversation-reply__avatar-image"
+                                          />
+                                        ) : (
+                                          <span
+                                            className={`conversation-reply__avatar-fallback d-inline-flex align-items-center justify-content-center rounded-circle ${
+                                              theme === "night"
+                                                ? "bg-secondary text-white"
+                                                : "bg-primary bg-opacity-10 text-primary"
+                                            }`}
+                                          >
+                                            {reply.author
+                                              ?.charAt(0)
+                                              ?.toUpperCase() || "?"}
+                                          </span>
+                                        )}
+                                      </button>
 
-                                    <div className="conversation-reply__body">
-                                      <div className="conversation-reply__header">
-                                        <button
-                                          type="button"
-                                          className="fw-semibold p-0 border-0 bg-transparent text-start conversation-reply__author"
+                                      <div className="conversation-reply__body">
+                                        <div className="conversation-reply__header">
+                                          <button
+                                            type="button"
+                                            className="fw-semibold p-0 border-0 bg-transparent text-start conversation-reply__author"
+                                            onClick={() =>
+                                              openUserProfile(reply.author)
+                                            }
+                                            onKeyDown={(event) => {
+                                              if (
+                                                event.key === "Enter" ||
+                                                event.key === " "
+                                              ) {
+                                                event.preventDefault();
+                                                openUserProfile(reply.author);
+                                              }
+                                            }}
+                                            aria-label={`View ${reply.author}'s profile`}
+                                          >
+                                            {reply.author}
+                                          </button>
+                                        </div>
+                                        <div
+                                          className="conversation-reply__text conversation-reply__bubble text-muted"
+                                          role="button"
+                                          tabIndex={0}
                                           onClick={() =>
-                                            openUserProfile(reply.author)
+                                            setReplyInputVisibility(idx, true)
                                           }
                                           onKeyDown={(event) => {
                                             if (
@@ -2038,1272 +2061,1257 @@ export default function BlogCard({
                                               event.key === " "
                                             ) {
                                               event.preventDefault();
-                                              openUserProfile(reply.author);
+                                              setReplyInputVisibility(
+                                                idx,
+                                                true
+                                              );
                                             }
                                           }}
-                                          aria-label={`View ${reply.author}'s profile`}
                                         >
-                                          {reply.author}
-                                        </button>
+                                          {reply.text}
+                                        </div>
+                                        {reply.isPending && (
+                                          <span className="badge bg-secondary bg-opacity-25 text-secondary ms-auto">
+                                            Sending...
+                                          </span>
+                                        )}
                                       </div>
-                                      <div
-                                        className="conversation-reply__text conversation-reply__bubble text-muted"
-                                        role="button"
-                                        tabIndex={0}
-                                        onClick={() =>
-                                          setReplyInputVisibility(idx, true)
-                                        }
-                                        onKeyDown={(event) => {
-                                          if (
-                                            event.key === "Enter" ||
-                                            event.key === " "
-                                          ) {
-                                            event.preventDefault();
-                                            setReplyInputVisibility(idx, true);
-                                          }
-                                        }}
-                                      >
-                                        {reply.text}
-                                      </div>
-                                      {reply.isPending && (
-                                        <span className="badge bg-secondary bg-opacity-25 text-secondary ms-auto">
-                                          Sending...
-                                        </span>
-                                      )}
-                                    </div>
-                                  </li>
-                                );
-                              })}
-                            </ul>
-                          )}
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            )}
 
-                          {/* Reply Input */}
-                          {comment.showReplyInput && (
-                            <div
-                              className="d-flex gap-2 mt-2 align-items-center reply-input-row"
-                              ref={(el) => {
-                                const key = comment._id ?? `local-${idx}`;
-                                replyInputRefs.current[key] = el;
-                              }}
-                            >
-                              <input
-                                type="text"
-                                className="form-control form-control-sm reply-inline-input"
-                                placeholder={
-                                  user
-                                    ? "Write a reply..."
-                                    : "Sign in to reply to this comment"
-                                }
-                                value={comment.newReply}
-                                onChange={(e) =>
-                                  handleReplyChange(idx, e.target.value)
-                                }
-                                disabled={isReplySending || !user}
-                              />
-                              <button
-                                className="btn btn-sm btn-primary reply-inline-send"
-                                onClick={() => handleReplySubmit(idx)}
-                                disabled={!canSendReply}
+                            {/* Reply Input */}
+                            {comment.showReplyInput && (
+                              <div
+                                className="d-flex gap-2 mt-2 align-items-center reply-input-row"
+                                ref={(el) => {
+                                  const key = comment._id ?? `local-${idx}`;
+                                  replyInputRefs.current[key] = el;
+                                }}
                               >
-                                {isReplySending ? "Sending..." : "Send"}
-                              </button>
-                            </div>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
+                                <input
+                                  type="text"
+                                  className="form-control form-control-sm reply-inline-input"
+                                  placeholder={
+                                    user
+                                      ? "Write a reply..."
+                                      : "Sign in to reply to this comment"
+                                  }
+                                  value={comment.newReply}
+                                  onChange={(e) =>
+                                    handleReplyChange(idx, e.target.value)
+                                  }
+                                  disabled={isReplySending || !user}
+                                />
+                                <button
+                                  className="btn btn-sm btn-primary reply-inline-send"
+                                  onClick={() => handleReplySubmit(idx)}
+                                  disabled={!canSendReply}
+                                >
+                                  {isReplySending ? "Sending..." : "Send"}
+                                </button>
+                              </div>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
 
-                <div className="comment-input-panel comments-modal__composer">
-                  <label className="form-label mb-2 fw-semibold text-muted small">
-                    Join the conversation
-                  </label>
-                  <div className="comment-input-group">
-                    <input
-                      type="text"
-                      className="form-control comment-input"
-                      placeholder={
-                        user
-                          ? "Write a comment..."
-                          : "Sign in to join the conversation"
-                      }
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      disabled={isSubmittingComment || !user}
-                    />
-                    <button
-                      className="btn btn-primary comment-send-btn"
-                      onClick={handleCommentSubmit}
-                      disabled={
-                        !newComment.trim() || !user || isSubmittingComment
-                      }
-                    >
-                      {isSubmittingComment ? "Sending..." : "Send"}
-                    </button>
+                  <div className="comment-input-panel comments-modal__composer">
+                    <label className="form-label mb-2 fw-semibold text-muted small">
+                      Join the conversation
+                    </label>
+                    <div className="comment-input-group">
+                      <input
+                        type="text"
+                        className="form-control comment-input"
+                        placeholder={
+                          user
+                            ? "Write a comment..."
+                            : "Sign in to join the conversation"
+                        }
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        disabled={isSubmittingComment || !user}
+                      />
+                      <button
+                        className="btn btn-primary comment-send-btn"
+                        onClick={handleCommentSubmit}
+                        disabled={
+                          !newComment.trim() || !user || isSubmittingComment
+                        }
+                      >
+                        {isSubmittingComment ? "Sending..." : "Send"}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Image Modal */}
-      {showImageModal && blog.image && (
-        <div
-          className="modal fade show d-block"
-          tabIndex={-1}
-          role="dialog"
-          style={{ backgroundColor: "rgba(0,0,0,0.85)" }}
-          aria-modal="true"
-          aria-labelledby="expanded-image-title"
-          onClick={() => setShowImageModal(false)}
-        >
-          <div className="modal-dialog modal-fullscreen" role="document">
-            <div className="modal-content bg-black text-white border-0">
-              <div className="modal-header border-0 align-items-start gap-3 px-4 px-md-5 pt-4 pb-0">
-                <div className="d-flex flex-column gap-1">
-                  <h2
-                    id="expanded-image-title"
-                    className="h5 mb-0 text-white"
-                    style={{ lineHeight: 1.35 }}
-                  >
-                    {blog.title}
-                  </h2>
+        {/* Image Modal */}
+        {showImageModal && blog.image && (
+          <div
+            className="modal fade show d-block"
+            tabIndex={-1}
+            role="dialog"
+            style={{ backgroundColor: "rgba(0,0,0,0.85)" }}
+            aria-modal="true"
+            aria-labelledby="expanded-image-title"
+            onClick={() => setShowImageModal(false)}
+          >
+            <div className="modal-dialog modal-fullscreen" role="document">
+              <div className="modal-content bg-black text-white border-0">
+                <div className="modal-header border-0 align-items-start gap-3 px-4 px-md-5 pt-4 pb-0">
+                  <div className="d-flex flex-column gap-1">
+                    <h2
+                      id="expanded-image-title"
+                      className="h5 mb-0 text-white"
+                      style={{ lineHeight: 1.35 }}
+                    >
+                      {blog.title}
+                    </h2>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn-close btn-close-white ms-auto"
+                    onClick={() => setShowImageModal(false)}
+                    aria-label="Close expanded image"
+                  />
                 </div>
-                <button
-                  type="button"
-                  className="btn-close btn-close-white ms-auto"
-                  onClick={() => setShowImageModal(false)}
-                  aria-label="Close expanded image"
-                />
-              </div>
-              <div className="modal-body p-0 position-relative bg-black d-flex justify-content-center align-items-center">
-                <img
-                  src={blog.image}
-                  alt={blog.title || "Full Blog View"}
-                  className="expanded-image"
-                  style={{
-                    ...coverImageBaseStyle,
-                    objectFit: "contain",
-                    width: "100%",
-                    height: "100%",
-                  }}
-                />
+                <div className="modal-body p-0 position-relative bg-black d-flex justify-content-center align-items-center">
+                  <img
+                    src={blog.image}
+                    alt={blog.title || "Full Blog View"}
+                    className="expanded-image"
+                    style={{
+                      ...coverImageBaseStyle,
+                      objectFit: "contain",
+                      width: "100%",
+                      height: "100%",
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-      <style jsx>{`
-        .blog-card__header {
-          width: 100%;
-        }
-
-        .blog-card__author-row {
-          width: 100%;
-        }
-
-        .blog-card__author-info {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.75rem;
-        }
-
-        .blog-card__author-meta button {
-          text-decoration: none;
-        }
-
-        .blog-card__stats span {
-          font-size: 0.95rem;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.35rem;
-          min-height: 36px;
-        }
-
-        .blog-card__menu {
-          z-index: 2;
-          position: relative;
-        }
-
-        .blog-card__menu-dots {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.25rem;
-          color: ${isNight ? "#e2e8f0" : "#0f172a"};
-          background: transparent;
-          border: none;
-          padding: 0.25rem;
-          min-height: auto;
-          min-width: auto;
-          cursor: pointer;
-          box-shadow: none;
-          transition: transform 120ms ease, box-shadow 120ms ease,
-            background 120ms ease, border-color 120ms ease;
-        }
-
-        .blog-card__menu-dots:hover,
-        .blog-card__menu-dots:focus-visible {
-          background: transparent;
-          border-color: transparent;
-          transform: translateY(-1px) scale(1.02);
-          outline: none;
-          box-shadow: none;
-        }
-
-        .blog-card__menu-dots:active {
-          transform: translateY(0);
-        }
-
-        .blog-card__menu-dots--muted {
-          opacity: 0.85;
-        }
-
-        .blog-card__menu-icon {
-          font-size: 1.25rem;
-          letter-spacing: 0.1em;
-        }
-
-        .blog-card__menu-backdrop {
-          position: fixed;
-          inset: 0;
-          background: rgba(0, 0, 0, 0.3);
-          border: none;
-          padding: 0;
-          margin: 0;
-          z-index: 2;
-          cursor: pointer;
-        }
-
-        .blog-card__menu-dropdown {
-          position: absolute;
-          inset-inline-end: 0;
-          top: calc(100% + 0.4rem);
-          min-width: 230px;
-          max-width: min(320px, calc(100vw - 1.5rem));
-          border-radius: 12px;
-          padding: 1rem 1.15rem;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-          border: 1px solid rgba(255, 120, 150, 0.25);
-          opacity: 0;
-          transform: translateY(-6px) scale(0.95);
-          transform-origin: top right;
-          transition: opacity 180ms ease, transform 180ms ease;
-          z-index: 2;
-          background-clip: padding-box;
-        }
-
-        .blog-card__menu-dropdown[data-open="true"] {
-          opacity: 1;
-        }
-
-        .blog-card__menu-dropdown.is-light {
-          background: #ffffff;
-          color: #0f172a;
-        }
-
-        .blog-card__menu-dropdown.is-dark {
-          background: linear-gradient(
-            135deg,
-            rgba(30, 41, 59, 0.96),
-            rgba(15, 23, 42, 0.96)
-          );
-          color: #e2e8f0;
-        }
-
-        .blog-card__menu-dropdown--desktop[data-open="true"] {
-          transform: translateY(0) scale(1);
-        }
-
-        .blog-card__menu-dropdown--mobile {
-          position: absolute;
-          right: 0;
-          top: 0;
-          transform: translate(-4px, 48px) scale(0.95);
-          max-width: min(260px, calc(100vw - 1.5rem));
-          width: max-content;
-          padding: 0.85rem 1rem;
-          border-radius: 12px;
-          transform-origin: top right;
-        }
-
-        .blog-card__menu-dropdown--mobile[data-open="true"] {
-          transform: translate(-4px, 48px) scale(1);
-        }
-
-        .blog-card__menu-dropdown--mobile-sheet {
-          position: fixed;
-          right: auto;
-          left: 50%;
-          bottom: 1.25rem;
-          top: auto;
-          transform: translate(-50%, 16px) scale(0.95);
-          width: min(520px, calc(100vw - 1.5rem));
-          margin-top: 0;
-          border-radius: 16px;
-          padding: 1.15rem 1.25rem;
-          transform-origin: center bottom;
-        }
-
-        .blog-card__menu-dropdown--mobile-sheet[data-open="true"] {
-          transform: translate(-50%, 0) scale(1);
-        }
-
-        .blog-card__menu-list {
-          display: flex;
-          flex-direction: column;
-          gap: 0.65rem;
-        }
-
-        .blog-card__menu-item {
-          width: 100%;
-          display: flex;
-          align-items: flex-start;
-          gap: 0.7rem;
-          padding: 0.95rem 1.05rem;
-          border-radius: 12px;
-          border: 1px solid transparent;
-          background: ${isNight ? "rgba(255,255,255,0.05)" : "#f8fafc"};
-          color: inherit;
-          text-align: left;
-          cursor: pointer;
-          min-height: 60px;
-          transition: background 120ms ease, border-color 120ms ease,
-            transform 120ms ease;
-        }
-
-        .blog-card__menu-item:hover,
-        .blog-card__menu-item:focus-visible {
-          outline: none;
-          background: ${isNight ? "rgba(255,255,255,0.09)" : "#eef2ff"};
-          border-color: ${isNight ? "rgba(148,163,184,0.35)" : "#cbd5e1"};
-          transform: translateY(-1px);
-        }
-
-        .blog-card__menu-item--danger {
-          background: ${isNight ? "rgba(190,24,93,0.08)" : "#fff1f2"};
-          color: ${isNight ? "#fecdd3" : "#b91c1c"};
-          border-color: ${isNight ? "rgba(248,113,113,0.35)" : "#fecdd3"};
-        }
-
-        .blog-card__menu-item--danger:hover,
-        .blog-card__menu-item--danger:focus-visible {
-          background: ${isNight ? "rgba(248,113,113,0.16)" : "#ffe4e6"};
-          border-color: ${isNight ? "rgba(248,113,113,0.55)" : "#fca5a5"};
-          color: ${isNight ? "#fecdd3" : "#991b1b"};
-        }
-
-        .blog-card__menu-item--muted {
-          background: ${isNight ? "rgba(255,255,255,0.04)" : "#f8fafc"};
-          border-color: ${isNight ? "rgba(148,163,184,0.25)" : "#e2e8f0"};
-          color: ${isNight ? "#cbd5e1" : "#475569"};
-          cursor: default;
-        }
-
-        .blog-card__menu-item--muted:hover,
-        .blog-card__menu-item--muted:focus-visible {
-          transform: none;
-          background: ${isNight ? "rgba(255,255,255,0.05)" : "#eef2ff"};
-          border-color: ${isNight ? "rgba(148,163,184,0.35)" : "#cbd5e1"};
-        }
-
-        .blog-card__menu-item-icon {
-          font-size: 1.125rem;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 1.75rem;
-          height: 1.75rem;
-          line-height: 1;
-          margin-top: 0.05rem;
-        }
-
-        .blog-card__menu-item-copy {
-          display: flex;
-          flex-direction: column;
-          gap: 0.25rem;
-        }
-
-        .blog-card__menu-item-title {
-          font-weight: 700;
-          font-size: 1rem;
-        }
-
-        .blog-card__menu-item-subtitle {
-          font-size: 0.9rem;
-          color: ${isNight ? "#cbd5e1" : "#475569"};
-        }
-
-        .visually-hidden {
-          position: absolute;
-          width: 1px;
-          height: 1px;
-          padding: 0;
-          margin: -1px;
-          overflow: hidden;
-          clip: rect(0, 0, 0, 0);
-          border: 0;
-          white-space: nowrap;
-        }
-
-        .expanded-image {
-          width: 100%;
-          height: 100%;
-          max-height: calc(100vh - 160px);
-          background-color: #000;
-        }
-
-        .expanded-image__caption {
-          position: absolute;
-          inset: auto 0 0 0;
-          background: linear-gradient(
-            180deg,
-            rgba(0, 0, 0, 0) 0%,
-            rgba(0, 0, 0, 0.75) 60%
-          );
-          padding: 1rem 1.25rem 1.5rem;
-          display: flex;
-          justify-content: center;
-        }
-
-        .expanded-image__caption-inner {
-          width: min(1040px, 100%);
-          color: #e2e8f0;
-          text-align: center;
-          letter-spacing: 0.02em;
-        }
-
-        .expanded-image__hint {
-          color: #e2e8f0;
-          letter-spacing: 0.05em;
-          opacity: 0.85;
-        }
-
-        @media (min-width: 577px) {
-          .blog-card__menu-dropdown--mobile {
-            position: absolute;
-            left: auto;
-            right: 0;
-            top: 0%;
-            bottom: auto;
-            transform: translate(-4px, 48px) scale(0.95);
-            width: auto;
-            padding: 0.85rem 1rem;
-            border-radius: 12px;
-          }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .blog-card__menu-dots,
-          .blog-card__menu-dropdown,
-          .blog-card__menu-dropdown--mobile,
-          .blog-card__menu-dropdown--mobile-sheet,
-          .blog-card__menu-item {
-            transition: none;
-            transform: none;
-          }
-        }
-
-        .comments-modal__dialog {
-          width: 94%;
-          max-width: 900px;
-        }
-
-        .comments-modal__shell {
-          border-radius: 16px;
-          overflow: hidden;
-        }
-
-        .comments-modal__header {
-          position: sticky;
-          top: 0;
-          z-index: 2;
-          background: ${isNight
-            ? "rgba(15,23,42,0.9)"
-            : "rgba(255,255,255,0.95)"};
-          border-bottom: 1px solid
-            ${isNight ? "rgba(255,255,255,0.08)" : "#e5e7eb"};
-          backdrop-filter: blur(6px);
-        }
-
-        .comments-modal__subtle {
-          font-size: 0.92rem;
-          color: ${isNight ? "#cbd5e1" : "#475569"};
-        }
-
-        .comments-modal__body {
-          background: ${isNight
-            ? "linear-gradient(180deg, rgba(15,23,42,0.85), rgba(30,41,59,0.95))"
-            : "#f8fafc"};
-          padding: 0.75rem 0.85rem 0.5rem;
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-        }
-
-        .comments-modal__scroll {
-          max-height: 60vh;
-          overflow-y: auto;
-          padding: 0.25rem 0.25rem 0.5rem;
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-        }
-
-        .comments-modal__composer {
-          position: sticky;
-          bottom: 0;
-          border-top: none;
-          margin-top: 0;
-          background: ${isNight ? "rgba(15,23,42,0.95)" : "#ffffff"};
-          border: 1px solid ${isNight ? "rgba(255,255,255,0.08)" : "#e2e8f0"};
-          box-shadow: 0 12px 32px
-            ${isNight ? "rgba(0,0,0,0.35)" : "rgba(15,23,42,0.08)"};
-          border-radius: 14px;
-          padding: 0.85rem 0.9rem 0.75rem;
-        }
-
-        .conversation-comment-list {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-        }
-
-        .conversation-comment-item {
-          padding: 0.85rem 1rem;
-          border: 1px solid ${isNight ? "rgba(255,255,255,0.08)" : "#e5e7eb"};
-          background: ${isNight ? "rgba(17,24,39,0.6)" : "#fbfdff"};
-          transition: transform 0.15s ease, box-shadow 0.2s ease;
-        }
-
-        .conversation-comment-item:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 10px 25px
-            ${isNight ? "rgba(0,0,0,0.3)" : "rgba(15,23,42,0.08)"};
-        }
-
-        .conversation-comment {
-          display: flex;
-          flex-direction: column;
-          align-items: stretch;
-          gap: 0.85rem;
-          min-width: 0;
-          width: 100%;
-          max-width: 100%;
-          margin-inline: auto;
-        }
-
-        .conversation-comment__main {
-          display: flex;
-          align-items: flex-start;
-          gap: 0.85rem;
-          min-width: 0;
-          width: 100%;
-          max-width: 100%;
-        }
-
-        .conversation-comment__avatar {
-          flex-shrink: 0;
-        }
-
-        .conversation-comment__body {
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-          flex: 1;
-          min-width: 0;
-          overflow-wrap: anywhere;
-        }
-
-        .conversation-comment__meta {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          min-width: 0;
-          width: 100%;
-          flex-wrap: wrap;
-        }
-
-        .conversation-comment__avatar-image,
-        .conversation-comment__avatar-fallback {
-          width: 44px;
-          height: 44px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 50%;
-          flex-shrink: 0;
-        }
-
-        .conversation-comment__text {
-          margin: 0;
-          padding: 0.6rem 0.75rem;
-          line-height: 1.6;
-          word-break: break-word;
-          overflow-wrap: anywhere;
-          width: 100%;
-          max-width: none;
-          border-radius: 12px;
-          background: ${isNight ? "rgba(255,255,255,0.04)" : "#f8fafc"};
-          border: 1px solid ${isNight ? "rgba(255,255,255,0.06)" : "#e2e8f0"};
-        }
-
-        .conversation-comment__actions {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 0.4rem;
-          align-items: center;
-        }
-
-        .reaction-button {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.35rem;
-          padding: 0.35rem 0.55rem;
-          font-size: 0.82rem;
-          line-height: 1.2;
-          border-radius: 999px;
-          border: 1px solid ${isNight ? "#334155" : "#d1d5db"};
-          background: ${isNight ? "rgba(255,255,255,0.03)" : "#f8fafc"};
-          color: inherit;
-          min-height: 36px;
-          min-width: 0;
-        }
-
-        .reaction-button:disabled {
-          opacity: 0.55;
-        }
-
-        .reaction-count {
-          min-width: 0.9rem;
-          text-align: right;
-        }
-
-        .conversation-reply {
-          display: flex;
-          align-items: flex-start;
-          gap: 0.6rem;
-          padding: 0.25rem 0.25rem 0.25rem 0.4rem;
-          border-radius: 12px;
-          width: 100%;
-        }
-
-        .conversation-reply__avatar {
-          width: 30px;
-          height: 30px;
-          flex: 0 0 30px;
-          margin-top: 3px;
-        }
-
-        .conversation-reply__avatar-image,
-        .conversation-reply__avatar-fallback {
-          width: 30px;
-          height: 30px;
-          object-fit: cover;
-          border-radius: 50%;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-        }
-
-        .conversation-reply__arrow {
-          color: ${isNight ? "#94a3b8" : "#94a3b8"};
-          line-height: 1.4;
-          margin-top: 8px;
-          flex-shrink: 0;
-        }
-
-        .conversation-reply__body {
-          min-width: 0;
-          flex: 1 1 auto;
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 0.35rem;
-        }
-
-        .conversation-reply__header {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.4rem;
-          flex-wrap: wrap;
-          min-width: 0;
-        }
-
-        .conversation-reply__author {
-          color: inherit;
-          text-decoration: none;
-        }
-
-        .conversation-reply__text {
-          flex: 1 1 auto;
-          min-width: 0;
-          word-break: break-word;
-          line-height: 1.5;
-          height: auto;
-        }
-
-        .conversation-reply__bubble {
-          background-color: ${isNight ? "rgba(255,255,255,0.05)" : "#f8fafc"};
-          padding: 0.6rem 0.75rem;
-          border-radius: 12px;
-          display: block;
-          width: auto;
-          max-width: 100%;
-          border: 1px solid ${isNight ? "rgba(255,255,255,0.08)" : "#e2e8f0"};
-        }
-
-        .conversation-reply-list {
-          position: relative;
-          border-left: 2px solid ${isNight ? "#334155" : "#e5e7eb"};
-          margin-left: 0.15rem;
-          padding-left: 1.1rem !important;
-          gap: 0.5rem;
-          display: flex;
-          flex-direction: column;
-        }
-
-        .conversation-reply-list::before {
-          content: "";
-          position: absolute;
-          left: -2px;
-          top: 6px;
-          bottom: 6px;
-          width: 2px;
-          background: ${isNight
-            ? "rgba(148,163,184,0.35)"
-            : "rgba(148,163,184,0.55)"};
-        }
-
-        .reply-inline-input {
-          min-height: 38px;
-        }
-
-        .reply-inline-send {
-          min-height: 38px;
-          padding-inline: 0.85rem;
-        }
-
-        .reply-input-row {
-          margin-left: 2.6rem;
-        }
-
-        .comment-input-panel {
-          border-top: 1px solid
-            ${isNight ? "rgba(255,255,255,0.08)" : "#e5e7eb"};
-          padding-top: 0.75rem;
-          margin-top: 0.75rem;
-        }
-
-        .comment-input-group {
-          display: grid;
-          grid-template-columns: 1fr auto;
-          gap: 0.55rem;
-          align-items: center;
-        }
-
-        .comment-input {
-          min-height: 42px;
-          padding: 0.5rem 0.75rem;
-          border-radius: 10px;
-        }
-
-        .comment-send-btn {
-          min-height: 42px;
-          padding: 0.5rem 1rem;
-          border-radius: 10px;
-        }
-
-        .blog-card-shell {
-          position: relative;
-          display: flex;
-          justify-content: center;
-          transition: transform 0.35s ease;
-          width: 100%;
-        }
-
-        .blog-card {
-          transition: transform 0.35s ease, box-shadow 0.35s ease;
-        }
-
-        .blog-card-shell--with-comments .blog-card {
-          transform: translateX(calc(-1 * clamp(160px, 18vw, 260px)));
-        }
-
-        .blog-card-comments-panel {
-          position: fixed;
-          top: 0;
-          right: 0;
-          height: 100vh;
-          width: min(420px, 38vw);
-          transform: translateX(100%);
-          transition: transform 0.35s ease, box-shadow 0.35s ease;
-          background: ${isNight ? "rgba(15,23,42,0.98)" : "#ffffff"};
-          border-left: 1px solid
-            ${isNight ? "rgba(148,163,184,0.2)" : "#e5e7eb"};
-          box-shadow: none;
-          z-index: 30;
-          display: flex;
-          flex-direction: column;
-          padding: 1.5rem 1.5rem 1.25rem;
-          pointer-events: none;
-        }
-
-        .blog-card-comments-panel.is-open {
-          transform: translateX(0);
-          box-shadow: -18px 0 35px
-            ${isNight ? "rgba(0,0,0,0.35)" : "rgba(15,23,42,0.18)"};
-          pointer-events: auto;
-        }
-
-        .blog-card-comments-panel__header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 1rem;
-          padding-bottom: 0.85rem;
-          border-bottom: 1px solid
-            ${isNight ? "rgba(148,163,184,0.2)" : "#e5e7eb"};
-        }
-
-        .blog-card-comments-panel__content {
-          flex: 1;
-          overflow-y: auto;
-          padding-top: 1rem;
-          display: flex;
-          flex-direction: column;
-        }
-
-        .conversation-card--panel {
-          margin-top: 0 !important;
-          background: transparent !important;
-          padding: 0 !important;
-        }
-
-        /* 📱 MOBILE STYLES */
-        @media (max-width: 576px) {
-          /* ----------------------------------
-          Conversation Header
-          -----------------------------------*/
-          .conversation-card .conversation-header {
-            display: flex !important;
-            justify-content: flex-end !important; /* View all to the right */
-            align-items: center !important;
-            padding: 0 0 0 0 !important; /* top right bottom left */
+        )}
+        <style jsx>{`
+          .blog-card__header {
             width: 100%;
-          }
-
-          /* Hide both Conversation icon + text */
-          .conversation-card .conversation-header h5 {
-            display: none !important;
-          }
-
-          /* Hide "Join comments..." subtitle */
-          .conversation-card .community-subtitle {
-            display: none !important;
-          }
-
-          /* Clean "View all" style */
-          .conversation-card .view-all-btn,
-          .conversation-card button.btn-outline-primary {
-            border: none !important;
-            background: transparent !important;
-            padding: 0 !important;
-            box-shadow: none !important;
-            border-radius: 0 !important;
-            font-size: 0.85rem !important;
-            font-weight: 500 !important;
-            color: #3b82f6 !important;
-          }
-
-          .conversation-card .conversation-header .view-all-btn {
-            padding-top: 0 !important;
-            padding-bottom: 0 !important;
-            line-height: 1.1 !important;
-          }
-
-          /* ----------------------------------
-          Blog Card Spacing
-          -----------------------------------*/
-          .blog-card__media,
-          .blog-card__media img {
-            margin-bottom: 0.25rem !important;
-            padding-bottom: 0 !important;
-            display: block !important;
-          }
-
-          .blog-card__body {
-            padding-top: 0.1rem !important;
-            padding-bottom: 0.1rem !important;
-          }
-
-          .blog-card__body .card-text {
-            margin-top: 0 !important;
-            margin-bottom: 0.15rem !important;
-            font-size: 0.82rem !important;
-            line-height: 1.55 !important;
-          }
-
-          .blog-card__body small {
-            margin-top: -4px !important;
-          }
-
-          .blog-card__footer {
-            margin-top: 0.2rem !important;
-            gap: 0.4rem !important;
-          }
-
-          .blog-card__mobile-cta {
-            gap: 0.35rem !important;
-          }
-
-          .blog-card__mobile-actions-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 0.35rem !important;
-            width: 100%;
-          }
-
-          .blog-card__mobile-actions-grid .btn {
-            width: 100%;
-            justify-content: center;
-            padding: 0.3rem 0.65rem !important;
-            font-size: 0.8rem !important;
-            min-height: 36px !important;
-            border-radius: 14px !important;
-            box-shadow: 0 10px 18px
-                ${isNight ? "rgba(0,0,0,0.28)" : "rgba(15,23,42,0.08)"},
-              inset 0 0 0 1px
-                ${isNight ? "rgba(255,255,255,0.08)" : "rgba(59,130,246,0.15)"};
-          }
-
-          .blog-card__mobile-actions-grid .btn span {
-            font-size: 0.9rem !important;
-          }
-
-          .blog-card__mobile-actions-grid .badge {
-            font-size: 0.72rem !important;
-            padding: 0.15rem 0.5rem !important;
-            min-width: 42px;
-          }
-
-          .blog-card__mobile-hint {
-            padding-inline: 0.1rem;
-          }
-
-          .blog-card__footer .btn {
-            padding: 0.3rem 0.65rem !important;
-            font-size: 0.8rem !important;
-            min-height: 36px !important;
-            border-radius: 14px !important;
-          }
-
-          .blog-card__footer .btn span {
-            font-size: 0.9rem !important;
-          }
-
-          .blog-card__footer .badge {
-            font-size: 0.72rem !important;
-            padding: 0.15rem 0.5rem !important;
-          }
-
-          /* ----------------------------------
-          Author + Stats
-          -----------------------------------*/
-          .blog-card__hero .blog-card__header {
-            align-items: flex-start;
-            text-align: left;
           }
 
           .blog-card__author-row {
-            align-items: center;
-            gap: 0.65rem;
-            flex-wrap: nowrap !important;
-            min-width: 0;
+            width: 100%;
           }
 
           .blog-card__author-info {
             display: inline-flex;
             align-items: center;
-            gap: 0.65rem;
-            flex-wrap: nowrap;
-            min-width: 0;
-            flex-shrink: 0;
-          }
-
-          .blog-card__author-meta {
-            gap: clamp(0.35rem, 2vw, 0.55rem);
-            min-width: 0;
-            display: inline-flex;
-            align-items: center;
-            flex: 1 1 auto;
-            justify-content: flex-start;
-          }
-
-          .blog-card__author-meta button {
-            white-space: nowrap;
-            min-width: 0;
-          }
-
-          .blog-card__author-meta span {
-            white-space: nowrap;
-            flex-shrink: 0;
-          }
-
-          .blog-card__title h3 {
-            font-size: 1.05rem;
-            line-height: 1.2;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            word-break: break-word;
-          }
-
-          .blog-card__stats {
-            width: 100%;
-            justify-content: space-between;
-            gap: 0.4rem;
-          }
-
-          .blog-card__stats span {
-            font-size: 0.85rem;
-            padding: 0.35rem 0.7rem;
-            flex: 1;
-            min-height: 32px;
-          }
-
-          .comments-modal__dialog {
-            width: 100% !important;
-            max-width: none;
-            margin: 0;
-            height: 100%;
-            display: flex;
-            align-items: flex-end;
-          }
-
-          .comments-modal__shell {
-            border-radius: 20px 20px 0 0;
-          }
-
-          .comments-modal__header {
-            padding: 0.85rem 1rem 0.65rem;
-          }
-
-          .comments-modal__body {
-            padding: 0.45rem 0.6rem 0.35rem;
-          }
-
-          .comments-modal__scroll {
-            max-height: calc(100vh - 230px);
-            padding-inline: 0.05rem;
-          }
-
-          .comments-modal__composer {
-            margin: 0 -0.1rem -0.1rem;
-            box-shadow: 0 -12px 32px ${isNight ? "rgba(0,0,0,0.55)" : "rgba(15,23,42,0.12)"};
-          }
-
-          /* ----------------------------------
-          Conversation Comments Layout
-          -----------------------------------*/
-          .conversation-comment-wrapper {
-            max-height: 260px;
-            overflow-y: auto;
-          }
-
-          .conversation-comment-list {
-            width: 100%;
             gap: 0.75rem;
           }
 
-          .conversation-comment-item {
-            width: 100%;
-            padding: 0.65rem 0.75rem;
+          .blog-card__author-meta button {
+            text-decoration: none;
           }
 
-          .conversation-comment {
-            display: flex !important;
-            flex-direction: column !important;
-            gap: 0.65rem !important;
-            width: 100%;
+          .blog-card__stats span {
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            min-height: 36px;
           }
 
-          .conversation-comment__main {
-            display: flex !important;
-            flex-direction: row !important;
-            align-items: flex-start !important;
-            width: 100%;
-            gap: 0.45rem !important;
-            min-width: 0;
-            max-width: 100%;
+          .blog-card__menu {
+            z-index: 2;
+            position: relative;
           }
 
-          .conversation-comment__avatar,
-          .conversation-comment__avatar-image,
-          .conversation-comment__avatar-fallback {
-            width: 32px !important;
-            height: 32px !important;
-            flex: 0 0 32px !important;
+          .blog-card__menu-dots {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            color: ${isNight ? "#e2e8f0" : "#0f172a"};
+            background: transparent;
+            border: none;
+            padding: 0.25rem;
+            min-height: auto;
+            min-width: auto;
+            cursor: pointer;
+            box-shadow: none;
+            transition: transform 120ms ease, box-shadow 120ms ease,
+              background 120ms ease, border-color 120ms ease;
           }
 
-          .conversation-comment__body {
-            max-width: 100%;
-            min-width: 0;
-            flex: 1 1 auto;
-            width: 100%;
+          .blog-card__menu-dots:hover,
+          .blog-card__menu-dots:focus-visible {
+            background: transparent;
+            border-color: transparent;
+            transform: translateY(-1px) scale(1.02);
+            outline: none;
+            box-shadow: none;
           }
 
-          .conversation-comment__meta {
-            display: flex !important;
-            flex-direction: row !important;
-            align-items: center !important;
-            gap: 0.35rem !important;
-            flex-wrap: wrap !important;
-            width: 100%;
-            min-width: 0;
+          .blog-card__menu-dots:active {
+            transform: translateY(0);
           }
 
-          .conversation-comment__text {
-            font-size: 0.84rem !important;
-            line-height: 1.4 !important;
-            margin-left: 0 !important;
-            width: 100%;
-            overflow-wrap: anywhere;
-            padding: 0.45rem 0.6rem !important;
-            border-radius: 10px;
+          .blog-card__menu-dots--muted {
+            opacity: 0.85;
           }
 
-          .conversation-comment__actions {
+          .blog-card__menu-icon {
+            font-size: 1.25rem;
+            letter-spacing: 0.1em;
+          }
+
+          .blog-card__menu-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            border: none;
+            padding: 0;
+            margin: 0;
+            z-index: 2;
+            cursor: pointer;
+          }
+
+          .blog-card__menu-dropdown {
+            position: absolute;
+            inset-inline-end: 0;
+            top: calc(100% + 0.4rem);
+            min-width: 230px;
+            max-width: min(320px, calc(100vw - 1.5rem));
+            border-radius: 12px;
+            padding: 1rem 1.15rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 120, 150, 0.25);
+            opacity: 0;
+            transform: translateY(-6px) scale(0.95);
+            transform-origin: top right;
+            transition: opacity 180ms ease, transform 180ms ease;
+            z-index: 2;
+            background-clip: padding-box;
+          }
+
+          .blog-card__menu-dropdown[data-open="true"] {
+            opacity: 1;
+          }
+
+          .blog-card__menu-dropdown.is-light {
+            background: #ffffff;
+            color: #0f172a;
+          }
+
+          .blog-card__menu-dropdown.is-dark {
+            background: linear-gradient(
+              135deg,
+              rgba(30, 41, 59, 0.96),
+              rgba(15, 23, 42, 0.96)
+            );
+            color: #e2e8f0;
+          }
+
+          .blog-card__menu-dropdown--desktop[data-open="true"] {
+            transform: translateY(0) scale(1);
+          }
+
+          .blog-card__menu-dropdown--mobile {
+            position: absolute;
+            right: 0;
+            top: 0;
+            transform: translate(-4px, 48px) scale(0.95);
+            max-width: min(260px, calc(100vw - 1.5rem));
+            width: max-content;
+            padding: 0.85rem 1rem;
+            border-radius: 12px;
+            transform-origin: top right;
+          }
+
+          .blog-card__menu-dropdown--mobile[data-open="true"] {
+            transform: translate(-4px, 48px) scale(1);
+          }
+
+          .blog-card__menu-dropdown--mobile-sheet {
+            position: fixed;
+            right: auto;
+            left: 50%;
+            bottom: 1.25rem;
+            top: auto;
+            transform: translate(-50%, 16px) scale(0.95);
+            width: min(520px, calc(100vw - 1.5rem));
+            margin-top: 0;
+            border-radius: 16px;
+            padding: 1.15rem 1.25rem;
+            transform-origin: center bottom;
+          }
+
+          .blog-card__menu-dropdown--mobile-sheet[data-open="true"] {
+            transform: translate(-50%, 0) scale(1);
+          }
+
+          .blog-card__menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+          }
+
+          .blog-card__menu-item {
             width: 100%;
             display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: flex-start;
-            gap: 0.25rem;
-            flex-wrap: wrap;
-          }
-
-          .reaction-button {
-            font-size: 0.78rem;
-            padding: 0.25rem 0.4rem;
-            min-height: 30px;
-          }
-
-          .conversation-reply {
-            align-items: flex-start !important;
-            gap: 0.4rem;
-            margin-left: 0.1rem;
-          }
-
-          .conversation-reply__avatar,
-          .conversation-reply__avatar-image,
-          .conversation-reply__avatar-fallback {
-            width: 28px !important;
-            height: 28px !important;
-            flex-basis: 28px !important;
-          }
-
-          .conversation-reply__body {
-            flex: 1;
-            min-width: 0;
-            word-break: break-word;
             align-items: flex-start;
-            gap: 0.35rem;
-            flex-wrap: wrap;
+            gap: 0.7rem;
+            padding: 0.95rem 1.05rem;
+            border-radius: 12px;
+            border: 1px solid transparent;
+            background: ${isNight ? "rgba(255,255,255,0.05)" : "#f8fafc"};
+            color: inherit;
+            text-align: left;
+            cursor: pointer;
+            min-height: 60px;
+            transition: background 120ms ease, border-color 120ms ease,
+              transform 120ms ease;
           }
 
-          .conversation-reply__header {
-            gap: 0.35rem !important;
-            flex-wrap: wrap !important;
-            min-width: 0;
-            flex-shrink: 1;
+          .blog-card__menu-item:hover,
+          .blog-card__menu-item:focus-visible {
+            outline: none;
+            background: ${isNight ? "rgba(255,255,255,0.09)" : "#eef2ff"};
+            border-color: ${isNight ? "rgba(148,163,184,0.35)" : "#cbd5e1"};
+            transform: translateY(-1px);
           }
 
-          .conversation-reply__text {
-            flex: 1 1 100%;
-            min-width: 0;
-            font-size: 0.82rem !important;
-            line-height: 1.4;
+          .blog-card__menu-item--danger {
+            background: ${isNight ? "rgba(190,24,93,0.08)" : "#fff1f2"};
+            color: ${isNight ? "#fecdd3" : "#b91c1c"};
+            border-color: ${isNight ? "rgba(248,113,113,0.35)" : "#fecdd3"};
           }
 
-          .conversation-reply__bubble {
-            width: 100%;
-            max-width: 100%;
-            line-height: 1.4;
-            padding: 0.45rem 0.6rem;
+          .blog-card__menu-item--danger:hover,
+          .blog-card__menu-item--danger:focus-visible {
+            background: ${isNight ? "rgba(248,113,113,0.16)" : "#ffe4e6"};
+            border-color: ${isNight ? "rgba(248,113,113,0.55)" : "#fca5a5"};
+            color: ${isNight ? "#fecdd3" : "#991b1b"};
           }
 
-          .conversation-reply-list {
-            border-left: 1px solid ${isNight ? "#334155" : "#cbd5e1"} !important;
-            padding-left: 0.55rem !important;
-            margin-left: 0.05rem;
+          .blog-card__menu-item--muted {
+            background: ${isNight ? "rgba(255,255,255,0.04)" : "#f8fafc"};
+            border-color: ${isNight ? "rgba(148,163,184,0.25)" : "#e2e8f0"};
+            color: ${isNight ? "#cbd5e1" : "#475569"};
+            cursor: default;
           }
 
-          .reply-input-row {
-            margin-left: 1.2rem;
+          .blog-card__menu-item--muted:hover,
+          .blog-card__menu-item--muted:focus-visible {
+            transform: none;
+            background: ${isNight ? "rgba(255,255,255,0.05)" : "#eef2ff"};
+            border-color: ${isNight ? "rgba(148,163,184,0.35)" : "#cbd5e1"};
           }
 
-          .comment-input-panel {
-            padding-top: 0.35rem;
-          }
-
-          .comment-input-group {
-            grid-template-columns: 1fr auto;
+          .blog-card__menu-item-icon {
+            font-size: 1.125rem;
+            display: inline-flex;
             align-items: center;
-            gap: 0.4rem;
+            justify-content: center;
+            width: 1.75rem;
+            height: 1.75rem;
+            line-height: 1;
+            margin-top: 0.05rem;
           }
 
-          .comment-input {
-            min-height: 38px;
-            padding: 0.45rem 0.65rem;
+          .blog-card__menu-item-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
           }
 
-          .comment-send-btn {
-            min-height: 38px;
-            padding: 0.45rem 0.85rem;
-          }
-
-          .conversation-card h5 {
+          .blog-card__menu-item-title {
+            font-weight: 700;
             font-size: 1rem;
           }
 
-          .conversation-card p,
-          .conversation-card button {
+          .blog-card__menu-item-subtitle {
             font-size: 0.9rem;
+            color: ${isNight ? "#cbd5e1" : "#475569"};
           }
 
-          /* Hide tap-to-expand */
-          .tap-to-expand {
-            display: none !important;
+          .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+            white-space: nowrap;
           }
-        }
 
-        @media (max-width: 992px) {
+          .expanded-image {
+            width: 100%;
+            height: 100%;
+            max-height: calc(100vh - 160px);
+            background-color: #000;
+          }
+
+          .expanded-image__caption {
+            position: absolute;
+            inset: auto 0 0 0;
+            background: linear-gradient(
+              180deg,
+              rgba(0, 0, 0, 0) 0%,
+              rgba(0, 0, 0, 0.75) 60%
+            );
+            padding: 1rem 1.25rem 1.5rem;
+            display: flex;
+            justify-content: center;
+          }
+
+          .expanded-image__caption-inner {
+            width: min(1040px, 100%);
+            color: #e2e8f0;
+            text-align: center;
+            letter-spacing: 0.02em;
+          }
+
+          .expanded-image__hint {
+            color: #e2e8f0;
+            letter-spacing: 0.05em;
+            opacity: 0.85;
+          }
+
+          @media (min-width: 577px) {
+            .blog-card__menu-dropdown--mobile {
+              position: absolute;
+              left: auto;
+              right: 0;
+              top: 0%;
+              bottom: auto;
+              transform: translate(-4px, 48px) scale(0.95);
+              width: auto;
+              padding: 0.85rem 1rem;
+              border-radius: 12px;
+            }
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .blog-card__menu-dots,
+            .blog-card__menu-dropdown,
+            .blog-card__menu-dropdown--mobile,
+            .blog-card__menu-dropdown--mobile-sheet,
+            .blog-card__menu-item {
+              transition: none;
+              transform: none;
+            }
+          }
+
+          .comments-modal__dialog {
+            width: 94%;
+            max-width: 900px;
+          }
+
+          .comments-modal__shell {
+            border-radius: 16px;
+            overflow: hidden;
+          }
+
+          .comments-modal__header {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: ${isNight
+              ? "rgba(15,23,42,0.9)"
+              : "rgba(255,255,255,0.95)"};
+            border-bottom: 1px solid
+              ${isNight ? "rgba(255,255,255,0.08)" : "#e5e7eb"};
+            backdrop-filter: blur(6px);
+          }
+
+          .comments-modal__subtle {
+            font-size: 0.92rem;
+            color: ${isNight ? "#cbd5e1" : "#475569"};
+          }
+
+          .comments-modal__body {
+            background: ${isNight
+              ? "linear-gradient(180deg, rgba(15,23,42,0.85), rgba(30,41,59,0.95))"
+              : "#f8fafc"};
+            padding: 0.75rem 0.85rem 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+          }
+
+          .comments-modal__scroll {
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 0.25rem 0.25rem 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+          }
+
+          .comments-modal__composer {
+            position: sticky;
+            bottom: 0;
+            border-top: none;
+            margin-top: 0;
+            background: ${isNight ? "rgba(15,23,42,0.95)" : "#ffffff"};
+            border: 1px solid ${isNight ? "rgba(255,255,255,0.08)" : "#e2e8f0"};
+            box-shadow: 0 12px 32px
+              ${isNight ? "rgba(0,0,0,0.35)" : "rgba(15,23,42,0.08)"};
+            border-radius: 14px;
+            padding: 0.85rem 0.9rem 0.75rem;
+          }
+
+          .conversation-comment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+          }
+
+          .conversation-comment-item {
+            padding: 0.85rem 1rem;
+            border: 1px solid ${isNight ? "rgba(255,255,255,0.08)" : "#e5e7eb"};
+            background: ${isNight ? "rgba(17,24,39,0.6)" : "#fbfdff"};
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
+          }
+
+          .conversation-comment-item:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px
+              ${isNight ? "rgba(0,0,0,0.3)" : "rgba(15,23,42,0.08)"};
+          }
+
+          .conversation-comment {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.85rem;
+            min-width: 0;
+            width: 100%;
+            max-width: 100%;
+            margin-inline: auto;
+          }
+
+          .conversation-comment__main {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.85rem;
+            min-width: 0;
+            width: 100%;
+            max-width: 100%;
+          }
+
+          .conversation-comment__avatar {
+            flex-shrink: 0;
+          }
+
+          .conversation-comment__body {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+            min-width: 0;
+            overflow-wrap: anywhere;
+          }
+
+          .conversation-comment__meta {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 0;
+            width: 100%;
+            flex-wrap: wrap;
+          }
+
+          .conversation-comment__avatar-image,
+          .conversation-comment__avatar-fallback {
+            width: 44px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            flex-shrink: 0;
+          }
+
+          .conversation-comment__text {
+            margin: 0;
+            padding: 0.6rem 0.75rem;
+            line-height: 1.6;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            width: 100%;
+            max-width: none;
+            border-radius: 12px;
+            background: ${isNight ? "rgba(255,255,255,0.04)" : "#f8fafc"};
+            border: 1px solid ${isNight ? "rgba(255,255,255,0.06)" : "#e2e8f0"};
+          }
+
+          .conversation-comment__actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            align-items: center;
+          }
+
+          .reaction-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.35rem 0.55rem;
+            font-size: 0.82rem;
+            line-height: 1.2;
+            border-radius: 999px;
+            border: 1px solid ${isNight ? "#334155" : "#d1d5db"};
+            background: ${isNight ? "rgba(255,255,255,0.03)" : "#f8fafc"};
+            color: inherit;
+            min-height: 36px;
+            min-width: 0;
+          }
+
+          .reaction-button:disabled {
+            opacity: 0.55;
+          }
+
+          .reaction-count {
+            min-width: 0.9rem;
+            text-align: right;
+          }
+
+          .conversation-reply {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+            padding: 0.25rem 0.25rem 0.25rem 0.4rem;
+            border-radius: 12px;
+            width: 100%;
+          }
+
+          .conversation-reply__avatar {
+            width: 30px;
+            height: 30px;
+            flex: 0 0 30px;
+            margin-top: 3px;
+          }
+
+          .conversation-reply__avatar-image,
+          .conversation-reply__avatar-fallback {
+            width: 30px;
+            height: 30px;
+            object-fit: cover;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+          }
+
+          .conversation-reply__arrow {
+            color: ${isNight ? "#94a3b8" : "#94a3b8"};
+            line-height: 1.4;
+            margin-top: 8px;
+            flex-shrink: 0;
+          }
+
+          .conversation-reply__body {
+            min-width: 0;
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.35rem;
+          }
+
+          .conversation-reply__header {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            min-width: 0;
+          }
+
+          .conversation-reply__author {
+            color: inherit;
+            text-decoration: none;
+          }
+
+          .conversation-reply__text {
+            flex: 1 1 auto;
+            min-width: 0;
+            word-break: break-word;
+            line-height: 1.5;
+            height: auto;
+          }
+
+          .conversation-reply__bubble {
+            background-color: ${isNight ? "rgba(255,255,255,0.05)" : "#f8fafc"};
+            padding: 0.6rem 0.75rem;
+            border-radius: 12px;
+            display: block;
+            width: auto;
+            max-width: 100%;
+            border: 1px solid ${isNight ? "rgba(255,255,255,0.08)" : "#e2e8f0"};
+          }
+
+          .conversation-reply-list {
+            position: relative;
+            border-left: 2px solid ${isNight ? "#334155" : "#e5e7eb"};
+            margin-left: 0.15rem;
+            padding-left: 1.1rem !important;
+            gap: 0.5rem;
+            display: flex;
+            flex-direction: column;
+          }
+
+          .conversation-reply-list::before {
+            content: "";
+            position: absolute;
+            left: -2px;
+            top: 6px;
+            bottom: 6px;
+            width: 2px;
+            background: ${isNight
+              ? "rgba(148,163,184,0.35)"
+              : "rgba(148,163,184,0.55)"};
+          }
+
+          .reply-inline-input {
+            min-height: 38px;
+          }
+
+          .reply-inline-send {
+            min-height: 38px;
+            padding-inline: 0.85rem;
+          }
+
+          .reply-input-row {
+            margin-left: 2.6rem;
+          }
+
+          .comment-input-panel {
+            border-top: 1px solid
+              ${isNight ? "rgba(255,255,255,0.08)" : "#e5e7eb"};
+            padding-top: 0.75rem;
+            margin-top: 0.75rem;
+          }
+
+          .comment-input-group {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 0.55rem;
+            align-items: center;
+          }
+
+          .comment-input {
+            min-height: 42px;
+            padding: 0.5rem 0.75rem;
+            border-radius: 10px;
+          }
+
+          .comment-send-btn {
+            min-height: 42px;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+          }
+
+          .blog-card-shell {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            transition: transform 0.35s ease;
+            width: 100%;
+          }
+
+          .blog-card {
+            transition: transform 0.35s ease, box-shadow 0.35s ease;
+          }
+
           .blog-card-shell--with-comments .blog-card {
-            transform: translateX(calc(-1 * clamp(120px, 14vw, 200px)));
+            transform: translateX(calc(-1 * clamp(160px, 18vw, 260px)));
           }
 
           .blog-card-comments-panel {
-            width: min(380px, 48vw);
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 100vh;
+            width: min(420px, 38vw);
+            transform: translateX(100%);
+            transition: transform 0.35s ease, box-shadow 0.35s ease;
+            background: ${isNight ? "rgba(15,23,42,0.98)" : "#ffffff"};
+            border-left: 1px solid
+              ${isNight ? "rgba(148,163,184,0.2)" : "#e5e7eb"};
+            box-shadow: none;
+            z-index: 30;
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem 1.5rem 1.25rem;
+            pointer-events: none;
           }
-        }
 
-        @media (prefers-reduced-motion: reduce) {
-          .blog-card,
-          .blog-card-shell,
-          .blog-card-comments-panel {
-            transition: none;
-            transform: none;
+          .blog-card-comments-panel.is-open {
+            transform: translateX(0);
+            box-shadow: -18px 0 35px
+              ${isNight ? "rgba(0,0,0,0.35)" : "rgba(15,23,42,0.18)"};
+            pointer-events: auto;
           }
-        }
-      `}</style>
+
+          .blog-card-comments-panel__header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding-bottom: 0.85rem;
+            border-bottom: 1px solid
+              ${isNight ? "rgba(148,163,184,0.2)" : "#e5e7eb"};
+          }
+
+          .blog-card-comments-panel__content {
+            flex: 1;
+            overflow-y: auto;
+            padding-top: 1rem;
+            display: flex;
+            flex-direction: column;
+          }
+
+          .conversation-card--panel {
+            margin-top: 0 !important;
+            background: transparent !important;
+            padding: 0 !important;
+          }
+
+          /* 📱 MOBILE STYLES */
+          @media (max-width: 576px) {
+            /* ----------------------------------
+          Conversation Header
+          -----------------------------------*/
+            .conversation-card .conversation-header {
+              display: flex !important;
+              justify-content: flex-end !important; /* View all to the right */
+              align-items: center !important;
+              padding: 0 0 0 0 !important; /* top right bottom left */
+              width: 100%;
+            }
+
+            /* Hide both Conversation icon + text */
+            .conversation-card .conversation-header h5 {
+              display: none !important;
+            }
+
+            /* Hide "Join comments..." subtitle */
+            .conversation-card .community-subtitle {
+              display: none !important;
+            }
+
+            /* Clean "View all" style */
+            .conversation-card .view-all-btn,
+            .conversation-card button.btn-outline-primary {
+              border: none !important;
+              background: transparent !important;
+              padding: 0 !important;
+              box-shadow: none !important;
+              border-radius: 0 !important;
+              font-size: 0.85rem !important;
+              font-weight: 500 !important;
+              color: #3b82f6 !important;
+            }
+
+            .conversation-card .conversation-header .view-all-btn {
+              padding-top: 0 !important;
+              padding-bottom: 0 !important;
+              line-height: 1.1 !important;
+            }
+
+            /* ----------------------------------
+          Blog Card Spacing
+          -----------------------------------*/
+            .blog-card__media,
+            .blog-card__media img {
+              margin-bottom: 0.25rem !important;
+              padding-bottom: 0 !important;
+              display: block !important;
+            }
+
+            .blog-card__body {
+              padding-top: 0.1rem !important;
+              padding-bottom: 0.1rem !important;
+            }
+
+            .blog-card__body .card-text {
+              margin-top: 0 !important;
+              margin-bottom: 0.15rem !important;
+              font-size: 0.82rem !important;
+              line-height: 1.55 !important;
+            }
+
+            .blog-card__body small {
+              margin-top: -4px !important;
+            }
+
+            .blog-card__footer {
+              margin-top: 0.2rem !important;
+              gap: 0.4rem !important;
+            }
+
+            .blog-card__mobile-cta {
+              gap: 0.35rem !important;
+            }
+
+            .blog-card__mobile-actions-grid {
+              display: grid;
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+              gap: 0.35rem !important;
+              width: 100%;
+            }
+
+            .blog-card__mobile-actions-grid .btn {
+              width: 100%;
+              justify-content: center;
+              padding: 0.3rem 0.65rem !important;
+              font-size: 0.8rem !important;
+              min-height: 36px !important;
+              border-radius: 14px !important;
+              box-shadow: 0 10px 18px
+                  ${isNight ? "rgba(0,0,0,0.28)" : "rgba(15,23,42,0.08)"},
+                inset 0 0 0 1px
+                  ${isNight
+                    ? "rgba(255,255,255,0.08)"
+                    : "rgba(59,130,246,0.15)"};
+            }
+
+            .blog-card__mobile-actions-grid .btn span {
+              font-size: 0.9rem !important;
+            }
+
+            .blog-card__mobile-actions-grid .badge {
+              font-size: 0.72rem !important;
+              padding: 0.15rem 0.5rem !important;
+              min-width: 42px;
+            }
+
+            .blog-card__mobile-hint {
+              padding-inline: 0.1rem;
+            }
+
+            .blog-card__footer .btn {
+              padding: 0.3rem 0.65rem !important;
+              font-size: 0.8rem !important;
+              min-height: 36px !important;
+              border-radius: 14px !important;
+            }
+
+            .blog-card__footer .btn span {
+              font-size: 0.9rem !important;
+            }
+
+            .blog-card__footer .badge {
+              font-size: 0.72rem !important;
+              padding: 0.15rem 0.5rem !important;
+            }
+
+            /* ----------------------------------
+          Author + Stats
+          -----------------------------------*/
+            .blog-card__hero .blog-card__header {
+              align-items: flex-start;
+              text-align: left;
+            }
+
+            .blog-card__author-row {
+              align-items: center;
+              gap: 0.65rem;
+              flex-wrap: nowrap !important;
+              min-width: 0;
+            }
+
+            .blog-card__author-info {
+              display: inline-flex;
+              align-items: center;
+              gap: 0.65rem;
+              flex-wrap: nowrap;
+              min-width: 0;
+              flex-shrink: 0;
+            }
+
+            .blog-card__author-meta {
+              gap: clamp(0.35rem, 2vw, 0.55rem);
+              min-width: 0;
+              display: inline-flex;
+              align-items: center;
+              flex: 1 1 auto;
+              justify-content: flex-start;
+            }
+
+            .blog-card__author-meta button {
+              white-space: nowrap;
+              min-width: 0;
+            }
+
+            .blog-card__author-meta span {
+              white-space: nowrap;
+              flex-shrink: 0;
+            }
+
+            .blog-card__title h3 {
+              font-size: 1.05rem;
+              line-height: 1.2;
+              display: -webkit-box;
+              -webkit-line-clamp: 2;
+              -webkit-box-orient: vertical;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              word-break: break-word;
+            }
+
+            .blog-card__stats {
+              width: 100%;
+              justify-content: space-between;
+              gap: 0.4rem;
+            }
+
+            .blog-card__stats span {
+              font-size: 0.85rem;
+              padding: 0.35rem 0.7rem;
+              flex: 1;
+              min-height: 32px;
+            }
+
+            .comments-modal__dialog {
+              width: 100% !important;
+              max-width: none;
+              margin: 0;
+              height: 100%;
+              display: flex;
+              align-items: flex-end;
+            }
+
+            .comments-modal__shell {
+              border-radius: 20px 20px 0 0;
+            }
+
+            .comments-modal__header {
+              padding: 0.85rem 1rem 0.65rem;
+            }
+
+            .comments-modal__body {
+              padding: 0.45rem 0.6rem 0.35rem;
+            }
+
+            .comments-modal__scroll {
+              max-height: calc(100vh - 230px);
+              padding-inline: 0.05rem;
+            }
+
+            .comments-modal__composer {
+              margin: 0 -0.1rem -0.1rem;
+              box-shadow: 0 -12px 32px ${isNight ? "rgba(0,0,0,0.55)" : "rgba(15,23,42,0.12)"};
+            }
+
+            /* ----------------------------------
+          Conversation Comments Layout
+          -----------------------------------*/
+            .conversation-comment-wrapper {
+              max-height: 260px;
+              overflow-y: auto;
+            }
+
+            .conversation-comment-list {
+              width: 100%;
+              gap: 0.75rem;
+            }
+
+            .conversation-comment-item {
+              width: 100%;
+              padding: 0.65rem 0.75rem;
+            }
+
+            .conversation-comment {
+              display: flex !important;
+              flex-direction: column !important;
+              gap: 0.65rem !important;
+              width: 100%;
+            }
+
+            .conversation-comment__main {
+              display: flex !important;
+              flex-direction: row !important;
+              align-items: flex-start !important;
+              width: 100%;
+              gap: 0.45rem !important;
+              min-width: 0;
+              max-width: 100%;
+            }
+
+            .conversation-comment__avatar,
+            .conversation-comment__avatar-image,
+            .conversation-comment__avatar-fallback {
+              width: 32px !important;
+              height: 32px !important;
+              flex: 0 0 32px !important;
+            }
+
+            .conversation-comment__body {
+              max-width: 100%;
+              min-width: 0;
+              flex: 1 1 auto;
+              width: 100%;
+            }
+
+            .conversation-comment__meta {
+              display: flex !important;
+              flex-direction: row !important;
+              align-items: center !important;
+              gap: 0.35rem !important;
+              flex-wrap: wrap !important;
+              width: 100%;
+              min-width: 0;
+            }
+
+            .conversation-comment__text {
+              font-size: 0.84rem !important;
+              line-height: 1.4 !important;
+              margin-left: 0 !important;
+              width: 100%;
+              overflow-wrap: anywhere;
+              padding: 0.45rem 0.6rem !important;
+              border-radius: 10px;
+            }
+
+            .conversation-comment__actions {
+              width: 100%;
+              display: flex;
+              flex-direction: row;
+              align-items: center;
+              justify-content: flex-start;
+              gap: 0.25rem;
+              flex-wrap: wrap;
+            }
+
+            .reaction-button {
+              font-size: 0.78rem;
+              padding: 0.25rem 0.4rem;
+              min-height: 30px;
+            }
+
+            .conversation-reply {
+              align-items: flex-start !important;
+              gap: 0.4rem;
+              margin-left: 0.1rem;
+            }
+
+            .conversation-reply__avatar,
+            .conversation-reply__avatar-image,
+            .conversation-reply__avatar-fallback {
+              width: 28px !important;
+              height: 28px !important;
+              flex-basis: 28px !important;
+            }
+
+            .conversation-reply__body {
+              flex: 1;
+              min-width: 0;
+              word-break: break-word;
+              align-items: flex-start;
+              gap: 0.35rem;
+              flex-wrap: wrap;
+            }
+
+            .conversation-reply__header {
+              gap: 0.35rem !important;
+              flex-wrap: wrap !important;
+              min-width: 0;
+              flex-shrink: 1;
+            }
+
+            .conversation-reply__text {
+              flex: 1 1 100%;
+              min-width: 0;
+              font-size: 0.82rem !important;
+              line-height: 1.4;
+            }
+
+            .conversation-reply__bubble {
+              width: 100%;
+              max-width: 100%;
+              line-height: 1.4;
+              padding: 0.45rem 0.6rem;
+            }
+
+            .conversation-reply-list {
+              border-left: 1px solid ${isNight ? "#334155" : "#cbd5e1"} !important;
+              padding-left: 0.55rem !important;
+              margin-left: 0.05rem;
+            }
+
+            .reply-input-row {
+              margin-left: 1.2rem;
+            }
+
+            .comment-input-panel {
+              padding-top: 0.35rem;
+            }
+
+            .comment-input-group {
+              grid-template-columns: 1fr auto;
+              align-items: center;
+              gap: 0.4rem;
+            }
+
+            .comment-input {
+              min-height: 38px;
+              padding: 0.45rem 0.65rem;
+            }
+
+            .comment-send-btn {
+              min-height: 38px;
+              padding: 0.45rem 0.85rem;
+            }
+
+            .conversation-card h5 {
+              font-size: 1rem;
+            }
+
+            .conversation-card p,
+            .conversation-card button {
+              font-size: 0.9rem;
+            }
+
+            /* Hide tap-to-expand */
+            .tap-to-expand {
+              display: none !important;
+            }
+          }
+
+          @media (max-width: 992px) {
+            .blog-card-shell--with-comments .blog-card {
+              transform: translateX(calc(-1 * clamp(120px, 14vw, 200px)));
+            }
+
+            .blog-card-comments-panel {
+              width: min(380px, 48vw);
+            }
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .blog-card,
+            .blog-card-shell,
+            .blog-card-comments-panel {
+              transition: none;
+              transform: none;
+            }
+          }
+        `}</style>
+      </div>
     </div>
   );
 }
