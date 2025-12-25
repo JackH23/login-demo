@@ -1790,8 +1790,8 @@ export default function BlogCard({
                   Join the conversation
                 </label>
                 <div className="comment-input-group">
-                  <textarea
-                    rows={3}
+                  <input
+                    type="text"
                     className="form-control comment-input"
                     placeholder={
                       user
@@ -2263,8 +2263,8 @@ export default function BlogCard({
                     Join the conversation
                   </label>
                   <div className="comment-input-group">
-                    <textarea
-                      rows={3}
+                    <input
+                      type="text"
                       className="form-control comment-input"
                       placeholder={
                         user
@@ -2987,23 +2987,27 @@ export default function BlogCard({
 
         .comment-input-group {
           display: flex;
-          gap: 0.55rem;
+          gap: 0.6rem;
           align-items: center;
         }
 
         .comment-input {
           flex: 1 1 auto;
           width: 100%;
-          min-height: 42px;
-          padding: 0.5rem 0.75rem;
+          min-height: 40px;
+          height: 40px;
+          max-height: 40px;
+          padding: 0.45rem 0.75rem;
           border-radius: 10px;
+          line-height: 1.2;
         }
 
         .comment-send-btn {
           flex: 0 0 auto;
-          min-height: 42px;
+          height: 40px;
+          min-height: 40px;
           min-width: 78px;
-          padding: 0.5rem 0.9rem;
+          padding: 0 0.95rem;
           border-radius: 10px;
           white-space: nowrap;
         }
