@@ -446,12 +446,15 @@ export default function FriendPage() {
                                   }}
                                   aria-expanded={openActionMenu === f.username}
                                   aria-controls={`friend-actions-${f.username}`}
+                                  aria-label="More actions"
                                 >
                                   <i
                                     className="bi bi-three-dots"
                                     aria-hidden="true"
                                   ></i>
-                                  More actions
+                                  <span className="visually-hidden">
+                                    More actions
+                                  </span>
                                 </button>
                                 {openActionMenu === f.username && (
                                   <div
