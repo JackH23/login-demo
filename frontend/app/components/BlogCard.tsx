@@ -1396,7 +1396,7 @@ export default function BlogCard({
                 <div className="conversation-header__actions d-flex align-items-center gap-2">
                   {totalComments > 0 && (
                     <button
-                      className="btn btn-sm btn-outline-primary rounded-pill view-all-btn"
+                      className="btn btn-sm btn-outline-primary rounded-pill view-all-btn d-none d-md-block"
                       onClick={() => {
                         prefetchComments();
                         setShowCommentsModal(true);
@@ -3025,9 +3025,10 @@ export default function BlogCard({
             display: flex !important;
             justify-content: flex-end !important; /* View all to the right */
             align-items: center !important;
-            padding: 0 0 0 0 !important; /* top right bottom left */
+            padding: 0 !important; /* top right bottom left */
             width: 100%;
-            margin-bottom: 0.35rem !important;
+            margin-bottom: 0.2rem !important;
+            min-height: 28px;
           }
 
           /* Hide both Conversation icon + text */
@@ -3407,7 +3408,7 @@ export default function BlogCard({
           }
 
           .comment-input::placeholder {
-            font-size: 0.85rem;
+            font-size: 0.70rem;
           }
 
           .comment-send-btn {
