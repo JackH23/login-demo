@@ -152,9 +152,6 @@ export default function BlogCard({
   );
   const [showActionsMenu, setShowActionsMenu] = useState(false);
   const [useBottomSheet, setUseBottomSheet] = useState(false);
-  const [collapsedReplies, setCollapsedReplies] = useState<
-    Record<string, boolean>
-  >({});
   const canManagePost = user?.username === blog.author;
   const replyInputRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -331,13 +328,6 @@ export default function BlogCard({
       minute: "2-digit",
     });
   }, []);
-
-  const toggleReplies = (replyKey: string) => {
-    setCollapsedReplies((prev) => ({
-      ...prev,
-      [replyKey]: !prev[replyKey],
-    }));
-  };
 
   // Count total number of comments for the blog post
   const totalComments = comments.length;
@@ -1463,15 +1453,6 @@ export default function BlogCard({
                             comment.newReply.trim() &&
                             !isReplySending
                         );
-                        const defaultRepliesCollapsed =
-                          isMobile && comment.replies.length > 2;
-                        const isRepliesCollapsed =
-                          collapsedReplies[replyKey] ?? defaultRepliesCollapsed;
-                        const visibleReplies = isRepliesCollapsed
-                          ? comment.replies.slice(0, 2)
-                          : comment.replies;
-                        const hiddenRepliesCount =
-                          comment.replies.length - visibleReplies.length;
                         const commentTimestamp = formatTimestamp(
                           comment.createdAt
                         );
@@ -1667,7 +1648,7 @@ export default function BlogCard({
                             {comment.replies.length > 0 && (
                               <div className="conversation-reply-thread">
                                 <ul className="mt-2 ps-3 list-unstyled conversation-reply-list">
-                                  {visibleReplies.map((reply, rIdx) => {
+                                  {comment.replies.map((reply, rIdx) => {
                                     const replyAvatar = resolveAvatar(
                                       reply.authorImage,
                                       reply.author
@@ -1738,10 +1719,7 @@ export default function BlogCard({
                                             role="button"
                                             tabIndex={0}
                                             onClick={() =>
-                                              setReplyInputVisibility(
-                                                idx,
-                                                true
-                                              )
+                                              setReplyInputVisibility(idx, true)
                                             }
                                             onKeyDown={(event) => {
                                               if (
@@ -1768,21 +1746,6 @@ export default function BlogCard({
                                     );
                                   })}
                                 </ul>
-                                {comment.replies.length > 2 && (
-                                  <button
-                                    type="button"
-                                    className="conversation-reply-toggle"
-                                    onClick={() => toggleReplies(replyKey)}
-                                  >
-                                    {isRepliesCollapsed
-                                      ? `Show ${hiddenRepliesCount} more ${
-                                          hiddenRepliesCount === 1
-                                            ? "reply"
-                                            : "replies"
-                                        }`
-                                      : "Hide replies"}
-                                  </button>
-                                )}
                               </div>
                             )}
 
@@ -1847,7 +1810,9 @@ export default function BlogCard({
                   <button
                     className="btn btn-primary comment-send-btn"
                     onClick={handleCommentSubmit}
-                    disabled={!newComment.trim() || !user || isSubmittingComment}
+                    disabled={
+                      !newComment.trim() || !user || isSubmittingComment
+                    }
                   >
                     {isSubmittingComment ? "Sending..." : "Send"}
                   </button>
@@ -1973,23 +1938,13 @@ export default function BlogCard({
                           comment.newReply.trim() &&
                           !isReplySending
                       );
-                      const defaultRepliesCollapsed =
-                        isMobile && comment.replies.length > 2;
-                      const isRepliesCollapsed =
-                        collapsedReplies[replyKey] ?? defaultRepliesCollapsed;
-                      const visibleReplies = isRepliesCollapsed
-                        ? comment.replies.slice(0, 2)
-                        : comment.replies;
-                      const hiddenRepliesCount =
-                        comment.replies.length - visibleReplies.length;
                       const commentTimestamp = formatTimestamp(
                         comment.createdAt
                       );
                       const isEdited =
                         comment.updatedAt &&
                         comment.updatedAt !== comment.createdAt;
-                      const isAuthorHighlight =
-                        comment.author === blog.author;
+                      const isAuthorHighlight = comment.author === blog.author;
 
                       return (
                         <li
@@ -2174,7 +2129,7 @@ export default function BlogCard({
                           {comment.replies.length > 0 && (
                             <div className="conversation-reply-thread">
                               <ul className="mt-2 ps-3 list-unstyled conversation-reply-list">
-                                {visibleReplies.map((reply, rIdx) => {
+                                {comment.replies.map((reply, rIdx) => {
                                   const replyAvatar = resolveAvatar(
                                     reply.authorImage,
                                     reply.author
@@ -2260,33 +2215,18 @@ export default function BlogCard({
                                             }
                                           }}
                                         >
-                                            {reply.text}
-                                          </div>
-                                          {reply.isPending && (
-                                            <span className="badge bg-secondary bg-opacity-25 text-secondary ms-auto">
-                                              Sending...
-                                            </span>
-                                          )}
+                                          {reply.text}
                                         </div>
-                                      </li>
-                                    );
+                                        {reply.isPending && (
+                                          <span className="badge bg-secondary bg-opacity-25 text-secondary ms-auto">
+                                            Sending...
+                                          </span>
+                                        )}
+                                      </div>
+                                    </li>
+                                  );
                                 })}
                               </ul>
-                              {comment.replies.length > 2 && (
-                                <button
-                                  type="button"
-                                  className="conversation-reply-toggle"
-                                  onClick={() => toggleReplies(replyKey)}
-                                >
-                                  {isRepliesCollapsed
-                                    ? `Show ${hiddenRepliesCount} more ${
-                                        hiddenRepliesCount === 1
-                                          ? "reply"
-                                          : "replies"
-                                      }`
-                                    : "Hide replies"}
-                                </button>
-                              )}
                             </div>
                           )}
 
@@ -3079,6 +3019,9 @@ export default function BlogCard({
           .conversation-card--mobile-slide {
             width: 100%;
             border-radius: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
           }
 
           /* ----------------------------------
@@ -3308,8 +3251,11 @@ export default function BlogCard({
           Conversation Comments Layout
           -----------------------------------*/
           .conversation-comment-wrapper {
-            max-height: 260px;
+            flex: 1;
+            min-height: 52vh;
+            max-height: calc(100vh - 220px);
             overflow-y: auto;
+            padding-bottom: 4.5rem;
           }
 
           .conversation-comment-list {
@@ -3446,6 +3392,14 @@ export default function BlogCard({
 
           .comment-input-panel {
             padding-top: 0.35rem;
+            position: sticky;
+            bottom: 0;
+            z-index: 6;
+            background: ${isNight ? "rgba(15,23,42,0.96)" : "#ffffff"};
+            border-top: 1px solid
+              ${isNight ? "rgba(255,255,255,0.1)" : "#e5e7eb"};
+            box-shadow: 0 -12px 24px ${isNight ? "rgba(0,0,0,0.45)" : "rgba(15,23,42,0.12)"};
+            padding-bottom: 0.6rem;
           }
 
           .comment-input-group {
