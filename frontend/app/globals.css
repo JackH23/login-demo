@@ -959,9 +959,9 @@
   width: auto;
   height: auto;
   border: none;
-  padding: 0.2rem 0.6rem;
+  padding: 0.25rem 0.75rem;
   border-radius: 999px;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1741,7 +1741,7 @@
 .user-card-actions--mobile-stack {
   flex-direction: column;
   align-items: stretch;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .user-card-actions--mobile-stack .user-card-action {
@@ -1756,7 +1756,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  padding: 0.5rem 1.1rem;
+  padding: 0.55rem 1.2rem;
   font-weight: 600;
   font-size: 0.85rem;
   letter-spacing: 0.01em;
@@ -2205,7 +2205,6 @@
     padding: 0.85rem 0.95rem;
     border-radius: 16px;
     gap: 0.85rem;
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
   }
 
   .user-card--compact {
@@ -2215,12 +2214,11 @@
   .user-card-main {
     gap: 0.75rem;
     flex: 1 1 220px;
-    align-items: center;
   }
 
   .user-card--friend .user-card-main {
-    flex-direction: row;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .user-card-avatar {
@@ -2242,10 +2240,9 @@
   }
 
   .user-card-presence:not([data-variant="label"]) {
-    width: 12px;
-    height: 12px;
-    border-width: 1px;
-    box-shadow: none;
+    width: 14px;
+    height: 14px;
+    border-width: 1.5px;
   }
 
   .user-card-body {
@@ -2253,26 +2250,26 @@
   }
 
   .user-card-header {
-    gap: 0.4rem;
+    gap: 0.5rem;
   }
 
   .user-card-name {
-    font-size: 1rem;
+    font-size: 0.98rem;
   }
 
   .user-card--compact .user-card-name {
-    font-size: 0.95rem;
+    font-size: 0.92rem;
   }
 
   .user-card-subtext,
   .user-card-substatus,
   .user-card-status-row {
-    font-size: 0.8rem;
+    font-size: 0.82rem;
   }
 
   .user-card--compact .user-card-substatus,
   .user-card--compact .user-card-status-row {
-    font-size: 0.76rem;
+    font-size: 0.78rem;
   }
 
   .user-card-meta {
@@ -2286,24 +2283,23 @@
   }
 
   .user-card-actions {
-    gap: 0.4rem;
+    gap: 0.5rem;
     width: 100%;
     justify-content: stretch;
   }
 
   .user-card-actions--stacked {
-    gap: 0.4rem;
+    gap: 0.45rem;
   }
 
   .user-card-action {
-    padding: 0.45rem 0.9rem;
+    padding: 0.4rem 0.85rem;
     font-size: 0.78rem;
     gap: 0.35rem;
-    min-height: 42px;
   }
 
   .user-card-actions--stacked .user-card-action {
-    min-height: 42px;
+    min-height: 38px;
   }
 
   .user-card-action i {
@@ -2312,29 +2308,6 @@
 
   .user-card-more-menu {
     gap: 0.4rem;
-  }
-}
-
-@media (max-width: 576px) {
-  .user-card:active {
-    transform: scale(0.99);
-    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
-  }
-
-  .user-card-actions--mobile-stack .user-card-action--primary {
-    width: 100%;
-  }
-
-  .user-card-actions--mobile-stack .user-card-more {
-    width: auto;
-    align-self: flex-end;
-  }
-
-  .user-card-action--more {
-    padding: 0;
-    width: 44px;
-    min-height: 40px;
-    border-radius: 999px;
   }
 }
 
