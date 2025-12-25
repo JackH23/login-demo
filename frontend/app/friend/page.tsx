@@ -73,7 +73,6 @@ export default function FriendPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [stickyOffset, setStickyOffset] = useState(88);
   const [isCompactLayout, setIsCompactLayout] = useState(false);
-  const [openActionMenu, setOpenActionMenu] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -227,12 +226,7 @@ export default function FriendPage() {
   const totalFriends = directory.total ?? friendUsers.length;
 
   const openProfile = (username: string) => {
-    setOpenActionMenu(null);
     router.push(`/user/${encodeURIComponent(username)}`);
-  };
-
-  const toggleActionMenu = (username: string) => {
-    setOpenActionMenu((prev) => (prev === username ? null : username));
   };
 
   return (
@@ -417,93 +411,33 @@ export default function FriendPage() {
                         <div
                           className={`user-card-actions ${
                             isCompactLayout
-                              ? "user-card-actions--inline-mobile user-card-actions--mobile-stack"
+                              ? "user-card-actions--inline-mobile"
                               : ""
                           }`}
                           role="group"
                           aria-label={`Actions for ${f.username}`}
                         >
-                          {isCompactLayout ? (
-                            <>
-                              <button
-                                type="button"
-                                className="user-card-action user-card-action--primary"
-                                onClick={() => openProfile(f.username)}
-                              >
-                                <i
-                                  className="bi bi-person"
-                                  aria-hidden="true"
-                                ></i>
-                                View profile
-                              </button>
-                              <div className="user-card-more">
-                                <button
-                                  type="button"
-                                  className="user-card-action user-card-action--secondary user-card-action--more"
-                                  onClick={(event) => {
-                                    event.stopPropagation();
-                                    toggleActionMenu(f.username);
-                                  }}
-                                  aria-expanded={openActionMenu === f.username}
-                                  aria-controls={`friend-actions-${f.username}`}
-                                >
-                                  <i
-                                    className="bi bi-three-dots"
-                                    aria-hidden="true"
-                                  ></i>
-                                  More actions
-                                </button>
-                                {openActionMenu === f.username && (
-                                  <div
-                                    id={`friend-actions-${f.username}`}
-                                    className="user-card-more-menu"
-                                  >
-                                    <button
-                                      type="button"
-                                      className="user-card-action user-card-action--secondary"
-                                      onClick={() => {
-                                        setOpenActionMenu(null);
-                                        router.push(`/chat?user=${f.username}`);
-                                      }}
-                                    >
-                                      <i
-                                        className="bi bi-chat-dots"
-                                        aria-hidden="true"
-                                      ></i>
-                                      Message
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
-                            </>
-                          ) : (
-                            <>
-                              <button
-                                type="button"
-                                className="user-card-action user-card-action--secondary"
-                                onClick={() => openProfile(f.username)}
-                              >
-                                <i
-                                  className="bi bi-person"
-                                  aria-hidden="true"
-                                ></i>
-                                View profile
-                              </button>
-                              <button
-                                type="button"
-                                className="user-card-action user-card-action--secondary"
-                                onClick={() =>
-                                  router.push(`/chat?user=${f.username}`)
-                                }
-                              >
-                                <i
-                                  className="bi bi-chat-dots"
-                                  aria-hidden="true"
-                                ></i>
-                                Message
-                              </button>
-                            </>
-                          )}
+                          <button
+                            type="button"
+                            className="user-card-action user-card-action--secondary d-none d-md-inline-flex"
+                            onClick={() => openProfile(f.username)}
+                          >
+                            <i className="bi bi-person" aria-hidden="true"></i>
+                            View profile
+                          </button>
+                          <button
+                            type="button"
+                            className="user-card-action user-card-action--secondary d-none d-md-inline-flex"
+                            onClick={() =>
+                              router.push(`/chat?user=${f.username}`)
+                            }
+                          >
+                            <i
+                              className="bi bi-chat-dots"
+                              aria-hidden="true"
+                            ></i>
+                            Message
+                          </button>
                         </div>
                       </li>
                     );
