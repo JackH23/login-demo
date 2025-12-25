@@ -36,7 +36,7 @@ export default function UserPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [stickyOffset, setStickyOffset] = useState(88);
   const [isCompactLayout, setIsCompactLayout] = useState(false);
-  const [openAdminMenu, setOpenAdminMenu] = useState<string | null>(null);
+  const [openActionMenu, setOpenActionMenu] = useState<string | null>(null);
   const { confirm: showConfirm, dialog: confirmDialog } = useConfirmDialog();
   const { prompt: showPrompt, dialog: promptDialog } = usePromptDialog();
 
@@ -71,12 +71,12 @@ export default function UserPage() {
 
   useEffect(() => {
     if (!isCompactLayout) {
-      setOpenAdminMenu(null);
+      setOpenActionMenu(null);
     }
   }, [isCompactLayout]);
 
-  const toggleAdminMenu = (username: string) => {
-    setOpenAdminMenu((prev) => (prev === username ? null : username));
+  const toggleActionMenu = (username: string) => {
+    setOpenActionMenu((prev) => (prev === username ? null : username));
   };
 
   if (loading || usersLoading || !user) {
@@ -563,77 +563,110 @@ export default function UserPage() {
                         role="group"
                         aria-label={`Actions for ${u.username}`}
                       >
-                        <button
-                          type="button"
-                          className="user-card-action user-card-action--secondary"
-                          onClick={() => navigateToProfile(u.username)}
-                        >
-                          <i className="bi bi-person" aria-hidden="true"></i>
-                          View profile
-                        </button>
-                        <button
-                          type="button"
-                          className={`user-card-action user-card-action--friend${
-                            isFriend ? " is-disabled" : ""
-                          }`}
-                          disabled={isFriend}
-                          onClick={() => handleAddFriend(u.username)}
-                        >
-                          <i
-                            className="bi bi-person-plus"
-                            aria-hidden="true"
-                          ></i>
-                          {isFriend ? "Friend" : "Add Friend"}
-                        </button>
-
-                        {isAdmin && (
+                        {isCompactLayout ? (
                           <>
-                            {isCompactLayout ? (
-                              <div className="user-card-more">
-                                <button
-                                  type="button"
-                                  className="user-card-action user-card-action--secondary user-card-action--more"
-                                  onClick={() => toggleAdminMenu(u.username)}
-                                  aria-expanded={openAdminMenu === u.username}
-                                  aria-controls={`admin-actions-${u.username}`}
+                            <button
+                              type="button"
+                              className="user-card-action user-card-action--primary"
+                              onClick={() => navigateToProfile(u.username)}
+                            >
+                              <i
+                                className="bi bi-person"
+                                aria-hidden="true"
+                              ></i>
+                              View profile
+                            </button>
+                            <div className="user-card-more">
+                              <button
+                                type="button"
+                                className="user-card-action user-card-action--secondary user-card-action--more"
+                                onClick={() => toggleActionMenu(u.username)}
+                                aria-expanded={openActionMenu === u.username}
+                                aria-controls={`user-actions-${u.username}`}
+                                aria-label={`More actions for ${u.username}`}
+                              >
+                                <i
+                                  className="bi bi-three-dots"
+                                  aria-hidden="true"
+                                ></i>
+                              </button>
+                              {openActionMenu === u.username && (
+                                <div
+                                  id={`user-actions-${u.username}`}
+                                  className="user-card-more-menu"
                                 >
-                                  <i
-                                    className="bi bi-three-dots"
-                                    aria-hidden="true"
-                                  ></i>
-                                  Manage
-                                </button>
-                                {openAdminMenu === u.username && (
-                                  <div
-                                    id={`admin-actions-${u.username}`}
-                                    className="user-card-more-menu"
+                                  <button
+                                    type="button"
+                                    className={`user-card-action user-card-action--friend${
+                                      isFriend ? " is-disabled" : ""
+                                    }`}
+                                    disabled={isFriend}
+                                    onClick={() => handleAddFriend(u.username)}
                                   >
-                                    <button
-                                      type="button"
-                                      className="user-card-action user-card-action--edit"
-                                      onClick={() => handleEdit(u)}
-                                    >
-                                      <i
-                                        className="bi bi-pencil-square"
-                                        aria-hidden="true"
-                                      ></i>
-                                      Edit profile
-                                    </button>
-                                    <button
-                                      type="button"
-                                      className="user-card-action user-card-action--danger"
-                                      onClick={() => handleDelete(u.username)}
-                                    >
-                                      <i
-                                        className="bi bi-trash"
-                                        aria-hidden="true"
-                                      ></i>
-                                      Delete user
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
-                            ) : (
+                                    <i
+                                      className="bi bi-person-plus"
+                                      aria-hidden="true"
+                                    ></i>
+                                    {isFriend ? "Friend" : "Add Friend"}
+                                  </button>
+                                  {isAdmin && (
+                                    <>
+                                      <button
+                                        type="button"
+                                        className="user-card-action user-card-action--edit"
+                                        onClick={() => handleEdit(u)}
+                                      >
+                                        <i
+                                          className="bi bi-pencil-square"
+                                          aria-hidden="true"
+                                        ></i>
+                                        Edit profile
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className="user-card-action user-card-action--danger"
+                                        onClick={() => handleDelete(u.username)}
+                                      >
+                                        <i
+                                          className="bi bi-trash"
+                                          aria-hidden="true"
+                                        ></i>
+                                        Delete user
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              className="user-card-action user-card-action--secondary"
+                              onClick={() => navigateToProfile(u.username)}
+                            >
+                              <i
+                                className="bi bi-person"
+                                aria-hidden="true"
+                              ></i>
+                              View profile
+                            </button>
+                            <button
+                              type="button"
+                              className={`user-card-action user-card-action--friend${
+                                isFriend ? " is-disabled" : ""
+                              }`}
+                              disabled={isFriend}
+                              onClick={() => handleAddFriend(u.username)}
+                            >
+                              <i
+                                className="bi bi-person-plus"
+                                aria-hidden="true"
+                              ></i>
+                              {isFriend ? "Friend" : "Add Friend"}
+                            </button>
+                            {isAdmin && (
                               <>
                                 <button
                                   type="button"
