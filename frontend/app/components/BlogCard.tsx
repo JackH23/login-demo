@@ -1547,11 +1547,6 @@ export default function BlogCard({
                                         {commentTimestamp}
                                       </span>
                                     )}
-                                    {isEdited && (
-                                      <span className="conversation-comment__edited">
-                                        Edited
-                                      </span>
-                                    )}
                                   </div>
 
                                   <p
@@ -2028,11 +2023,6 @@ export default function BlogCard({
                                   {commentTimestamp && (
                                     <span className="conversation-comment__timestamp">
                                       {commentTimestamp}
-                                    </span>
-                                  )}
-                                  {isEdited && (
-                                    <span className="conversation-comment__edited">
-                                      Edited
                                     </span>
                                   )}
                                 </div>
@@ -3399,11 +3389,6 @@ export default function BlogCard({
             position: sticky;
             bottom: 0;
             z-index: 6;
-            background: ${isNight ? "rgba(15,23,42,0.96)" : "#ffffff"};
-            border-top: 1px solid
-              ${isNight ? "rgba(255,255,255,0.1)" : "#e5e7eb"};
-            box-shadow: 0 -12px 24px ${isNight ? "rgba(0,0,0,0.45)" : "rgba(15,23,42,0.12)"};
-            padding-bottom: 0.6rem;
           }
 
           .comment-input-group {
@@ -3413,7 +3398,11 @@ export default function BlogCard({
 
           .comment-input {
             min-height: 38px;
+            height: 38px;
+            max-height: 38px;
             padding: 0.5rem 0.65rem;
+            line-height: 1.2;
+            resize: none;
           }
 
           .comment-send-btn {
