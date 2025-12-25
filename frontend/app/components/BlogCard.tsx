@@ -2996,22 +2996,26 @@ export default function BlogCard({
         }
 
         .comment-input-group {
-          display: grid;
-          grid-template-columns: 1fr auto;
+          display: flex;
           gap: 0.55rem;
           align-items: center;
         }
 
         .comment-input {
+          flex: 1 1 auto;
+          width: 100%;
           min-height: 42px;
           padding: 0.5rem 0.75rem;
           border-radius: 10px;
         }
 
         .comment-send-btn {
+          flex: 0 0 auto;
           min-height: 42px;
-          padding: 0.5rem 1rem;
+          min-width: 78px;
+          padding: 0.5rem 0.9rem;
           border-radius: 10px;
+          white-space: nowrap;
         }
 
         /* 📱 MOBILE STYLES */
@@ -3403,19 +3407,19 @@ export default function BlogCard({
           }
 
           .comment-input-group {
-            grid-template-columns: 1fr auto;
-            align-items: center;
             gap: 0.4rem;
+            align-items: center;
           }
 
           .comment-input {
             min-height: 38px;
-            padding: 0.45rem 0.65rem;
+            padding: 0.5rem 0.65rem;
           }
 
           .comment-send-btn {
             min-height: 38px;
-            padding: 0.45rem 0.85rem;
+            min-width: 68px;
+            padding: 0.45rem 0.75rem;
           }
 
           .conversation-card h5 {
