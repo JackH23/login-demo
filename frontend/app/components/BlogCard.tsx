@@ -941,9 +941,11 @@ export default function BlogCard({
             aria-controls={`blog-card-menu-${blog._id ?? "new"}`}
             onClick={() => setShowActionsMenu((prev) => !prev)}
           >
-            <span className="blog-card__menu-icon" aria-hidden={true}>
-              &#8942;
-            </span>
+            {canManagePost && (
+              <span className="blog-card__menu-icon" aria-hidden={true}>
+                &#8942;
+              </span>
+            )}
             <span className="visually-hidden">Toggle actions menu</span>
           </button>
 
