@@ -3406,6 +3406,10 @@ export default function BlogCard({
             resize: none;
           }
 
+          .comment-input::placeholder {
+            font-size: 0.85rem;
+          }
+
           .comment-send-btn {
             min-height: 34px;
             min-width: 64px;
