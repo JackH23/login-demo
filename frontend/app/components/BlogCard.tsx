@@ -1795,7 +1795,7 @@ export default function BlogCard({
                     className="form-control comment-input"
                     placeholder={
                       user
-                        ? "Share your thoughts with the community..."
+                        ? "Enter your comment..."
                         : "Sign in to join the conversation"
                     }
                     value={newComment}
@@ -3027,6 +3027,7 @@ export default function BlogCard({
             align-items: center !important;
             padding: 0 0 0 0 !important; /* top right bottom left */
             width: 100%;
+            margin-bottom: 0.35rem !important;
           }
 
           /* Hide both Conversation icon + text */
@@ -3246,10 +3247,10 @@ export default function BlogCard({
           -----------------------------------*/
           .conversation-comment-wrapper {
             flex: 1;
-            min-height: 52vh;
-            max-height: calc(100vh - 220px);
+            min-height: 46vh;
+            max-height: calc(100vh - 180px);
             overflow-y: auto;
-            padding-bottom: 4.5rem;
+            padding-bottom: 3.2rem;
           }
 
           .conversation-comment-list {
@@ -3385,7 +3386,7 @@ export default function BlogCard({
           }
 
           .comment-input-panel {
-            padding-top: 0.35rem;
+            padding-top: 0.2rem;
             position: sticky;
             bottom: 0;
             z-index: 6;
@@ -3397,18 +3398,18 @@ export default function BlogCard({
           }
 
           .comment-input {
-            min-height: 38px;
-            height: 38px;
-            max-height: 38px;
+            min-height: 34px;
+            height: 34px;
+            max-height: 34px;
             padding: 0.5rem 0.65rem;
             line-height: 1.2;
             resize: none;
           }
 
           .comment-send-btn {
-            min-height: 38px;
-            min-width: 68px;
-            padding: 0.45rem 0.75rem;
+            min-height: 34px;
+            min-width: 64px;
+            padding: 0.35rem 0.65rem;
           }
 
           .conversation-card h5 {
