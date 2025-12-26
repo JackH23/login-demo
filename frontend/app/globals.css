@@ -2215,29 +2215,37 @@
 
 @media (max-width: 576px) {
   .user-card-body--inline-status-mobile {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      "name status"
-      "meta meta";
-    column-gap: 0.6rem;
-    row-gap: 0.35rem;
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
+    column-gap: 0.6rem;
+    row-gap: 0.3rem;
   }
 
   .user-card-body--inline-status-mobile .user-card-header {
-    grid-area: name;
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
   .user-card-body--inline-status-mobile .user-card-status-row {
-    grid-area: status;
+    margin-left: auto;
     justify-content: flex-end;
-    font-size: 0.60rem;
+    font-size: 0.68rem;
+    margin-bottom: -0.15rem;
   }
 
   .user-card-body--inline-status-mobile .user-card-meta {
-    grid-area: meta;
+    flex-basis: 100%;
   }
-  
+
+  .user-card-body--inline-status-mobile .user-card-status-badges {
+    font-size: 0.62rem;
+  }
+
+  .user-card-body--inline-status-mobile .user-card-chip {
+    font-size: 0.62rem;
+  }
+
   .user-card {
     padding: 0.85rem 0.95rem;
     border-radius: 16px;
