@@ -1376,7 +1376,11 @@ export default function BlogCard({
               className={`conversation-card ${
                 isMobile ? "conversation-card--mobile-slide" : "mt-5"
               } rounded-4 p-md-4 p-3 ${
-                isNight ? "bg-secondary bg-opacity-25" : "bg-light"
+                isNight && isMobile
+                  ? "conversation-card--dark"
+                  : isNight
+                    ? "bg-secondary bg-opacity-25"
+                    : "bg-light"
               }`}
             >
               <div className="conversation-header d-flex flex-column flex-md-row gap-2 justify-content-between align-items-start align-items-md-center mb-3">
@@ -2829,6 +2833,12 @@ export default function BlogCard({
           z-index: 30;
           box-shadow: 0 16px 40px rgba(15, 23, 42, 0.3);
           animation: conversation-slide-in 0.28s ease;
+        }
+
+        .conversation-card--dark {
+          background: rgba(15, 23, 42, 0.95);
+          color: #e2e8f0;
+          border: 1px solid rgba(148, 163, 184, 0.2);
         }
 
         .conversation-close {
