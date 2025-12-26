@@ -399,16 +399,6 @@ export default function FriendPage() {
                                 </span>
                               </div>
                             </div>
-                            <div className="user-card-status-row">
-                              <div className="user-card-status-badges d-none d-md-block">
-                                <span
-                                  className={presenceClass}
-                                  data-variant="label"
-                                >
-                                  {f.online ? "Online" : "Offline"}
-                                </span>
-                              </div>
-                            </div>
                           </div>
                         </div>
 
