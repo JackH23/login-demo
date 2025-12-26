@@ -439,7 +439,13 @@ export default function UserPage() {
                     : "user-card-presence user-card-presence--offline";
                   const initials = u.username.charAt(0).toUpperCase();
                   return (
-                    <li key={u.username} className="user-card" role="listitem">
+                    <li
+                      key={u.username}
+                      className={`user-card ${
+                        isCompactLayout ? "user-card--mobile-stacked" : ""
+                      }`}
+                      role="listitem"
+                    >
                       <div className="user-card-main">
                         <div
                           className="user-card-avatar user-card-avatar--focusable"
@@ -545,55 +551,45 @@ export default function UserPage() {
                       </div>
                       <div
                         className={`user-card-actions ${
-                          isCompactLayout
-                            ? "user-card-actions--inline-mobile user-card-actions--icon-row"
-                            : ""
+                          isCompactLayout ? "user-card-actions--mobile-stacked" : ""
                         }`}
                         role="group"
                         aria-label={`Actions for ${u.username}`}
                       >
                         {isCompactLayout ? (
                           <>
-                            <button
-                              type="button"
-                              className="user-card-action user-card-action--secondary user-card-action--icon-only"
-                              onClick={() => navigateToProfile(u.username)}
-                              aria-label={`View ${u.username}'s profile`}
-                            >
-                              <i
-                                className="bi bi-person"
-                                aria-hidden="true"
-                              ></i>
-                              <span className="visually-hidden">
+                            <div className="user-card-actions-main">
+                              <button
+                                type="button"
+                                className="user-card-action user-card-action--secondary"
+                                onClick={() => navigateToProfile(u.username)}
+                              >
+                                <i
+                                  className="bi bi-person"
+                                  aria-hidden="true"
+                                ></i>
                                 View profile
-                              </span>
-                            </button>
-                            <button
-                              type="button"
-                              className={`user-card-action user-card-action--friend user-card-action--icon-only${
-                                isFriend ? " is-disabled" : ""
-                              }`}
-                              disabled={isFriend}
-                              onClick={() => handleAddFriend(u.username)}
-                              aria-label={
-                                isFriend
-                                  ? `${u.username} is already a friend`
-                                  : `Add ${u.username} as a friend`
-                              }
-                            >
-                              <i
-                                className="bi bi-person-plus"
-                                aria-hidden="true"
-                              ></i>
-                              <span className="visually-hidden">
+                              </button>
+                              <button
+                                type="button"
+                                className={`user-card-action user-card-action--primary${
+                                  isFriend ? " is-disabled" : ""
+                                }`}
+                                disabled={isFriend}
+                                onClick={() => handleAddFriend(u.username)}
+                              >
+                                <i
+                                  className="bi bi-person-plus"
+                                  aria-hidden="true"
+                                ></i>
                                 {isFriend ? "Friend" : "Add Friend"}
-                              </span>
-                            </button>
+                              </button>
+                            </div>
                             {isAdmin && (
-                              <>
+                              <div className="user-card-actions-secondary">
                                 <button
                                   type="button"
-                                  className="user-card-action user-card-action--edit user-card-action--icon-only"
+                                  className="user-card-action user-card-action--subtle user-card-action--icon-only"
                                   onClick={() => handleEdit(u)}
                                   aria-label={`Edit ${u.username}'s profile`}
                                 >
@@ -607,7 +603,7 @@ export default function UserPage() {
                                 </button>
                                 <button
                                   type="button"
-                                  className="user-card-action user-card-action--danger user-card-action--icon-only"
+                                  className="user-card-action user-card-action--subtle user-card-action--icon-only user-card-action--danger-muted"
                                   onClick={() => handleDelete(u.username)}
                                   aria-label={`Delete ${u.username}`}
                                 >
@@ -619,7 +615,7 @@ export default function UserPage() {
                                     Delete user
                                   </span>
                                 </button>
-                              </>
+                              </div>
                             )}
                           </>
                         ) : (
@@ -637,7 +633,7 @@ export default function UserPage() {
                             </button>
                             <button
                               type="button"
-                              className={`user-card-action user-card-action--friend${
+                              className={`user-card-action user-card-action--primary${
                                 isFriend ? " is-disabled" : ""
                               }`}
                               disabled={isFriend}
