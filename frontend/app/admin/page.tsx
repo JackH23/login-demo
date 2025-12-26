@@ -188,7 +188,7 @@ export default function AdminPage() {
 
   const topContributor = topContributors[0];
 
-  const recentPosts = useMemo(() => posts.slice(0, 6), [posts]);
+  const recentPosts = useMemo(() => posts.slice(0, 1), [posts]);
   const handleViewPost = useCallback(
     (postId: string) => {
       const postToView = posts.find((entry) => entry._id === postId) ?? null;
@@ -826,7 +826,7 @@ export default function AdminPage() {
             </div>
 
             {/* Top Contributors */}
-            <div className={`card shadow-sm border-0 ${cardThemeClass}`}>
+            <div className={`card shadow-sm border-0 ${cardThemeClass} d-none d-md-block`}>
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center mb-3">
                   <h2 className="h5 mb-0">Top Contributors</h2>
