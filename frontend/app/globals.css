@@ -1008,6 +1008,13 @@
   flex-wrap: wrap;
 }
 
+.user-card-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
 .user-card-status-row {
   display: flex;
   align-items: center;
@@ -1738,6 +1745,12 @@
   gap: 0.5rem;
 }
 
+.user-card-actions--icon-row {
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
 .user-card-action {
   border: none;
   border-radius: 999px;
@@ -1762,6 +1775,17 @@
 }
 
 .user-card-action i {
+  font-size: 1rem;
+}
+
+.user-card-action--icon-only {
+  padding: 0.4rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+}
+
+.user-card-action--icon-only i {
   font-size: 1rem;
 }
 
@@ -2190,6 +2214,41 @@
 }
 
 @media (max-width: 576px) {
+  .user-card-body--inline-status-mobile {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "header status"
+      "meta meta";
+    align-items: center;
+    column-gap: 0.6rem;
+    row-gap: 0.3rem;
+  }
+
+  .user-card-body--inline-status-mobile .user-card-header {
+    grid-area: header;
+    min-width: 0;
+  }
+
+  .user-card-body--inline-status-mobile .user-card-status-row {
+    grid-area: status;
+    justify-content: flex-end;
+    font-size: 0.68rem;
+    margin-bottom: -0.15rem;
+  }
+
+  .user-card-body--inline-status-mobile .user-card-meta {
+    grid-area: meta;
+  }
+
+  .user-card-body--inline-status-mobile .user-card-status-badges {
+    font-size: 0.62rem;
+  }
+
+  .user-card-body--inline-status-mobile .user-card-chip {
+    font-size: 0.62rem;
+  }
+
   .user-card {
     padding: 0.85rem 0.95rem;
     border-radius: 16px;
@@ -2203,6 +2262,7 @@
   .user-card-main {
     gap: 0.75rem;
     flex: 1 1 220px;
+    order: 1;
   }
 
   .user-card-avatar {
@@ -2238,7 +2298,7 @@
   }
 
   .user-card-name {
-    font-size: 0.98rem;
+    font-size: 0.92rem;
   }
 
   .user-card--compact .user-card-name {
@@ -2268,13 +2328,16 @@
 
   .user-card-actions {
     gap: 0.5rem;
-    width: 100%;
-    justify-content: stretch;
   }
 
   .user-card-actions--inline-mobile {
     align-items: center;
     justify-content: space-between;
+    order: 2;
+  }
+
+  .user-card-actions--icon-row {
+    justify-content: flex-end;
   }
 
   .user-card-actions--stacked {
@@ -2285,6 +2348,12 @@
     padding: 0.45rem 0.9rem;
     font-size: 0.78rem;
     gap: 0.35rem;
+  }
+
+  .user-card-action--icon-only {
+    padding: 0.35rem;
+    width: 36px;
+    height: 36px;
   }
 
   .user-card-actions--inline-mobile .user-card-action--primary {

@@ -327,45 +327,6 @@ export default function FriendPage() {
                           }}
                         >
                           <div
-                            className="user-card-avatar user-card-avatar--focusable"
-                            role="presentation"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              openProfile(f.username);
-                            }}
-                            onKeyDown={(event) => {
-                              if (event.key === "Enter" || event.key === " ") {
-                                event.preventDefault();
-                                openProfile(f.username);
-                              }
-                            }}
-                            tabIndex={0}
-                            style={{ cursor: "pointer" }}
-                          >
-                            {f.image ? (
-                              <img
-                                src={f.image}
-                                alt={`${f.username} profile`}
-                                className="user-card-avatar-img"
-                              />
-                            ) : (
-                              <span
-                                className="user-card-avatar-placeholder"
-                                aria-hidden="true"
-                              >
-                                {initials}
-                              </span>
-                            )}
-                            <span
-                              className={presenceClass}
-                              aria-hidden="true"
-                            ></span>
-                            <span className="visually-hidden">
-                              {f.online ? "Online" : "Offline"}
-                            </span>
-                          </div>
-
-                          <div
                             className="user-card-body"
                             role="button"
                             tabIndex={0}
@@ -388,22 +349,55 @@ export default function FriendPage() {
                             }}
                           >
                             <div className="user-card-header">
-                              <span className="user-card-name">
-                                {f.username}
-                              </span>
-                            </div>
-                            <div className="user-card-status-row">
-                              <div className="user-card-status-badges d-none d-md-block">
+                              <div
+                                className="user-card-avatar user-card-avatar--focusable"
+                                role="presentation"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  openProfile(f.username);
+                                }}
+                                onKeyDown={(event) => {
+                                  if (
+                                    event.key === "Enter" ||
+                                    event.key === " "
+                                  ) {
+                                    event.preventDefault();
+                                    openProfile(f.username);
+                                  }
+                                }}
+                                tabIndex={0}
+                                style={{ cursor: "pointer" }}
+                              >
+                                {f.image ? (
+                                  <img
+                                    src={f.image}
+                                    alt={`${f.username} profile`}
+                                    className="user-card-avatar-img"
+                                  />
+                                ) : (
+                                  <span
+                                    className="user-card-avatar-placeholder"
+                                    aria-hidden="true"
+                                  >
+                                    {initials}
+                                  </span>
+                                )}
                                 <span
                                   className={presenceClass}
-                                  data-variant="label"
-                                >
+                                  aria-hidden="true"
+                                ></span>
+                                <span className="visually-hidden">
                                   {f.online ? "Online" : "Offline"}
                                 </span>
                               </div>
-                              <span className="user-card-substatus">
-                                {subtitle}
-                              </span>
+                              <div className="user-card-identity">
+                                <span className="user-card-name">
+                                  {f.username}
+                                </span>
+                                <span className="user-card-substatus">
+                                  {subtitle}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         </div>

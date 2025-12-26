@@ -36,7 +36,6 @@ export default function UserPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [stickyOffset, setStickyOffset] = useState(88);
   const [isCompactLayout, setIsCompactLayout] = useState(false);
-  const [openActionMenu, setOpenActionMenu] = useState<string | null>(null);
   const { confirm: showConfirm, dialog: confirmDialog } = useConfirmDialog();
   const { prompt: showPrompt, dialog: promptDialog } = usePromptDialog();
 
@@ -68,16 +67,6 @@ export default function UserPage() {
     window.addEventListener("resize", updateLayoutMetrics);
     return () => window.removeEventListener("resize", updateLayoutMetrics);
   }, []);
-
-  useEffect(() => {
-    if (!isCompactLayout) {
-      setOpenActionMenu(null);
-    }
-  }, [isCompactLayout]);
-
-  const toggleActionMenu = (username: string) => {
-    setOpenActionMenu((prev) => (prev === username ? null : username));
-  };
 
   if (loading || usersLoading || !user) {
     return (
@@ -522,7 +511,7 @@ export default function UserPage() {
                           </span>
                         </div>
                         <div
-                          className="user-card-body"
+                          className="user-card-body user-card-body--inline-status-mobile"
                           role="button"
                           tabIndex={0}
                           onClick={() => navigateToProfile(u.username)}
@@ -557,7 +546,7 @@ export default function UserPage() {
                       <div
                         className={`user-card-actions ${
                           isCompactLayout
-                            ? "user-card-actions--inline-mobile"
+                            ? "user-card-actions--inline-mobile user-card-actions--icon-row"
                             : ""
                         }`}
                         role="group"
@@ -567,77 +556,71 @@ export default function UserPage() {
                           <>
                             <button
                               type="button"
-                              className="user-card-action user-card-action--primary"
+                              className="user-card-action user-card-action--secondary user-card-action--icon-only"
                               onClick={() => navigateToProfile(u.username)}
+                              aria-label={`View ${u.username}'s profile`}
                             >
                               <i
                                 className="bi bi-person"
                                 aria-hidden="true"
                               ></i>
-                              View profile
+                              <span className="visually-hidden">
+                                View profile
+                              </span>
                             </button>
-                            <div className="user-card-more">
-                              <button
-                                type="button"
-                                className="user-card-action user-card-action--secondary user-card-action--more"
-                                onClick={() => toggleActionMenu(u.username)}
-                                aria-expanded={openActionMenu === u.username}
-                                aria-controls={`user-actions-${u.username}`}
-                                aria-label={`More actions for ${u.username}`}
-                              >
-                                <i
-                                  className="bi bi-three-dots"
-                                  aria-hidden="true"
-                                ></i>
-                              </button>
-                              {openActionMenu === u.username && (
-                                <div
-                                  id={`user-actions-${u.username}`}
-                                  className="user-card-more-menu"
+                            <button
+                              type="button"
+                              className={`user-card-action user-card-action--friend user-card-action--icon-only${
+                                isFriend ? " is-disabled" : ""
+                              }`}
+                              disabled={isFriend}
+                              onClick={() => handleAddFriend(u.username)}
+                              aria-label={
+                                isFriend
+                                  ? `${u.username} is already a friend`
+                                  : `Add ${u.username} as a friend`
+                              }
+                            >
+                              <i
+                                className="bi bi-person-plus"
+                                aria-hidden="true"
+                              ></i>
+                              <span className="visually-hidden">
+                                {isFriend ? "Friend" : "Add Friend"}
+                              </span>
+                            </button>
+                            {isAdmin && (
+                              <>
+                                <button
+                                  type="button"
+                                  className="user-card-action user-card-action--edit user-card-action--icon-only"
+                                  onClick={() => handleEdit(u)}
+                                  aria-label={`Edit ${u.username}'s profile`}
                                 >
-                                  <button
-                                    type="button"
-                                    className={`user-card-action user-card-action--friend${
-                                      isFriend ? " is-disabled" : ""
-                                    }`}
-                                    disabled={isFriend}
-                                    onClick={() => handleAddFriend(u.username)}
-                                  >
-                                    <i
-                                      className="bi bi-person-plus"
-                                      aria-hidden="true"
-                                    ></i>
-                                    {isFriend ? "Friend" : "Add Friend"}
-                                  </button>
-                                  {isAdmin && (
-                                    <>
-                                      <button
-                                        type="button"
-                                        className="user-card-action user-card-action--edit"
-                                        onClick={() => handleEdit(u)}
-                                      >
-                                        <i
-                                          className="bi bi-pencil-square"
-                                          aria-hidden="true"
-                                        ></i>
-                                        Edit profile
-                                      </button>
-                                      <button
-                                        type="button"
-                                        className="user-card-action user-card-action--danger"
-                                        onClick={() => handleDelete(u.username)}
-                                      >
-                                        <i
-                                          className="bi bi-trash"
-                                          aria-hidden="true"
-                                        ></i>
-                                        Delete user
-                                      </button>
-                                    </>
-                                  )}
-                                </div>
-                              )}
-                            </div>
+                                  <i
+                                    className="bi bi-pencil-square"
+                                    aria-hidden="true"
+                                  ></i>
+                                  <span className="visually-hidden">
+                                    Edit profile
+                                  </span>
+                                </button>
+                                <button
+                                  type="button"
+                                  className="user-card-action user-card-action--danger user-card-action--icon-only"
+                                  onClick={() => handleDelete(u.username)}
+                                  aria-label={`Delete ${u.username}`}
+                                >
+                                  <i
+                                    className="bi bi-trash"
+                                    aria-hidden="true"
+                                  ></i>
+                                  <span className="visually-hidden">
+                                    Delete user
+                                  </span>
+                                </button>
+                              </>
+                            )}
                           </>
                         ) : (
                           <>
