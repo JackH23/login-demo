@@ -511,7 +511,7 @@ export default function UserPage() {
                           </span>
                         </div>
                         <div
-                          className="user-card-body"
+                          className="user-card-body user-card-body--inline-status-mobile"
                           role="button"
                           tabIndex={0}
                           onClick={() => navigateToProfile(u.username)}

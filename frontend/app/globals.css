@@ -2214,6 +2214,29 @@
 }
 
 @media (max-width: 576px) {
+  .user-card-body--inline-status-mobile {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "name status"
+      "meta meta";
+    column-gap: 0.6rem;
+    row-gap: 0.35rem;
+    align-items: center;
+  }
+
+  .user-card-body--inline-status-mobile .user-card-header {
+    grid-area: name;
+  }
+
+  .user-card-body--inline-status-mobile .user-card-status-row {
+    grid-area: status;
+    justify-content: flex-end;
+  }
+
+  .user-card-body--inline-status-mobile .user-card-meta {
+    grid-area: meta;
+  }
+  
   .user-card {
     padding: 0.85rem 0.95rem;
     border-radius: 16px;
@@ -2320,7 +2343,7 @@
     width: 36px;
     height: 36px;
   }
-  
+
   .user-card-actions--inline-mobile .user-card-action--primary {
     flex: 1 1 auto;
   }
