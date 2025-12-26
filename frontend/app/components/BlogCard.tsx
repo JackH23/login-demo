@@ -1144,7 +1144,7 @@ export default function BlogCard({
       )}
 
       {blog.image && isMobile && (
-        <div className="px-3 pb-3">
+        <div className="px-3 pb-3 d-none d-md-block">
           <button
             type="button"
             className="blog-card__expand w-100 border-0 bg-transparent p-0"
