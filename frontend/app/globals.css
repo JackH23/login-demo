@@ -2215,27 +2215,30 @@
 
 @media (max-width: 576px) {
   .user-card-body--inline-status-mobile {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "header status"
+      "meta meta";
     align-items: center;
     column-gap: 0.6rem;
     row-gap: 0.3rem;
   }
 
   .user-card-body--inline-status-mobile .user-card-header {
-    flex: 1 1 auto;
+    grid-area: header;
     min-width: 0;
   }
 
   .user-card-body--inline-status-mobile .user-card-status-row {
-    margin-left: auto;
+    grid-area: status;
     justify-content: flex-end;
     font-size: 0.68rem;
     margin-bottom: -0.15rem;
   }
 
   .user-card-body--inline-status-mobile .user-card-meta {
-    flex-basis: 100%;
+    grid-area: meta;
   }
 
   .user-card-body--inline-status-mobile .user-card-status-badges {
@@ -2259,6 +2262,7 @@
   .user-card-main {
     gap: 0.75rem;
     flex: 1 1 220px;
+    order: 1;
   }
 
   .user-card-avatar {
@@ -2329,6 +2333,7 @@
   .user-card-actions--inline-mobile {
     align-items: center;
     justify-content: space-between;
+    order: 2;
   }
 
   .user-card-actions--icon-row {
