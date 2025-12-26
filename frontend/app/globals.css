@@ -1745,6 +1745,12 @@
   gap: 0.5rem;
 }
 
+.user-card-actions--icon-row {
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
 .user-card-action {
   border: none;
   border-radius: 999px;
@@ -1769,6 +1775,17 @@
 }
 
 .user-card-action i {
+  font-size: 1rem;
+}
+
+.user-card-action--icon-only {
+  padding: 0.4rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+}
+
+.user-card-action--icon-only i {
   font-size: 1rem;
 }
 
@@ -2284,6 +2301,10 @@
     justify-content: space-between;
   }
 
+  .user-card-actions--icon-row {
+    justify-content: flex-end;
+  }
+
   .user-card-actions--stacked {
     gap: 0.45rem;
   }
@@ -2294,6 +2315,12 @@
     gap: 0.35rem;
   }
 
+  .user-card-action--icon-only {
+    padding: 0.35rem;
+    width: 36px;
+    height: 36px;
+  }
+  
   .user-card-actions--inline-mobile .user-card-action--primary {
     flex: 1 1 auto;
   }
