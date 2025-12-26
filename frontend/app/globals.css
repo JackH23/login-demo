@@ -2316,9 +2316,6 @@
 
   .user-card-actions {
     gap: 0.5rem;
-    width: auto;
-    justify-content: flex-start;
-    margin-left: calc(52px + 0.75rem);
   }
 
   .user-card-actions--inline-mobile {
