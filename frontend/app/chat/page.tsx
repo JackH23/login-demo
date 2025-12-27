@@ -110,6 +110,15 @@ function ChatPageContent() {
     return `${CHAT_CACHE_PREFIX}${user.username}:${chatUser}`;
   }, [chatUser, user]);
 
+  const handleMobileBack = useCallback(() => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+      return;
+    }
+
+    router.replace("/friend");
+  }, [router]);
+
   useEffect(() => {
     if (!selectedMsgId) return;
 
@@ -1083,17 +1092,16 @@ function ChatPageContent() {
       }`}
     >
       <div className="mobile-header-actions">
-        <Link
-          href="/friend"
+        <button
+          type="button"
           className="mobile-back-button"
-          prefetch
-          replace
+          onClick={handleMobileBack}
           aria-label="Back to conversations"
         >
           <span aria-hidden="true" className="mobile-back-button__icon">
             ←
           </span>
-        </Link>
+        </button>
       </div>
       {chatUser ? (
         <div className="d-flex align-items-center gap-3">
